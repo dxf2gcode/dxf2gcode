@@ -132,6 +132,8 @@ class GeoentLine(object):
         # Neuen Startwert für die nächste Geometrie zurückgeben
         # New starting value for the next geometry
         caller.start = s
+        
+        logger.debug(self)
 
     def get_start_end_points(self, direction):
         """

@@ -57,6 +57,7 @@ class Spline2Arcs:
             logger.debug(self.NURBS)
 
         logger.debug("Next High accurancy BiarCurve")
+        logger.debug(self.NURBS)
         # High Accuracy Biarc fitting of NURBS
         BiarcCurves, self.PtsVec = self.calc_high_accurancy_BiarcCurve()
         logger.debug("Next Analyse and Compress")

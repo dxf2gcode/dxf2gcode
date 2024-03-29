@@ -86,6 +86,9 @@ class GeoentArc(object):
         """
         Read()
         """
+        # Typically all Arc's are CCW
+        extrusion_dir=1
+        
         # Assign short name
         lp = caller.line_pairs
         e = lp.index_code(0, caller.start + 1)
@@ -101,8 +104,7 @@ class GeoentArc(object):
         # Y Value
         s = lp.index_code(20, s + 1)
         y0 = float(lp.line_pair[s].value)
-        O = Point(x0, y0)
-
+     
         # Radius
         s = lp.index_code(40, s + 1)
         r = float(lp.line_pair[s].value)
@@ -121,19 +123,33 @@ class GeoentArc(object):
         if s_nxt_xt is not None:
             extrusion_dir = float(lp.line_pair[s_nxt_xt].value)
             logger.debug(self.tr('Found extrusion direction: %s') % extrusion_dir)
+            #logger.debug("x0: %s; s_ang: %s; e_ang: %s" % (x0,s_ang,e_ang))   
             if extrusion_dir == -1:
                 x0 = -x0
-                s_ang = s_ang + pi
-                e_ang = e_ang + pi
+                
+                #https://de.bettermarks.com/mathe/trigonometrie-am-einheitskreis/
+                if s_ang <= pi:
+                    s_ang=pi-s_ang
+                else:
+                    s_ang=2*pi-(s_ang-pi)
+                    
+                if e_ang <= pi:
+                    e_ang=pi-e_ang
+                else:
+                    e_ang=2*pi-(e_ang-pi)
+                #logger.debug("x0: %s; s_ang: %s; e_ang: %s" % (x0,s_ang,e_ang))                
+                
+
 
         # Calculate the start and end points of the arcs
+        O = Point(x0, y0)
         Ps = Point(cos(s_ang) * r, sin(s_ang) * r) + O
         Pe = Point(cos(e_ang) * r, sin(e_ang) * r) + O
 
         # Anh�ngen der ArcGeo Klasse f�r die Geometrie
         # Annexes to ArcGeo class for geometry
         self.geo.append(ArcGeo(Ps=Ps, Pe=Pe, O=O, r=r,
-                               s_ang=s_ang, e_ang=e_ang, direction=1))
+                               s_ang=s_ang, e_ang=e_ang, direction=extrusion_dir))
 
         # L�nge entspricht der L�nge des Kreises
         # Length is the length (circumference?) of the circle
@@ -144,6 +160,8 @@ class GeoentArc(object):
         # Neuen Startwerd f�r die n�chste Geometrie zur�ckgeben
         # New starting value for the next geometry
         caller.start = s
+        
+        logger.debug(self)
 
     def get_start_end_points(self, direction):
         """
