@@ -118,12 +118,12 @@ class GeoentArc(object):
         e_ang = radians(float(lp.line_pair[s].value))
 
         # Searching for an extrusion direction
-        s_nxt_xt = lp.index_code(230, s + 1, e)
+        s_nxt_xt = lp.index_code(230, caller.start + 1, e)
         # If there is a extrusion direction given flip around x-Axis
         if s_nxt_xt is not None:
             extrusion_dir = float(lp.line_pair[s_nxt_xt].value)
             logger.debug(self.tr('Found extrusion direction: %s') % extrusion_dir)
-            #logger.debug("x0: %s; s_ang: %s; e_ang: %s" % (x0,s_ang,e_ang))   
+            logger.debug("x0: %s; s_ang: %s; e_ang: %s" % (x0,s_ang,e_ang))   
             if extrusion_dir == -1:
                 x0 = -x0
                 
@@ -137,7 +137,7 @@ class GeoentArc(object):
                     e_ang=pi-e_ang
                 else:
                     e_ang=2*pi-(e_ang-pi)
-                #logger.debug("x0: %s; s_ang: %s; e_ang: %s" % (x0,s_ang,e_ang))                
+                logger.debug("x0: %s; s_ang: %s; e_ang: %s" % (x0,s_ang,e_ang))                
                 
 
 
