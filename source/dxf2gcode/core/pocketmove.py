@@ -81,7 +81,7 @@ class PocketMove(object):
         Standard method to print the object
         @return: A string
         """
-        return ("PocketMove form %s x %s to %s x %s." (self.Ps.x, self.Ps.y, self.Pe.x, self.Pe.y))
+        return ("PocketMove form %s x %s to %s x %s." % (self.Ps.x, self.Ps.y, self.Pe.x, self.Pe.y))
 
     """
     def save_v1(self):
