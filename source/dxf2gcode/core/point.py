@@ -38,7 +38,7 @@ logger = logging.getLogger("core.point")
 
 class Point(object):
     __slots__ = ["x", "y"]
-    eps=1e-12
+    eps=1e-9
 
     def __init__(self, x=0, y=0):
         self.x = x
@@ -199,7 +199,7 @@ class Point(object):
         # return (C.y-self.y)*(B.x-self.x) > (B.y-self.y)*(C.x-self.x)
 
         area2 = (B.x - self.x) * (C.y - self.y) - (C.x - self.x) * (B.y - self.y)
-        # logger.debug(area2)
+        #logger.debug(area2)
         if area2 < -Point.eps:
             return -1
         elif area2 > Point.eps:

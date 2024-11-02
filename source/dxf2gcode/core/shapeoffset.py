@@ -286,11 +286,17 @@ class offShapeClass(Shape):
                     ((self.offtype == "out" and geo2.ext > 0) or
                      (self.offtype == "in" and geo2.ext < 0)) and
                     ((geo2.r - abs(self.offset)) < -eps)):
+                
+                #logger.debug("ConvexPoint")
 
                 newgeo2 = ConvexPoint(geo2.O.x, geo2.O.y)
                 newgeo2.start_normal = geo2.start_normal
                 newgeo2.end_normal = geo2.end_normal
                 geo2 = newgeo2
+
+            #logger.debug(geo1.Pe.ccw(geo1.Pe + geo1.end_normal,
+            #                  geo1.Pe + geo1.end_normal + 
+            #                  geo2.start_normal))
 
             if (((geo1.Pe.ccw(geo1.Pe + geo1.end_normal,
                               geo1.Pe + geo1.end_normal + 
@@ -518,23 +524,23 @@ class offShapeClass(Shape):
 
             segment1 = self.segments[forward]
             segment2 = self.segments[backward]
-            # logger.debug("segment1: %s" % segment1)
-            # logger.debug("segment2: %s" % segment2)
+            logger.debug("segment1: %s" % segment1)
+            logger.debug("segment2: %s" % segment2)
 
             if isinstance(segment1, ConvexPoint):
                 forward += 1
                 if forward >= len(self.segments):
                     forward = 0
                 segment1 = self.segments[forward]
-                # logger.debug("Forward ConvexPoint")
+                logger.debug("Forward ConvexPoint")
             if isinstance(segment2, ConvexPoint):
                 backward -= 1
                 segment2 = self.segments[backward]
 
             [L1_status, L2_status] = self.Interfering_relation(
                 segment1, segment2)
-            # logger.debug("Start Status: L1_status: %s,L2_status: %s"
-            #             % (L1_status, L2_status))
+            logger.debug("Start Status: L1_status: %s,L2_status: %s"
+                         % (L1_status, L2_status))
 
             """
             The reverse interfering segment is replaced  by the first
@@ -558,42 +564,42 @@ class offShapeClass(Shape):
                         if forward >= len(self.segments):
                             forward = 0
                         segment1 = self.segments[forward]
-                        # logger.debug("Forward ConvexPoint")
+                        logger.debug("Forward ConvexPoint")
 
-#                     logger.debug("Reverse Replace: forward: %s, backward: %s"
-#                                  % (forward, backward))
+                    logger.debug("Reverse Replace: forward: %s, backward: %s"
+                                 % (forward, backward))
 
                     [L1_status, L2_status] = self.Interfering_relation(
                         segment1, segment2)
-#                     logger.debug("Checking: forward: %s, backward: %s"
-#                                  %(forward, backward))
-#                     logger.debug("Replace Rev.: L1_status: %s,L2_status: %s"
-#                                  %(L1_status,L2_status))
+                    logger.debug("Checking: forward: %s, backward: %s"
+                                 %(forward, backward))
+                    logger.debug("Replace Rev.: L1_status: %s,L2_status: %s"
+                                 %(L1_status,L2_status))
 
             elif L2_status == "reverse":
                 while L2_status == "reverse":
                     self.counter += 1
-                    # logger.debug(self.counter)
+                    logger.debug(self.counter)
                     if self.counter > val:
                         break
                     if self.counter >= val:
                         self.interferingshapes = []
                     backward -= 1
-#                     logger.debug("Reverse Replace: forward: %s, backward: %s"
-#                                  % (forward, backward))
+                    logger.debug("Reverse Replace: forward: %s, backward: %s"
+                                 % (forward, backward))
                     segment2 = self.segments[backward]
 
                     if isinstance(segment2, ConvexPoint):
                         backward -= 1
                         segment2 = self.segments[backward]
-                        # logger.debug("Backward ConvexPoint")
+                        logger.debug("Backward ConvexPoint")
 
                     [L1_status, L2_status] = self.Interfering_relation(
                         segment1, segment2)
-#                     logger.debug("Checking: forward: %s, backward: %s"
-#                                  % (forward, backward))
-#                     logger.debug("Replace Rev.: L1_status: %s,L2_status: %s"
-#                                  % (L1_status, L2_status))
+                    logger.debug("Checking: forward: %s, backward: %s"
+                                 % (forward, backward))
+                    logger.debug("Replace Rev.: L1_status: %s,L2_status: %s"
+                                 % (L1_status, L2_status))
 
             """
             Full interfering segment is replaced by the nexst segemnt along the
@@ -611,9 +617,8 @@ class offShapeClass(Shape):
                 logger.debug("Begin = End; Remove all; SPoint: %s", SPoint)
                 return len(self.segments) - 1, 0
 
-            # logger.debug(self.counter)
-            # logger.debug("L1_status: %s,L2_status:
-            # %s" %(L1_status,L2_status))
+            logger.debug(self.counter)
+            logger.debug("L1_status: %s,L2_status: %s" %(L1_status,L2_status))
             if self.counter == val:
                 self.interferingshapes = []
 
