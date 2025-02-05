@@ -318,7 +318,7 @@ class MyPostProConfig(object):
             ('General', OrderedDict([
                 ('__section_title__', MyPostProConfig.tr("Software config")),
                 ('__subtitle__', CfgSubtitle(MyPostProConfig.tr("Output specifications"))),
-                ('output_text', CfgLineEdit(MyPostProConfig.tr('Output format description:'))),
+                ('output_text', CfgLineEdit(MyPostProConfig.tr('Output format description (should be unique):'))),
                 ('output_format', CfgLineEdit(MyPostProConfig.tr('Output file extension:'))),
                 ('output_type', CfgComboBox(MyPostProConfig.tr('Output type:'))),
                 ('__subtitle2__', CfgSubtitle(MyPostProConfig.tr("Output options"))),

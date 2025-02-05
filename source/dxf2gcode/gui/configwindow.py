@@ -286,7 +286,7 @@ class ConfigWindow(QDialog):
         if len(config_list) > 0:
             if self.frame_file_selector.layout() is None:
                 #There is currently no file selector widget, so we create a new one
-                self.cfg_file_selector = CfgComboBox("Choose configuration file:", None, None)
+                self.cfg_file_selector = CfgComboBox("Choose config to edit:", None, None)
                 button_duplicate = QPushButton(QIcon(QPixmap(":/images/layer.png")), "")
                 button_duplicate.setToolTip(self.tr("Duplicate the current post-processor"))
                 button_add = QPushButton(QIcon(QPixmap(":/images/list-add.png")), "")
