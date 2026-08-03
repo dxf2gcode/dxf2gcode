@@ -34,7 +34,7 @@ from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.globals.helperfunctions import a2u
 
 import dxf2gcode.globals.constants as c
-from PyQt5 import QtCore
+from dxf2gcode.Qt import QtCore
 
 logger = logging.getLogger("DXFImport.GeoentArc")
 

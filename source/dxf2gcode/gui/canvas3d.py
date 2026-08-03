@@ -26,8 +26,8 @@ from __future__ import division
 import logging
 from math import cos, pi, radians, sin
 
-from PyQt5.QtCore import QCoreApplication, QPoint, Qt
-from PyQt5.QtGui import QColor
+from dxf2gcode.Qt.QtCore import QCoreApplication, QPoint, Qt
+from dxf2gcode.Qt.QtGui import QColor
 
 from dxf2gcode.core.layercontent import Shapes
 from dxf2gcode.core.point import Point

@@ -28,9 +28,9 @@ from __future__ import absolute_import
 import logging
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QFrame, QGridLayout, QLabel, QLineEdit, QPushButton, QCheckBox
-from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QDialog, QVBoxLayout, QFrame, QGridLayout, QLabel, QLineEdit, QPushButton, QCheckBox
+from dxf2gcode.Qt.QtGui import QIcon, QPixmap
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("Gui.PopUpDialog")

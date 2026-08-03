@@ -28,9 +28,9 @@ import logging
 from dxf2gcode.core.point import Point
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsItem
-from PyQt5.QtGui import QPainterPath, QPen, QColor, QFont
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QGraphicsItem
+from dxf2gcode.Qt.QtGui import QPainterPath, QPen, QColor, QFont
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("Gui.RouteText")

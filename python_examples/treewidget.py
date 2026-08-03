@@ -1,11 +1,11 @@
-from PyQt5.QtCore import (
+from dxf2gcode.Qt.QtCore import (
    QAbstractItemModel,
    QModelIndex,
    Qt,
    QVariant
 )
 
-from PyQt5.QtWidgets import QApplication, QTreeView
+from dxf2gcode.Qt.QtWidgets import QApplication, QTreeView
 
 class TreeItem(object):
     def __init__(self, content, parentItem):

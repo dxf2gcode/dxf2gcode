@@ -33,9 +33,9 @@ import logging
 from dxf2gcode.core.point import Point
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsLineItem, QGraphicsItem
-from PyQt5.QtGui import QPen, QPolygonF
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QGraphicsLineItem, QGraphicsItem
+from dxf2gcode.Qt.QtGui import QPen, QPolygonF
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("Gui.Arrow")

@@ -24,9 +24,9 @@
 ############################################################################
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QTextBrowser
-from PyQt5.QtGui import QIcon, QPixmap, QTextCursor
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QTextBrowser
+from dxf2gcode.Qt.QtGui import QIcon, QPixmap, QTextCursor
+from dxf2gcode.Qt import QtCore
 
 import logging
 

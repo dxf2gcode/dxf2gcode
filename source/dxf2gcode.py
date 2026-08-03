@@ -58,9 +58,9 @@ from dxf2gcode.gui.treehandling import TreeHandler
 from dxf2gcode.postpro.postprocessor import MyPostProcessor
 from dxf2gcode.postpro.tspoptimisation import TspOptimization
 
-from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMessageBox
-from PyQt5.QtGui import QSurfaceFormat
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMessageBox
+from dxf2gcode.Qt.QtGui import QSurfaceFormat
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger()

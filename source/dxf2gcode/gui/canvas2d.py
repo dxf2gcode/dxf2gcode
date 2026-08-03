@@ -48,9 +48,9 @@ from dxf2gcode.gui.canvas import CanvasBase, MyDropDownMenu
 import dxf2gcode.globals.globals as g
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QRubberBand, QGraphicsScene, QGraphicsLineItem
-from PyQt5.QtGui import QPainterPath, QPen, QColor, QPainterPathStroker
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QGraphicsItem, QGraphicsView, QRubberBand, QGraphicsScene, QGraphicsLineItem
+from dxf2gcode.Qt.QtGui import QPainterPath, QPen, QColor, QPainterPathStroker
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("DxfImport.myCanvasClass")

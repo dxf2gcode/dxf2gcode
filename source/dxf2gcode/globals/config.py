@@ -41,7 +41,7 @@ from dxf2gcode.gui.configwindow import *
 import dxf2gcode.globals.constants as c
 #TODO: check if can be removed: from dns.rdataclass import NONE
 
-from PyQt5 import QtCore
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("Core.Config")

@@ -79,12 +79,12 @@ from dxf2gcode.globals.helperfunctions import toInt, toFloat, str_encode, qstr_e
 
 import dxf2gcode.globals.constants as c
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QVBoxLayout, QHBoxLayout, QLayout, QFrame, \
+from dxf2gcode.Qt.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QVBoxLayout, QHBoxLayout, QLayout, QFrame, \
     QLabel, QLineEdit, QTextEdit, QCheckBox, QSpinBox, QDoubleSpinBox, QComboBox, QTableWidget, QTableWidgetItem, \
     QPushButton, QAbstractItemView, QWidget, QSizePolicy, QListWidget, QStackedWidget, QSplitter
-from PyQt5.QtGui import QIcon, QPixmap, QValidator, QRegExpValidator
-from PyQt5.QtCore import QLocale, QRegExp
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtGui import QIcon, QPixmap, QValidator, QRegExpValidator
+from dxf2gcode.Qt.QtCore import QLocale, QRegExp
+from dxf2gcode.Qt import QtCore
 
 from dxf2gcode.gui.popupdialog import PopUpDialog
 

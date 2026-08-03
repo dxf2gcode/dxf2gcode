@@ -35,11 +35,11 @@ from dxf2gcode.core.arcgeo import ArcGeo
 #from dxf2gcode.core.holegeo import HoleGeo
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsView, QMenu
-from PyQt5 import QtCore
-from PyQt5.QtGui import QMouseEvent, QKeyEvent
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import Qt
+from dxf2gcode.Qt.QtWidgets import QGraphicsView, QMenu
+from dxf2gcode.Qt import QtCore
+from dxf2gcode.Qt.QtGui import QMouseEvent, QKeyEvent
+from dxf2gcode.Qt.QtWidgets import QApplication
+from dxf2gcode.Qt.QtCore import Qt
 
 
 logger = logging.getLogger("Gui.Canvas")
@@ -65,7 +65,7 @@ def CanvasObject():
                             "Set mode3d to False in the config file, or update your PyQt version.\n"
                             "Current version found: PyQt%s (which includes Qt%s)"
                             % (QtCore.PYQT_VERSION_STR, QtCore.QT_VERSION_STR))
-        from PyQt5.QtWidgets import QOpenGLWidget
+        from dxf2gcode.Qt.QtWidgets import QOpenGLWidget
         return QOpenGLWidget
     else:
         return QGraphicsView

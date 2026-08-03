@@ -52,10 +52,10 @@ from dxf2gcode.gui.treeview import MyStandardItemModel
 from dxf2gcode.globals.helperfunctions import toInt, toFloat
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QAction, QMenu, QWidget, QAbstractItemView, QTreeView
-from PyQt5.QtCore import QItemSelectionModel, QItemSelection
-from PyQt5.QtGui import QStandardItem, QIcon, QPixmap, QStandardItemModel, QPalette
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QAction, QMenu, QWidget, QAbstractItemView, QTreeView
+from dxf2gcode.Qt.QtCore import QItemSelectionModel, QItemSelection
+from dxf2gcode.Qt.QtGui import QStandardItem, QIcon, QPixmap, QStandardItemModel, QPalette
+from dxf2gcode.Qt import QtCore
 isValid = lambda data: data
 toPyObject = lambda data: data
 

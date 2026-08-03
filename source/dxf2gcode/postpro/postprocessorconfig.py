@@ -35,7 +35,7 @@ from dxf2gcode.globals.d2gexceptions import *
 from dxf2gcode.gui.configwindow import *
 
 import dxf2gcode.globals.constants as c
-from PyQt5 import QtCore
+from dxf2gcode.Qt import QtCore
 
 import logging
 logger = logging.getLogger("PostPro.PostProcessorConfig")

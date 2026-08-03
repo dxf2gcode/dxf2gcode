@@ -35,7 +35,7 @@ see http://code.activestate.com/recipes/65207/ for module const
 import logging
 import platform
 
-from PyQt5 import QtCore
+from dxf2gcode.Qt import QtCore
 
 # Global Variables
 APPNAME = "DXF2GCODE"
