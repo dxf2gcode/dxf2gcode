@@ -72,10 +72,10 @@ class PopUpDialog(QDialog):
         vbox = QVBoxLayout(self)
 
         top = QFrame(self)
-        top.setFrameShape(QFrame.StyledPanel)
+        top.setFrameShape(QFrame.Shape.StyledPanel)
 
         bottom = QFrame(self)
-        bottom.setFrameShape(QFrame.StyledPanel)
+        bottom.setFrameShape(QFrame.Shape.StyledPanel)
 
         grid1 = QGridLayout()
         grid1.setSpacing(10)
@@ -123,10 +123,10 @@ class PopUpDialog(QDialog):
 
         self.setLayout(vbox)
 
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
         self.setWindowTitle(self.title)
         iconWT = QIcon()
-        iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Normal, QIcon.Off)
+        iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(QIcon(iconWT))
 
         self.exec_()

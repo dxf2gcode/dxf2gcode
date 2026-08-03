@@ -230,9 +230,9 @@ class MainWindow(QMainWindow):
             return
         if g.config.mode3d:
             self.canvas.updateModifiers(event)
-        elif event.key() == QtCore.Qt.Key_Control:
+        elif event.key() == QtCore.Qt.Key.Key_Control:
             self.canvas.isMultiSelect = True
-        elif event.key() == QtCore.Qt.Key_Shift:
+        elif event.key() == QtCore.Qt.Key.Key_Shift:
             self.canvas.setDragMode(QGraphicsView.ScrollHandDrag)
 
     def keyReleaseEvent(self, event):
@@ -243,9 +243,9 @@ class MainWindow(QMainWindow):
         """
         if g.config.mode3d:
             self.canvas.updateModifiers(event)
-        elif event.key() == QtCore.Qt.Key_Control:
+        elif event.key() == QtCore.Qt.Key.Key_Control:
             self.canvas.isMultiSelect = False
-        elif event.key() == QtCore.Qt.Key_Shift:
+        elif event.key() == QtCore.Qt.Key.Key_Shift:
             self.canvas.setDragMode(QGraphicsView.NoDrag)
 
     def enableToolbarButtons(self, status=True):
@@ -294,7 +294,7 @@ class MainWindow(QMainWindow):
         possible to select multiple postprocessor files, which are located
         in the folder.
         """
-        self.setCursor(QtCore.Qt.WaitCursor)
+        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.app.processEvents()
 
         logger.debug(self.tr('Export the enabled shapes'))
@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
         Method is called to optimize the order of the shapes. This is performed
         by solving the TSP Problem.
         """
-        self.setCursor(QtCore.Qt.WaitCursor)
+        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.app.processEvents()
 
         logger.debug(self.tr('Optimize order of enabled shapes per layer'))
@@ -838,7 +838,7 @@ class MainWindow(QMainWindow):
             if not self.filename:
                 return False  # cancelled
 
-        self.setCursor(QtCore.Qt.WaitCursor)
+        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.setWindowTitle("DXF2GCODE - [%s]" % self.filename)
         self.canvas.resetAll()
         self.app.processEvents()
@@ -1128,7 +1128,7 @@ class MainWindow(QMainWindow):
         Some modification occured in the configuration window, we need to save these changes into the config file.
         Once done, the signal configuration_changed is emitted, so that anyone interested in this information can connect to this signal.
         """
-        if result == ConfigWindow.Applied or result == ConfigWindow.Accepted:
+        if result == ConfigWindow.DialogCode.Applied or result == ConfigWindow.DialogCode.Accepted:
             # Write the configuration into the config file (config.cfg)
             g.config.save_varspace()
             # Rebuild the readonly configuration structure

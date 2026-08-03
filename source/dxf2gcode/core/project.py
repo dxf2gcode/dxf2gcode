@@ -257,7 +257,7 @@ d2g.layers = ''' + str(layers)
 
     def reload(self, compleet=True):
         if self.parent.filename:
-            self.parent.setCursor(QtCore.Qt.WaitCursor)
+            self.parent.setCursor(QtCore.Qt.CursorShape.WaitCursor)
             self.parent.canvas.resetAll()
             self.parent.app.processEvents()
             pyCode = self.export(compleet)

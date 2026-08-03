@@ -41,10 +41,10 @@ class MessageBox(QTextBrowser):
     @sideeffect: None
     """
 
-    def __init__(self, origobj):
+    def __init__(self, parent=None):
         """
         Initialization of the MessageBox class.
-        @param origobj: This is the reference to to parent class initialized
+        @param parent: This is the reference to the parent class initialized
         previously.
         """
         super(MessageBox, self).__init__()

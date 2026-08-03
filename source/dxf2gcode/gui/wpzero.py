@@ -37,14 +37,14 @@ class WpZero(QGraphicsItem):
     """
     class WpZero
     """
-    def __init__(self, center, color=QtCore.Qt.gray):
+    def __init__(self, center, color=QtCore.Qt.GlobalColor.gray):
         self.sc = None
         super(WpZero, self).__init__()
 
         self.center = center
         self.allwaysshow = False
         self.color = color
-        self.pen = QPen(QtCore.Qt.darkGray, 1, QtCore.Qt.SolidLine)
+        self.pen = QPen(QtCore.Qt.GlobalColor.darkGray, 1, QtCore.Qt.PenStyle.SolidLine)
         self.pen.setCosmetic(True)
 
         self.diameter = 23.0

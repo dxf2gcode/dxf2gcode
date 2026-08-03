@@ -219,7 +219,7 @@ class GLWidget(CanvasBase):
                 if self.isMultiSelect and not hit:
                     continue
 
-                anyHit |= hit;
+                anyHit |= hit
 
                 if self.isMultiSelect and shape.selected:
                     hit = not hit
@@ -233,7 +233,7 @@ class GLWidget(CanvasBase):
             if not anyHit and not self.isMultiSelect:
                 for shape in self.shapes:
                     if shape.selected:
-                        g.window.TreeHandler.updateShapeSelection(shape, false)
+                        g.window.TreeHandler.updateShapeSelection(shape, False)
 
             self.update()
 
@@ -267,14 +267,14 @@ class GLWidget(CanvasBase):
         self.clickTravelSq += dx * dx + dy * dy
 
         if self.isRotating:
-            if event.buttons() == Qt.LeftButton:
+            if event.buttons() == Qt.MouseButton.LeftButton:
                 self.setXRotation(self.rotX - dy / 2)
                 self.setYRotation(self.rotY + dx / 2)
-            elif event.buttons() == Qt.RightButton:
+            elif event.buttons() == Qt.MouseButton.RightButton:
                 self.setXRotation(self.rotX - dy / 2)
                 self.setZRotation(self.rotZ + dx / 2)
         elif self.isPanning:
-            if event.buttons() == Qt.LeftButton:
+            if event.buttons() == Qt.MouseButton.LeftButton:
                 min_side = min(self.frameSize().width(), self.frameSize().height())
                 dx, dy, dz = self.deRotate(dx, dy, 0)
                 self.posX += dx / min_side

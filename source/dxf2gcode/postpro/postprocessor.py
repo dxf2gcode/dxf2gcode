@@ -93,7 +93,7 @@ class MyPostProcessor(object):
         Some modification occured in the postprocessor configuration window, we need to save these changes into the config file.
         Once done, the signal postprocessor_configuration_changed is emitted, so that anyone interested in this information can connect to this signal.
         """
-        if result == ConfigWindow.Applied or result == ConfigWindow.Accepted:
+        if result == ConfigWindow.Applied or result == ConfigWindow.DialogCode.Accepted:
             self.postpro_config_currently_edited.save_varspace() #Write the configuration into the config file (eg postpro_config.cfg, ...)
             self.postpro_config_currently_edited.update_config()
 
