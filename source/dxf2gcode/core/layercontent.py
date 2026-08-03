@@ -91,7 +91,7 @@ class LayerContent(object):
         logger.debug(self.isParameterizableLayer())
         if self.isParameterizableLayer():
             layer_commands = self.name.replace(",", ".")
-            lopts_re = re.compile("([a-zA-Z]+ *"+g.config.vars.Layer_Options['id_float_separator']+" *[\-\.0-9]+)")
+            lopts_re = re.compile("([a-zA-Z]+ *"+g.config.vars.Layer_Options['id_float_separator']+" *[\\-\\.0-9]+)")
             logger.debug(lopts_re.findall(layer_commands))
             for lc in lopts_re.findall(layer_commands):
                 name, value = lc.split(g.config.vars.Layer_Options['id_float_separator'])

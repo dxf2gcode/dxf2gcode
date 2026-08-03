@@ -148,7 +148,7 @@ d2g.layers = ''' + str(layers)
         return pyCode
 
     def load(self, content, compleet=True):
-        match = re.match(Project.header.replace('+', '\+') % r'(\d+\.\d+)', content)
+        match = re.match(Project.header.replace('+', '\\+') % r'(\d+\.\d+)', content)
         if not match:
             raise Exception('Incorrect project file')
         version = float(match.groups()[0])
