@@ -113,14 +113,14 @@ class MainWindow(QMainWindow):
 
         if sys.version_info[0] == 2:
             error_message = QMessageBox(QMessageBox.Critical, 'ERROR', self.tr("Python version 2 is not supported, please use it with python version 3."))
-            sys.exit(error_message.exec_())
+            sys.exit(error_message.exec())
 
         # Load the post-processor configuration and build the post-processor configuration window
         self.MyPostProcessor = MyPostProcessor()
         # If string version_mismatch isn't empty, we popup an error and exit
         if self.MyPostProcessor.version_mismatch:
             error_message = QMessageBox(QMessageBox.Critical, 'Configuration error', self.MyPostProcessor.version_mismatch)
-            sys.exit(error_message.exec_())
+            sys.exit(error_message.exec())
 
         self.d2g = Project(self)
 
@@ -1248,7 +1248,7 @@ if __name__ == "__main__":
     # If string version_mismatch isn't empty, we popup an error and exit
     if g.config.version_mismatch:
         error_message = QMessageBox(QMessageBox.Critical, 'Configuration error', g.config.version_mismatch)
-        sys.exit(error_message.exec_())
+        sys.exit(error_message.exec())
 
     # Delay imports - needs to be done after logger and config initialization; and before the main window
     from dxf2gcode_ui5 import Ui_MainWindow
@@ -1300,5 +1300,5 @@ if __name__ == "__main__":
         window.exportShapes(None, options.export_filename)
 
     if not options.quiet:
-        # It's exec_ because exec is a reserved word in Python
-        sys.exit(app.exec_())
+        # exec is no longer a reserved word in Python
+        sys.exit(app.exec())

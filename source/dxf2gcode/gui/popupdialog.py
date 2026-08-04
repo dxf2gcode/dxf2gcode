@@ -129,7 +129,7 @@ class PopUpDialog(QDialog):
         iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(QIcon(iconWT))
 
-        self.exec_()
+        self.exec()
 
     def cbAuto(self):
         """

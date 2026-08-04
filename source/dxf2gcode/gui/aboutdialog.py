@@ -70,4 +70,4 @@ class AboutDialog(QDialog):
                          QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(QIcon(iconWT))
 
-        self.exec_()
+        self.exec()

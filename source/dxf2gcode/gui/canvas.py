@@ -217,7 +217,7 @@ class MyDropDownMenu(QMenu):
             self.leCompAction.triggered.connect(self.setLeftComp)
             self.reCompAction.triggered.connect(self.setRightComp)
 
-        self.exec_(position)
+        self.exec(position)
 
     def tr(self, string_to_translate):
         """

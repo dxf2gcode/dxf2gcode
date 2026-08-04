@@ -266,7 +266,7 @@ class ConfigWindow(QDialog):
         """
         errors_list = self.tr('Please correct the following error(s):\n') + errors_list
         error_message = QMessageBox(QMessageBox.Critical, self.tr('Invalid changes'), errors_list);
-        error_message.exec_()
+        error_message.exec()
 
 
     def setConfigSelectorCallback(self, selection_changed_callback, add_file_callback, remove_file_callback, duplicate_file_callback):

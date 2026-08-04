@@ -273,7 +273,7 @@ class TreeHandler(QWidget):
         Function used to display a right click context menu
         @param position: position of the cursor within the treeView widget
         """
-        selected_action = self.context_menu.exec_(self.ui.layersShapesTreeView.mapToGlobal(position))
+        selected_action = self.context_menu.exec(self.ui.layersShapesTreeView.mapToGlobal(position))
 
         if selected_action and isValid(selected_action.data()):
             # contextual menu selection concerns a custom gcode
