@@ -233,7 +233,7 @@ class MainWindow(QMainWindow):
         elif event.key() == QtCore.Qt.Key.Key_Control:
             self.canvas.isMultiSelect = True
         elif event.key() == QtCore.Qt.Key.Key_Shift:
-            self.canvas.setDragMode(QGraphicsView.ScrollHandDrag)
+            self.canvas.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
 
     def keyReleaseEvent(self, event):
         """
@@ -246,7 +246,7 @@ class MainWindow(QMainWindow):
         elif event.key() == QtCore.Qt.Key.Key_Control:
             self.canvas.isMultiSelect = False
         elif event.key() == QtCore.Qt.Key.Key_Shift:
-            self.canvas.setDragMode(QGraphicsView.NoDrag)
+            self.canvas.setDragMode(QGraphicsView.DragMode.NoDrag)
 
     def enableToolbarButtons(self, status=True):
         # File

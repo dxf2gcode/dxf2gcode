@@ -32,7 +32,6 @@ from dxf2gcode.Qt.QtWidgets import QGraphicsItem
 from dxf2gcode.Qt.QtGui import QPen
 from dxf2gcode.Qt import QtCore
 
-
 class WpZero(QGraphicsItem):
     """
     class WpZero
