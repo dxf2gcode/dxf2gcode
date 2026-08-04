@@ -61,7 +61,7 @@ from dxf2gcode.postpro.tspoptimisation import TspOptimization
 from dxf2gcode.Qt.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMessageBox
 from dxf2gcode.Qt.QtGui import QSurfaceFormat
 from dxf2gcode.Qt import QtCore
-
+from dxf2gcode.Qt import PYQT_VERSION
 
 logger = logging.getLogger()
 
@@ -1251,7 +1251,10 @@ if __name__ == "__main__":
         sys.exit(error_message.exec())
 
     # Delay imports - needs to be done after logger and config initialization; and before the main window
-    from dxf2gcode_ui5 import Ui_MainWindow
+    if PYQT_VERSION == 5:
+        from dxf2gcode_ui5 import Ui_MainWindow
+    else:
+        from dxf2gcode_ui6 import Ui_MainWindow
 
     if g.config.mode3d:
         from dxf2gcode.core.shape import Shape
