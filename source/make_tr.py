@@ -17,7 +17,14 @@ import os
 import subprocess
 import sys
 import getopt
+from dxf2gcode.Qt import PYQT_VERSION
+from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent
+
+SOURCES = sorted(str(p) for p in ROOT.rglob("*.py"))
+FORMS = sorted(str(p) for p in ROOT.rglob("*.ui"))
+TRANSLATIONS = sorted(str(p) for p in ROOT.rglob("*.ts"))
 
 def which(program):
     def is_exe(fpath):
@@ -96,30 +103,30 @@ def extract_from_pro(qmf, varname):
 
 if "linux" in sys.platform.lower() or "unix" in sys.platform.lower() or "darwin" in sys.platform.lower():
     # On Linux, the executable are normaly on the PATH
-    LREPATH = None
-    names = ["lrelease-qt5", "lrelease5", "lrelease"]
+    LREPATH = '/usr/lib64/qt5/bin/lrelease'
+    names = [f"lrelease-qt{PYQT_VERSION}", f"lrelease{PYQT_VERSION}", "lrelease"]
     for name in names:
         if which(name):
             LREPATH = name
             break
 
     if not LREPATH:
-        print("ERROR: Cannot file lrelease tool.")
-        print("Please consider to install lrelease tool - to use this script.")
+        print("ERROR: Cannot find lrelease tool.")
+        print("Please install lrelease tool to use this script.")
         sys.exit(1)
 
     PYLPATH = None
     # using lupdate instead of pylupdate will ruin translation files
     # since it doesn't know Python.
-    names = ["pylupdate5"] #, "lupdate-qt5", "lupdate5", "lupdate"
+    names = [f"pylupdate{PYQT_VERSION}"] #, "lupdate-qt5", "lupdate5", "lupdate"
     for name in names:
         if which(name):
             PYLPATH = name
             break
 
     if not PYLPATH:
-        print("ERROR: Cannot file pylupdate5 tool.")
-        print("Please consider to install lupdate tool - to use this script.")
+        print(f"ERROR: Cannot find pylupdate{PYQT_VERSION} tool.")
+        print("Please install pylupdate tool to use this script.")
         sys.exit(1)
 
     print("Using platform tools \"%s\" and \"%s\"\n" % (PYLPATH, LREPATH))
@@ -131,7 +138,7 @@ else:
     # To get lrelease.exe use: pip3.exe install pyqt5-tools
     # LREPATH = os.path.join(PYTHONPATH, "Scripts/lrelease.exe")
     #LREPATH = os.path.join(PYTHONPATH, "Lib\site-packages\qt5_applications\Qt\\bin\lrelease.exe")
-    LREPATH="C:\Program Files (x86)\Qt Designer\lrelease.exe"
+    LREPATH="C:\\Program Files (x86)\\Qt Designer\\lrelease.exe"
     print("Using Windows platform tools \"%s\" and \"%s\"\n" % (PYLPATH, LREPATH))
 
 # Handle command line options
@@ -163,24 +170,31 @@ Usage: %s [options]
     elif opt == "--keep-ln" or opt == "-k":
         KEEP_LINENUMBERS = True
 
-TSFILES = extract_from_pro(QMAKEFILE, "TRANSLATIONS")
+#TSFILES = extract_from_pro(QMAKEFILE, "TRANSLATIONS")
 
 if SKIP_PYLUPDATE:
     print("skipping pylupdate")
 else:
     print("Updating translations from source files...")
-    cmd = [PYLPATH, QMAKEFILE]
-    print(" ".join(cmd))
-    subprocess.check_call(cmd)
+    if PYQT_VERSION == 5:
+        cmd = [PYLPATH, QMAKEFILE]
+        print(" ".join(cmd))
+        subprocess.check_call(cmd)
+    else:
+        for trans in TRANSLATIONS:
+            cmd = [PYLPATH, '--ts', trans, *SOURCES]
+            print(" ".join(cmd))
+            subprocess.check_call(cmd)
+
 
     if not KEEP_LINENUMBERS:
         print("Removing sourcecode references from translation files...")
-        for ts in TSFILES:
+        for ts in TRANSLATIONS:
             remove_linenumbers(ts)
 
 if not KEEP_LINENUMBERS:
     print("Compiling translation files to binary .qm format...")
-    cmd = [LREPATH] + TSFILES
+    cmd = [LREPATH] + TRANSLATIONS
     print(" ".join(cmd))
     subprocess.check_call(cmd)
 

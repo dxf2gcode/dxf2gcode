@@ -5,105 +5,99 @@
     <name>@default</name>
     <message>
         <source>syntax errors in postpro_config file</source>
-        <translation type="obsolete">Syntax Fehler in der Postprozessor Konfigurationsdatei.</translation>
+        <translation type="vanished">Syntax Fehler in der Postprozessor Konfigurationsdatei.</translation>
     </message>
     <message>
         <source>trying to rename bad cfg %s to %s</source>
-        <translation type="obsolete">Versuche falsche Konfigurationsdatei umzubennen von %s zu  %s</translation>
+        <translation type="vanished">Versuche falsche Konfigurationsdatei umzubennen von %s zu  %s</translation>
     </message>
     <message>
         <source>rename(%s,%s) failed: %s</source>
-        <translation type="obsolete">Das Umbenennen (%s, %s) ist fehlgeschlagen: %s</translation>
+        <translation type="vanished">Das Umbenennen (%s, %s) ist fehlgeschlagen: %s</translation>
     </message>
     <message>
-        <source>renamed bad varspace %s to &apos;%s&apos;</source>
-        <translation type="obsolete">Falsche Konfigurationsdatei wurde umbenannt von %s zu %s</translation>
+        <source>renamed bad varspace %s to '%s'</source>
+        <translation type="vanished">Falsche Konfigurationsdatei wurde umbenannt von %s zu %s</translation>
     </message>
     <message>
-        <source>created default varspace &apos;%s&apos;</source>
-        <translation type="obsolete">Es wurden die Standard Variablen erstellt: '%s'</translation>
+        <source>created default varspace '%s'</source>
+        <translation type="vanished">Es wurden die Standard Variablen erstellt: '%s'</translation>
     </message>
     <message>
-        <source>read existing varspace &apos;%s&apos;</source>
-        <translation type="obsolete">Es wird die vorhanden Konfigurationsdatei gelesen '%s'</translation>
+        <source>read existing varspace '%s'</source>
+        <translation type="vanished">Es wird die vorhanden Konfigurationsdatei gelesen '%s'</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>ArcGeo</name>
     <message>
         <source>Missing value for Arc Geometry</source>
         <translation>Fehlender Wert für Arc Geometrie</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>CfgLineEdit</name>
     <message>
         <source>
-Not enough chars (expected {0}, found {1}) for the field &quot;{2}&quot;
+Not enough chars (expected {0}, found {1}) for the field "{2}"
 </source>
         <translation>
-Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quot;
+Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld "{2}"
 </translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>CfgTableCustomActions</name>
     <message>
         <source>
-The cell at line {0}, column 0 must not be empty for the table &quot;{1}&quot;
+The cell at line {0}, column 0 must not be empty for the table "{1}"
 </source>
         <translation>
-Die Zelle in Zeile {0}, Spalte 0 darf für die Tabelle &quot;{1}&quot; nicht leer sein
+Die Zelle in Zeile {0}, Spalte 0 darf für die Tabelle "{1}" nicht leer sein
 </translation>
     </message>
     <message>
         <source>
-Found {0} duplicate elements for the table &quot;{1}&quot;
+Found {0} duplicate elements for the table "{1}"
 </source>
         <translation>
-{0} doppelte Elemente für die Tabelle &quot;{1}&quot; gefunden
+{0} doppelte Elemente für die Tabelle "{1}" gefunden
 </translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>CfgTableToolParameters</name>
     <message>
         <source>
-The cell at line {0}, column 0 must not be empty for the table &quot;{1}&quot;
+The cell at line {0}, column 0 must not be empty for the table "{1}"
 </source>
         <translation>
-Die Zelle in Zeile {0}, Spalte 0 darf für die Tabelle &quot;{1}&quot; nicht leer sein
+Die Zelle in Zeile {0}, Spalte 0 darf für die Tabelle "{1}" nicht leer sein
 </translation>
     </message>
     <message>
         <source>
-Found {0} duplicate elements for the table &quot;{1}&quot;
+Found {0} duplicate elements for the table "{1}"
 </source>
         <translation>
-{0} doppelte Elemente für die Tabelle &quot;{1}&quot; gefunden
+{0} doppelte Elemente für die Tabelle "{1}" gefunden
 </translation>
     </message>
     <message>
         <source>
-The table &quot;{0}&quot; must always contains tool number &apos;1&apos;
+The table "{0}" must always contains tool number '1'
 </source>
         <translation>
-Die Tabelle &quot;{0}&quot; muss immer die Werkzeugnummer '1' enthalten
+Die Tabelle "{0}" muss immer die Werkzeugnummer '1' enthalten
 </translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>CfgTextEdit</name>
     <message>
         <source>
-Not enough chars (expected {0}, found {1}) for the field &quot;{2}&quot;
+Not enough chars (expected {0}, found {1}) for the field "{2}"
 </source>
         <translation>
-Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quot;
+Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld "{2}"
 </translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>ConfigWindow</name>
     <message>
         <source>Please correct the following error(s):
@@ -136,10 +130,6 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
         <translation>Geben Sie einen neuen Dateinamen (ohne Erweiterung) ein:</translation>
     </message>
     <message>
-        <source>An error occured while duplicating the file &quot;{0}&quot;. Check that it doesn&apos;t already exists for example</source>
-        <translation>Beim Duplizieren der Datei &quot;{0}&quot; ist ein Fehler aufgetreten. Überprüfen Sie, ob die Datei nicht bereits vorhanden ist</translation>
-    </message>
-    <message>
         <source>Add a configuration file</source>
         <translation>Füge eine Konfigurationsdatei hinzu</translation>
     </message>
@@ -148,67 +138,66 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
         <translation>Geben Sie den Dateinamen (ohne Erweiterung) ein:</translation>
     </message>
     <message>
-        <source>An error occured while creating the file &quot;{0}&quot;. Check that it doesn&apos;t already exists for example</source>
-        <translation>Beim Erstellen der Datei &quot;{0}&quot; ist ein Fehler aufgetreten. Überprüfen Sie, ob diese nicht bereits vorhanden ist</translation>
-    </message>
-    <message>
         <source>Delete configuration file?</source>
         <translation>Konfigurationsdatei löschen?</translation>
     </message>
     <message>
-        <source>Are you sure you want to permanently remove the file &quot;{0}&quot;</source>
-        <translation>Möchten Sie die Datei &quot;{0}“ wirklich dauerhaft entfernen</translation>
+        <source>An error occured while duplicating the file "{0}". Check that it doesn't already exists for example</source>
+        <translation type="vanished">Beim Duplizieren der Datei "{0}" ist ein Fehler aufgetreten. Überprüfen Sie, ob die Datei nicht bereits vorhanden ist</translation>
     </message>
     <message>
-        <source>An error occured while removing the file &quot;{0}&quot;. Remove it manually</source>
-        <translation>Beim Entfernen der Datei &quot;{0}&quot; ist ein Fehler aufgetreten. Entfernen Sie diese manuell</translation>
+        <source>An error occured while creating the file "{0}". Check that it doesn't already exists for example</source>
+        <translation type="vanished">Beim Erstellen der Datei "{0}" ist ein Fehler aufgetreten. Überprüfen Sie, ob diese nicht bereits vorhanden ist</translation>
     </message>
-</context>
-<context>
+    <message>
+        <source>Are you sure you want to permanently remove the file "{0}"</source>
+        <translation type="vanished">Möchten Sie die Datei "{0}“ wirklich dauerhaft entfernen</translation>
+    </message>
+    <message>
+        <source>An error occured while removing the file "{0}". Remove it manually</source>
+        <translation type="vanished">Beim Entfernen der Datei "{0}" ist ein Fehler aufgetreten. Entfernen Sie diese manuell</translation>
+    </message>
+</context><context>
     <name>GLWidget</name>
     <message>
         <source>Using OpenGL version: %s</source>
         <translation>OpenGL-Version %s wird verwendet</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>GeoentArc</name>
     <message>
         <source>Found extrusion direction: %s</source>
         <translation>Extrusionsrichtung gefunden: %s</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>GeoentCircle</name>
     <message>
         <source>Found extrusion direction: %s</source>
         <translation>Extrusionsrichtung gefunden: %s</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>GeoentLine</name>
     <message>
         <source>Found extrusion direction: %s</source>
         <translation>Extrusionsrichtung gefunden: %s</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>MainWindow</name>
     <message>
-        <source>Open file</source>
-        <translation>Datei öffnen</translation>
+        <source>Python version 2 is not supported, please use it with python version 3.</source>
+        <translation>Python Version 2 wird nicht unterstützt, bitte verwenden Sie Python Version 3.</translation>
     </message>
     <message>
-        <source>All supported files (*.dxf *.DXF *.ps *.PS *.pdf *.PDF *%s);;DXF files (*.dxf *.DXF);;PS files (*.ps *.PS);;PDF files (*.pdf *.PDF);;Project files (*%s);;All types (*.*)</source>
-        <translation>Alle unterstützte Dateien (*.dxf *.DXF *.ps *.PS *.pdf *.PDF *%s);;DXF Dateien (*.dxf *.DXF);;PS Dateien (*.ps *.PS);;PDF Dateien (*.pdf *.PDF);;Project files (*%s);;Alle Dateien (*.*)</translation>
+        <source>Export the enabled shapes</source>
+        <translation>Exportiere die Enabled Shapes</translation>
     </message>
     <message>
-        <source>File: %s selected</source>
-        <translation>Datei: %s wurde ausgewählt</translation>
+        <source>Sorted layers:</source>
+        <translation>Sortierte Layer:</translation>
     </message>
     <message>
-        <source>Reloading file: %s</source>
-        <translation>Die Datei wird neu geladen: %s</translation>
+        <source>Export to file</source>
+        <translation>Exportiere in Datei</translation>
     </message>
     <message>
         <source>Optimize order of enabled shapes per layer</source>
@@ -247,32 +236,20 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
         <translation>Neue Export Reihenfolge nach durchgeführter TSP: %s</translation>
     </message>
     <message>
-        <source>Export the enabled shapes</source>
-        <translation>Exportiere die Enabled Shapes</translation>
+        <source>File: %s selected</source>
+        <translation>Datei: %s wurde ausgewählt</translation>
     </message>
     <message>
-        <source>Sorted layers:</source>
-        <translation>Sortierte Layer:</translation>
+        <source>Filter: %s selected</source>
+        <translation type="unfinished" />
     </message>
     <message>
-        <source>Export to file</source>
-        <translation>Exportiere in Datei</translation>
+        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Last change: %s&lt;br&gt;Changed by: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished" />
     </message>
     <message>
-        <source>set Tolerances</source>
-        <translation>Toleranzen einstellen</translation>
-    </message>
-    <message>
-        <source>Sending Postscript/PDF to pstoedit</source>
-        <translation type="obsolete">Sende Postscipt/PDF Datei an pstoedit</translation>
-    </message>
-    <message>
-        <source>Loaded layers: %s</source>
-        <translation>Geladene Layers: %s</translation>
-    </message>
-    <message>
-        <source>Loaded blocks: %s</source>
-        <translation>Geladene Blöcke: %s</translation>
+        <source>About DXF2GCODE</source>
+        <translation>Über DXF2GCODE</translation>
     </message>
     <message>
         <source>Contour tolerances</source>
@@ -285,6 +262,22 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
     <message>
         <source>Tolerance for curve fitting [%s]:</source>
         <translation>Toleranz für Kurven Anpassung [%s]:</translation>
+    </message>
+    <message>
+        <source>set Tolerances</source>
+        <translation>Toleranzen einstellen</translation>
+    </message>
+    <message>
+        <source>Mirror all X / Y-Axis</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <source>Mirror all on X-Axis:</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <source>Mirror all on Y-Axis:</source>
+        <translation type="unfinished" />
     </message>
     <message>
         <source>Scale Contour</source>
@@ -311,296 +304,20 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
         <translation>Verschiebe %s Achse um %s:</translation>
     </message>
     <message>
-        <source>Loading file: %s</source>
-        <translation>Lade Datei: %s</translation>
-    </message>
-    <message>
-        <source>Block %i includes %i Geometries, reduced to %i Contours, used layers: %s</source>
-        <translation>Block %i beinhaltet %i Geometrien, reduziert zu %i Konturen, Benutzte Layer: %s</translation>
-    </message>
-    <message>
-        <source>Loaded %i entity geometries; reduced to %i contours; used layers: %s; number of inserts %i</source>
-        <translation>Es wurde %i Entities Geometrien geladen; anzahl Konturen %i; verwendete Layers: %s; anzahl Inserts: %i</translation>
-    </message>
-    <message>
-        <source>Closing</source>
-        <translation>Beende Program</translation>
+        <source>No differences found. Ergo, workpiece zero is not moved</source>
+        <translation>Keine Unterschiede gefunden. Ergo wird der Werkstücknullpunkt nicht verschoben</translation>
     </message>
     <message>
         <source>Z Infeed depth</source>
         <translation>Z Zustell Tiefe</translation>
     </message>
     <message>
-        <source>Z Drag depth</source>
-        <translation>Z Zug Tiefe</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=&apos;:images/dxf2gcode_logo.png&apos; border=&apos;1&apos; color=&apos;white&apos;&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Last change: %s&lt;br&gt;Changed by: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href=&apos;http://sourceforge.net/projects/dxf2gcode/&apos;&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href=&apos;https://groups.google.com/forum/?fromgroups#!forum/dxf2gcode-users&apos;&gt;mailing list&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href=&apos;http://sourceforge.net/projects/dxf2gcode/tickets/&apos;&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href=&apos;http://www.gnu.org/licenses/&apos;&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="obsolete">&lt;html&gt;&lt;h2&gt;&lt;center&gt;Sie benutzen&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Zuletzt geändert: %s&lt;br&gt;Geändert von: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Wo man Hilfe findet:&lt;/h2&gt;Für mehr Information zum Programm und Möglichen Updates besuchen sie bitte &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;Für alle Fragen zur Bedienung von DXF2GCODE benutzen Sie bitte die &lt;a href='https://groups.google.com/forum/?fromgroups#!forum/dxf2gcode-users'&gt;Mailing List&lt;/a&gt;&lt;br&gt;Für gefundene Bugs oder Feature Anfragen benutzen Sie bitte das &lt;a href='http://sourceforge.net/projects/dxf2gcode/tickets/'&gt;Issue Tracking System&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Lizens und Copyright:&lt;/h2&gt;&lt;body&gt;Das Programm wurde mit der Freeware Programmiersprache Python geschrieben und ist unter der &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 Lizenz &lt;/a&gt;veröffentlicht&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>No Z-Axis for lathe</source>
         <translation>Keine Z-Achse für Drehmaschine</translation>
     </message>
     <message>
-        <source>Cannot Save the File</source>
-        <translation>Die Datei kann nicht gespeichert werden</translation>
-    </message>
-    <message>
-        <source>Entities</source>
-        <translation>Entities</translation>
-    </message>
-    <message>
-        <source>Collapse all items</source>
-        <translation>Reduziere alle Items</translation>
-    </message>
-    <message>
-        <source>Expand all items</source>
-        <translation>Erweitere alle Items</translation>
-    </message>
-    <message>
-        <source>Layers</source>
-        <translation>Layer</translation>
-    </message>
-    <message>
-        <source>Move-up the selected shape/layer</source>
-        <translation>Verschiebe Auswahl nach oben</translation>
-    </message>
-    <message>
-        <source>Move-down the selected shape/layer</source>
-        <translation>Verschiebe Auswahl nach unten</translation>
-    </message>
-    <message>
-        <source>/ speed </source>
-        <translation>/ speed </translation>
-    </message>
-    <message>
-        <source>start rad. (comp) </source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Milling will start at Z = &quot;Workpiece top Z&quot; - &quot;Z infeed depth&quot;</source>
-        <translation>Fräsen beginnt bei Z = &quot;Werkstück Top Z&quot; -&quot;Z Zustellstiefe&quot;</translation>
-    </message>
-    <message>
-        <source>File</source>
-        <translation type="obsolete">Datei</translation>
-    </message>
-    <message>
-        <source>Export the current project to G-Code</source>
-        <translation>Aktuelles Projet exportieren</translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation type="obsolete">Ansicht</translation>
-    </message>
-    <message>
-        <source>Options</source>
-        <translation type="obsolete">Optionen</translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <translation type="obsolete">Hilfe</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation type="obsolete">Datei laden</translation>
-    </message>
-    <message>
-        <source>Load DXF or other supported document</source>
-        <translation>DXF oder unterstütztes Format laden</translation>
-    </message>
-    <message>
-        <source>Ctrl+O</source>
-        <translation>Ctrl+O</translation>
-    </message>
-    <message>
-        <source>Exit</source>
-        <translation type="obsolete">Beenden</translation>
-    </message>
-    <message>
-        <source>Exit DXF2GCODE and close window</source>
-        <translation>DXF2GCODE beenden</translation>
-    </message>
-    <message>
-        <source>Ctrl+Q</source>
-        <translation>Ctrl+Q</translation>
-    </message>
-    <message>
-        <source>Show Path Directions</source>
-        <translation type="obsolete">Zeige Pfad Richtung</translation>
-    </message>
-    <message>
-        <source>Always shows the path direction in the plot (not only while selected)</source>
-        <translation>Pfrad Richtung immer anzeigen (Ebenfalls für inaktive Pfade)</translation>
-    </message>
-    <message>
-        <source>Show Disabled Paths</source>
-        <translation type="obsolete">Zeige ausgeblendete Pfade</translation>
-    </message>
-    <message>
-        <source>Autoscale</source>
-        <translation type="obsolete">Auto Skalierung</translation>
-    </message>
-    <message>
-        <source>Delete G0 Paths</source>
-        <translation type="obsolete">Lösche Eilgang Pfade</translation>
-    </message>
-    <message>
-        <source>Tolerances</source>
-        <translation type="obsolete">Toleranzen</translation>
-    </message>
-    <message>
-        <source>Scale All</source>
-        <translation type="obsolete">Alles skalierene</translation>
-    </message>
-    <message>
-        <source>Rotate All</source>
-        <translation type="obsolete">Alles drehen</translation>
-    </message>
-    <message>
-        <source>Move Workpiece Zero</source>
-        <translation type="obsolete">Nullpunkt verschieben</translation>
-    </message>
-    <message>
-        <source>About</source>
-        <translation type="obsolete">Über DXF2GCODE</translation>
-    </message>
-    <message>
-        <source>Optimize Paths</source>
-        <translation type="obsolete">Pfade optimieren</translation>
-    </message>
-    <message>
-        <source>Ctrl+Shift+O</source>
-        <translation>Ctrl+Shift+O</translation>
-    </message>
-    <message>
-        <source>Export Shapes</source>
-        <translation type="obsolete">Pfade exportieren</translation>
-    </message>
-    <message>
-        <source>Ctrl+Shift+E</source>
-        <translation>Ctrl+Shift+E</translation>
-    </message>
-    <message>
-        <source>Optimize and Export Shapes</source>
-        <translation type="obsolete">Pfade optimieren und exportieren</translation>
-    </message>
-    <message>
-        <source>Ctrl+E</source>
-        <translation>Ctrl+E</translation>
-    </message>
-    <message>
-        <source>Live Update Export Route</source>
-        <translation type="obsolete">Live update der optmierten Reihenfolge</translation>
-    </message>
-    <message>
-        <source>Reload</source>
-        <translation type="obsolete">Datei neu laden</translation>
-    </message>
-    <message>
-        <source>Ctrl+R</source>
-        <translation>Ctrl+R</translation>
-    </message>
-    <message>
-        <source>DXF2GCODE</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Split line segments, e.g. can be used for compensation (G41/G42) in combination with EMC</source>
-        <translation>Linien teilen, kann z.B. in Verbindung mit G41/G42 in EMC verwendet werden</translation>
-    </message>
-    <message>
-        <source>Feed rate XY</source>
-        <translation>XY Vorschub</translation>
-    </message>
-    <message>
-        <source>Z Final mill depth</source>
-        <translation>Z Frästiefe</translation>
-    </message>
-    <message>
-        <source>Z Safety margin</source>
-        <translation>Z Sicherheits Abstand</translation>
-    </message>
-    <message>
-        <source>Z Retraction area</source>
-        <translation>Z Rückzugsebene</translation>
-    </message>
-    <message>
-        <source>Z Workpiece top</source>
-        <translation>Z Werkstück TOP</translation>
-    </message>
-    <message>
-        <source>Start X</source>
-        <translation>X Start</translation>
-    </message>
-    <message>
-        <source>Feed rate Z</source>
-        <translation>Z Vorschub</translation>
-    </message>
-    <message>
-        <source>Start Y</source>
-        <translation>Y Start</translation>
-    </message>
-    <message>
-        <source>Automatic Cutter Compensation</source>
-        <translation type="obsolete">Automatische Fräsradienkorrektur</translation>
-    </message>
-    <message>
-        <source>Machine Type</source>
-        <translation type="obsolete">Maschinen Typ</translation>
-    </message>
-    <message>
-        <source>Split Line Segments</source>
-        <translation type="obsolete">Linien teilen</translation>
-    </message>
-    <message>
-        <source>Milling</source>
-        <translation type="obsolete">Fräsen</translation>
-    </message>
-    <message>
-        <source>Drag Knife</source>
-        <translation type="obsolete">Zugmesser (Drag Knife)</translation>
-    </message>
-    <message>
-        <source>Cannot locate file: %s</source>
-        <translation>Datei kann nicht gefunden werden: %s</translation>
-    </message>
-    <message>
-        <source>Manually open file: %s</source>
-        <translation>Datei manuell öffnen: %s</translation>
-    </message>
-    <message>
-        <source>Save project to file</source>
-        <translation>Projekt in Datei speichern</translation>
-    </message>
-    <message>
-        <source>Save project to FILE was successful</source>
-        <translation>Das Speichern des Projekts in FILE war erfolgreich</translation>
-    </message>
-    <message>
-        <source>Warning during Save Project As</source>
-        <translation>Warnung beim Speichern des Projekts unter</translation>
-    </message>
-    <message>
-        <source>Ctrl+V, A</source>
-        <translation>Ctrl+V, A</translation>
-    </message>
-    <message>
-        <source>Ctrl+V, T</source>
-        <translation>Ctrl+V, T</translation>
-    </message>
-    <message>
-        <source>Ctrl+V, I</source>
-        <translation>Ctrl+V, I</translation>
-    </message>
-    <message>
-        <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
-    </message>
-    <message>
-        <source>About DXF2GCODE</source>
-        <translation>Über DXF2GCODE</translation>
+        <source>Z Drag depth</source>
+        <translation>Z Zug Tiefe</translation>
     </message>
     <message>
         <source>Drawing units: inches</source>
@@ -627,20 +344,24 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
         <translation>[mm/min]</translation>
     </message>
     <message>
-        <source>Ctrl+Shift+C</source>
-        <translation>Ctrl+Shift+C</translation>
+        <source>Open file</source>
+        <translation>Datei öffnen</translation>
     </message>
     <message>
-        <source>Ctrl+Shift+P</source>
-        <translation>Ctrl+Shift+P</translation>
+        <source>All supported files (*.dxf *.DXF *.ps *.PS *.pdf *.PDF *%s);;DXF files (*.dxf *.DXF);;PS files (*.ps *.PS);;PDF files (*.pdf *.PDF);;Project files (*%s);;All types (*.*)</source>
+        <translation>Alle unterstützte Dateien (*.dxf *.DXF *.ps *.PS *.pdf *.PDF *%s);;DXF Dateien (*.dxf *.DXF);;PS Dateien (*.ps *.PS);;PDF Dateien (*.pdf *.PDF);;Project files (*%s);;Alle Dateien (*.*)</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=&apos;:images/dxf2gcode_logo.png&apos; border=&apos;1&apos; color=&apos;white&apos;&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Last change: %s&lt;br&gt;Changed by: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href=&apos;http://sourceforge.net/projects/dxf2gcode/&apos;&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href=&apos;https://groups.google.com/forum/?fromgroups#!forum/dxf2gcode-users&apos;&gt;mailing list&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href=&apos;http://sourceforge.net/p/dxf2gcode/tickets/&apos;&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href=&apos;http://www.gnu.org/licenses/&apos;&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="obsolete">&lt;html&gt;&lt;h2&gt;&lt;center&gt;Du benutzt&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Letzte Bearbeitung: %s&lt;br&gt;Bearbeitet von: %s&lt;br&gt;Deutsche Übersetzung von Daniel Luginbühl&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Wo bekommen Sie Hilfe:&lt;/h2&gt;Weitere Informationen und Aktualisierungen finden Sie unter &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;Bei Fragen zur Verwendung von dxf2gcode besuchen Sie bitte dieses &lt;a href='https://www.ltspiceusers.ch/forums/deutsche-sektion.66'&gt;Forum&lt;/a&gt;&lt;br&gt;Um Fehler zu protokollieren oder Funktionen anzufordern, verwenden Sie bitte das &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;Issue-Tracking-System&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Lizenz und Copyright:&lt;/h2&gt;&lt;body&gt;Dieses Programm ist in Python geschrieben und veröffentlicht unter &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>Cannot locate file: %s</source>
+        <translation>Datei kann nicht gefunden werden: %s</translation>
     </message>
     <message>
-        <source>No differences found. Ergo, workpiece zero is not moved</source>
-        <translation>Keine Unterschiede gefunden. Ergo wird der Werkstücknullpunkt nicht verschoben</translation>
+        <source>Manually open file: %s</source>
+        <translation>Datei manuell öffnen: %s</translation>
+    </message>
+    <message>
+        <source>Converting {0} to {1}</source>
+        <translation>Konvertieren von {0} nach {1}</translation>
     </message>
     <message>
         <source>Command:
@@ -655,183 +376,438 @@ zurückgegebener Fehlercode: {1}</translation>
         <translation>Bitte stellen Sie sicher, dass Sie {0} installiert und in der Konfigurationsdatei konfiguriert haben.</translation>
     </message>
     <message>
-        <source>Converting {0} to {1}</source>
-        <translation>Konvertieren von {0} nach {1}</translation>
+        <source>Loading file: %s</source>
+        <translation>Lade Datei: %s</translation>
     </message>
     <message>
-        <source>Python version 2 is not supported, please use it with python version 3.</source>
-        <translation>Python Version 2 wird nicht unterstützt, bitte verwenden Sie Python Version 3.</translation>
+        <source>Loaded layers: %s</source>
+        <translation>Geladene Layers: %s</translation>
+    </message>
+    <message>
+        <source>Loaded blocks: %s</source>
+        <translation>Geladene Blöcke: %s</translation>
+    </message>
+    <message>
+        <source>Block %i includes %i Geometries, reduced to %i Contours, used layers: %s</source>
+        <translation>Block %i beinhaltet %i Geometrien, reduziert zu %i Konturen, Benutzte Layer: %s</translation>
+    </message>
+    <message>
+        <source>Loaded %i entity geometries; reduced to %i contours; used layers: %s; number of inserts %i</source>
+        <translation>Es wurde %i Entities Geometrien geladen; anzahl Konturen %i; verwendete Layers: %s; anzahl Inserts: %i</translation>
+    </message>
+    <message>
+        <source>Reloading file: %s</source>
+        <translation>Die Datei wird neu geladen: %s</translation>
+    </message>
+    <message>
+        <source>Save project to file</source>
+        <translation>Projekt in Datei speichern</translation>
+    </message>
+    <message>
+        <source>Save project to FILE was successful</source>
+        <translation>Das Speichern des Projekts in FILE war erfolgreich</translation>
+    </message>
+    <message>
+        <source>Warning during Save Project As</source>
+        <translation>Warnung beim Speichern des Projekts unter</translation>
+    </message>
+    <message>
+        <source>Cannot Save the File</source>
+        <translation>Die Datei kann nicht gespeichert werden</translation>
+    </message>
+    <message>
+        <source>Closing</source>
+        <translation>Beende Program</translation>
+    </message>
+    <message>
+        <source>Sending Postscript/PDF to pstoedit</source>
+        <translation type="vanished">Sende Postscipt/PDF Datei an pstoedit</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Last change: %s&lt;br&gt;Changed by: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href='https://groups.google.com/forum/?fromgroups#!forum/dxf2gcode-users'&gt;mailing list&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href='http://sourceforge.net/projects/dxf2gcode/tickets/'&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="vanished">&lt;html&gt;&lt;h2&gt;&lt;center&gt;Sie benutzen&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Zuletzt geändert: %s&lt;br&gt;Geändert von: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Wo man Hilfe findet:&lt;/h2&gt;Für mehr Information zum Programm und Möglichen Updates besuchen sie bitte &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;Für alle Fragen zur Bedienung von DXF2GCODE benutzen Sie bitte die &lt;a href='https://groups.google.com/forum/?fromgroups#!forum/dxf2gcode-users'&gt;Mailing List&lt;/a&gt;&lt;br&gt;Für gefundene Bugs oder Feature Anfragen benutzen Sie bitte das &lt;a href='http://sourceforge.net/projects/dxf2gcode/tickets/'&gt;Issue Tracking System&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Lizens und Copyright:&lt;/h2&gt;&lt;body&gt;Das Programm wurde mit der Freeware Programmiersprache Python geschrieben und ist unter der &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 Lizenz &lt;/a&gt;veröffentlicht&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Entities</source>
+        <translation type="vanished">Entities</translation>
+    </message>
+    <message>
+        <source>Collapse all items</source>
+        <translation type="vanished">Reduziere alle Items</translation>
+    </message>
+    <message>
+        <source>Expand all items</source>
+        <translation type="vanished">Erweitere alle Items</translation>
+    </message>
+    <message>
+        <source>Layers</source>
+        <translation type="vanished">Layer</translation>
+    </message>
+    <message>
+        <source>Move-up the selected shape/layer</source>
+        <translation type="vanished">Verschiebe Auswahl nach oben</translation>
+    </message>
+    <message>
+        <source>Move-down the selected shape/layer</source>
+        <translation type="vanished">Verschiebe Auswahl nach unten</translation>
+    </message>
+    <message>
+        <source>/ speed </source>
+        <translation type="vanished">/ speed </translation>
+    </message>
+    <message>
+        <source>Milling will start at Z = "Workpiece top Z" - "Z infeed depth"</source>
+        <translation type="vanished">Fräsen beginnt bei Z = "Werkstück Top Z" -"Z Zustellstiefe"</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation type="vanished">Datei</translation>
+    </message>
+    <message>
+        <source>Export the current project to G-Code</source>
+        <translation type="vanished">Aktuelles Projet exportieren</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation type="vanished">Ansicht</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="vanished">Optionen</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation type="vanished">Hilfe</translation>
+    </message>
+    <message>
+        <source>Open...</source>
+        <translation type="vanished">Datei laden</translation>
+    </message>
+    <message>
+        <source>Load DXF or other supported document</source>
+        <translation type="vanished">DXF oder unterstütztes Format laden</translation>
+    </message>
+    <message>
+        <source>Ctrl+O</source>
+        <translation type="vanished">Ctrl+O</translation>
+    </message>
+    <message>
+        <source>Exit</source>
+        <translation type="vanished">Beenden</translation>
+    </message>
+    <message>
+        <source>Exit DXF2GCODE and close window</source>
+        <translation type="vanished">DXF2GCODE beenden</translation>
+    </message>
+    <message>
+        <source>Ctrl+Q</source>
+        <translation type="vanished">Ctrl+Q</translation>
+    </message>
+    <message>
+        <source>Show Path Directions</source>
+        <translation type="vanished">Zeige Pfad Richtung</translation>
+    </message>
+    <message>
+        <source>Always shows the path direction in the plot (not only while selected)</source>
+        <translation type="vanished">Pfrad Richtung immer anzeigen (Ebenfalls für inaktive Pfade)</translation>
+    </message>
+    <message>
+        <source>Show Disabled Paths</source>
+        <translation type="vanished">Zeige ausgeblendete Pfade</translation>
+    </message>
+    <message>
+        <source>Autoscale</source>
+        <translation type="vanished">Auto Skalierung</translation>
+    </message>
+    <message>
+        <source>Delete G0 Paths</source>
+        <translation type="vanished">Lösche Eilgang Pfade</translation>
+    </message>
+    <message>
+        <source>Tolerances</source>
+        <translation type="vanished">Toleranzen</translation>
+    </message>
+    <message>
+        <source>Scale All</source>
+        <translation type="vanished">Alles skalierene</translation>
+    </message>
+    <message>
+        <source>Rotate All</source>
+        <translation type="vanished">Alles drehen</translation>
+    </message>
+    <message>
+        <source>Move Workpiece Zero</source>
+        <translation type="vanished">Nullpunkt verschieben</translation>
+    </message>
+    <message>
+        <source>About</source>
+        <translation type="vanished">Über DXF2GCODE</translation>
+    </message>
+    <message>
+        <source>Optimize Paths</source>
+        <translation type="vanished">Pfade optimieren</translation>
+    </message>
+    <message>
+        <source>Ctrl+Shift+O</source>
+        <translation type="vanished">Ctrl+Shift+O</translation>
+    </message>
+    <message>
+        <source>Export Shapes</source>
+        <translation type="vanished">Pfade exportieren</translation>
+    </message>
+    <message>
+        <source>Ctrl+Shift+E</source>
+        <translation type="vanished">Ctrl+Shift+E</translation>
+    </message>
+    <message>
+        <source>Optimize and Export Shapes</source>
+        <translation type="vanished">Pfade optimieren und exportieren</translation>
+    </message>
+    <message>
+        <source>Ctrl+E</source>
+        <translation type="vanished">Ctrl+E</translation>
+    </message>
+    <message>
+        <source>Live Update Export Route</source>
+        <translation type="vanished">Live update der optmierten Reihenfolge</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation type="vanished">Datei neu laden</translation>
+    </message>
+    <message>
+        <source>Ctrl+R</source>
+        <translation type="vanished">Ctrl+R</translation>
+    </message>
+    <message>
+        <source>Split line segments, e.g. can be used for compensation (G41/G42) in combination with EMC</source>
+        <translation type="vanished">Linien teilen, kann z.B. in Verbindung mit G41/G42 in EMC verwendet werden</translation>
+    </message>
+    <message>
+        <source>Feed rate XY</source>
+        <translation type="vanished">XY Vorschub</translation>
+    </message>
+    <message>
+        <source>Z Final mill depth</source>
+        <translation type="vanished">Z Frästiefe</translation>
+    </message>
+    <message>
+        <source>Z Safety margin</source>
+        <translation type="vanished">Z Sicherheits Abstand</translation>
+    </message>
+    <message>
+        <source>Z Retraction area</source>
+        <translation type="vanished">Z Rückzugsebene</translation>
+    </message>
+    <message>
+        <source>Z Workpiece top</source>
+        <translation type="vanished">Z Werkstück TOP</translation>
+    </message>
+    <message>
+        <source>Start X</source>
+        <translation type="vanished">X Start</translation>
+    </message>
+    <message>
+        <source>Feed rate Z</source>
+        <translation type="vanished">Z Vorschub</translation>
+    </message>
+    <message>
+        <source>Start Y</source>
+        <translation type="vanished">Y Start</translation>
+    </message>
+    <message>
+        <source>Automatic Cutter Compensation</source>
+        <translation type="vanished">Automatische Fräsradienkorrektur</translation>
+    </message>
+    <message>
+        <source>Machine Type</source>
+        <translation type="vanished">Maschinen Typ</translation>
+    </message>
+    <message>
+        <source>Split Line Segments</source>
+        <translation type="vanished">Linien teilen</translation>
+    </message>
+    <message>
+        <source>Milling</source>
+        <translation type="vanished">Fräsen</translation>
+    </message>
+    <message>
+        <source>Drag Knife</source>
+        <translation type="vanished">Zugmesser (Drag Knife)</translation>
+    </message>
+    <message>
+        <source>Ctrl+V, A</source>
+        <translation type="vanished">Ctrl+V, A</translation>
+    </message>
+    <message>
+        <source>Ctrl+V, T</source>
+        <translation type="vanished">Ctrl+V, T</translation>
+    </message>
+    <message>
+        <source>Ctrl+V, I</source>
+        <translation type="vanished">Ctrl+V, I</translation>
+    </message>
+    <message>
+        <source>Ctrl+S</source>
+        <translation type="vanished">Ctrl+S</translation>
+    </message>
+    <message>
+        <source>Ctrl+Shift+C</source>
+        <translation type="vanished">Ctrl+Shift+C</translation>
+    </message>
+    <message>
+        <source>Ctrl+Shift+P</source>
+        <translation type="vanished">Ctrl+Shift+P</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Last change: %s&lt;br&gt;Changed by: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href='https://groups.google.com/forum/?fromgroups#!forum/dxf2gcode-users'&gt;mailing list&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="vanished">&lt;html&gt;&lt;h2&gt;&lt;center&gt;Du benutzt&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Letzte Bearbeitung: %s&lt;br&gt;Bearbeitet von: %s&lt;br&gt;Deutsche Übersetzung von Daniel Luginbühl&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Wo bekommen Sie Hilfe:&lt;/h2&gt;Weitere Informationen und Aktualisierungen finden Sie unter &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;Bei Fragen zur Verwendung von dxf2gcode besuchen Sie bitte dieses &lt;a href='https://www.ltspiceusers.ch/forums/deutsche-sektion.66'&gt;Forum&lt;/a&gt;&lt;br&gt;Um Fehler zu protokollieren oder Funktionen anzufordern, verwenden Sie bitte das &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;Issue-Tracking-System&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Lizenz und Copyright:&lt;/h2&gt;&lt;body&gt;Dieses Programm ist in Python geschrieben und veröffentlicht unter &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Error exporting shapes: %s</source>
-        <translation type="obsolete">Fehler beim Exportieren von Shapes: %s</translation>
+        <translation type="vanished">Fehler beim Exportieren von Shapes: %s</translation>
     </message>
     <message>
         <source>&amp;File</source>
-        <translation>&amp;Datei</translation>
+        <translation type="vanished">&amp;Datei</translation>
     </message>
     <message>
         <source>&amp;Export</source>
-        <translation>&amp;Exportieren</translation>
+        <translation type="vanished">&amp;Exportieren</translation>
     </message>
     <message>
         <source>&amp;View</source>
-        <translation>&amp;Ansicht</translation>
+        <translation type="vanished">&amp;Ansicht</translation>
     </message>
     <message>
         <source>&amp;Options</source>
-        <translation>&amp;Optionen</translation>
+        <translation type="vanished">&amp;Optionen</translation>
     </message>
     <message>
         <source>Mac&amp;hine Type</source>
-        <translation>Maschinen &amp;Typ</translation>
+        <translation type="vanished">Maschinen &amp;Typ</translation>
     </message>
     <message>
         <source>Measurement &amp;units</source>
-        <translation>&amp;Messeinheiten</translation>
+        <translation type="vanished">&amp;Messeinheiten</translation>
     </message>
     <message>
         <source>&amp;Help</source>
-        <translation>&amp;Hilfe</translation>
+        <translation type="vanished">&amp;Hilfe</translation>
     </message>
     <message>
         <source>&amp;Open...</source>
-        <translation>Datei &amp;laden...</translation>
+        <translation type="vanished">Datei &amp;laden...</translation>
     </message>
     <message>
         <source>&amp;Exit</source>
-        <translation>&amp;Beenden</translation>
+        <translation type="vanished">&amp;Beenden</translation>
     </message>
     <message>
         <source>&amp;Show Path Directions</source>
-        <translation>Zeige Pfad &amp;Richtung</translation>
+        <translation type="vanished">Zeige Pfad &amp;Richtung</translation>
     </message>
     <message>
         <source>Show Disabled &amp;Paths</source>
-        <translation>Zeige &amp;ausgeblendete Pfade</translation>
+        <translation type="vanished">Zeige &amp;ausgeblendete Pfade</translation>
     </message>
     <message>
         <source>&amp;Autoscale</source>
-        <translation>&amp;Auto Skalierung</translation>
+        <translation type="vanished">&amp;Auto Skalierung</translation>
     </message>
     <message>
         <source>&amp;Delete G0 Paths</source>
-        <translation>Lösche &amp;Eilgang Pfade</translation>
+        <translation type="vanished">Lösche &amp;Eilgang Pfade</translation>
     </message>
     <message>
         <source>&amp;Configuration...</source>
-        <translation>Konfiguration...</translation>
+        <translation type="vanished">Konfiguration...</translation>
     </message>
     <message>
         <source>&amp;Postprocessor configuration...</source>
-        <translation>&amp;Postprozessorkonfiguration...</translation>
+        <translation type="vanished">&amp;Postprozessorkonfiguration...</translation>
     </message>
     <message>
         <source>&amp;Tolerances</source>
-        <translation>&amp;Toleranzen</translation>
+        <translation type="vanished">&amp;Toleranzen</translation>
     </message>
     <message>
         <source>&amp;Scale All</source>
-        <translation>Alles &amp;skalierene</translation>
+        <translation type="vanished">Alles &amp;skalierene</translation>
     </message>
     <message>
         <source>&amp;Rotate All</source>
-        <translation>Alles &amp;drehen</translation>
+        <translation type="vanished">Alles &amp;drehen</translation>
     </message>
     <message>
         <source>&amp;Move Workpiece Zero</source>
-        <translation>&amp;Nullpunkt verschieben</translation>
+        <translation type="vanished">&amp;Nullpunkt verschieben</translation>
     </message>
     <message>
         <source>&amp;About</source>
-        <translation>&amp;Über DXF2GCODE</translation>
+        <translation type="vanished">&amp;Über DXF2GCODE</translation>
     </message>
     <message>
         <source>&amp;Optimize Paths</source>
-        <translation>Pfade &amp;optimieren</translation>
+        <translation type="vanished">Pfade &amp;optimieren</translation>
     </message>
     <message>
         <source>&amp;Export Shapes</source>
-        <translation>Pfade &amp;exportieren</translation>
+        <translation type="vanished">Pfade &amp;exportieren</translation>
     </message>
     <message>
         <source>Optimize &amp;and Export Shapes</source>
-        <translation>Pfade optimieren &amp;und exportieren</translation>
+        <translation type="vanished">Pfade optimieren &amp;und exportieren</translation>
     </message>
     <message>
         <source>&amp;Live Update Export Route</source>
-        <translation>&amp;Live update der optmierten Reihenfolge</translation>
+        <translation type="vanished">&amp;Live update der optmierten Reihenfolge</translation>
     </message>
     <message>
         <source>&amp;Reload</source>
-        <translation>Datei &amp;neu laden</translation>
+        <translation type="vanished">Datei &amp;neu laden</translation>
     </message>
     <message>
         <source>Split &amp;Line Segments</source>
-        <translation>&amp;Linien teilen</translation>
+        <translation type="vanished">&amp;Linien teilen</translation>
     </message>
     <message>
         <source>&amp;Automatic Cutter Compensation</source>
-        <translation>&amp;Automatische Fräsradienkorrektur</translation>
+        <translation type="vanished">&amp;Automatische Fräsradienkorrektur</translation>
     </message>
     <message>
         <source>&amp;Milling</source>
-        <translation>&amp;Fräsen</translation>
+        <translation type="vanished">&amp;Fräsen</translation>
     </message>
     <message>
         <source>&amp;Drag Knife</source>
-        <translation>&amp;Zugmesser (Drag Knife)</translation>
+        <translation type="vanished">&amp;Zugmesser (Drag Knife)</translation>
     </message>
     <message>
         <source>&amp;Lathe</source>
-        <translation>&amp;Hilfe</translation>
+        <translation type="vanished">&amp;Hilfe</translation>
     </message>
     <message>
         <source>&amp;Top View</source>
-        <translation>Ansicht von &amp;oben</translation>
+        <translation type="vanished">Ansicht von &amp;oben</translation>
     </message>
     <message>
         <source>&amp;Isometric View</source>
-        <translation>&amp;Isometrische Ansicht</translation>
+        <translation type="vanished">&amp;Isometrische Ansicht</translation>
     </message>
     <message>
         <source>&amp;Save Project As...</source>
-        <translation>Projekt &amp;speichern als...</translation>
+        <translation type="vanished">Projekt &amp;speichern als...</translation>
     </message>
     <message>
         <source>&amp;Millimeters</source>
-        <translation>&amp;Millimeter</translation>
+        <translation type="vanished">&amp;Millimeter</translation>
     </message>
     <message>
         <source>&amp;Inches</source>
-        <translation>&amp;Inches (Zoll)</translation>
+        <translation type="vanished">&amp;Inches (Zoll)</translation>
     </message>
-    <message>
-        <source>Filter: %s selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=&apos;:images/dxf2gcode_logo.png&apos; border=&apos;1&apos; color=&apos;white&apos;&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Last change: %s&lt;br&gt;Changed by: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href=&apos;http://sourceforge.net/projects/dxf2gcode/&apos;&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href=&apos;https://www.ltspiceusers.ch/forums/english-section.67/&apos;&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href=&apos;http://sourceforge.net/p/dxf2gcode/tickets/&apos;&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href=&apos;http://www.gnu.org/licenses/&apos;&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Mirror All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mirror all X / Y-Axis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mirror all on X-Axis:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mirror all on Y-Axis:</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
+</context><context>
     <name>MessageBox</name>
     <message>
         <source>You are using DXF2GCODE</source>
@@ -845,8 +821,7 @@ zurückgegebener Fehlercode: {1}</translation>
         <source>For more information and updates visit:</source>
         <translation>Weitere Informationen und Aktualisierungen finden Sie unter:</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>MyConfig</name>
     <message>
         <source>errors reading %s:</source>
@@ -857,6 +832,12 @@ zurückgegebener Fehlercode: {1}</translation>
         <translation>Fehlender Wert in der Section.</translation>
     </message>
     <message>
+        <source>The configuration file version ({0}) doesn't match any of the software expected version ({1}).
+
+You have to delete (or carefully edit) the configuration file "{2}" to solve the problem.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
         <source>trying to rename bad cfg %s to %s</source>
         <translation>Versuche falsche Konfigurationsdatei umzubennen von %s zu  %s</translation>
     </message>
@@ -865,80 +846,12 @@ zurückgegebener Fehlercode: {1}</translation>
         <translation>Das Umbenennen (%s, %s) ist fehlgeschlagen: %s</translation>
     </message>
     <message>
-        <source>renamed bad varspace %s to &apos;%s&apos;</source>
+        <source>renamed bad varspace %s to '%s'</source>
         <translation>Falsche Konfigurationsdatei wurde umzubennen von %s zu %s</translation>
     </message>
     <message>
-        <source>created default varspace &apos;%s&apos;</source>
+        <source>created default varspace '%s'</source>
         <translation>Es wurden die Standard Variablen erstellt: '%s'</translation>
-    </message>
-    <message>
-        <source>The configuration file version ({0}) doesn&apos;t match the software expected version ({1}).
-
-You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to solve the problem.</source>
-        <translation type="obsolete">Die Version der Konfigurationsdatei ({0}) stimmt nicht mit der erwarteten Softwareversion ({1}) überein.
-
-Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig bearbeiten), um das Problem zu lösen.</translation>
-    </message>
-    <message>
-        <source>Tools table</source>
-        <translation>Werkzeuge</translation>
-    </message>
-    <message>
-        <source>Custom actions</source>
-        <translation>Benutzerdefinierte Aktionen</translation>
-    </message>
-    <message>
-        <source>Software config</source>
-        <translation>Software Konfig</translation>
-    </message>
-    <message>
-        <source>Machine config</source>
-        <translation>Maschinen Konfig</translation>
-    </message>
-    <message>
-        <source>G1 feed rate for first and second axis (2D plane):</source>
-        <translation>G1 Vorschub für erste und zweite Achse (2D-Ebene):</translation>
-    </message>
-    <message>
-        <source>G1 feed rate for third axis:</source>
-        <translation>G1 Vorschub für dritte Achse:</translation>
-    </message>
-    <message>
-        <source>Output settings</source>
-        <translation>Ausgabeeinstellungen</translation>
-    </message>
-    <message>
-        <source>DXF default import point tolerance:</source>
-        <translation>Standard Punkttoleranz für DXF Import:</translation>
-    </message>
-    <message>
-        <source>DXF import spline check:</source>
-        <translation>DXF Import spline Check:</translation>
-    </message>
-    <message>
-        <source>DXF default import fit tolerance:</source>
-        <translation>Standard Passungstoleranz für DXF Import:</translation>
-    </message>
-    <message>
-        <source>insert elements which are part of a block to layer where the block is inserted</source>
-        <translation>Fügen Sie Elemente, die Teil eines Blocks sind, in die Ebene ein, in der der Block eingefügt wird</translation>
-    </message>
-    <message>
-        <source>Automatic tool config</source>
-        <translation>Automatische Werkzeugkonfiguration</translation>
-    </message>
-    <message>
-        <source>Separator between identifier and value:</source>
-        <translation>Trennzeichen zwischen Bezeichner und Wert:</translation>
-    </message>
-    <message>
-        <source>Define the tools here:</source>
-        <translation>Definieren Sie hier die Werkzeuge:</translation>
-    </message>
-    <message>
-        <source>Define here custom GCODE that can be inserted anywhere in the program:</source>
-        <translation>Definieren Sie hier benutzerdefinierten GCODE, der überall im Programm eingefügt werden kann:</translation>
     </message>
     <message>
         <source> mm</source>
@@ -957,6 +870,18 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation> IPS</translation>
     </message>
     <message>
+        <source>Tools table</source>
+        <translation>Werkzeuge</translation>
+    </message>
+    <message>
+        <source>Custom actions</source>
+        <translation>Benutzerdefinierte Aktionen</translation>
+    </message>
+    <message>
+        <source>Software config</source>
+        <translation>Software Konfig</translation>
+    </message>
+    <message>
         <source>By default look for DXF files in:</source>
         <translation>Suche standardmäßig nach DXF-Dateien in:</translation>
     </message>
@@ -965,64 +890,22 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Exportiere generierten G-Code Standardmäßig nach:</translation>
     </message>
     <message>
+        <source>By default save Project files to:</source>
+        <translation>Standard Verzeichnis für Project Dateien:
+</translation>
+    </message>
+    <message>
+        <source>Update paths with last used path: </source>
+        <translation>Setze Pfade auf letzen verwendeten Pfad:
+</translation>
+    </message>
+    <message>
         <source>Location of executable:</source>
         <translation>Speicherort der ausführbaren Datei:</translation>
     </message>
     <message>
         <source>Command-line options:</source>
         <translation>Befehlszeilenoptionen:</translation>
-    </message>
-    <message>
-        <source>Axes&apos; identifiers</source>
-        <translation>Kennungen der Achsen</translation>
-    </message>
-    <message>
-        <source>First axis:</source>
-        <translation>Erste Achse:</translation>
-    </message>
-    <message>
-        <source>Second axis:</source>
-        <translation>Zweite Achse:</translation>
-    </message>
-    <message>
-        <source>Third axis:</source>
-        <translation>Dritte Achse:</translation>
-    </message>
-    <message>
-        <source>Start and end&apos;s coordinate</source>
-        <translation type="obsolete">Start- und Endkoordinaten</translation>
-    </message>
-    <message>
-        <source>Third axis&apos; defaults</source>
-        <translation>Standardwerte der dritten Achse</translation>
-    </message>
-    <message>
-        <source>Retraction coordinate:</source>
-        <translation>Rückzugskoordinate:</translation>
-    </message>
-    <message>
-        <source>Safety margin:</source>
-        <translation>Sicherheitsabstand:</translation>
-    </message>
-    <message>
-        <source>Workpiece origin coordinate:</source>
-        <translation>Werkstück-Ursprungskoordinate:</translation>
-    </message>
-    <message>
-        <source>Slice depth:</source>
-        <translation>Schnitttiefe:</translation>
-    </message>
-    <message>
-        <source>Final mill depth:</source>
-        <translation>Endfrästiefe:</translation>
-    </message>
-    <message>
-        <source>G1 feed rates</source>
-        <translation>G1 Vorschübe</translation>
-    </message>
-    <message>
-        <source>First and second axis (2D plane):</source>
-        <translation>Erste und zweite Achse (2D-Ebene):</translation>
     </message>
     <message>
         <source>General settings</source>
@@ -1069,8 +952,92 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Exportiere den G-Code nach stdout (statt in eine Datei)</translation>
     </message>
     <message>
-        <source>Retract to drag depth (&quot;Third axis slice depth&quot;) if angle exceeds:</source>
-        <translation>Zurückziehen auf Ziehtiefe (&quot;Schnitttiefe der dritten Achse&quot;), wenn der Winkel Folgendes überschreitet:</translation>
+        <source>Machine config</source>
+        <translation>Maschinen Konfig</translation>
+    </message>
+    <message>
+        <source>Axes' identifiers</source>
+        <translation>Kennungen der Achsen</translation>
+    </message>
+    <message>
+        <source>First axis:</source>
+        <translation>Erste Achse:</translation>
+    </message>
+    <message>
+        <source>Second axis:</source>
+        <translation>Zweite Achse:</translation>
+    </message>
+    <message>
+        <source>Third axis:</source>
+        <translation>Dritte Achse:</translation>
+    </message>
+    <message>
+        <source>Start and end's coordinate and scaling standard multiplier</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <source>First axis start/end coordiante:</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <source>Second axis start/end coordinate:</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <source>Scale first and second axis:</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <source>Third axis' defaults</source>
+        <translation>Standardwerte der dritten Achse</translation>
+    </message>
+    <message>
+        <source>Retraction coordinate:</source>
+        <translation>Rückzugskoordinate:</translation>
+    </message>
+    <message>
+        <source>Safety margin:</source>
+        <translation>Sicherheitsabstand:</translation>
+    </message>
+    <message>
+        <source>Workpiece origin coordinate:</source>
+        <translation>Werkstück-Ursprungskoordinate:</translation>
+    </message>
+    <message>
+        <source>Slice depth:</source>
+        <translation>Schnitttiefe:</translation>
+    </message>
+    <message>
+        <source>Final mill depth:</source>
+        <translation>Endfrästiefe:</translation>
+    </message>
+    <message>
+        <source>G1 feed rates</source>
+        <translation>G1 Vorschübe</translation>
+    </message>
+    <message>
+        <source>First and second axis (2D plane):</source>
+        <translation>Erste und zweite Achse (2D-Ebene):</translation>
+    </message>
+    <message>
+        <source>Output settings</source>
+        <translation>Ausgabeeinstellungen</translation>
+    </message>
+    <message>
+        <source>Cutter compensation</source>
+        <translation>Fräserkompensation</translation>
+    </message>
+    <message>
+        <source>Cutter compensation is done by machine (check box if machine reconizes G41 and G42 commands / uncheck otherwise. This also disables pocket milling.)</source>
+        <translation>Die Fräserkompensation erfolgt durch die Maschine (Kontrollkästchen aktivieren, wenn die Maschine G41 und G42 Befehle versteht / andernfalls deaktivieren. Dadurch wird auch das Taschenfräsen deaktiviert.)</translation>
+    </message>
+    <message>
+        <source>Drag Knife options</source>
+        <translation>Ziehmesser-Optionen</translation>
+    </message>
+    <message>
+        <source>Retract to drag depth ("Third axis slice depth") if angle exceeds:</source>
+        <translation>Zurückziehen auf Ziehtiefe ("Schnitttiefe der dritten Achse"), wenn der Winkel Folgendes überschreitet:</translation>
     </message>
     <message>
         <source>By default enable the TSP optimization for ordering shapes (TSP = Travelling Salesman Problem)</source>
@@ -1101,7 +1068,31 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Startpunkt:</translation>
     </message>
     <message>
-        <source>Parameters&apos; identifiers</source>
+        <source>DXF default import point tolerance:</source>
+        <translation>Standard Punkttoleranz für DXF Import:</translation>
+    </message>
+    <message>
+        <source>DXF import spline check:</source>
+        <translation>DXF Import spline Check:</translation>
+    </message>
+    <message>
+        <source>DXF default import fit tolerance:</source>
+        <translation>Standard Passungstoleranz für DXF Import:</translation>
+    </message>
+    <message>
+        <source>insert elements which are part of a block to layer where the block is inserted</source>
+        <translation>Fügen Sie Elemente, die Teil eines Blocks sind, in die Ebene ein, in der der Block eingefügt wird</translation>
+    </message>
+    <message>
+        <source>Automatic tool config</source>
+        <translation>Automatische Werkzeugkonfiguration</translation>
+    </message>
+    <message>
+        <source>Separator between identifier and value:</source>
+        <translation>Trennzeichen zwischen Bezeichner und Wert:</translation>
+    </message>
+    <message>
+        <source>Parameters' identifiers</source>
         <translation>Parameter Bezeichner</translation>
     </message>
     <message>
@@ -1115,6 +1106,14 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
     <message>
         <source>Retraction area:</source>
         <translation>Rückzugsbereich:</translation>
+    </message>
+    <message>
+        <source>G1 feed rate for first and second axis (2D plane):</source>
+        <translation>G1 Vorschub für erste und zweite Achse (2D-Ebene):</translation>
+    </message>
+    <message>
+        <source>G1 feed rate for third axis:</source>
+        <translation>G1 Vorschub für dritte Achse:</translation>
     </message>
     <message>
         <source>Tool number:</source>
@@ -1133,6 +1132,14 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Startradius (Fräserkompensation):</translation>
     </message>
     <message>
+        <source>Define the tools here:</source>
+        <translation>Definieren Sie hier die Werkzeuge:</translation>
+    </message>
+    <message>
+        <source>Define here custom GCODE that can be inserted anywhere in the program:</source>
+        <translation>Definieren Sie hier benutzerdefinierten GCODE, der überall im Programm eingefügt werden kann:</translation>
+    </message>
+    <message>
         <source>File used for logging (restart needed):</source>
         <translation>Für die Protokollierung verwendete Datei (Neustart erforderlich):</translation>
     </message>
@@ -1149,51 +1156,18 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Für Meldungsfenster-protokolliere Meldungen mit minimaler Wichtigkeit (Neustart erforderlich):</translation>
     </message>
     <message>
-        <source>Cutter compensation</source>
-        <translation>Fräserkompensation</translation>
-    </message>
-    <message>
-        <source>Drag Knife options</source>
-        <translation>Ziehmesser-Optionen</translation>
-    </message>
-    <message>
-        <source>Cutter compensation is done by machine (check box if machine reconizes G41 and G42 commands / uncheck otherwise. This also disables pocket milling.)</source>
-        <translation>Die Fräserkompensation erfolgt durch die Maschine (Kontrollkästchen aktivieren, wenn die Maschine G41 und G42 Befehle versteht / andernfalls deaktivieren. Dadurch wird auch das Taschenfräsen deaktiviert.)</translation>
-    </message>
-    <message>
-        <source>By default save Project files to:</source>
-        <translation>Standard Verzeichnis für Project Dateien:
-</translation>
-    </message>
-    <message>
-        <source>Update paths with last used path: </source>
-        <translation>Setze Pfade auf letzen verwendeten Pfad:
-</translation>
-    </message>
-    <message>
-        <source>The configuration file version ({0}) doesn&apos;t match any of the software expected version ({1}).
+        <source>The configuration file version ({0}) doesn't match the software expected version ({1}).
 
-You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to solve the problem.</source>
-        <translation type="unfinished"></translation>
+You have to delete (or carefully edit) the configuration file "{2}" to solve the problem.</source>
+        <translation type="vanished">Die Version der Konfigurationsdatei ({0}) stimmt nicht mit der erwarteten Softwareversion ({1}) überein.
+
+Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten), um das Problem zu lösen.</translation>
     </message>
     <message>
-        <source>Start and end&apos;s coordinate and scaling standard multiplier</source>
-        <translation type="unfinished"></translation>
+        <source>Start and end's coordinate</source>
+        <translation type="vanished">Start- und Endkoordinaten</translation>
     </message>
-    <message>
-        <source>First axis start/end coordiante:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Second axis start/end coordinate:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scale first and second axis:</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
+</context><context>
     <name>MyDropDownMenu</name>
     <message>
         <source>Invert Selection</source>
@@ -1214,6 +1188,19 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     <message>
         <source>Set Nearest StartPoint</source>
         <translation>Startpunkt hier setzen</translation>
+    </message>
+    <message>
+        <source>Set Sharpest StartPoint</source>
+        <translation>Startpunkt schärfste Kante
+</translation>
+    </message>
+    <message>
+        <source>Pocket Mill</source>
+        <translation>Taschenfräsen</translation>
+    </message>
+    <message>
+        <source>Drill Bore</source>
+        <translation>Bohrung bohren</translation>
     </message>
     <message>
         <source>Cutter Compensation</source>
@@ -1252,10 +1239,6 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <translation>Fräser Korrektur zu Rechts geändet bei Shape Nr: %i</translation>
     </message>
     <message>
-        <source>Pocket Mill</source>
-        <translation>Taschenfräsen</translation>
-    </message>
-    <message>
         <source>Set to True for Pocket Mill for shape: %i</source>
         <translation>Auf „True“ setzen für's Taschenfräsen von Shape: %i</translation>
     </message>
@@ -1271,24 +1254,13 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <source>Set to False for G73 Drill, for shape: %i</source>
         <translation>Auf „False“ setzen für G73 Bohren von Shape: %i</translation>
     </message>
-    <message>
-        <source>Drill Bore</source>
-        <translation>Bohrung bohren</translation>
-    </message>
-    <message>
-        <source>Set Sharpest StartPoint</source>
-        <translation>Startpunkt schärfste Kante
-</translation>
-    </message>
-</context>
-<context>
+</context><context>
     <name>MyGraphicsView</name>
     <message>
         <source>Autoscaling to extend: %s</source>
         <translation>Automatische Skalierung auf: %s</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>MyPostProConfig</name>
     <message>
         <source>errors reading %s:</source>
@@ -1303,6 +1275,12 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <translation>Syntax Fehler in der Postprozessor Konfigurationsdatei</translation>
     </message>
     <message>
+        <source>The postprocessor configuration file version ({0}) doesn't match any of the software expected version ({1}).
+
+You have to delete (or carefully edit) the configuration file "{2}" to solve the problem.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
         <source>trying to rename bad cfg %s to %s</source>
         <translation>Versuche falsche Konfigurationsdatei umzubennen von %s zu  %s</translation>
     </message>
@@ -1311,24 +1289,20 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <translation>Das Umbenennen (%s, %s) ist fehlgeschlagen: %s</translation>
     </message>
     <message>
-        <source>renamed bad varspace %s to &apos;%s&apos;</source>
+        <source>renamed bad varspace %s to '%s'</source>
         <translation>Falsche Konfigurationsdatei wurde umzubennen von %s zu %s</translation>
     </message>
     <message>
-        <source>created default varspace &apos;%s&apos;</source>
+        <source>created default varspace '%s'</source>
         <translation>Es wurden die Standard Variablen erstellt: '%s'</translation>
     </message>
     <message>
-        <source>read existing varspace &apos;%s&apos;</source>
+        <source>read existing varspace '%s'</source>
         <translation>Es wird die vorhanden Konfigurationsdatei gelesen '%s'</translation>
     </message>
     <message>
-        <source>The postprocessor configuration file version ({0}) doesn&apos;t match the software expected version ({1}).
-
-You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to solve the problem.</source>
-        <translation type="obsolete">Die Version der Postprozessor-Konfigurationsdatei ({0}) stimmt nicht mit der erwarteten Softwareversion ({1}) überein.
-
-Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig bearbeiten), um das Problem zu lösen.</translation>
+        <source>Custom GCode</source>
+        <translation type="unfinished" />
     </message>
     <message>
         <source>Software config</source>
@@ -1339,8 +1313,8 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Ausgabe-Spezifikationen</translation>
     </message>
     <message>
-        <source>Output format description:</source>
-        <translation>Beschreibung des Ausgabeformats:</translation>
+        <source>Output format description (should be unique):</source>
+        <translation type="unfinished" />
     </message>
     <message>
         <source>Output file extension:</source>
@@ -1368,11 +1342,19 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
     </message>
     <message>
         <source>Export only counter clockwise arcs</source>
-        <translation>Nur &quot;gegen den Uhrzeigersinn Bögen&quot; exportieren</translation>
+        <translation>Nur "gegen den Uhrzeigersinn Bögen" exportieren</translation>
     </message>
     <message>
         <source>Maximum arc radius:</source>
         <translation>Maximaler Bogenradius:</translation>
+    </message>
+    <message>
+        <source>Export all arcs as line seg</source>
+        <translation>Alle Bögen als Liniensegment exportieren</translation>
+    </message>
+    <message>
+        <source>Repeat Drill move for slices (only use wit abs coordinates)</source>
+        <translation type="unfinished" />
     </message>
     <message>
         <source>G-code constants</source>
@@ -1407,7 +1389,11 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Ausgabeformatierung</translation>
     </message>
     <message>
-        <source>Prepend numbers with the &apos;+&apos; sign for positive values</source>
+        <source>Windows line-endings</source>
+        <translation>Windows-Zeilenenden</translation>
+    </message>
+    <message>
+        <source>Prepend numbers with the '+' sign for positive values</source>
         <translation>Stelle Zahlen mit „+“ Zeichen für positive Werte voran</translation>
     </message>
     <message>
@@ -1415,7 +1401,7 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Anzahl der Stellen vor dem Dezimaltrennzeichen:</translation>
     </message>
     <message>
-        <source>Padding with &apos;0&apos; digit before the decimal separator</source>
+        <source>Padding with '0' digit before the decimal separator</source>
         <translation>Auffüllen mit Ziffer '0' vor dem Dezimaltrennzeichen</translation>
     </message>
     <message>
@@ -1423,7 +1409,7 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Anzahl der Stellen nach dem Dezimaltrennzeichen:</translation>
     </message>
     <message>
-        <source>Padding with &apos;0&apos; digit after the decimal separator</source>
+        <source>Padding with '0' digit after the decimal separator</source>
         <translation>Auffüllen mit Ziffer '0' nach dem Dezimaltrennzeichen</translation>
     </message>
     <message>
@@ -1475,6 +1461,14 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Lineare Vorschubbewegung für die Z-Ebene:</translation>
     </message>
     <message>
+        <source>Linear feed move for drilling:</source>
+        <translation>Lineare Vorschubbewegung zum Bohren:</translation>
+    </message>
+    <message>
+        <source>Linear retract move during drilling:</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
         <source>Clockwise feed move:</source>
         <translation>Vorschubbewegung im Uhrzeigersinn:</translation>
     </message>
@@ -1507,42 +1501,27 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Kommentar zum aktuellen Shape:</translation>
     </message>
     <message>
-        <source>Export all arcs as line seg</source>
-        <translation>Alle Bögen als Liniensegment exportieren</translation>
-    </message>
-    <message>
-        <source>Windows line-endings</source>
-        <translation>Windows-Zeilenenden</translation>
-    </message>
-    <message>
-        <source>Linear feed move for drilling:</source>
-        <translation>Lineare Vorschubbewegung zum Bohren:</translation>
-    </message>
-    <message>
-        <source>The postprocessor configuration file version ({0}) doesn&apos;t match any of the software expected version ({1}).
-
-You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to solve the problem.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Custom GCode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Define here custom GCODE that can be inserted anywhere in the program:</source>
         <translation type="unfinished">Definieren Sie hier benutzerdefinierten GCODE, der überall im Programm eingefügt werden kann:</translation>
     </message>
     <message>
-        <source>Repeat Drill move for slices (only use wit abs coordinates)</source>
-        <translation type="unfinished"></translation>
+        <source>The postprocessor configuration file version ({0}) doesn't match the software expected version ({1}).
+
+You have to delete (or carefully edit) the configuration file "{2}" to solve the problem.</source>
+        <translation type="vanished">Die Version der Postprozessor-Konfigurationsdatei ({0}) stimmt nicht mit der erwarteten Softwareversion ({1}) überein.
+
+Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten), um das Problem zu lösen.</translation>
     </message>
     <message>
-        <source>Linear retract move during drilling:</source>
-        <translation type="unfinished"></translation>
+        <source>Output format description:</source>
+        <translation type="vanished">Beschreibung des Ausgabeformats:</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>MyPostProcessor</name>
+    <message>
+        <source>Postprocessor configuration</source>
+        <translation>Konfiguration des Postprozessors</translation>
+    </message>
     <message>
         <source>created default varspace</source>
         <translation>Es wurden die Standard Variablen erstellt</translation>
@@ -1576,9 +1555,26 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <translation>Die Datei kann nicht gespeichert werden</translation>
     </message>
     <message>
-        <source>(Generated with: %s, Version: %s, Date: %s)
+        <source>(Generated with: %s)
+(Version: %s, Date: %s)
 </source>
-        <translation type="obsolete">(Generiert mit: %s, Version: %s, Datum: %s)
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <source>(Created from file: %s)
+</source>
+        <translation>(Erstellt aus der Datei: %s)
+</translation>
+    </message>
+    <message>
+        <source>(Used Postprocessor: %s) 
+</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <source>(Output format description: %s)
+</source>
+        <translation>(Beschreibung des Ausgabeformats: %s)
 </translation>
     </message>
     <message>
@@ -1588,48 +1584,24 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
 </translation>
     </message>
     <message>
-        <source>(Created from file: %s)
+        <source>(Generated with: %s, Version: %s, Date: %s)
 </source>
-        <translation>(Erstellt aus der Datei: %s)
+        <translation type="vanished">(Generiert mit: %s, Version: %s, Datum: %s)
 </translation>
     </message>
-    <message>
-        <source>Postprocessor configuration</source>
-        <translation>Konfiguration des Postprozessors</translation>
-    </message>
-    <message>
-        <source>(Output format description: %s)
-</source>
-        <translation>(Beschreibung des Ausgabeformats: %s)
-</translation>
-    </message>
-    <message>
-        <source>(Generated with: %s)
-(Version: %s, Date: %s)
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>(Used Postprocessor: %s) 
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
+</context><context>
     <name>OffArcGeo</name>
     <message>
         <source>Unsupported geometry type: %s</source>
-        <translation>Nicht unterstützter Geometrietyp: %s</translation>
+        <translation type="vanished">Nicht unterstützter Geometrietyp: %s</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>OffLineGeo</name>
     <message>
         <source>Unsupported geometry type: %s</source>
-        <translation>Nicht unterstützter Geometrietyp: %s</translation>
+        <translation type="vanished">Nicht unterstützter Geometrietyp: %s</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>PopUpDialog</name>
     <message>
         <source>Auto</source>
@@ -1643,22 +1615,19 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>PopulationClass</name>
     <message>
         <source>Wrong begin art of TSP chosen</source>
         <translation>Nicht vorhandene Anfangs Art für den TSP Export gewählt</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>Project</name>
     <message>
         <source>New/Unrecognized shapes added for layer:%s; %s</source>
         <translation>Neue/unerkannte Shapes hinzugefügt für Ebene: %s; %s</translation>
     </message>
-</context>
-<context>
+</context><context>
     <name>ReadDXF</name>
     <message>
         <source>Reading DXF Structure</source>
@@ -1673,18 +1642,22 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <translation>Erstelle die Konturen für die Entities</translation>
     </message>
     <message>
+        <source>Reading stopped at line %i.
+ "%s" is not a valid code (number) - please, check/correct dxf file</source>
+        <translation>Fehler während dem einlesen Gestoppt bei Linie %i.
+ Bitte überprüfen/korrigieren sie die Linie "%s" in der DXF Datei</translation>
+    </message>
+    <message>
         <source>Warning reading linepairs</source>
         <translation>Warnung während dem lesen der Linienpaare</translation>
     </message>
     <message>
-        <source>Reading stopped at line %i.
- &quot;%s&quot; is not a valid code (number) - please, check/correct dxf file</source>
-        <translation>Fehler während dem einlesen Gestoppt bei Linie %i.
- Bitte überprüfen/korrigieren sie die Linie &quot;%s&quot; in der DXF Datei</translation>
+        <source>Did read %i of linepairs from DXF</source>
+        <translation>Habe %i der Linienpaare aus DXF gelesen</translation>
     </message>
     <message>
-        <source>Short Elements</source>
-        <translation>Kurze Elemente</translation>
+        <source>Element ignored: %s</source>
+        <translation>Element ignoriert: %s</translation>
     </message>
     <message>
         <source>Length of some Elements too short!
@@ -1695,70 +1668,68 @@ Die Länge muss größer der Toleranz sein.
 Überspringe die Geometrien</translation>
     </message>
     <message>
-        <source>Did read %i of linepairs from DXF</source>
-        <translation>Habe %i der Linienpaare aus DXF gelesen</translation>
+        <source>Short Elements</source>
+        <translation>Kurze Elemente</translation>
     </message>
-    <message>
-        <source>Element ignored: %s</source>
-        <translation>Element ignoriert: %s</translation>
-    </message>
-</context>
-<context>
+</context><context>
     <name>Shape</name>
     <message>
-        <source>Analysing the shape for CW direction Nr: %s</source>
-        <translation>Überprüfe die Shape auf CW Fräsrichtung, Nr: %s</translation>
+        <source>Shoelace method cannot (directly) be applied to this shape</source>
+        <translation>Die Schnürsenkelmethode kann nicht (direkt) auf dieses Shape angewendet werden</translation>
     </message>
     <message>
         <source>Had to reverse the shape to be CW</source>
         <translation>Die Shape wurde umgekehrt um CW Richtung zu entsprechen</translation>
     </message>
     <message>
-        <source>Clicked Point: %s</source>
-        <translation>Ausgewählter Punkt: %s</translation>
-    </message>
-    <message>
-        <source>Old Start Point: %s</source>
-        <translation>Alter Start Punkt: %s</translation>
-    </message>
-    <message>
-        <source>New Start Point: %s</source>
-        <translation>Neuer Start Punkt: %s</translation>
-    </message>
-    <message>
-        <source>ERROR: Z infeed depth is null!</source>
-        <translation type="obsolete">FEHLER: Z Zustelltiefe is null!</translation>
-    </message>
-    <message>
-        <source>WARNING: initial mill depth (%i) is lower than end mill depth (%i). Using end mill depth as final depth.</source>
-        <translation type="obsolete">Warnung: Anfangs Frästiefe (%i) ist niedriger alls die End Frästiefe (%i). Verwende End Frästiefe als Frästiefe.</translation>
-    </message>
-    <message>
-        <source>Shoelace method cannot (directly) be applied to this shape</source>
-        <translation>Die Schnürsenkelmethode kann nicht (direkt) auf dieses Shape angewendet werden</translation>
-    </message>
-    <message>
-        <source>WARNING: initial mill depth (%f0.2) is lower than end mill depth (%f0.2). Using end mill depth as final depth.</source>
-        <translation type="obsolete">WARNUNG: Die anfängliche Frästiefe (%f0.2) ist geringer als die Schaftfrästiefe (%f0.2). Schaftfräsertiefe als Endtiefe verwenden.</translation>
-    </message>
-    <message>
         <source>Z infeed depth is null!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished" />
     </message>
     <message>
         <source>Warning during Export</source>
         <translation type="unfinished">Warnung während dem Exportieren</translation>
     </message>
     <message>
+        <source>Error: Z infeed depth is null!</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
         <source>Workpiece Top Z (%f0.2) is lower than end mill depth (%f0.2)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished" />
     </message>
     <message>
         <source>Initial mill depth (%f0.2) is lower than end mill depth (%f0.2)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished" />
     </message>
-</context>
-<context>
+    <message>
+        <source>Analysing the shape for CW direction Nr: %s</source>
+        <translation type="vanished">Überprüfe die Shape auf CW Fräsrichtung, Nr: %s</translation>
+    </message>
+    <message>
+        <source>Clicked Point: %s</source>
+        <translation type="vanished">Ausgewählter Punkt: %s</translation>
+    </message>
+    <message>
+        <source>Old Start Point: %s</source>
+        <translation type="vanished">Alter Start Punkt: %s</translation>
+    </message>
+    <message>
+        <source>New Start Point: %s</source>
+        <translation type="vanished">Neuer Start Punkt: %s</translation>
+    </message>
+    <message>
+        <source>ERROR: Z infeed depth is null!</source>
+        <translation type="vanished">FEHLER: Z Zustelltiefe is null!</translation>
+    </message>
+    <message>
+        <source>WARNING: initial mill depth (%i) is lower than end mill depth (%i). Using end mill depth as final depth.</source>
+        <translation type="vanished">Warnung: Anfangs Frästiefe (%i) ist niedriger alls die End Frästiefe (%i). Verwende End Frästiefe als Frästiefe.</translation>
+    </message>
+    <message>
+        <source>WARNING: initial mill depth (%f0.2) is lower than end mill depth (%f0.2). Using end mill depth as final depth.</source>
+        <translation type="vanished">WARNUNG: Die anfängliche Frästiefe (%f0.2) ist geringer als die Schaftfrästiefe (%f0.2). Schaftfräsertiefe als Endtiefe verwenden.</translation>
+    </message>
+</context><context>
     <name>TreeHandler</name>
     <message>
         <source>[en]</source>
@@ -1792,20 +1763,4 @@ Die Länge muss größer der Toleranz sein.
         <source>Rotation</source>
         <translation>Drehung</translation>
     </message>
-</context>
-<context>
-    <name>self.self</name>
-    <message>
-        <source>Error: Z infeed depth is null!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Workpiece Top Z (%f0.2) is lower than end mill depth (%f0.2)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Initial mill depth (%f0.2) is lower than end mill depth (%f0.2)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-</TS>
+</context></TS>
