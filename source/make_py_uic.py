@@ -63,7 +63,10 @@ if "linux" in sys.platform.lower() or "unix" in sys.platform.lower() or "darwin"
 else:
     PYTHONPATH = os.path.split(sys.executable)[0]
     UICPATH = os.path.join(PYTHONPATH, f"Scripts\\pyuic{PYQT_VERSION}.exe")
-    RCCPATH = os.path.join(PYTHONPATH, f"Scripts\\pyrcc{PYQT_VERSION}.exe")
+    if PYQT_VERSION == 5:
+        RCCPATH = os.path.join(PYTHONPATH, "Scripts\\pyrcc5.exe")
+    else:
+        RCCPATH = 'rcc'
     print(f"Using Windows platform tools '{UICPATH}' and '{RCCPATH}'\n")
 
 FILEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
