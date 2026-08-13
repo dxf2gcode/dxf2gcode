@@ -1128,7 +1128,7 @@ class MainWindow(QMainWindow):
         Some modification occured in the configuration window, we need to save these changes into the config file.
         Once done, the signal configuration_changed is emitted, so that anyone interested in this information can connect to this signal.
         """
-        if result == ConfigWindow.DialogCode.Applied or result == ConfigWindow.DialogCode.Accepted:
+        if result == ConfigWindow.Applied or result == ConfigWindow.DialogCode.Accepted:
             # Write the configuration into the config file (config.cfg)
             g.config.save_varspace()
             # Rebuild the readonly configuration structure
