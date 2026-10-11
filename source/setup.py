@@ -9,11 +9,11 @@ import sys
 from cx_Freeze import Executable, setup
 
 
-version = "20241102"
+version = "20260811"
 
 base = 'Console'
 if sys.platform == 'win32':
-    base = 'Win32GUI'  # Tells the build script to hide the console.
+    base = 'gui'  # Tells the build script to hide the console.
 
 
 # script based on
@@ -42,9 +42,9 @@ shutil.rmtree("dist", ignore_errors=True)
 
 includefiles = ['COPYING',
                 'README.txt',
-                ('i18n\dxf2gcode_de.qm', 'i18n\dxf2gcode_de.qm'),
-                ('i18n\dxf2gcode_fr.qm', 'i18n\dxf2gcode_fr.qm'),
-                ('i18n\dxf2gcode_ru.qm', 'i18n\dxf2gcode_ru.qm')
+                ('i18n\\dxf2gcode_de.qm', 'i18n\\dxf2gcode_de.qm'),
+                ('i18n\\dxf2gcode_fr.qm', 'i18n\\dxf2gcode_fr.qm'),
+                ('i18n\\dxf2gcode_ru.qm', 'i18n\\dxf2gcode_ru.qm')
                 ]
 includes = []
 excludes = []
@@ -80,7 +80,7 @@ executables = [
 
 setup(name='DXF2GCODE',
       version=version[0:4] + "." + version[4:6] + "." + version[6:8],  # converts YYYYMMDD -> YYYY.MM.DD
-      description='Converting 2D drawings to CNC machine compatible G-Code. Release Candidate 2 based on development branch',
+      description='Converting 2D drawings to CNC machine compatible G-Code. Qt6 compatible version based on development branch',
       options=options,
       executables=executables
       )

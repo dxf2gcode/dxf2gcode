@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from dxf2gcode.Qt import PYQT_VERSION
 
 import dxf2gcode.globals.constants as c
 
@@ -29,11 +30,9 @@ def which(program):
     return None
 
 
-pyQtVer = '5'
-
 if "linux" in sys.platform.lower() or "unix" in sys.platform.lower() or "darwin" in sys.platform.lower():
-    # On Linux and macOS executables are normaly on the PATH (on Linux please install packages like lib64-qt5-devel and python-qt5-devel)
-    names = ["pyuic%s" % pyQtVer]
+    # On Linux and macOS executables are normally on the PATH (on Linux please install packages like lib64-qt5-devel and python-qt5-devel)
+    names = [f"pyuic{PYQT_VERSION}"]
     UICPATH = None
 
     for name in names:
@@ -42,11 +41,13 @@ if "linux" in sys.platform.lower() or "unix" in sys.platform.lower() or "darwin"
             break
 
     if not UICPATH:
-        print("ERROR: Cannot file uic tool.")
-        print("Please consider to install uic tool - to use this script.")
+        print("ERROR: Cannot find the pyuic tool.")
         sys.exit(1)
 
-    names = ["pyrcc%s" % pyQtVer]
+    if PYQT_VERSION == 5:
+        names = ["pyrcc5"]
+    else:
+        names = ["rcc", "/usr/lib64/qt6/libexec/rcc"]
     RCCPATH = None
 
     for name in names:
@@ -54,29 +55,29 @@ if "linux" in sys.platform.lower() or "unix" in sys.platform.lower() or "darwin"
             RCCPATH = name
             break
 
-    if not UICPATH:
-        print("ERROR: Cannot file rcc tool.")
-        print("Please consider to install rcc tool - to use this script.")
+    if not RCCPATH:
+        print("ERROR: Cannot find the pyrcc tool.")
         sys.exit(1)
 
-    RCCPATH = "pyrcc%s" % pyQtVer
-
-    print("Using platform tools \"%s\" and \"%s\"\n" % (UICPATH, RCCPATH))
+    print(f"Using platform tools '{UICPATH}' and '{RCCPATH}'\n")
 else:
     PYTHONPATH = os.path.split(sys.executable)[0]
-    UICPATH = os.path.join(PYTHONPATH, "Scripts\pyuic5.exe")
-    RCCPATH = os.path.join(PYTHONPATH, "Scripts\pyrcc5.exe")
-    print("Using Windows platform tools \"%s\" and \"%s\"\n" % (UICPATH, RCCPATH))
+    UICPATH = os.path.join(PYTHONPATH, f"Scripts\\pyuic{PYQT_VERSION}.exe")
+    if PYQT_VERSION == 5:
+        RCCPATH = os.path.join(PYTHONPATH, "Scripts\\pyrcc5.exe")
+    else:
+        RCCPATH = 'rcc'
+    print(f"Using Windows platform tools '{UICPATH}' and '{RCCPATH}'\n")
 
 FILEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 
 UIFILE = "dxf2gcode.ui"
-PYFILEver = "dxf2gcode_ui%s.py" % pyQtVer
+PYFILEver = f"dxf2gcode_ui{PYQT_VERSION}.py"
 
 RCFILE = "dxf2gcode_images.qrc"
-RCFILEver = "dxf2gcode_images%s.qrc" % pyQtVer
+RCFILEver = f"dxf2gcode_images{PYQT_VERSION}.qrc"
 
-RCPYFILEver = "dxf2gcode_images%s_rc.py" % pyQtVer
+RCPYFILEver = f"dxf2gcode_images{PYQT_VERSION}_rc.py"
 
 ui_data = ""
 with open(os.path.join(FILEPATH,UIFILE), "r") as myfile:
@@ -87,10 +88,13 @@ try:
     os.write(fd, bytes(ui_data, 'UTF-8'))
     os.close(fd)
 
-    OPTIONS = "-o"
+    OPTIONS = ("-o", )
 
-    cmd1 = [UICPATH, tmp_ui_filename, OPTIONS, os.path.join(FILEPATH,PYFILEver)]
-    cmd2 = [RCCPATH, OPTIONS, os.path.join(FILEPATH,RCPYFILEver),os.path.join(FILEPATH,RCFILE)]
+    cmd1 = [UICPATH, tmp_ui_filename, *OPTIONS, os.path.join(FILEPATH,PYFILEver)]
+
+    if PYQT_VERSION == 6:
+        OPTIONS = ('-g', 'python', '-o')
+    cmd2 = [RCCPATH, *OPTIONS, os.path.join(FILEPATH,RCPYFILEver),os.path.join(FILEPATH,RCFILE)]
 
     print(" ".join(cmd1))
     subprocess.check_call(cmd1)
@@ -98,8 +102,18 @@ try:
     print(" ".join(cmd2))
     subprocess.check_call(cmd2)
 
+    if PYQT_VERSION == 6:
+        with open(os.path.join(FILEPATH,PYFILEver), "a", encoding="utf-8") as myfile:
+            myfile.write('import dxf2gcode_images6_rc\n')
+
+        with open(os.path.join(FILEPATH, RCPYFILEver), "r", encoding="utf-8") as myfile:
+            data = myfile.read().replace("from PySide6 import QtCore","from PyQt6 import QtCore")
+
+        with open(os.path.join(FILEPATH, RCPYFILEver), "w", encoding="utf-8") as f:
+            f.write(data)
+
 finally:
     os.remove(tmp_ui_filename)
 
-print("Please consider to not commit any auto-generated files.")
+print("Please do not commit any auto-generated files.")
 print("\nREADY")

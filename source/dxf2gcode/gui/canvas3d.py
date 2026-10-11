@@ -26,8 +26,9 @@ from __future__ import division
 import logging
 from math import cos, pi, radians, sin
 
-from PyQt5.QtCore import QCoreApplication, QPoint, Qt
-from PyQt5.QtGui import QColor
+from dxf2gcode.Qt import PYQT_VERSION
+from dxf2gcode.Qt.QtCore import QCoreApplication, QPoint, Qt
+from dxf2gcode.Qt.QtGui import QColor
 
 from dxf2gcode.core.layercontent import Shapes
 from dxf2gcode.core.point import Point
@@ -163,7 +164,7 @@ class GLWidget(CanvasBase):
 
     def contextMenuEvent(self, event):
         if not self.isRotating:
-            clicked, offset, _ = self.getClickedDetails(event)
+            clicked, offset, _ = self.getClickedDetails(event.pos())
             MyDropDownMenu(self, event.globalPos(), clicked, offset)
 
     def setXRotation(self, angle):
@@ -199,8 +200,12 @@ class GLWidget(CanvasBase):
         if self.isPanning or self.isRotating:
             pass
 
-        elif event.button() == Qt.LeftButton:
-            clicked, offset, tol = self.getClickedDetails(event)
+        elif event.button() == Qt.MouseButton.LeftButton:
+            if PYQT_VERSION == 6:
+                epos = event.position()
+            else:
+                epos = event.pos()
+            clicked, offset, tol = self.getClickedDetails(epos)
             xyForZ = {}
             anyHit = False
             for shape in self.shapes:
@@ -219,7 +224,7 @@ class GLWidget(CanvasBase):
                 if self.isMultiSelect and not hit:
                     continue
 
-                anyHit |= hit;
+                anyHit |= hit
 
                 if self.isMultiSelect and shape.selected:
                     hit = not hit
@@ -233,16 +238,19 @@ class GLWidget(CanvasBase):
             if not anyHit and not self.isMultiSelect:
                 for shape in self.shapes:
                     if shape.selected:
-                        g.window.TreeHandler.updateShapeSelection(shape, false)
+                        g.window.TreeHandler.updateShapeSelection(shape, False)
 
             self.update()
 
-        self._lastPos = event.pos()
+        if PYQT_VERSION == 6:
+            self._lastPos = event.position()
+        else:
+            self._lastPos = event.pos()
 
-    def getClickedDetails(self, event):
+    def getClickedDetails(self, epos):
         min_side = min(self.frameSize().width(), self.frameSize().height())
-        clicked = Point((event.pos().x() - self.frameSize().width() / 2),
-                        (event.pos().y() - self.frameSize().height() / 2)) / min_side / self.scale
+        clicked = Point((epos.x() - self.frameSize().width() / 2),
+                        (epos.y() - self.frameSize().height() / 2)) / min_side / self.scale
         offset = Point3D(-self.posX, -self.posY, -self.posZ) / self.scale
         tol = 10 * self.scaleCorr / min_side / self.scale
         return clicked, offset, tol
@@ -261,33 +269,46 @@ class GLWidget(CanvasBase):
 
     def mouseMoveEvent(self, event):
         self.updateModifiers(event)
+        if PYQT_VERSION == 6:
+            epos = event.position()
+        else:
+            epos = event.pos()
 
-        dx = event.pos().x() - self._lastPos.x()
-        dy = event.pos().y() - self._lastPos.y()
+        dx = epos.x() - self._lastPos.x()
+        dy = epos.y() - self._lastPos.y()
         self.clickTravelSq += dx * dx + dy * dy
 
         if self.isRotating:
-            if event.buttons() == Qt.LeftButton:
+            if event.buttons() == Qt.MouseButton.LeftButton:
                 self.setXRotation(self.rotX - dy / 2)
                 self.setYRotation(self.rotY + dx / 2)
-            elif event.buttons() == Qt.RightButton:
+            elif event.buttons() == Qt.MouseButton.RightButton:
                 self.setXRotation(self.rotX - dy / 2)
                 self.setZRotation(self.rotZ + dx / 2)
         elif self.isPanning:
-            if event.buttons() == Qt.LeftButton:
+            if event.buttons() == Qt.MouseButton.LeftButton:
                 min_side = min(self.frameSize().width(), self.frameSize().height())
                 dx, dy, dz = self.deRotate(dx, dy, 0)
                 self.posX += dx / min_side
                 self.posY += dy / min_side
                 self.posZ += dz / min_side
 
-        self._lastPos = event.pos()
+        if PYQT_VERSION == 6:
+            self._lastPos = event.position()
+        else:
+            self._lastPos = event.pos()
+
         self.update()
 
     def wheelEvent(self, event):
         min_side = min(self.frameSize().width(), self.frameSize().height())
-        x = (event.pos().x() - self.frameSize().width() / 2) / min_side
-        y = (event.pos().y() - self.frameSize().height() / 2) / min_side
+        if PYQT_VERSION == 6:
+            epos = event.position()
+        else:
+            epos = event.pos()
+
+        x = (epos.x() - self.frameSize().width() / 2) / min_side
+        y = (epos.y() - self.frameSize().height() / 2) / min_side
         s = 1.001 ** event.angleDelta().y()
 
         x, y, z = self.deRotate(x, y, 0)

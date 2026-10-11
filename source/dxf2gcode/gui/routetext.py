@@ -28,9 +28,9 @@ import logging
 from dxf2gcode.core.point import Point
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsItem
-from PyQt5.QtGui import QPainterPath, QPen, QColor, QFont
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QGraphicsItem
+from dxf2gcode.Qt.QtGui import QPainterPath, QPen, QColor, QFont
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("Gui.RouteText")
@@ -51,7 +51,7 @@ class RouteText(QGraphicsItem):
         pencolor = QColor(0, 200, 255)
         self.brush = QColor(0, 100, 255)
 
-        self.pen = QPen(pencolor, 1, QtCore.Qt.SolidLine)
+        self.pen = QPen(pencolor, 1, QtCore.Qt.PenStyle.SolidLine)
         self.pen.setCosmetic(True)
 
         self.path = QPainterPath()

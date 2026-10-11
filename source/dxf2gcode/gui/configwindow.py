@@ -79,12 +79,12 @@ from dxf2gcode.globals.helperfunctions import toInt, toFloat, str_encode, qstr_e
 
 import dxf2gcode.globals.constants as c
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QVBoxLayout, QHBoxLayout, QLayout, QFrame, \
+from dxf2gcode.Qt.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QVBoxLayout, QHBoxLayout, QLayout, QFrame, \
     QLabel, QLineEdit, QTextEdit, QCheckBox, QSpinBox, QDoubleSpinBox, QComboBox, QTableWidget, QTableWidgetItem, \
     QPushButton, QAbstractItemView, QWidget, QSizePolicy, QListWidget, QStackedWidget, QSplitter
-from PyQt5.QtGui import QIcon, QPixmap, QValidator, QRegExpValidator
-from PyQt5.QtCore import QLocale, QRegExp
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtGui import QIcon, QPixmap, QValidator, QRegularExpressionValidator
+from dxf2gcode.Qt.QtCore import QLocale, QRegularExpression
+from dxf2gcode.Qt import QtCore
 
 from dxf2gcode.gui.popupdialog import PopUpDialog
 
@@ -92,7 +92,7 @@ logger = logging.getLogger("Gui.ConfigWindow")
 
 
 class ConfigWindow(QDialog):
-    Applied = QDialog.Accepted + QDialog.Rejected + 1 #Define a result code that is different from accepted and rejected
+    Applied = QDialog.DialogCode.Accepted + QDialog.DialogCode.Rejected + 1 #Define a result code that is different from accepted and rejected
 
     """Main Class"""
     def __init__(self, definition_dict, config = None, configspec = None, parent = None, title = "Configuration"):
@@ -105,7 +105,7 @@ class ConfigWindow(QDialog):
         QDialog.__init__(self, parent)
         self.setWindowTitle(title)
         iconWT = QIcon()
-        iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Normal, QIcon.Off)
+        iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(QIcon(iconWT))
 
         self.edition_mode = False #No editing in progress for now
@@ -128,12 +128,14 @@ class ConfigWindow(QDialog):
         self.list_items = self.createWidgetFromDefinitionDict()
 
         #Create 3 buttons
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Discard | QDialogButtonBox.Apply | QDialogButtonBox.Close)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Discard |
+                                           QDialogButtonBox.StandardButton.Apply |
+                                           QDialogButtonBox.StandardButton.Close)
         self.button_box.accepted.connect(self.accept) #Apply and close (currently unused)
         self.button_box.rejected.connect(self.reject) #Close
-        apply_button = self.button_box.button(QDialogButtonBox.Apply)
+        apply_button = self.button_box.button(QDialogButtonBox.StandardButton.Apply)
         apply_button.clicked.connect(self.applyChanges) #Apply button
-        discard_button = self.button_box.button(QDialogButtonBox.Discard)
+        discard_button = self.button_box.button(QDialogButtonBox.StandardButton.Discard)
         discard_button.clicked.connect(self.discardChanges) #Discard button
 
         #Layout
@@ -174,7 +176,7 @@ class ConfigWindow(QDialog):
         Reimplemented keyPressEvent() function so that we can catch and ignore the [ENTER] key
         (When pressed inside a QDialog, this key apply the changes by default)
         """
-        if event.key() == QtCore.Qt.Key_Enter or event.key() == QtCore.Qt.Key_Return:
+        if event.key() == QtCore.Qt.Key.Key_Enter or event.key() == QtCore.Qt.Key.Key_Return:
             #key [ENTER]
             event.accept() #We caught the key and we "eat" it, so it prevents its default behaviour
         else:
@@ -196,9 +198,9 @@ class ConfigWindow(QDialog):
         @param edit_mode: when True, the configuration window swith to edition mode, meaning that the "Apply" and "OK" buttons are enabled, ...
         """
         editor_mode = edit_mode != False
-        self.button_box.button(QDialogButtonBox.Apply).setEnabled(editor_mode)
-        self.button_box.button(QDialogButtonBox.Discard).setEnabled(editor_mode)
-        self.button_box.button(QDialogButtonBox.Close).setEnabled(not editor_mode)
+        self.button_box.button(QDialogButtonBox.StandardButton.Apply).setEnabled(editor_mode)
+        self.button_box.button(QDialogButtonBox.StandardButton.Discard).setEnabled(editor_mode)
+        self.button_box.button(QDialogButtonBox.StandardButton.Close).setEnabled(not editor_mode)
         self.frame_file_selector.setEnabled(not editor_mode)
 
 
@@ -243,7 +245,7 @@ class ConfigWindow(QDialog):
         Reload our configuration widget with the values from the config file (=> Cancel the changes in the config window), then close the config window
         """
         self.affectValuesFromConfig(self.var_dict, self.configspec) # cannot be in the if statement - it is possible that the changeOccured was not fired
-        if not self.button_box.button(QDialogButtonBox.Close).isEnabled():
+        if not self.button_box.button(QDialogButtonBox.StandardButton.Close).isEnabled():
             logger.info('New configuration cancelled')
         self.setEditInProgress(False)
         QDialog.reject(self)
@@ -264,7 +266,7 @@ class ConfigWindow(QDialog):
         """
         errors_list = self.tr('Please correct the following error(s):\n') + errors_list
         error_message = QMessageBox(QMessageBox.Critical, self.tr('Invalid changes'), errors_list);
-        error_message.exec_()
+        error_message.exec()
 
 
     def setConfigSelectorCallback(self, selection_changed_callback, add_file_callback, remove_file_callback, duplicate_file_callback):
@@ -766,8 +768,8 @@ class CfgSubtitle(CfgDummy):
             layout.addWidget(QLabel(text))
 
         separator = QFrame()
-        separator.setFrameShape(QFrame.HLine)
-        separator.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed))
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setSizePolicy(QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed))
         layout.addWidget(separator)
 
         self.setLayout(layout, False)
@@ -821,11 +823,11 @@ class CfgCheckBox(CfgBase):
         @return 0 when the checkbox is unchecked, 1 if it is checked and 2 if it is partly checked (tristate must be set to true for tristate mode)
         """
         check_state = self.checkbox.checkState()
-        if check_state == QtCore.Qt.Unchecked:
+        if check_state == QtCore.Qt.CheckState.Unchecked:
             check_state = 0
-        elif check_state == QtCore.Qt.Checked:
+        elif check_state == QtCore.Qt.CheckState.Checked:
             check_state = 1
-        elif check_state == QtCore.Qt.PartiallyChecked:
+        elif check_state == QtCore.Qt.CheckState.PartiallyChecked:
             check_state = 2
 
         return check_state if self.checkbox.isTristate() else check_state == 1
@@ -837,11 +839,11 @@ class CfgCheckBox(CfgBase):
         """
         self.blockSignals(True) # Avoid unnecessary signal (we don't want the config window to emit any signal when filling the fields programatically)
         if value == 0:
-            self.checkbox.setCheckState(QtCore.Qt.Unchecked)
+            self.checkbox.setCheckState(QtCore.Qt.CheckState.Unchecked)
         elif value == 2:
-            self.checkbox.setCheckState(QtCore.Qt.PartiallyChecked)
+            self.checkbox.setCheckState(QtCore.Qt.CheckState.PartiallyChecked)
         else:
-            self.checkbox.setCheckState(QtCore.Qt.Checked)
+            self.checkbox.setCheckState(QtCore.Qt.CheckState.Checked)
         self.blockSignals(False)
 
 
@@ -946,7 +948,7 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
         local_decimal_separator = QLocale().decimalPoint()
         if local_decimal_separator == '.':
             local_decimal_separator = ''
-        self.lineEdit().setValidator(QRegExpValidator(QRegExp("-?[0-9]*[.{0}]?[0-9]*.*".format(local_decimal_separator)), self))
+        self.lineEdit().setValidator(QRegularExpressionValidator(QRegularExpression("-?[0-9]*[.{0}]?[0-9]*.*".format(local_decimal_separator)), self))
 
     def setSuffix(self, suffix):
         self.saved_suffix = suffix
@@ -962,7 +964,7 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
         #let's *really* trust the validator
         #http://python.6.x6.nabble.com/QValidator-raises-TypeError-td1923683.html
         #print("validate({}, {})".format(entry, pos))
-        return (QValidator.Acceptable, entry, pos)
+        return (QValidator.State.Acceptable, entry, pos)
 
 
 class CfgDoubleSpinBox(CfgSpinBox):
@@ -1132,7 +1134,7 @@ class CfgTextEdit(CfgBase):
 
         self.textedit = QTextEdit(parent)
         self.textedit.setAcceptRichText(False)
-        self.textedit.setAutoFormatting(QTextEdit.AutoNone)
+        self.textedit.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoNone)
 
         layout = QVBoxLayout(parent)
         layout.addWidget(self.label)
@@ -1284,7 +1286,7 @@ class CfgTable(QWidget):
         QWidget.__init__(self, parent)
 
         self.tablewidget = QTableWidget(parent)
-        self.tablewidget.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tablewidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         if isinstance(columns, (list, tuple)):
             self.setSpec({'string_list': columns, 'comment': ''})
         else:
@@ -1313,7 +1315,7 @@ class CfgTable(QWidget):
         self.setLayout(self.layout)
 
         #Ensure that the table always expand to the maximum available space
-        size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        size_policy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         size_policy.setVerticalStretch(10)
         size_policy.setHorizontalStretch(10)
         self.setSizePolicy(size_policy)

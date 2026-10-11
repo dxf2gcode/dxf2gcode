@@ -33,9 +33,9 @@ import logging
 from dxf2gcode.core.point import Point
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsLineItem, QGraphicsItem
-from PyQt5.QtGui import QPen, QPolygonF
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QGraphicsLineItem, QGraphicsItem
+from dxf2gcode.Qt.QtGui import QPen, QPolygonF
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("Gui.Arrow")
@@ -44,7 +44,7 @@ logger = logging.getLogger("Gui.Arrow")
 class Arrow(QGraphicsLineItem):
     def __init__(self, startp=Point(), endp=None,
                  length=60.0, angle=50.0,
-                 color=QtCore.Qt.red, pencolor=QtCore.Qt.green,
+                 color=QtCore.Qt.GlobalColor.red, pencolor=QtCore.Qt.GlobalColor.green,
                  startarrow=True):
         """
         Initialisation of the class.
@@ -61,9 +61,9 @@ class Arrow(QGraphicsLineItem):
         self.allwaysshow = False
 
         self.arrowHead = QPolygonF()
-        self.setFlag(QGraphicsItem.ItemIsSelectable, False)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, False)
         self.myColor = color
-        self.pen = QPen(pencolor, 1, QtCore.Qt.SolidLine)
+        self.pen = QPen(pencolor, 1, QtCore.Qt.PenStyle.SolidLine)
         self.pen.setCosmetic(True)
         self.arrowSize = 8.0
 

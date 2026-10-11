@@ -30,8 +30,8 @@ import os
 import dxf2gcode.globals.constants as c
 import dxf2gcode.globals.globals as g
 
-from PyQt5.QtWidgets import QTextBrowser
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QTextBrowser
+from dxf2gcode.Qt import QtCore
 
 
 class MessageBox(QTextBrowser):
@@ -41,10 +41,10 @@ class MessageBox(QTextBrowser):
     @sideeffect: None
     """
 
-    def __init__(self, origobj):
+    def __init__(self, parent=None):
         """
         Initialization of the MessageBox class.
-        @param origobj: This is the reference to to parent class initialized
+        @param parent: This is the reference to the parent class initialized
         previously.
         """
         super(MessageBox, self).__init__()

@@ -24,9 +24,9 @@
 ############################################################################
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QTextBrowser
-from PyQt5.QtGui import QIcon, QPixmap, QTextCursor
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QTextBrowser
+from dxf2gcode.Qt.QtGui import QIcon, QPixmap, QTextCursor
+from dxf2gcode.Qt import QtCore
 
 import logging
 
@@ -55,7 +55,7 @@ class AboutDialog(QDialog):
         self.text.setReadOnly(True)
         self.text.setOpenExternalLinks(True)
         self.text.append(self.message)
-        self.text.moveCursor(QTextCursor.Start)
+        self.text.moveCursor(QTextCursor.MoveOperation.Start)
         self.text.ensureCursorVisible()
 
         vbox.addWidget(self.text)
@@ -63,11 +63,11 @@ class AboutDialog(QDialog):
         self.setLayout(vbox)
         self.setMinimumSize(550, 450)
         self.resize(550, 600)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
         self.setWindowTitle(self.title)
         iconWT = QIcon()
         iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"),
-                         QIcon.Normal, QIcon.Off)
+                         QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(QIcon(iconWT))
 
-        self.exec_()
+        self.exec()

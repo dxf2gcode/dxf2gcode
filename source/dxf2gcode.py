@@ -58,10 +58,10 @@ from dxf2gcode.gui.treehandling import TreeHandler
 from dxf2gcode.postpro.postprocessor import MyPostProcessor
 from dxf2gcode.postpro.tspoptimisation import TspOptimization
 
-from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMessageBox
-from PyQt5.QtGui import QSurfaceFormat
-from PyQt5 import QtCore
-
+from dxf2gcode.Qt.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMessageBox
+from dxf2gcode.Qt.QtGui import QSurfaceFormat
+from dxf2gcode.Qt import QtCore
+from dxf2gcode.Qt import PYQT_VERSION
 
 logger = logging.getLogger()
 
@@ -113,14 +113,14 @@ class MainWindow(QMainWindow):
 
         if sys.version_info[0] == 2:
             error_message = QMessageBox(QMessageBox.Critical, 'ERROR', self.tr("Python version 2 is not supported, please use it with python version 3."))
-            sys.exit(error_message.exec_())
+            sys.exit(error_message.exec())
 
         # Load the post-processor configuration and build the post-processor configuration window
         self.MyPostProcessor = MyPostProcessor()
         # If string version_mismatch isn't empty, we popup an error and exit
         if self.MyPostProcessor.version_mismatch:
             error_message = QMessageBox(QMessageBox.Critical, 'Configuration error', self.MyPostProcessor.version_mismatch)
-            sys.exit(error_message.exec_())
+            sys.exit(error_message.exec())
 
         self.d2g = Project(self)
 
@@ -230,10 +230,10 @@ class MainWindow(QMainWindow):
             return
         if g.config.mode3d:
             self.canvas.updateModifiers(event)
-        elif event.key() == QtCore.Qt.Key_Control:
+        elif event.key() == QtCore.Qt.Key.Key_Control:
             self.canvas.isMultiSelect = True
-        elif event.key() == QtCore.Qt.Key_Shift:
-            self.canvas.setDragMode(QGraphicsView.ScrollHandDrag)
+        elif event.key() == QtCore.Qt.Key.Key_Shift:
+            self.canvas.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
 
     def keyReleaseEvent(self, event):
         """
@@ -243,10 +243,10 @@ class MainWindow(QMainWindow):
         """
         if g.config.mode3d:
             self.canvas.updateModifiers(event)
-        elif event.key() == QtCore.Qt.Key_Control:
+        elif event.key() == QtCore.Qt.Key.Key_Control:
             self.canvas.isMultiSelect = False
-        elif event.key() == QtCore.Qt.Key_Shift:
-            self.canvas.setDragMode(QGraphicsView.NoDrag)
+        elif event.key() == QtCore.Qt.Key.Key_Shift:
+            self.canvas.setDragMode(QGraphicsView.DragMode.NoDrag)
 
     def enableToolbarButtons(self, status=True):
         # File
@@ -294,7 +294,7 @@ class MainWindow(QMainWindow):
         possible to select multiple postprocessor files, which are located
         in the folder.
         """
-        self.setCursor(QtCore.Qt.WaitCursor)
+        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.app.processEvents()
 
         logger.debug(self.tr('Export the enabled shapes'))
@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
         Method is called to optimize the order of the shapes. This is performed
         by solving the TSP Problem.
         """
-        self.setCursor(QtCore.Qt.WaitCursor)
+        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.app.processEvents()
 
         logger.debug(self.tr('Optimize order of enabled shapes per layer'))
@@ -838,7 +838,7 @@ class MainWindow(QMainWindow):
             if not self.filename:
                 return False  # cancelled
 
-        self.setCursor(QtCore.Qt.WaitCursor)
+        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.setWindowTitle("DXF2GCODE - [%s]" % self.filename)
         self.canvas.resetAll()
         self.app.processEvents()
@@ -1128,7 +1128,7 @@ class MainWindow(QMainWindow):
         Some modification occured in the configuration window, we need to save these changes into the config file.
         Once done, the signal configuration_changed is emitted, so that anyone interested in this information can connect to this signal.
         """
-        if result == ConfigWindow.Applied or result == ConfigWindow.Accepted:
+        if result == ConfigWindow.Applied or result == ConfigWindow.DialogCode.Accepted:
             # Write the configuration into the config file (config.cfg)
             g.config.save_varspace()
             # Rebuild the readonly configuration structure
@@ -1248,10 +1248,13 @@ if __name__ == "__main__":
     # If string version_mismatch isn't empty, we popup an error and exit
     if g.config.version_mismatch:
         error_message = QMessageBox(QMessageBox.Critical, 'Configuration error', g.config.version_mismatch)
-        sys.exit(error_message.exec_())
+        sys.exit(error_message.exec())
 
     # Delay imports - needs to be done after logger and config initialization; and before the main window
-    from dxf2gcode_ui5 import Ui_MainWindow
+    if PYQT_VERSION == 5:
+        from dxf2gcode_ui5 import Ui_MainWindow
+    else:
+        from dxf2gcode_ui6 import Ui_MainWindow
 
     if g.config.mode3d:
         from dxf2gcode.core.shape import Shape
@@ -1300,5 +1303,5 @@ if __name__ == "__main__":
         window.exportShapes(None, options.export_filename)
 
     if not options.quiet:
-        # It's exec_ because exec is a reserved word in Python
-        sys.exit(app.exec_())
+        # exec is no longer a reserved word in Python
+        sys.exit(app.exec())

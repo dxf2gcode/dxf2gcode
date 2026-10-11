@@ -28,23 +28,22 @@ from __future__ import absolute_import
 from __future__ import division
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsItem
-from PyQt5.QtGui import QPen
-from PyQt5 import QtCore
-
+from dxf2gcode.Qt.QtWidgets import QGraphicsItem
+from dxf2gcode.Qt.QtGui import QPen
+from dxf2gcode.Qt import QtCore
 
 class WpZero(QGraphicsItem):
     """
     class WpZero
     """
-    def __init__(self, center, color=QtCore.Qt.gray):
+    def __init__(self, center, color=QtCore.Qt.GlobalColor.gray):
         self.sc = None
         super(WpZero, self).__init__()
 
         self.center = center
         self.allwaysshow = False
         self.color = color
-        self.pen = QPen(QtCore.Qt.darkGray, 1, QtCore.Qt.SolidLine)
+        self.pen = QPen(QtCore.Qt.GlobalColor.darkGray, 1, QtCore.Qt.PenStyle.SolidLine)
         self.pen.setCosmetic(True)
 
         self.diameter = 23.0

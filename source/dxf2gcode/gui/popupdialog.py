@@ -28,9 +28,9 @@ from __future__ import absolute_import
 import logging
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QFrame, QGridLayout, QLabel, QLineEdit, QPushButton, QCheckBox
-from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QDialog, QVBoxLayout, QFrame, QGridLayout, QLabel, QLineEdit, QPushButton, QCheckBox
+from dxf2gcode.Qt.QtGui import QIcon, QPixmap
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("Gui.PopUpDialog")
@@ -72,10 +72,10 @@ class PopUpDialog(QDialog):
         vbox = QVBoxLayout(self)
 
         top = QFrame(self)
-        top.setFrameShape(QFrame.StyledPanel)
+        top.setFrameShape(QFrame.Shape.StyledPanel)
 
         bottom = QFrame(self)
-        bottom.setFrameShape(QFrame.StyledPanel)
+        bottom.setFrameShape(QFrame.Shape.StyledPanel)
 
         grid1 = QGridLayout()
         grid1.setSpacing(10)
@@ -123,13 +123,13 @@ class PopUpDialog(QDialog):
 
         self.setLayout(vbox)
 
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
         self.setWindowTitle(self.title)
         iconWT = QIcon()
-        iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Normal, QIcon.Off)
+        iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(QIcon(iconWT))
 
-        self.exec_()
+        self.exec()
 
     def cbAuto(self):
         """

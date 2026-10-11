@@ -48,9 +48,9 @@ from dxf2gcode.gui.canvas import CanvasBase, MyDropDownMenu
 import dxf2gcode.globals.globals as g
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsItem, QGraphicsView, QRubberBand, QGraphicsScene, QGraphicsLineItem
-from PyQt5.QtGui import QPainterPath, QPen, QColor, QPainterPathStroker
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QGraphicsItem, QGraphicsView, QRubberBand, QGraphicsScene, QGraphicsLineItem
+from dxf2gcode.Qt.QtGui import QPainterPath, QPen, QColor, QPainterPathStroker
+from dxf2gcode.Qt import QtCore
 
 
 logger = logging.getLogger("DxfImport.myCanvasClass")
@@ -72,16 +72,16 @@ class MyGraphicsView(CanvasBase):
         super(MyGraphicsView, self).__init__(parent)
         self.currentItem = None
 
-        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        self.setResizeAnchor(QGraphicsView.AnchorViewCenter)
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
 
         # self.setDragMode(QGraphicsView.RubberBandDrag )
-        self.setDragMode(QGraphicsView.NoDrag)
+        self.setDragMode(QGraphicsView.DragMode.NoDrag)
 
         self.parent = parent
         self.mppos = None
 
-        self.rubberBand = QRubberBand(QRubberBand.Rectangle, self)
+        self.rubberBand = QRubberBand(QRubberBand.Shape.Rectangle, self)
         self.prvRectRubberBand = QtCore.QRect()
 
     def tr(self, string_to_translate):
@@ -144,7 +144,7 @@ class MyGraphicsView(CanvasBase):
             super(MyGraphicsView, self).mouseReleaseEvent(event)
 
         # Selection only enabled for left Button
-        elif event.button() == QtCore.Qt.LeftButton:
+        elif event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.currentItems = []
             scene = self.scene()
             if scene and not self.isMultiSelect:
@@ -232,7 +232,7 @@ class MyGraphicsView(CanvasBase):
         width = scene.BB.Pe.x - scene.BB.Ps.x
         height = scene.BB.Pe.y - scene.BB.Ps.y
         scext = QtCore.QRectF(scene.BB.Ps.x, -scene.BB.Pe.y, width * 1.05, height * 1.05)
-        self.fitInView(scext, QtCore.Qt.KeepAspectRatio)
+        self.fitInView(scext, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         logger.debug(self.tr("Autoscaling to extend: %s") % scext)
 
     def setShowPathDirections(self, flag):
@@ -406,7 +406,7 @@ class MyGraphicsScene(QGraphicsScene):
     def addexproutest(self):
         self.expprv = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
                             g.config.vars.Plane_Coordinates['axis2_start_end'])
-        self.expcol = QtCore.Qt.darkRed
+        self.expcol = QtCore.Qt.GlobalColor.darkRed
 
     def addexproute(self, exp_order, layer_nr):
         """
@@ -427,7 +427,7 @@ class MyGraphicsScene(QGraphicsScene):
                                           color=self.expcol,
                                           pencolor=self.expcol))
 
-            self.expcol = QtCore.Qt.darkGray
+            self.expcol = QtCore.Qt.GlobalColor.darkGray
 
             self.routetext.append(RouteText(text=("%s,%s" % (layer_nr, shape_nr+1)),
                                             startp=en))
@@ -440,7 +440,7 @@ class MyGraphicsScene(QGraphicsScene):
         st = self.expprv
         en = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
                    g.config.vars.Plane_Coordinates['axis2_start_end'])
-        self.expcol = QtCore.Qt.darkRed
+        self.expcol = QtCore.Qt.GlobalColor.darkRed
 
         self.routearrows.append(Arrow(startp=en,
                                       endp=st,
@@ -466,27 +466,28 @@ class MyGraphicsScene(QGraphicsScene):
                 shape.hide()
 
 class ShapeGUI(QGraphicsItem, Shape):
-    PEN_NORMAL = QPen(QtCore.Qt.black, 1, QtCore.Qt.SolidLine)
+    PEN_NORMAL = QPen(QtCore.Qt.GlobalColor.black, 1, QtCore.Qt.PenStyle.SolidLine)
     PEN_NORMAL.setCosmetic(True)
-    PEN_SELECT = QPen(QtCore.Qt.red, 2, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin)
+    PEN_SELECT = QPen(QtCore.Qt.GlobalColor.red, 2, QtCore.Qt.PenStyle.SolidLine,
+                      QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
     PEN_SELECT.setCosmetic(True)
-    PEN_NORMAL_DISABLED = QPen(QtCore.Qt.gray, 1, QtCore.Qt.DotLine)
+    PEN_NORMAL_DISABLED = QPen(QtCore.Qt.GlobalColor.gray, 1, QtCore.Qt.PenStyle.DotLine)
     PEN_NORMAL_DISABLED.setCosmetic(True)
-    PEN_SELECT_DISABLED = QPen(QtCore.Qt.blue, 1, QtCore.Qt.DashLine)
+    PEN_SELECT_DISABLED = QPen(QtCore.Qt.GlobalColor.blue, 1, QtCore.Qt.PenStyle.DashLine)
     PEN_SELECT_DISABLED.setCosmetic(True)
-    PEN_BREAK = QPen(QtCore.Qt.magenta, 1, QtCore.Qt.SolidLine)
+    PEN_BREAK = QPen(QtCore.Qt.GlobalColor.magenta, 1, QtCore.Qt.PenStyle.SolidLine)
     PEN_BREAK.setCosmetic(True)
-    PEN_LEFT = QPen(QtCore.Qt.darkCyan, 1, QtCore.Qt.SolidLine)
+    PEN_LEFT = QPen(QtCore.Qt.GlobalColor.darkCyan, 1, QtCore.Qt.PenStyle.SolidLine)
     PEN_LEFT.setCosmetic(True)
-    PEN_RIGHT = QPen(QtCore.Qt.darkMagenta, 1, QtCore.Qt.SolidLine)
+    PEN_RIGHT = QPen(QtCore.Qt.GlobalColor.darkMagenta, 1, QtCore.Qt.PenStyle.SolidLine)
     PEN_RIGHT.setCosmetic(True)
 
     def __init__(self, nr, closed, parentEntity):
         QGraphicsItem.__init__(self)
         Shape.__init__(self, nr, closed, parentEntity)
 
-        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
-        self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+        self.setAcceptedMouseButtons(QtCore.Qt.MouseButton.NoButton)
 
         self.selectionChangedCallback = None
         self.enableDisableCallback = None
@@ -638,10 +639,10 @@ class StMoveGUI(QGraphicsLineItem, StMove):
         self.allwaysshow = False
         self.path = QPainterPath()
 
-        self.setFlag(QGraphicsItem.ItemIsSelectable, False)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, False)
 
-        self.pen = QPen(QColor(50, 100, 255), 1, QtCore.Qt.SolidLine,
-                        QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin)
+        self.pen = QPen(QColor(50, 100, 255), 1, QtCore.Qt.PenStyle.SolidLine,
+                        QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
         self.pen.setCosmetic(True)
         self.make_papath()
 

@@ -35,10 +35,10 @@ Subclass is done in order to:
 """
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QTreeView
-from PyQt5.QtGui import QStandardItemModel
-from PyQt5 import QtCore
-from PyQt5.QtCore import QByteArray
+from dxf2gcode.Qt.QtWidgets import QTreeView
+from dxf2gcode.Qt.QtGui import QStandardItemModel
+from dxf2gcode.Qt import QtCore
+from dxf2gcode.Qt.QtCore import QByteArray
 
 import logging
 logger = logging.getLogger("DxfImport.myCanvasClass")

@@ -46,8 +46,8 @@ from dxf2gcode.globals.helperfunctions import a2u
 import dxf2gcode.globals.globals as g
 import dxf2gcode.globals.constants as c
 
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5 import QtCore
+from dxf2gcode.Qt.QtWidgets import QMessageBox
+from dxf2gcode.Qt import QtCore
 
 logger = logging.getLogger("DxfImport.Import")
 

@@ -37,7 +37,7 @@ from dxf2gcode.core.boundingbox import BoundingBox
 import dxf2gcode.globals.globals as g
 
 import dxf2gcode.globals.constants as c
-from PyQt5 import QtCore
+from dxf2gcode.Qt import QtCore
 
 import logging
 logger = logging.getLogger("core.arcgeo")

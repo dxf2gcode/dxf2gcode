@@ -52,7 +52,7 @@ def toFloat(text):
 
 def a2u(text):
     """
-    Convert ASCII string with encoded chars like \ U + xxxx to Python Unicode strings.
+    Convert ASCII string with encoded chars like \\ U + xxxx to Python Unicode strings.
     """
     cur = 0
     out = str()

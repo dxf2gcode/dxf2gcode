@@ -42,8 +42,8 @@ from dxf2gcode.core.holegeo import HoleGeo
 from dxf2gcode.core.pocketmove import PocketMove
 
 import dxf2gcode.globals.constants as c
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QMessageBox
+from dxf2gcode.Qt import QtCore
+from dxf2gcode.Qt.QtWidgets import QMessageBox
 
 logger = logging.getLogger("Core.Shape")
 

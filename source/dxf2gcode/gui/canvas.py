@@ -35,11 +35,11 @@ from dxf2gcode.core.arcgeo import ArcGeo
 #from dxf2gcode.core.holegeo import HoleGeo
 
 import dxf2gcode.globals.constants as c
-from PyQt5.QtWidgets import QGraphicsView, QMenu
-from PyQt5 import QtCore
-from PyQt5.QtGui import QMouseEvent, QKeyEvent
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import Qt
+from dxf2gcode.Qt.QtWidgets import QGraphicsView, QMenu
+from dxf2gcode.Qt import QtCore
+from dxf2gcode.Qt.QtGui import QMouseEvent, QKeyEvent
+from dxf2gcode.Qt.QtWidgets import QApplication
+from dxf2gcode.Qt.QtCore import Qt
 
 
 logger = logging.getLogger("Gui.Canvas")
@@ -65,7 +65,7 @@ def CanvasObject():
                             "Set mode3d to False in the config file, or update your PyQt version.\n"
                             "Current version found: PyQt%s (which includes Qt%s)"
                             % (QtCore.PYQT_VERSION_STR, QtCore.QT_VERSION_STR))
-        from PyQt5.QtWidgets import QOpenGLWidget
+        from dxf2gcode.Qt.QtOpenGLWidgets import QOpenGLWidget
         return QOpenGLWidget
     else:
         return QGraphicsView
@@ -97,21 +97,21 @@ class CanvasBase(CanvasObject()):
             modifiers = QApplication.keyboardModifiers()
 
         # allow only clean modifiers, no combos
-        wantMultiSelect = (modifiers == Qt.ControlModifier)
-        self.isMultiSelect = wantMultiSelect and ((buttons == Qt.NoButton) or (buttons == Qt.LeftButton))
-        wantPanning = (modifiers == Qt.ShiftModifier)
-        self.isPanning = wantPanning and (buttons == Qt.LeftButton)
-        wantRotating = (modifiers == Qt.AltModifier)
-        self.isRotating = wantRotating and (buttons == Qt.LeftButton)
+        wantMultiSelect = (modifiers == Qt.KeyboardModifier.ControlModifier)
+        self.isMultiSelect = wantMultiSelect and ((buttons == Qt.MouseButton.NoButton) or (buttons == Qt.MouseButton.LeftButton))
+        wantPanning = (modifiers == Qt.KeyboardModifier.ShiftModifier)
+        self.isPanning = wantPanning and (buttons == Qt.MouseButton.LeftButton)
+        wantRotating = (modifiers == Qt.KeyboardModifier.AltModifier)
+        self.isRotating = wantRotating and (buttons == Qt.MouseButton.LeftButton)
 
         if self.isPanning or self.isRotating:
-            self.setCursor(Qt.ClosedHandCursor)
+            self.setCursor(Qt.CursorShape.ClosedHandCursor)
         elif wantPanning:
-            self.setCursor(Qt.OpenHandCursor)
+            self.setCursor(Qt.CursorShape.OpenHandCursor)
         elif wantRotating:
-            self.setCursor(Qt.PointingHandCursor)
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
         elif wantMultiSelect:
-            self.setCursor(Qt.CrossCursor)
+            self.setCursor(Qt.CursorShape.CrossCursor)
         else:
             self.unsetCursor()
 
@@ -172,12 +172,12 @@ class MyDropDownMenu(QMenu):
                     
 
         #ONly allow it it's a closed shaep
-        if ((allClosed == True) and (allArcs==True)):
+        if (allClosed == True) and (allArcs == True):
             self.DrillAction = self.addAction(self.tr("Drill Bore"))
             self.DrillAction.setCheckable(True)
             #HoleAction.triggered.connect(self.setHoleGeo)
             self.DrillAction.triggered.connect(self.setDrill)
-            if self.selectedItems[0].Drill == True:
+            if self.selectedItems[0].Drill:
                 self.DrillAction.setChecked(True)
             else:
                 self.DrillAction.setChecked(False)
@@ -217,7 +217,7 @@ class MyDropDownMenu(QMenu):
             self.leCompAction.triggered.connect(self.setLeftComp)
             self.reCompAction.triggered.connect(self.setRightComp)
 
-        self.exec_(position)
+        self.exec(position)
 
     def tr(self, string_to_translate):
         """
