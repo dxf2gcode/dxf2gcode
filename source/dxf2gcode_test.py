@@ -32,32 +32,51 @@ from pathlib import PurePath
 
 
 class TestDXF2Gcode(unittest.TestCase):
-    pass
+    """Test the DXF2GCODE command-line workflow."""
+
+    def test_dxf_files_can_be_opened(self):
+        """Open every bundled DXF example and verify that it is not empty."""
+        input_directory = Path(__file__).resolve().parent.parent / 'dxf'
+        self.assertTrue(input_directory.is_dir(), 'DXF input directory not found')
+        dxf_files = sorted(
+            path for path in input_directory.iterdir()
+            if path.is_file() and path.suffix.lower() == '.dxf'
+        )
+
+        self.assertTrue(dxf_files, 'No DXF input files found')
+
+        for dxf_file in dxf_files:
+            with self.subTest(dxf_file=dxf_file.name):
+                with dxf_file.open('rb') as file_:
+                    self.assertTrue(file_.read(1), 'DXF file is empty')
 
 
 def make_test_function(description, dxf2gcode, in_file, out_file):
+    """Create a test that converts one DXF file and checks its output."""
     def test(self):
-        c = []
-        c.append(sys.executable)
-        c.append(dxf2gcode)
-        c.append('--quiet')
-        c.append('-e')
-        c.append(out_file)
-        c.append(in_file)
-        print("\n\nExecuting {0}".format(c))
-        rv = subprocess.call(c)
-        self.assertEqual(rv, 0, description)
-        dxf = Path(out_file + '.ngc')
-        rv = dxf.is_file()
-        self.assertEqual(rv, True, description)
-        rv = dxf.stat().st_size > 0
-        self.assertEqual(rv, True, description)
-        dxf.unlink()
+        """Convert a DXF file and verify the generated G-code file."""
+        command = [
+            sys.executable,
+            dxf2gcode,
+            '--quiet',
+            '-e',
+            out_file,
+            in_file,
+        ]
+        print("\n\nExecuting {0}".format(command))
+        return_code = subprocess.call(command)
+        self.assertEqual(return_code, 0, description)
+
+        output_file = Path(out_file + '.ngc')
+        self.assertTrue(output_file.is_file(), description)
+        self.assertGreater(output_file.stat().st_size, 0, description)
+        output_file.unlink()
 
     return test
 
 
 def run_tests():
+    """Register a conversion test for every bundled DXF file and run it."""
     dxf2gcode = './dxf2gcode.py'
     in_dir_name = '../dxf'
     out_dir_name = '.'

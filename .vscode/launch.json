@@ -9,7 +9,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["D:/GIT/dxf2gcode-sourcecode/dxf/Panneau_dessus_valise.d2g"]
+            "args": ["D:/GIT/dxf2gcode-sourcecode/dxf/test.dxf"]
         },
         {
             "name": "Python: File",
