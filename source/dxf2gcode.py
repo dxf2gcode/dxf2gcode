@@ -1194,6 +1194,11 @@ class MainWindow(QMainWindow):
     def closeEvent(self, e):
         logger.debug(self.tr("Closing"))
         self.saveWindowState()
+        # Detach Qt-bound StreamHandler so logging.shutdown() won't crash
+        # on a deleted QTextBrowser at exit. See messagebox.py / logger.py
+        for handler in logger.handlers[:]:
+            if isinstance(handler, logging.StreamHandler) and hasattr(handler, 'stream'):
+                handler.stream = None
         e.accept()
 
     def restoreWindowState(self):

@@ -22,8 +22,7 @@
 #
 ############################################################################
 
-from __future__ import absolute_import
-
+import ast
 import logging
 import hashlib
 import re
@@ -39,11 +38,53 @@ from dxf2gcode.Qt import QtCore
 
 logger = logging.getLogger("Core.Project")
 
-def execute(self, content):
-    # hack to use exec with local variables, for sure; To prevent the following error
-    # SyntaxError: unqualified exec is not allowed in function 'load' it contains a nested function with free variables
-    # this error is a Python 2.7 compiler bug (http://bugs.python.org/issue21591) - might occur in the earlier versions
-    exec(content, {'d2g': self})
+_ALLOWED_D2G_ATTRS = frozenset([
+    'file', 'point_tol', 'fitting_tol',
+    'scale', 'rot',
+    'wpzero_x', 'wpzero_y',
+    'mirrorx', 'mirrory',
+    'split_lines', 'aut_cut_com', 'machine_type', 'layers',
+])
+
+
+def _safe_load_project(self, content):
+    """Parse a project-file string and assign values to d2g attributes safely.
+
+    Instead of ``exec()`` the whole AST is inspected: only top-level
+    ``d2g.<attr> = <literal>`` statements are accepted.  Everything else
+    (calls, imports, expressions, unknown attribute names) raises immediately.
+    The format written by :meth:`export` consists exclusively of Python
+    literals, so ``ast.literal_eval`` can be used for every value.
+    """
+    tree = ast.parse(content)
+    lineno_offset = 0          # header + possible blank line(s) below
+    for node in ast.iter_child_nodes(tree):
+        if isinstance(node, ast.Assign):
+            targets = node.targets
+            if len(targets) != 1 or not isinstance(targets[0], ast.Attribute):
+                raise ValueError(
+                    "Line {}: Only 'd2g.<attr> = <value>' assignments allowed".format(
+                        node.lineno))
+            attr_node = targets[0]
+            if not (isinstance(attr_node.value, ast.Name)
+                    and attr_node.value.id == 'd2g'):
+                raise ValueError(
+                    "Line {}: Target must be 'd2g', got {}".format(
+                        node.lineno,
+                        ast.dump(attr_node)))
+            attr_name = attr_node.attr
+            if attr_name not in _ALLOWED_D2G_ATTRS:
+                raise ValueError(
+                    "Line {}: Unknown/dangerous attribute '{}'"
+                    .format(node.lineno, attr_name))
+            setattr(self, attr_name, ast.literal_eval(node.value))
+        elif isinstance(node, (ast.Expr,)):
+            # Comments / whitespace lines after the header are harmless
+            pass
+        else:
+            raise ValueError(
+                "Line {}: Unexpected statement '{}'".format(
+                    node.lineno, type(node).__name__))
 
 class Project(object):
     header = "# +~+~+~ DXF2GCODE project file V%s ~+~+~+"
@@ -155,7 +196,7 @@ d2g.layers = ''' + str(layers)
         if version not in  Project.supported_versions:
             raise VersionMismatchError(match.group(), Project.version)
 
-        execute(self, content)
+        _safe_load_project(self, content)
 
         if compleet:
             self.parent.filename = self.file
