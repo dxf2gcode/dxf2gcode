@@ -32,6 +32,7 @@ from __future__ import division
 
 from math import sin, cos, pi, sqrt, ceil
 from copy import deepcopy
+from bisect import bisect_left, bisect_right, insort
 
 import dxf2gcode.globals.globals as g
 
@@ -71,6 +72,9 @@ class BBArray(object):
         self.array = []
         self.any = False
         
+        #Y-index for fast O(1) lookups during zig-zag milling
+        self.points_by_y = {}
+        
         #Start point - top, right
         
         if bbStartPoint.x > bbEndPoint.x:
@@ -97,6 +101,10 @@ class BBArray(object):
         self.divY = 1
         self.divX = 4
             
+        # All row Y values of the full grid (unmodified after create),
+        # used to find geometric neighbour rows like the original code
+        self.all_ys = []
+            
     def create(self):
         #Fills array with InterPoints
         arrayIndex = 0 
@@ -109,17 +117,14 @@ class BBArray(object):
                 xi += self.diff/self.divX
                 arrayIndex += 1
             yi -= self.diff / self.divY
+        
+        # Full grid rows, sorted ascending; needed by findNextLine to
+        # connect only to the geometric neighbour row (one step away)
+        self.all_ys = sorted(set(pt.y for pt in self.array))
             
     def checkIfAny(self):
-        #Checks if any of points is set to be milled
-        any = False
-        
-        for point in self.array:
-            if point.mill == True:
-                any = True
-                break
+        return bool(self.points_by_y)
 
-        return any
         
     def append(self, newPoint):
         #Adds point to array
@@ -146,76 +151,83 @@ class BBArray(object):
                     
         print()
         
+    def _build_y_index(self):
+        """Pre-build a dict mapping y to sorted list of x-values for fast lookups."""
+        self.points_by_y = {}
+        for pt in self.array:
+            if not pt.mill:
+                continue
+            y_key = pt.y
+            if y_key not in self.points_by_y:
+                self.points_by_y[y_key] = []
+            insort(self.points_by_y[y_key], pt.x)
+    
     def removeLine(self, line):
-        #Sets points in array to mill=False
-        # if they lay on line
+        """Remove milled points from index and array, keeping them in sync."""
         if line.Ps.x > line.Pe.x:
             line = LineGeo(line.Pe, line.Ps)
         
-        for BBPoint in self.array:
-            if BBPoint.y == line.Ps.y and line.Pe.x >= BBPoint.x and BBPoint.x >= line.Ps.x:
-                BBPoint.setMill(False)
+        yi = line.Ps.y
+        left_x = min(line.Ps.x, line.Pe.x)
+        right_x = max(line.Ps.x, line.Pe.x)
+        
+        # Remove from Y-index using sorted list slicing with bisect bounds
+        if yi in self.points_by_y:
+            xs = self.points_by_y[yi]
+            li = bisect_left(xs, left_x)
+            ri = bisect_left(xs, right_x + 0.0001)  # small epsilon for float comparison
+            del self.points_by_y[yi][li:ri]
+            if not self.points_by_y[yi]:
+                del self.points_by_y[yi]
                 
+        # Mark corresponding points in main array as non-millable
+        for pt in self.array:
+            if pt.y == yi and pt.mill and left_x <= pt.x <= right_x + 0.0001:
+                pt.setMill(False)
+    
     def findHorizontalWithPoint(self, point):
-        #Search array to find maximum lenght line that contains given point
-        #values outside the box
-        closestFalseLeft = self.xStart - 1
-        closestFalseRight = self.xEnd + 1
+        # Search the Y-index for the longest CONTIGUOUS millable line at
+        # point.y that contains point.x. Index points sit on a grid with
+        # spacing diff/divX; a removed (milled or out-of-shape) point
+        # creates a gap of at least 2*step, so neighbours within 1.5*step
+        # belong to the same segment. Returning only the segment prevents
+        # milling across gaps between separate pocket areas.
+        pts_x = self.points_by_y.get(point.y, [])
+        if not pts_x:
+            return LineGeo(point, point)
         
-        closestTrueLeft = point.x
-        closestTrueRight = point.x
+        idx = bisect_left(pts_x, point.x)
+        if idx >= len(pts_x):
+            idx = len(pts_x) - 1
         
-        #go left and right and find closest Falses
-        for aPoint in self.array:
-            if aPoint.mill == False and aPoint.y == point.y:
-                if aPoint.x < point.x and closestFalseLeft < aPoint.x:
-                    closestFalseLeft = aPoint.x
-                    
-                if aPoint.x > point.x and closestFalseRight > aPoint.x:
-                    closestFalseRight = aPoint.x
+        step = self.diff / self.divX
+        tol = step * 1.5
         
-        #print("False x'ses: %s and %s" % (closestFalseLeft, closestFalseRight))
+        left = idx
+        while left > 0 and (pts_x[left] - pts_x[left - 1]) <= tol:
+            left -= 1
         
-        #now find closest True's to those points
-        for aPoint in self.array:
-            if aPoint.mill == True and aPoint.y == point.y:
-                #looking for most-left (smallest x) True
-                #before (bigger than) closestFalseLeft
-                #smaller than point
-                if aPoint.x < point.x and aPoint.x > closestFalseLeft and aPoint.x < closestTrueLeft:
-                    closestTrueLeft = aPoint.x
-                    
-                if aPoint.x > point.x and aPoint.x < closestFalseRight and aPoint.x > closestTrueRight:
-                    closestTrueRight = aPoint.x
+        right = idx
+        while right < len(pts_x) - 1 and (pts_x[right + 1] - pts_x[right]) <= tol:
+            right += 1
         
-        if point.distance(Point(closestTrueLeft, point.y)) < point.distance(Point(closestTrueRight, point.y)):
-            return LineGeo(Point(closestTrueLeft, point.y), Point(closestTrueRight, point.y))
+        min_true = pts_x[left]
+        max_true = pts_x[right]
+        
+        dist_left = abs(point.x - min_true)
+        dist_right = abs(point.x - max_true)
+        
+        if dist_left <= dist_right:
+            return LineGeo(Point(min_true, point.y), Point(max_true, point.y))
         else:
-            return LineGeo(Point(closestTrueRight, point.y), Point(closestTrueLeft, point.y))
+            return LineGeo(Point(max_true, point.y), Point(min_true, point.y))
     
     def findNextLine(self, line, preferTop):
-        #Tries to find line over or under given line to be milled.
+        # Tries to find line over or under given line to be milled.
         # It prefers top or bottom, and returns new preferences ;)
         # It returns preferTop = True if it finds Bottom.
-        bottomY = self.yEnd - 1
-        topY    = self.yStart + 1
         currentY = line.Ps.y
         currentX = line.Pe.x
-        
-        #find closest top and bottom Y
-        for BBPoint in self.array:
-            #We do not check if it is set to mill, since
-            # we want to eliminate lines that are too far
-            #if BBPoint.y == currentY and BBPoint.mill == True:
-            #    topY = currentY
-            #    bottomY = currentY
-            #    break
-            if topY > BBPoint.y and currentY < BBPoint.y:
-                topY = BBPoint.y
-            if bottomY < BBPoint.y and currentY > BBPoint.y:
-                bottomY = BBPoint.y
-                
-        print("topY: %s, bottomY: %s." % (topY, bottomY))
         
         if line.Ps.x < line.Pe.x:
             xRangeStart = line.Ps.x
@@ -224,20 +236,30 @@ class BBArray(object):
             xRangeStart = line.Pe.x
             xRangeEnd   = line.Ps.x
         
-        xListTop = []
-        xListBottom = []
+        # Geometric neighbour rows on the full grid (exactly one row step
+        # away), like the original linear implementation. Connecting only
+        # to adjacent rows prevents long vertical jump moves across
+        # already-milled or empty rows (which would cut through material).
+        # all_ys is sorted ascending; rows above currentY have larger y.
+        pos_top = bisect_right(self.all_ys, currentY + 1e-9)
+        topY = self.all_ys[pos_top] if pos_top < len(self.all_ys) else None
         
-        #create two lists of X'es in "good" range
-        for BBPoint in self.array:
-            if BBPoint.mill == True and xRangeStart <= BBPoint.x <= xRangeEnd:
-                if BBPoint.y == topY:
-                    xListTop.append(BBPoint.x)
-                elif BBPoint.y == bottomY:
-                    xListBottom.append(BBPoint.x)
-                            
+        pos_bot = bisect_left(self.all_ys, currentY - 1e-9) - 1
+        bottomY = self.all_ys[pos_bot] if pos_bot >= 0 else None
+        
+        if topY is None and bottomY is None:
+            return None, preferTop
+        
+        # Remaining millable points of the neighbour rows within the
+        # current line's X range (points_by_y only holds unmilled points,
+        # equivalent to the original mill==True filter)
+        xListTop = [x_val for x_val in self.points_by_y.get(topY, []) 
+                     if xRangeStart <= x_val <= xRangeEnd] if topY is not None else []
+        xListBottom = [x_val for x_val in self.points_by_y.get(bottomY, []) 
+                        if xRangeStart <= x_val <= xRangeEnd] if bottomY is not None else []
+                        
         if (preferTop == True or len(xListBottom) == 0) and len(xListTop) > 0:
             if abs(currentX - min(xListTop)) > abs(currentX - max(xListTop)):
-                #return Line(Point(max(xListTop), topY), Point(min(xListTop), topY))
                 return self.findHorizontalWithPoint(Point(max(xListTop), topY)), False
             else:
                 return self.findHorizontalWithPoint(Point(min(xListTop), topY)), False
@@ -247,43 +269,34 @@ class BBArray(object):
             else:
                 return self.findHorizontalWithPoint(Point(min(xListBottom), bottomY)), True
         else:
-            print("preferTop is %s, bottom len: %s, top len: %s." % (preferTop, len(xListBottom), len(xListTop)))
             return None, preferTop
                 
         
     def findClosestEnd(self, point):
-        #Looks for most-bottom and most-top y's.
+        # Looks for most-bottom and most-top y's.
         # For those two looks for most-lefts and most-rights.
         # Then checks which one is closest, so milling will start 
         # from closest most-far line and most-close point.
-        bottomY    = self.yStart + 1
-        topY = self.yEnd - 1
+        if not self.points_by_y:
+            return None
         
-        for BBPoint in self.array:
-            if BBPoint.mill == True:
-                if BBPoint.y > topY:
-                    topY = BBPoint.y
-                if BBPoint.y < bottomY:
-                    bottomY = BBPoint.y
+        # Get existing Y values from index
+        ys_in_range = list(self.points_by_y.keys())
+        if not ys_in_range:
+            return None
+            
+        topY = max(ys_in_range)
+        bottomY = min(ys_in_range)
         
-        topLeftX     = self.xEnd - 1 
-        topRightX    = self.xStart + 1
-        bottomLeftX  = self.xEnd - 1
-        bottomRightX = self.xStart + 1
+        # Get extreme X values at these Y positions
+        top_xs = self.points_by_y[topY] if topY in self.points_by_y else []
+        bottom_xs = self.points_by_y[bottomY] if bottomY in self.points_by_y else []
         
-        for BBPoint in self.array:
-            if BBPoint.mill == True:
-                if BBPoint.y == topY:
-                    if BBPoint.x < topLeftX:
-                        topLeftX = BBPoint.x
-                    if BBPoint.x > topRightX:
-                        topRightX = BBPoint.x
-                if BBPoint.y == bottomY:
-                    if BBPoint.x < bottomLeftX:
-                        bottomLeftX = BBPoint.x
-                    if BBPoint.x > bottomRightX:
-                        bottomRightX = BBPoint.x
-                        
+        topLeftX = top_xs[0] if top_xs else self.xEnd - 1
+        topRightX = top_xs[-1] if top_xs else self.xStart + 1
+        bottomLeftX = bottom_xs[0] if bottom_xs else self.xEnd - 1
+        bottomRightX = bottom_xs[-1] if bottom_xs else self.xStart + 1
+        
         points = [
             Point(topLeftX, topY),
             Point(topRightX, topY),
@@ -294,7 +307,6 @@ class BBArray(object):
         closestPoint = None
         
         for p in points:
-            #print("Extreme: %s." % (p))
             if point.distance(p) < distance:
                 distance = point.distance(p)
                 closestPoint = p
@@ -349,12 +361,22 @@ class PocketMill(object):
         #Check all points in array if they are inside (self.inters) or
         # outside shape. If they are outside, it sets them 
         # to mill= False
+        
+        # Pre-index intersections by Y so that lookups are O(1) groups
+        # instead of O(len(self.inters)) per BBPoint — critical for large bboxes
+        inters_by_y = {}
+        for pinter in self.inters:
+            y_key = pinter.y
+            if y_key not in inters_by_y:
+                inters_by_y[y_key] = []
+            inters_by_y[y_key].append(pinter)
+        
         for BBPoint in self.bbarray.array:
             count = 0
             
             if BBPoint.mill == True:
-                for pinter in self.inters:
-                    if pinter.y == BBPoint.y and pinter.x > BBPoint.x:
+                for pinter in inters_by_y.get(BBPoint.y, ()):
+                    if pinter.x > BBPoint.x:
                         count += 1
             
             if count%2 == 0:
@@ -755,11 +777,7 @@ class PocketMill(object):
             #TODO: compensation type 41
             if compType == 42:
                 self.removeNearShape()
-            
-            print("Array without Shape: ")
-            self.bbarray.print()
-            print("Array without Shape END.")
-         
+          
             #imagine parallel, horizontal lines (distance of self.diff)
             # this function will find all intersections of those lines
             # with shape.
@@ -767,41 +785,33 @@ class PocketMill(object):
             
             self.removeOutOfShape()
             
-            print("Final array:")
-            self.bbarray.print()
-            print("End of final array.")
-                                
+            # Build Y-index for fast O(1) lookup in the zig-zag algorithm
+            self.bbarray._build_y_index()
+                                  
             ### ### ###
             ### Cool! We have now complete array of points to mill
             ### but we need to convert it into LINES now...
                     
-            print("Tool rad is %s." % (self.tool_rad))
-            
             currentPoint = realStart
-                                    
+                                     
             while self.bbarray.checkIfAny():
                 #Find start for new zig-zag and go there.
                 closestPoint = self.bbarray.findClosestEnd(currentPoint)
+                if closestPoint is None:
+                    break
                 closestLine = self.bbarray.findHorizontalWithPoint(closestPoint)
-                print("Closest end line to start is %s." % (closestLine))
-                print("Closest point to start is %s." % (closestPoint))
                 goToPoint = closestLine.Ps
                 
-                #line = LineGeo(currentPoint, goToPoint)
-                
-                #self.stmove.append(line)
                 self.stmove.append(PocketMove(currentPoint, goToPoint))
                 currentPoint = goToPoint
                 
                 preferTop = True
-                                                
+                                                 
                 while True:
                     #currentPoint should be one of bbarray.mill = true now
                     # so we are between Ps and Pe of next line at Y height
                     #Do first line from starting point 
                     line = self.bbarray.findHorizontalWithPoint(currentPoint)    #dir
-                    
-                    #print("Line at Y%8.2f: from X%8.2f to X%8.2f." % (line.Ps.y, line.Ps.x, line.Pe.x))
                     
                     #If we are not at start point, go there
                     if currentPoint.x != line.Ps.x:
@@ -814,11 +824,8 @@ class PocketMill(object):
                     #Now we need to check if there is any near line we can go
                     line, preferTop = self.bbarray.findNextLine(line, preferTop)
                     
-                    if line == None:
-                        print("Done.")
+                    if line is None:
                         break
-                    else:
-                        print("Closest line is %s x %s => %s x %s." % (line.Ps.x, line.Ps.y, line.Pe.x, line.Pe.y))
                     
                     #check if we can go straight up, or we need to do some stuff...
                     if not (line.Ps.x <= currentPoint.x <= line.Pe.x or line.Ps.x >= currentPoint.x >= line.Pe.x):
@@ -832,9 +839,6 @@ class PocketMill(object):
                     goToPoint = Point(currentPoint.x, line.Ps.y)
                     self.stmove.append(LineGeo(currentPoint, goToPoint))
                     currentPoint = goToPoint
-                            
-                print("Removed lines.")
-                self.bbarray.print()
 
                 #self.stmove.append(LineGeo(currentPoint, self.stmove.end))
             self.stmove.append(PocketMove(currentPoint, realStart))

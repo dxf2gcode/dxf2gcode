@@ -1129,10 +1129,16 @@ class MainWindow(QMainWindow):
         Once done, the signal configuration_changed is emitted, so that anyone interested in this information can connect to this signal.
         """
         if result == ConfigWindow.Applied or result == ConfigWindow.DialogCode.Accepted:
+            units_before = g.config.tool_units
+
+            # Rebuild the readonly configuration structure first: this also
+            # converts all stored values if the config file's unit
+            # (tool_units) was changed, so the file gets saved in a
+            # consistent state and the change takes effect immediately
+            # (no restart required anymore).
+            g.config.update_config()
             # Write the configuration into the config file (config.cfg)
             g.config.save_varspace()
-            # Rebuild the readonly configuration structure
-            g.config.update_config()
 
             # Assign changes to the menus (if no change occured, nothing
             # happens / otherwise QT emits a signal for the menu entry that has changed)
@@ -1140,6 +1146,43 @@ class MainWindow(QMainWindow):
 
             # Inform about the changes into the configuration
             self.configuration_changed.emit()
+
+            if g.config.tool_units != units_before:
+                # The config file's unit changed: refresh the still-open
+                # configuration window. Its widgets would otherwise keep
+                # showing the pre-conversion values, and a further "Apply"
+                # would write them back (undoing the conversion).
+                self.refreshConfigWindowUnits()
+
+    def refreshConfigWindowUnits(self):
+        """
+        Refresh the (possibly still open) configuration window after the
+        config file's unit (tool_units) changed: re-read all widget values
+        from the converted var_dict and update the unit suffixes.
+        """
+        window_def = self.config_window.cfg_window_def
+        unit = g.config.tool_units
+        distance = self.tr(" mm") if unit == 'mm' else self.tr(" in")
+        speed = self.tr(" mm/min") if unit == 'mm' else self.tr(" IPS")
+
+        section_units = {
+            'Plane_Coordinates': distance,
+            'Depth_Coordinates': distance,
+            'Feed_Rates': speed,
+        }
+        for section, unit_suffix in section_units.items():
+            if section not in window_def:
+                continue
+            for key, widget in window_def[section].items():
+                if key.startswith('__'):
+                    continue
+                if hasattr(widget, 'setUnit'):
+                    widget.setUnit(unit_suffix)
+
+        # Re-populate all widgets from the (converted) var_dict
+        self.config_window.setValuesFromConfig(window_def,
+                                               g.config.var_dict,
+                                               g.config.var_dict.configspec)
 
     def loadProject(self, filename):
         """

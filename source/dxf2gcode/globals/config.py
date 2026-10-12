@@ -328,8 +328,15 @@ class MyConfig(object):
 
         # try:
         self.load_config()
-        self.update_config()
 
+        # The unit used for the values in the config file. It is fixed until
+        # software restart (see 'tool_units' option), so read it here once.
+        self.tool_units = self.var_dict['General']['tool_units']
+        # Drawing unit; starts with the config file's unit and changes while
+        # importing a DXF (importer.py) or via the measurement units menu.
+        self.metric = 0 if self.tool_units == 'in' else 1
+
+        self.update_config()
 
         # The following settings won't be modified after a change in the configuration window.
         # If a setting need to be updated when the configuration changes, move it to the update_config() function
@@ -339,9 +346,8 @@ class MyConfig(object):
         self.fitting_tolerance = self.vars.Import_Parameters['fitting_tolerance']
         self.point_tolerance = self.vars.Import_Parameters['point_tolerance']
 
-        self.metric = 0 if self.vars.General['tool_units'] == 'in' else 1   # Standard if no other unit is determined while importing
-        self.tool_units = self.vars.General['tool_units'] # store the initial tool_units (we don't want it to change until software restart)
-        self.tool_units_metric = 0 if self.vars.General['tool_units'] == 'in' else 1
+        # Unit of the values currently held in self.vars (set by update_config)
+        self.tool_units_metric = self.metric
 
         # except Exception, msg:
         #     logger.warning(self.tr("Config loading failed: %s") % msg)
@@ -360,9 +366,50 @@ class MyConfig(object):
         """
         Call this function each time the self.var_dict is updated (eg when the configuration window changes some settings)
         """
+        # If the config file's unit (tool_units option) was changed, convert
+        # all unit-dependent values stored in var_dict so they keep their
+        # physical meaning. This makes the change effective immediately -
+        # no restart required anymore.
+        new_units_metric = 0 if self.var_dict['General']['tool_units'] == 'in' else 1
+        old_units_metric = 0 if self.tool_units == 'in' else 1
+        if new_units_metric != old_units_metric:
+            self._convert_var_dict_units(old_units_metric, new_units_metric)
+            self.tool_units = self.var_dict['General']['tool_units']
+
         # convenience - flatten nested config dict to access it via self.config.sectionname.varname
         self.vars = DictDotLookup(self.var_dict)
-        # add here any update needed for the internal variables of this class
+
+        # The values just taken from var_dict are expressed in the config
+        # file's unit (self.tool_units), NOT in the current drawing's unit.
+        # Reset the tracked unit and convert all unit-dependent values to
+        # the drawing unit (self.metric). Without this, changed values would
+        # be used with the wrong unit (e.g. a 2 mm cutter interpreted as
+        # 2 inch in an inch drawing -> 50x too large).
+        self.tool_units_metric = 0 if self.tool_units == 'in' else 1
+        self.update_tool_values()
+
+    def _convert_var_dict_units(self, old_metric, new_metric):
+        """
+        Convert all unit-dependent values stored in var_dict from the old
+        unit to the new one. Called when the user changes the 'tool_units'
+        option in the configuration window, so the stored values keep their
+        physical meaning (e.g. a 2.0 mm cutter becomes 0.0787 in).
+        """
+        if old_metric == new_metric:
+            return
+        scale = 1/25.4 if new_metric == 0 else 25.4
+
+        for key in self.var_dict['Plane_Coordinates']:
+            if key == 'std_scale':
+                continue  # dimensionless scale factor
+            self.var_dict['Plane_Coordinates'][key] = float(self.var_dict['Plane_Coordinates'][key]) * scale
+        for key in self.var_dict['Depth_Coordinates']:
+            self.var_dict['Depth_Coordinates'][key] = float(self.var_dict['Depth_Coordinates'][key]) * scale
+        for key in self.var_dict['Feed_Rates']:
+            self.var_dict['Feed_Rates'][key] = float(self.var_dict['Feed_Rates'][key]) * scale
+        for tool in self.var_dict['Tool_Parameters']:
+            self.var_dict['Tool_Parameters'][tool]['diameter'] = float(self.var_dict['Tool_Parameters'][tool]['diameter']) * scale
+            self.var_dict['Tool_Parameters'][tool]['start_radius'] = float(self.var_dict['Tool_Parameters'][tool]['start_radius']) * scale
 
     def make_settings_folder(self):
         """Create settings folder if necessary"""
@@ -472,8 +519,11 @@ class MyConfig(object):
         The structure of the dictionnary must match the structure of the configuration file. The names of the keys must be identical to those used in the configfile.
         If a name is declared in the configfile but not here, it simply won't appear in the config window (the config_version for example must not be modified by the user, so it is not declared here)
         """
-        coordinate_unit = self.tr(" mm") if self.tool_units_metric else self.tr(" in")
-        speed_unit = self.tr(" mm/min") if self.tool_units_metric else self.tr(" IPS")
+        # The configuration window displays the values in the CONFIG file's
+        # unit (tool_units) - NOT in the current drawing's unit
+        # (tool_units_metric holds the drawing unit after conversions).
+        coordinate_unit = self.tr(" mm") if self.tool_units == 'mm' else self.tr(" in")
+        speed_unit = self.tr(" mm/min") if self.tool_units == 'mm' else self.tr(" IPS")
         cfg_widget_def = OrderedDict([
             ('__section_title__', {
                 # This section is only used for assigning titles to the keys of the dictionnary (= name of the sections used in the config file).
@@ -604,6 +654,14 @@ class MyConfig(object):
         if self.tool_units_metric != self.metric:
             scale = 1/25.4 if self.metric == 0 else 25.4
             for key in self.vars.Plane_Coordinates:
+                if key == 'std_scale':
+                    # std_scale is a dimensionless scale factor, NOT a
+                    # coordinate: converting it corrupts the standard scale
+                    # (e.g. 1.0 -> 0.0394 after an inch import), which then
+                    # shrinks the next imported drawing by 1/25.4 because
+                    # open() captures cont_scale BEFORE the importer
+                    # converts the values back.
+                    continue
                 self.vars.Plane_Coordinates[key] *= scale
             for key in self.vars.Depth_Coordinates:
                 self.vars.Depth_Coordinates[key] *= scale

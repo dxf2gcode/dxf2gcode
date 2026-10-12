@@ -630,21 +630,28 @@ class ShapeGUI(QGraphicsItem, Shape):
             self.enableDisableCallback(self, not flag)
 
 
-class StMoveGUI(QGraphicsLineItem, StMove):
+class StMoveGUI(QGraphicsItem, StMove):
+
+    PEN_CUT_LINE = QPen(QColor(100, 150, 255), 1, QtCore.Qt.PenStyle.SolidLine,
+                        QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
+    PEN_CUT_LINE.setCosmetic(True)
+    PEN_RAPID_MOVE = QPen(QColor(30, 60, 120), 1, QtCore.Qt.PenStyle.DotLine,
+                          QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
+    PEN_RAPID_MOVE.setCosmetic(True)
 
     def __init__(self, shape):
-        QGraphicsLineItem.__init__(self)
+        QGraphicsItem.__init__(self)
         StMove.__init__(self, shape)
 
         self.allwaysshow = False
-        self.path = QPainterPath()
-
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, False)
+        self.setAcceptHoverEvents(False)
 
-        self.pen = QPen(QColor(50, 100, 255), 1, QtCore.Qt.PenStyle.SolidLine,
-                        QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
-        self.pen.setCosmetic(True)
-        self.make_papath()
+        # Store cut and rapid paths permanently for repaint (zoom, drag, etc.)
+        self._cut_path = QPainterPath()
+        self._rapid_paths = []
+        
+        self._rebuild_paths_from_geos()
 
     def contains_point(self, point):
         """
@@ -652,20 +659,88 @@ class StMoveGUI(QGraphicsLineItem, StMove):
         """
         return float(0x7fffffff)
 
-    def make_papath(self):
-        """
-        To be called if a Shape shall be printed to the canvas
-        @param canvas: The canvas to be printed in
-        @param pospro: The color of the shape
-        """
-        self.path = QPainterPath()
-        if len(self.geos):
-            start = self.geos.abs_el(0).get_start_end_points(True)
-            self.path.moveTo(start.x, -start.y)
-        drawHorLine = lambda caller, start, end: self.path.lineTo(end.x, -end.y)
-        drawVerLine = lambda caller, start: None  # Not used in 2D mode
-        self.make_path(drawHorLine, drawVerLine)
-
+    def _rebuild_paths_from_geos(self):
+        """Rebuild _cut_path and _rapid_paths from current geos."""
+        self._cut_path = QPainterPath()
+        self._rapid_paths = []
+        
+        try:
+            first_geo = self.geos.abs_el(0)
+            start = first_geo.get_start_end_points(True)
+            self._cut_path.moveTo(start.x, -start.y)
+            prev_pe = Point(start.x, start.y)
+            cut_pos = Point(start.x, start.y)
+        except Exception:
+            return
+        
+        n = len(self.geos)
+        for i in range(n):
+            geo = self.geos[i]
+            
+            ps, pe = None, None
+            
+            # Detect RapidPos early before calling get_start_end_points
+            geo_type_name = type(geo).__name__
+            if 'Rapid' in geo_type_name and 'PocketMove' not in geo_type_name:
+                # RapidPos has x,y coords directly since it inherits from Point
+                ps, pe = geo, geo
+            
+            if ps is None or pe is None:
+                if hasattr(geo, 'abs_geo') and geo.abs_geo is not None:
+                    ag = geo.abs_geo
+                    if hasattr(ag, 'Ps') and hasattr(ag, 'Pe'):
+                        ps, pe = ag.Ps, ag.Pe
+                    elif hasattr(ag, 'x') and hasattr(ag, 'y'):
+                        ps = Point(ag.x, ag.y)
+                        pe = Point(ag.x, ag.y)
+                
+                if ps is None or pe is None:
+                    try:
+                        ps = geo.get_start_end_points(True)
+                        pe = geo.get_start_end_points(False)
+                    except Exception:
+                        continue
+            
+            is_rapid = ('Rapid' in geo_type_name or 
+                       'PocketMove' in geo_type_name)
+            
+            eps = 1e-9
+            dx = abs(pe.x - ps.x)
+            dy = abs(pe.y - ps.y)
+            if dx < eps and dy < eps:
+                prev_pe = Point(pe.x, pe.y)
+                continue
+            
+            # Draw connection gap from previous geo end to current geo start
+            dx_gap = abs(ps.x - prev_pe.x)
+            dy_gap = abs(ps.y - prev_pe.y)
+            if dx_gap > 1e-6 or dy_gap > 1e-6:
+                gap_rp = QPainterPath()
+                gap_rp.moveTo(prev_pe.x, -prev_pe.y)
+                gap_rp.lineTo(ps.x, -ps.y)
+                self._rapid_paths.append(gap_rp)
+            
+            if is_rapid:
+                rp = QPainterPath()
+                rp.moveTo(ps.x, -ps.y)
+                rp.lineTo(pe.x, -pe.y)
+                self._rapid_paths.append(rp)
+            else:
+                # Start a new subpath if the cut path is not at this geo's
+                # start point, otherwise lineTo draws a phantom diagonal
+                # across the pocket after a rapid move
+                if (abs(ps.x - cut_pos.x) > 1e-6 or
+                        abs(ps.y - cut_pos.y) > 1e-6):
+                    self._cut_path.moveTo(ps.x, -ps.y)
+                drawHorLine = lambda caller, s, e: self._cut_path.lineTo(e.x, -e.y)
+                try:
+                    geo.make_path(None, drawHorLine)
+                except Exception:
+                    pass
+                cut_pos = Point(pe.x, pe.y)
+            
+            prev_pe = Point(pe.x, pe.y)
+    
     def setSelected(self, flag=True):
         """
         Override inherited function to turn off selection of Arrows.
@@ -694,17 +769,32 @@ class StMoveGUI(QGraphicsLineItem, StMove):
 
     def paint(self, painter, option, widget=None):
         """
-        Method will be triggered with each paint event. Possible to give options
-        @param painter: Reference to std. painter
-        @param option: Possible options here
-        @param widget: The widget which is painted on.
+        Method triggered on every paint event (including zoom/drag).
+        Draw both cut lines (solid light blue) and rapid moves (dotted dark blue).
         """
-        painter.setPen(self.pen)
-        painter.drawPath(self.path)
+        if self._cut_path.isEmpty() and not self._rapid_paths:
+            return
+        
+        painter.setPen(self.PEN_CUT_LINE)
+        painter.drawPath(self._cut_path)
+        
+        # Draw rapid/positioning paths as dotted lines
+        for rp in self._rapid_paths:
+            painter.setPen(self.PEN_RAPID_MOVE)
+            painter.drawPath(rp)
 
     def boundingRect(self):
         """
-        Required method for painting. Inherited by Painterpath
-        @return: Gives the Bounding Box
+        Required method for painting. Returns combined bounding box of
+        both cut path and all rapid move paths.
         """
-        return self.path.boundingRect()
+        br = self._cut_path.boundingRect()
+        for rp in self._rapid_paths:
+            br = br.united(rp.boundingRect())
+        return br
+
+    def updateGeometry(self):
+        """Rebuild paths when underlying geos change."""
+        self._rebuild_paths_from_geos()
+        self.prepareGeometryChange()
+        self.update()
