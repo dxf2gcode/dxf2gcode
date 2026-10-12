@@ -82,6 +82,11 @@ class StMove(object):
         self.end = self.start
 
         self.geos = Geos([])
+        # Index where the pocket mill geometries start (set by
+        # make_start_moves); everything before belongs to the G41/G42
+        # compensation contour or the start moves. Used by the canvas to
+        # render both with different line widths.
+        self.pocket_geos_start = 0
         logging.debug("Updating the Start Move / Offset Geometry")
         self.make_start_moves()
         
@@ -96,6 +101,8 @@ class StMove(object):
 
         if g.config.machine_type == 'drag_knife':
             self.make_swivelknife_move()
+            # All swivel knife geometries belong to the compensated toolpath
+            self.pocket_geos_start = len(self.geos)
             return
 
         # Get the start rad. and the length of the line segment at begin.
@@ -200,6 +207,11 @@ class StMove(object):
                                r=start_rad + tool_rad, direction=0)
             self.append(start_rad)
             
+        # Remember where the pocket mill geometries start. Everything before
+        # belongs to the G41/G42 compensation contour (or the start moves).
+        # If the shape is no pocket this equals the total geo count.
+        self.pocket_geos_start = len(self.geos)
+
         # Pocket Milling - draw toolpath
         if self.shape.Pocket == True:
             

@@ -632,9 +632,15 @@ class ShapeGUI(QGraphicsItem, Shape):
 
 class StMoveGUI(QGraphicsItem, StMove):
 
-    PEN_CUT_LINE = QPen(QColor(100, 150, 255), 1, QtCore.Qt.PenStyle.SolidLine,
-                        QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
-    PEN_CUT_LINE.setCosmetic(True)
+    # G41/G42 compensation contour and start moves (thicker solid line)
+    PEN_COMP_LINE = QPen(QColor(50, 100, 255), 2, QtCore.Qt.PenStyle.SolidLine,
+                         QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
+    PEN_COMP_LINE.setCosmetic(True)
+    # Pocket milling zig-zag lines (thinner solid line)
+    PEN_POCKET_LINE = QPen(QColor(120, 170, 255), 1, QtCore.Qt.PenStyle.SolidLine,
+                           QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
+    PEN_POCKET_LINE.setCosmetic(True)
+    # Rapid / positioning moves (dotted line)
     PEN_RAPID_MOVE = QPen(QColor(30, 60, 120), 1, QtCore.Qt.PenStyle.DotLine,
                           QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
     PEN_RAPID_MOVE.setCosmetic(True)
@@ -647,8 +653,9 @@ class StMoveGUI(QGraphicsItem, StMove):
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, False)
         self.setAcceptHoverEvents(False)
 
-        # Store cut and rapid paths permanently for repaint (zoom, drag, etc.)
-        self._cut_path = QPainterPath()
+        # Store paths permanently for repaint (zoom, drag, etc.)
+        self._comp_path = QPainterPath()    # G41/G42 compensation contour
+        self._pocket_path = QPainterPath()  # pocket milling zig-zag
         self._rapid_paths = []
         
         self._rebuild_paths_from_geos()
@@ -660,18 +667,25 @@ class StMoveGUI(QGraphicsItem, StMove):
         return float(0x7fffffff)
 
     def _rebuild_paths_from_geos(self):
-        """Rebuild _cut_path and _rapid_paths from current geos."""
-        self._cut_path = QPainterPath()
+        """Rebuild _comp_path, _pocket_path and _rapid_paths from current geos."""
+        self._comp_path = QPainterPath()
+        self._pocket_path = QPainterPath()
         self._rapid_paths = []
         
         try:
             first_geo = self.geos.abs_el(0)
             start = first_geo.get_start_end_points(True)
-            self._cut_path.moveTo(start.x, -start.y)
             prev_pe = Point(start.x, start.y)
-            cut_pos = Point(start.x, start.y)
         except Exception:
             return
+        
+        # Index where the pocket mill geometries start (set by
+        # StMove.make_start_moves); everything before belongs to the
+        # G41/G42 compensation contour / start moves.
+        pocket_start = getattr(self, 'pocket_geos_start', None)
+        
+        comp_pos = None    # current end position of _comp_path
+        pocket_pos = None  # current end position of _pocket_path
         
         n = len(self.geos)
         for i in range(n):
@@ -720,24 +734,38 @@ class StMoveGUI(QGraphicsItem, StMove):
                 gap_rp.lineTo(ps.x, -ps.y)
                 self._rapid_paths.append(gap_rp)
             
+            in_pocket = (pocket_start is not None and i >= pocket_start)
+            
             if is_rapid:
                 rp = QPainterPath()
                 rp.moveTo(ps.x, -ps.y)
                 rp.lineTo(pe.x, -pe.y)
                 self._rapid_paths.append(rp)
             else:
-                # Start a new subpath if the cut path is not at this geo's
+                if in_pocket:
+                    target = self._pocket_path
+                    pos = pocket_pos
+                else:
+                    target = self._comp_path
+                    pos = comp_pos
+                
+                # Start a new subpath if the target path is not at this geo's
                 # start point, otherwise lineTo draws a phantom diagonal
                 # across the pocket after a rapid move
-                if (abs(ps.x - cut_pos.x) > 1e-6 or
-                        abs(ps.y - cut_pos.y) > 1e-6):
-                    self._cut_path.moveTo(ps.x, -ps.y)
-                drawHorLine = lambda caller, s, e: self._cut_path.lineTo(e.x, -e.y)
+                if (pos is None or
+                        abs(ps.x - pos.x) > 1e-6 or
+                        abs(ps.y - pos.y) > 1e-6):
+                    target.moveTo(ps.x, -ps.y)
+                drawHorLine = lambda caller, s, e: target.lineTo(e.x, -e.y)
                 try:
                     geo.make_path(None, drawHorLine)
                 except Exception:
                     pass
-                cut_pos = Point(pe.x, pe.y)
+                
+                if in_pocket:
+                    pocket_pos = Point(pe.x, pe.y)
+                else:
+                    comp_pos = Point(pe.x, pe.y)
             
             prev_pe = Point(pe.x, pe.y)
     
@@ -770,13 +798,18 @@ class StMoveGUI(QGraphicsItem, StMove):
     def paint(self, painter, option, widget=None):
         """
         Method triggered on every paint event (including zoom/drag).
-        Draw both cut lines (solid light blue) and rapid moves (dotted dark blue).
+        Draw G41/G42 compensation lines (thick solid), pocket milling
+        lines (thin solid) and rapid moves (dotted).
         """
-        if self._cut_path.isEmpty() and not self._rapid_paths:
+        if (self._comp_path.isEmpty() and self._pocket_path.isEmpty()
+                and not self._rapid_paths):
             return
         
-        painter.setPen(self.PEN_CUT_LINE)
-        painter.drawPath(self._cut_path)
+        painter.setPen(self.PEN_COMP_LINE)
+        painter.drawPath(self._comp_path)
+        
+        painter.setPen(self.PEN_POCKET_LINE)
+        painter.drawPath(self._pocket_path)
         
         # Draw rapid/positioning paths as dotted lines
         for rp in self._rapid_paths:
@@ -786,9 +819,10 @@ class StMoveGUI(QGraphicsItem, StMove):
     def boundingRect(self):
         """
         Required method for painting. Returns combined bounding box of
-        both cut path and all rapid move paths.
+        compensation path, pocket path and all rapid move paths.
         """
-        br = self._cut_path.boundingRect()
+        br = self._comp_path.boundingRect()
+        br = br.united(self._pocket_path.boundingRect())
         for rp in self._rapid_paths:
             br = br.united(rp.boundingRect())
         return br
