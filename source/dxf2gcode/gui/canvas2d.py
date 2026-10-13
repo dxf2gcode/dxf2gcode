@@ -686,6 +686,7 @@ class StMoveGUI(QGraphicsItem, StMove):
         
         comp_pos = None    # current end position of _comp_path
         pocket_pos = None  # current end position of _pocket_path
+        force_break = False  # set after a PocketMove (retract/plunge)
         
         n = len(self.geos)
         for i in range(n):
@@ -722,6 +723,11 @@ class StMoveGUI(QGraphicsItem, StMove):
             dx = abs(pe.x - ps.x)
             dy = abs(pe.y - ps.y)
             if dx < eps and dy < eps:
+                if 'PocketMove' in geo_type_name:
+                    # Zero-length rapid between separate loops (retract and
+                    # plunge at the same point): start a new subpath for the
+                    # next loop so the loops stay visually separated.
+                    force_break = True
                 prev_pe = Point(pe.x, pe.y)
                 continue
             
@@ -752,7 +758,7 @@ class StMoveGUI(QGraphicsItem, StMove):
                 # Start a new subpath if the target path is not at this geo's
                 # start point, otherwise lineTo draws a phantom diagonal
                 # across the pocket after a rapid move
-                if (pos is None or
+                if (force_break or pos is None or
                         abs(ps.x - pos.x) > 1e-6 or
                         abs(ps.y - pos.y) > 1e-6):
                     target.moveTo(ps.x, -ps.y)
@@ -761,6 +767,7 @@ class StMoveGUI(QGraphicsItem, StMove):
                     geo.make_path(None, drawHorLine)
                 except Exception:
                     pass
+                force_break = False
                 
                 if in_pocket:
                     pocket_pos = Point(pe.x, pe.y)

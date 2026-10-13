@@ -43,6 +43,7 @@ from dxf2gcode.core.intersect import Intersect
 from dxf2gcode.core.shape import Geos
 from dxf2gcode.core.shape import Shape
 from dxf2gcode.core.pocketmill import PocketMill
+from dxf2gcode.core.pocketmove import PocketMove
 from dxf2gcode.core.shapeoffset import *
 
 import logging
@@ -157,11 +158,45 @@ class StMove(object):
 
             offshape = offShapeClass(parent = self.shape, offset = toolwidth, offtype = offtype)
 
+            if len(offshape.rawoff) == 0:
+                # P1: The offset could not be computed or it vanished (e.g.
+                # the contour is too narrow for the tool). Never mill the
+                # shape silently without the requested cutter compensation:
+                # with an empty stmove, Write_GCode skips this shape.
+                if self.shape.Pocket:
+                    logging.warning(
+                        "Cutter compensation failed for shape %i - only the "
+                        "pocket will be milled, the boundary pass is skipped!"
+                        % self.shape.nr)
+                else:
+                    logging.error(
+                        "Cutter compensation failed for shape %i - the shape "
+                        "will NOT be milled!" % self.shape.nr)
+
             if len(offshape.rawoff) > 0:
-                start, angle = offshape.rawoff[0].get_start_end_points(True, True)
+                # The rapid positioning must target the start of the FIRST
+                # milling loop: after a loop split the sequence is rotated,
+                # so loops[0][0] is not necessarily rawoff[0]. Positioning
+                # at rawoff[0] instead would leave an unmarked gap which
+                # the post processor would cut as a straight line.
+                if offshape.loops:
+                    start, angle = offshape.loops[0][0].get_start_end_points(True, True)
+                else:
+                    start, angle = offshape.rawoff[0].get_start_end_points(True, True)
 
                 self.append(RapidPos(start))
-                self.geos += offshape.rawoff
+
+                # P2: Mill each loop as its own path; the loops are connected
+                # with rapid moves (retract / move / plunge) like the pocket
+                # milling paths.
+                prev_end = None
+                for loop in offshape.loops:
+                    if not loop:
+                        continue
+                    if prev_end is not None:
+                        self.append(PocketMove(prev_end, loop[0].Ps))
+                    self.geos += loop
+                    prev_end = loop[-1].Pe
 
         # Cutting Compensation Left
         elif self.shape.cut_cor == 41:
@@ -214,6 +249,12 @@ class StMove(object):
 
         # Pocket Milling - draw toolpath
         if self.shape.Pocket == True:
+            # PocketMill expects a current position (stmove.geos[-1].Pe).
+            # With a failed/vanished cutter compensation nothing was
+            # appended so far - anchor the pocket at the shape start point
+            # instead of crashing with an IndexError.
+            if len(self.geos) == 0:
+                self.append(RapidPos(self.start))
             
             pocket = PocketMill(self)
             pocket.createLines()

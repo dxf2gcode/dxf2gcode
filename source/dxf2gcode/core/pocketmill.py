@@ -490,10 +490,12 @@ class PocketMill(object):
         
         cutComp = self.stmove.shape.cut_cor
             
-        if cutComp == 40: #no compensation
+        if cutComp == 40 or len(self.stmove.geos) == 0: #no compensation
             realStart = self.stmove.shape.geos[0].Ps
         else:
-            realStart = self.stmove.geos[-1].Pe
+            lastGeo = self.stmove.geos[-1]
+            # RapidPos marks the current position and has no Pe attribute
+            realStart = lastGeo.Pe if hasattr(lastGeo, 'Pe') else lastGeo
         
         #set the proper direction for the tool path
         if self.stmove.shape.cw ==True:

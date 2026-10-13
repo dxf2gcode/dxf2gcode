@@ -37,6 +37,8 @@ from dxf2gcode.core.point import Point
 from dxf2gcode.core.shape import Geos
 from dxf2gcode.core.shape import Shape
 
+import dxf2gcode.globals.globals as g
+
 logger = logging.getLogger('core.shapeoffset')
 
 eps = 1e-6
@@ -74,6 +76,22 @@ class offShapeClass(Shape):
         self.offtype = offtype
         self.segments = Geos()
         self.rawoff = []
+        # P2: The raw offset curve split into separate loops (list of geo
+        # lists). Each loop is milled as its own path; the caller connects
+        # the loops with rapid moves (like the pocket milling paths).
+        self.loops = []
+        # P2: Intersection points of LIR removals which removed at least one
+        # segment - pinch points where separate milling regions meet.
+        self.split_cips = []
+        # P2d: Tolerance for the gouging test. Imported contours carry
+        # quantization noise (DXF copies may differ by ~1e-3, accumulated
+        # by the Ps/Pe matching cascade). Borderline geometries within
+        # that noise margin must not be removed - otherwise such
+        # borderline regions would be milled differently depending on the
+        # (invisible) noise of the source file. Capped at 5% of the
+        # offset so it never hides a real gouge.
+        self.gouge_tol = min(g.config.fitting_tolerance,
+                             abs(offset) * 0.05)
 
         self.geos_preprocessing(parent)
 
@@ -81,8 +99,6 @@ class offShapeClass(Shape):
 
         nextConvexPoint = [
             e for e in self.segments if isinstance(e, ConvexPoint)]
-        # logger.debug(nextConvexPoint)
-        # nextConvexPoint=[nextConvexPoint[31]]
         self.counter = 0
 
         while len(nextConvexPoint):  # [self.convex_vertex[-1]]:
@@ -91,14 +107,13 @@ class offShapeClass(Shape):
             try:
                 forward, backward = self.PairWiseInterferenceDetection(
                     convex_vertex_nr + 1, convex_vertex_nr - 1)
-            except:
-                logger.warning("Not able to finish cutter compensation without error - Skipping it")
+            except Exception:
+                logger.exception("Not able to finish cutter compensation "
+                                 "without error - Skipping it")
                 return
-                break
 
             if forward is None:
                 return
-                break
 
             if (backward == 0 and
                     forward == (len(self.segments) - 1) and
@@ -148,11 +163,27 @@ class offShapeClass(Shape):
 
 
         self.geos_postprocessing(eps*5)
-        #SweepLine(geos=self.rawoff, closed=self.closed)
 
-        # If parent shape is ccw, switch direction
+        # P2a: Remove raw offset geometries which gouge the original
+        # contour (e.g. the offset of a corridor/slot narrower than the
+        # cutter). Such passes may be geometrically self-intersecting or
+        # run parallel without intersecting - the pairwise LIR mechanism
+        # (which starts at convex vertices) cannot find them. Removing
+        # them breaks the raw offset curve at these regions.
+        self.remove_gouging_geos()
+
+        # If parent shape is ccw, switch direction. This MUST happen
+        # before the loops are built: reverse() flips the raw offset
+        # sequence and every geometry - splitting afterwards keeps the
+        # loop chains consistent with the final geometry direction.
         if parent.cw != self.cw:
             self.reverse()
+
+        # P2b: Split the raw offset curve into separate loops at the
+        # broken connections (the gouging regions removed above). Each
+        # loop is milled as its own path and the caller connects the
+        # loops with rapid moves.
+        self.split_into_loops()
 
     def __repr__(self):
         """
@@ -505,12 +536,16 @@ class offShapeClass(Shape):
         """
         val = 2000
         logger.debug(len(self.segments))
-        # self.counter = 0
+        # P1: Reset the counter for every interference detection - it is a
+        # safety limit for a single walk only and must not accumulate over
+        # all convex vertices of the shape (which aborted the whole offset).
+        self.counter = 0
 
         try:
             SPoint=self.segments[forward].Ps
-        except:
-            logger.warning("Cannot do cutter compensation, please check file / diamter of tool")
+        except Exception:
+            logger.exception("Cannot do cutter compensation, please check "
+                             "file / diameter of tool")
             return
 
         L1_status, L2_status = "full", "full"
@@ -647,6 +682,16 @@ class offShapeClass(Shape):
         else:
             pop_range = self.segments[backward + 1:forward]
 
+        # P2: A corner cut at a convex vertex always removes the
+        # ConvexPoint placeholder of that vertex - that is normal and does
+        # NOT split the loop. Only removals which ate real geometry (a
+        # whole feature/region) mark a pinch point where separate milling
+        # loops may be split.
+        removed_real = [x for x in pop_range
+                        if not isinstance(x, ConvexPoint)]
+        if len(removed_real) > 0:
+            self.split_cips.append(iPoint)
+
         if self.offtype == "out":
             rev = True
         else:
@@ -659,6 +704,559 @@ class offShapeClass(Shape):
 
         # Remove the segments which are inbetween the LIR
         self.segments = Geos([x for x in self.segments if x not in pop_range])
+
+    def _gouge_limit(self):
+        """
+        The effective distance limit of the gouging test, computed in ONE
+        place: offset minus eps minus the noise tolerance gouge_tol.
+        All gouging checks (whole geometries, trimmed halves) must use this
+        so the borderline behaviour is consistent everywhere.
+        """
+        return abs(self.offset) - eps - self.gouge_tol
+
+    def _geo_gouges(self, geo, limit):
+        """
+        Check if the raw offset geometry comes closer to the original
+        contour than the given limit (the cutter would gouge).
+        @param limit: the effective limit passed by the caller, normally
+        self._gouge_limit() (offset - eps - gouge_tol)
+        """
+        for j in range(len(self.segments)):
+            try:
+                if geo.distance(self.segments[j]) < limit:
+                    return True
+            except Exception:
+                logger.exception("Distance check failed for gouging test")
+                return True
+        return False
+
+    def _rawoff_adjacent(self, i, j):
+        """
+        Check if the two raw offset geometries are neighbors in the raw
+        offset sequence (they share an endpoint by construction).
+        """
+        n = len(self.rawoff)
+        return (abs(i - j) == 1 or
+                (i == 0 and j == n - 1) or
+                (j == 0 and i == n - 1))
+
+    def _close_at_pinch(self, i, j, tol=None):
+        """
+        P2c: Close a wedge-shaped gap (e.g. the apex of the 7) by pulling
+        the touching endpoints of the two involved raw offset geometries
+        together to their midpoint - the pinch point where the cutter
+        touches both walls at once.
+
+        Handles both cases which the trim mechanism cannot resolve:
+        - ADJACENT geometries: the shared endpoint (junction) lies closer
+          to the opposite wall than the offset distance (tangential
+          touching, no true intersection exists)
+        - NON-adjacent geometries which only touch tangentially
+          (find_inter_point returned no TIP)
+
+        After the pinch the junction distances are exactly the offset:
+        no gouging, no gap - the loops stay closed.
+
+        @return: True if at least one endpoint was moved
+        """
+        if tol is None:
+            tol = eps * 10
+
+        geo_i = self.rawoff[i]
+        geo_j = self.rawoff[j]
+        if geo_i is None or geo_j is None:
+            return False
+
+        moved = False
+        n = len(self.rawoff)
+
+        # Candidate junctions: (endpoint pair sharing the junction)
+        candidates = []
+        if self._rawoff_adjacent(i, j):
+            # Shared junction between i and j
+            junc = geo_i.Pe if (i + 1 == j) else \
+                   geo_i.Ps if (i == j + 1) else \
+                   geo_i.Pe if (i == n - 1 and j == 0) else \
+                   geo_i.Ps if (i == 0 and j == n - 1) else None
+            if junc is not None:
+                candidates.append((junc, None))
+        else:
+            # Non-adjacent: try all endpoint pairs (i-end, j-end)
+            candidates.append((geo_i.Ps, geo_j.Ps))
+            candidates.append((geo_i.Ps, geo_j.Pe))
+            candidates.append((geo_i.Pe, geo_j.Ps))
+            candidates.append((geo_i.Pe, geo_j.Pe))
+
+        for cand in candidates:
+            if len(cand) == 2:
+                pa, pb = cand
+            else:
+                # Adjacent case: both geometries touch at the junction;
+                # the pinch candidate is the junction itself. Only pull
+                # if the junction lies within the gouging zone of the
+                # OTHER geometry (tangential touching).
+                junc = cand[0]
+                other = geo_j if junc is not None else None
+                if other is None:
+                    continue
+                # Move only if the junction is in fact too close
+                # (tangential touching): pinching makes the junction the
+                # midpoint of the touching endpoints on both geos.
+                if junc.distance(geo_i.Ps) > abs(self.offset) + tol:
+                    continue
+                if junc.distance(geo_i.Pe) > abs(self.offset) + tol:
+                    continue
+                pa = junc
+                pb = junc
+
+            if pa.distance(pb) > 2 * abs(self.offset) + tol:
+                continue   # Endpoints too far apart - no pinch case
+
+            mid = Point((pa.x + pb.x) / 2.0, (pa.y + pb.y) / 2.0)
+
+            for idx in (i, j):
+                geo = self.rawoff[idx]
+                if geo is None:
+                    continue
+                changed = False
+                if geo.Ps.distance(pa) <= tol or geo.Ps.distance(pb) <= tol:
+                    geo.match_Ps_to_Pe(mid)
+                    changed = True
+                if hasattr(geo, 'Pe') and (geo.Pe.distance(pa) <= tol or
+                                           geo.Pe.distance(pb) <= tol):
+                    geo.match_Pe_to_Ps(mid)
+                    changed = True
+                if changed:
+                    moved = True
+
+        return moved
+
+    def _trim_rawoff_pair(self, i, j, iPoint, limit):
+        """
+        Split the two raw offset geometries i and j at their intersection
+        point and keep the halves which do not gouge the contour. The two
+        arcs around a mouth intersect at the pinch point where the cutter
+        touches both walls - trimming there keeps the loops closed.
+        @param limit: the effective gouging limit (self._gouge_limit())
+        @return: True if at least one geometry was changed
+        """
+        replacements = {}
+        for idx in (i, j):
+            geo = self.rawoff[idx]
+            if geo is None:
+                continue
+            parts = geo.split_into_2geos(ipoint=iPoint)
+            if len(parts) < 2:
+                continue
+            valid_parts = [p for p in parts if not self._geo_gouges(p, limit)]
+            if len(valid_parts) == 1:
+                replacements[idx] = valid_parts[0]
+            elif len(valid_parts) == 0:
+                replacements[idx] = None
+            else:
+                # Both halves valid: which pair of halves encloses the
+                # valid region is a topological question which cannot be
+                # decided locally. Do NOT trim this pair at all - the
+                # remaining crossing is resolved later by split_into_loops
+                # (area check). If the geometries stay gouging they are
+                # removed entirely afterwards (safe fallback, keeps the
+                # previous behaviour).
+                return False
+
+        if not replacements:
+            return False
+
+        for idx, new_geo in replacements.items():
+            self.rawoff[idx] = new_geo
+        return True
+
+    def remove_gouging_geos(self):
+        """
+        P2a: Remove or trim raw offset geometries which gouge the original
+        contour.
+
+        A raw offset geometry is invalid when its distance to ANY original
+        segment is smaller than the offset distance (the cutter would cut
+        into the contour). A valid offset geometry keeps at least the
+        offset distance from the whole boundary, so a plain distance test
+        against all segments is sufficient - no adjacency handling needed.
+
+        Typical case: a corridor/slot narrower than the cutter diameter.
+        Its two offset passes run parallel without intersecting, hence the
+        pairwise LIR mechanism (which starts at convex vertices) never
+        finds them.
+
+        Partly gouging geometries (e.g. the tangential arcs at the mouth
+        of such a corridor) are trimmed at their mutual intersection: the
+        two arcs around a mouth cross at the pinch point where the cutter
+        touches both walls, so trimming there keeps the loops CLOSED.
+        Fully gouging geometries without a trim partner (e.g. the parallel
+        passes through the corridor) are removed; the resulting gaps
+        separate regions which split_into_loops() mills as separate loops
+        connected by rapid moves.
+        """
+        if len(self.rawoff) == 0:
+            return
+
+        limit = self._gouge_limit()
+        if limit <= 0.0:
+            # Offset is zero or degenerate - keep everything as is
+            return
+
+        # Iteratively trim intersecting gouging geometries against each
+        # other; whatever remains fully gouging afterwards is removed.
+        for _ in range(10):
+            gouging = [i for i in range(len(self.rawoff))
+                       if self._geo_gouges(self.rawoff[i], limit)]
+            if len(gouging) < 2:
+                break
+
+            trimmed = False
+            for a_idx in range(len(gouging)):
+                if trimmed:
+                    break
+                for b_idx in range(a_idx + 1, len(gouging)):
+                    i = gouging[a_idx]
+                    j = gouging[b_idx]
+
+                    iPoint = self.rawoff[i].find_inter_point(self.rawoff[j])
+
+                    # Neighboring gouging geometries may cross (e.g. the
+                    # two corridor passes of a dogbone mouth meeting at a
+                    # pinch) - trimming at their crossing closes the loop
+                    # correctly. Non-crossing neighbors are handled by
+                    # _close_at_pinch below.
+                    adjacent = self._rawoff_adjacent(i, j)
+
+                    if adjacent and iPoint is None:
+                        # P2c: Adjacent gouging geometries which merely
+                        # touch (no TIP): pull the junction endpoints
+                        # together (wedge apex of the 7).
+                        if self._close_at_pinch(i, j):
+                            trimmed = True
+                            break
+                        continue
+                    if iPoint is None:
+                        # P2c: Non-adjacent, tangential touching only.
+                        if self._close_at_pinch(i, j):
+                            trimmed = True
+                            break
+                        continue
+                    if isinstance(iPoint, list):
+                        # Several intersection points: use the first one
+                        # which yields a valid trim
+                        for cand in iPoint:
+                            if self._trim_rawoff_pair(i, j, cand, limit):
+                                trimmed = True
+                            if trimmed:
+                                break
+                        if trimmed:
+                            break
+                        continue
+
+                    if self._trim_rawoff_pair(i, j, iPoint, limit):
+                        trimmed = True
+                        break
+
+            # Drop the geometries which were removed entirely by the trims
+            self.rawoff = [g for g in self.rawoff if g is not None]
+
+            if not trimmed:
+                break
+
+        # Remove whatever still gouges (no trim partner found)
+        keep = [g for g in self.rawoff if not self._geo_gouges(g, limit)]
+        if len(keep) < len(self.rawoff):
+            logger.debug("Removed %i gouging raw offset geometries"
+                         % (len(self.rawoff) - len(keep)))
+            self.rawoff = keep
+
+    def _loop_signed_area(self, geos):
+        """
+        Signed area of a closed geo sequence (shoelace formula over sampled
+        points). Arcs are subdivided so the value is exact enough for a
+        sign check.
+        """
+        pts = []
+        for geo in geos:
+            if isinstance(geo, ArcGeo):
+                steps = max(2, int(abs(geo.ext) / (pi / 18.0)))
+                for s in range(steps + 1):
+                    ang = geo.s_ang + geo.ext * s / float(steps)
+                    pts.append(Point(geo.O.x + cos(ang) * geo.r,
+                                     geo.O.y + sin(ang) * geo.r))
+            else:
+                pts.append(geo.Ps)
+
+        area = 0.0
+        m = len(pts)
+        for k in range(m):
+            p1 = pts[k]
+            p2 = pts[(k + 1) % m]
+            area += p1.x * p2.y - p2.x * p1.y
+        return area / 2.0
+
+    def _loop_area_sign_ok(self, geos, ref_sign):
+        """
+        Check the winding of the loop: valid offset loops have the same
+        orientation sign as the original (preprocessed) contour; wrongly
+        wound loops are gouging islands and must be discarded.
+        """
+        return (self._loop_signed_area(geos) * ref_sign) > 0.0
+
+    def _loop_big_enough(self, geos):
+        """
+        Sliver check: discard loops with a negligible area (e.g. from
+        tangential near-crossings).
+        """
+        return abs(self._loop_signed_area(geos)) >= min_length * min_length
+
+    def _find_crossings(self, geos):
+        """
+        Find all self-intersection points of a closed geo sequence.
+        Returns a list of (i, j, X) tuples: i < j, non-adjacent pairs,
+        deduplicated by location.
+        """
+        n = len(geos)
+        crossings = []
+        for i in range(n):
+            for j in range(i + 1, n):
+                # Adjacent geometries share an endpoint by construction
+                if j - i == 1 or (i == 0 and j == n - 1):
+                    continue
+                try:
+                    P = geos[i].find_inter_point(geos[j])
+                except Exception:
+                    logger.exception("Intersection search failed for "
+                                     "geometries %i and %i" % (i, j))
+                    continue
+                if P is None:
+                    continue
+                for X in (P if isinstance(P, list) else [P]):
+                    crossings.append((i, j, X))
+
+        # Deduplicate crossings at the same location
+        unique = []
+        for c in crossings:
+            if all(c[2].distance(u[2]) > eps * 10 for u in unique):
+                unique.append(c)
+        return unique
+
+    def _split_geo_at(self, geo, X, tol):
+        """
+        Split a raw offset geometry at the point X lying on it.
+        Returns [part1, part2] or [geo] if X is not inside the geometry
+        (X at an endpoint or off the geometry).
+        """
+        if isinstance(geo, OffLineGeo) or isinstance(geo, LineGeo):
+            d_sum = geo.Ps.distance(X) + X.distance(geo.Pe)
+            d_tot = geo.Ps.distance(geo.Pe)
+            if d_sum - d_tot > tol:
+                return [geo]   # X not on the segment
+            if geo.Ps.distance(X) <= tol or X.distance(geo.Pe) <= tol:
+                return [geo]   # X at an endpoint - no split needed
+            return [OffLineGeo(geo.Ps, X), OffLineGeo(X, geo.Pe)]
+        elif isinstance(geo, OffArcGeo) or isinstance(geo, ArcGeo):
+            if (abs(geo.O.distance(X) - geo.r) > tol or
+                    not geo.PointAng_withinArc(X)):
+                return [geo]
+            if geo.Ps.distance(X) <= tol or X.distance(geo.Pe) <= tol:
+                return [geo]   # X at an endpoint - no split needed
+            return geo.split_into_2geos(ipoint=X)
+        return [geo]
+
+    def _split_at_crossing(self, geos, i, j, gi_parts, gj_parts, X, tol):
+        """
+        Split the closed geo sequence at the crossing X (lying on geos i
+        and j). Returns (loop1, loop2) - both closed chains through X -
+        or None if the crossing cannot be resolved.
+        """
+        n = len(geos)
+        expanded = []
+        joints = []
+        for k in range(n):
+            if k == i:
+                parts = gi_parts
+            elif k == j:
+                parts = gj_parts
+            else:
+                # X does not lie on this geometry - no joint entry
+                expanded.append(geos[k])
+                continue
+
+            if len(parts) == 2:
+                # X inside the geometry: joint between the two parts
+                joints.append(len(expanded) + 1)
+                expanded += parts
+            else:
+                gk = parts[0]
+                if X.distance(gk.Ps) <= tol:
+                    joints.append(len(expanded))
+                elif X.distance(gk.Pe) <= tol:
+                    joints.append(len(expanded) + 1)
+                else:
+                    joints.append(None)   # split failed
+                expanded += parts
+
+        if None in joints or len(joints) != 2:
+            return None
+
+        p_a, p_b = sorted(joints)
+        loop1 = expanded[p_a:p_b]
+        loop2 = expanded[p_b:] + expanded[:p_a]
+        return loop1, loop2
+
+    def _split_loops_recursive(self, geos, ref_sign, depth=0):
+        """
+        Recursive splitting of a closed curve at its self-intersection
+        points. At each crossing the curve is split into two closed loops;
+        the wrongly wound one (gouging island) is discarded via the signed
+        area check relative to the original contour orientation. The other
+        loop may still contain crossings and is handled recursively.
+        Returns a list of valid loops.
+        """
+        if not geos:
+            return []
+        if depth > 50:
+            logger.warning("Loop splitting: recursion limit reached - "
+                           "keeping the loop as it is")
+            if (self._loop_area_sign_ok(geos, ref_sign) and
+                    self._loop_big_enough(geos)):
+                return [geos]
+            return []
+
+        crossings = self._find_crossings(geos)
+        if not crossings:
+            # Simple closed curve without crossings: offsets preserve the
+            # orientation, so the size check is sufficient here - the
+            # winding check stays reserved for the actual split decision.
+            if self._loop_big_enough(geos):
+                return [geos]
+            return []
+
+        # Smallest span first (local ears are resolved first)
+        crossings.sort(key=lambda c: c[1] - c[0])
+
+        split = None
+        tol = eps * 10
+        for (i, j, X) in crossings:
+            gi_parts = self._split_geo_at(geos[i], X, tol)
+            gj_parts = self._split_geo_at(geos[j], X, tol)
+            split = self._split_at_crossing(geos, i, j, gi_parts, gj_parts,
+                                            X, tol)
+            if split is not None:
+                break
+
+        if split is None:
+            logger.warning("Loop splitting: crossings could not be "
+                           "resolved - keeping the loop as it is")
+            if self._loop_big_enough(geos):
+                return [geos]
+            return []
+
+        loop1, loop2 = split
+        loops = []
+        for part in (loop1, loop2):
+            if not part:
+                continue
+            if not self._loop_area_sign_ok(part, ref_sign):
+                logger.debug("Loop splitting: discarding gouging island "
+                             "(wrong winding)")
+                continue
+            if not self._loop_big_enough(part):
+                logger.debug("Loop splitting: discarding too small loop")
+                continue
+            loops += self._split_loops_recursive(part, ref_sign, depth + 1)
+        return loops
+
+    def split_into_loops(self, tol=None):
+        """
+        P2: Split the raw offset curve into separate loops.
+
+        Level 1 cuts the sequence where consecutive raw offset geometries
+        are not connected (gaps left by the gouging removal). Pinch
+        points (split_cips) are NOT cut here: after the LIR removal the
+        curve passes through them CONNECTED, and after a successful trim
+        both loop ends meet there - cutting would re-open just-closed
+        loops. Level 2 (genuinely closed chains only) splits each closed
+        chain at its remaining self-intersection points; the wrongly
+        wound loops (gouging islands) are discarded via the signed area
+        check relative to the original contour orientation. The
+        remaining loops are milled as separate paths, connected by rapid
+        moves.
+
+        @param tol: Connectivity tolerance (defaults to eps * 10)
+        """
+        if tol is None:
+            tol = eps * 10
+
+        self.loops = []
+        n = len(self.rawoff)
+        if n == 0:
+            return
+
+        # --- Level 1: cut the sequence where connections are broken ---
+        # (gaps left by the gouging removal). Pinch points (split_cips)
+        # are NOT cut here: after the LIR removal the curve passes
+        # through them CONNECTED, and after a successful trim both loop
+        # ends meet there - cutting would re-open just-closed loops.
+        split_at = set()
+        for j in range(n):
+            junction = self.rawoff[j].Pe
+            nxt = self.rawoff[(j + 1) % n].Ps
+            if junction.distance(nxt) > tol:
+                split_at.add(j)
+
+        if not split_at:
+            chains = [list(self.rawoff)]
+        else:
+            start_j = min(split_at)
+            chains = []
+            current = []
+            for k in range(n):
+                idx = (start_j + 1 + k) % n
+                geo = self.rawoff[idx]
+                j_prev = (start_j + k) % n
+                if k > 0 and j_prev in split_at:
+                    chains.append(current)
+                    current = []
+                current.append(geo)
+            if current:
+                chains.append(current)
+
+        # --- Level 2: split closed chains at their self-intersections ---
+        # Only GENUINELY closed chains are eligible: the recursion closes
+        # loops through the crossing point. Feeding an open chain would
+        # wrap its free ends together - a straight cut across the region.
+        # Open chains (fragments left by removals/trims) are kept as they
+        # are: safe, connected toolpaths with free ends (rapid moves to
+        # the next loop), exactly like the previous behaviour.
+        self.loops = []
+        ref_sign = 1.0 if self._loop_signed_area(self.geos) >= 0.0 else -1.0
+        for chain in chains:
+            if len(chain) < 2:
+                self.loops.append(chain)
+                continue
+            end_gap = chain[0].Ps.distance(chain[-1].Pe)
+            if end_gap <= tol:
+                self.loops += self._split_loops_recursive(chain, ref_sign)
+            elif (self.closed and
+                  end_gap <= 2 * abs(self.offset) + tol):
+                # P2c: The chain ends at a pinch (e.g. a fully removed
+                # corridor whose walls the cutter touches simultaneously):
+                # pulling both endpoints to the midpoint CLOSES the contour
+                # without milling over any material - unlike the generic
+                # wrap, this is limited to endpoints within the cutter's
+                # simultaneous reach.
+                mid = Point((chain[0].Ps.x + chain[-1].Pe.x) / 2.0,
+                            (chain[0].Ps.y + chain[-1].Pe.y) / 2.0)
+                chain[0].match_Ps_to_Pe(mid)
+                chain[-1].match_Pe_to_Ps(mid)
+                logger.debug("Loop splitting: closed an open chain by "
+                             "pinch (end gap %.4f <= 2*offset)" % end_gap)
+                self.loops += self._split_loops_recursive(chain, ref_sign)
+            else:
+                self.loops.append(chain)
 
 
 class SweepLine:
@@ -1340,6 +1938,25 @@ class OffArcGeo(ArcGeo):
         self.calc_bounding_box()
         self.abs_geo = None
 
+    def match_Pe_to_Ps(self, otherPs):
+        """
+        This functions adapts the geometry in the way so that the
+        endpoint exactly matches the given point
+        @param otherPs: This is the start point of the other geometry to
+        match with
+        """
+
+        self.Pe = otherPs
+
+        # Get the Circle center point with known Start and End Points
+        self.O.x = self.Pe.x - self.r * cos(self.e_ang)
+        self.O.y = self.Pe.y - self.r * sin(self.e_ang)
+
+        self.length = self.r * abs(self.ext)
+
+        self.calc_bounding_box()
+        self.abs_geo = None
+
     def PointAng_withinArc(self, Point):
         """
         Check if the angle defined by Point is within the span of the arc.
@@ -1652,7 +2269,7 @@ class OffLineGeo(LineGeo):
             else:
                 v1 = (dax - day * dx2 / dy2) / (dy1 * dx2 / dy2 - dx1)
                 # v2 = (day + v1 * dy1) / dy2
-        except:
+        except ZeroDivisionError:
             return None
 
         return Point(x=self.Ps.x + v1 * dx1,
@@ -1952,6 +2569,20 @@ class OffLineGeo(LineGeo):
         """
 
         self.Ps = otherPe
+
+        self.length = self.Ps.distance(self.Pe)
+        self.calc_bounding_box()
+        self.abs_geo = None
+
+    def match_Pe_to_Ps(self, otherPs):
+        """
+        This functions adapts the geometry in the way so that the
+        endpoint exactly matches the given point
+        @param otherPs: This is the start point of the other geometry to
+        match with
+        """
+
+        self.Pe = otherPs
 
         self.length = self.Ps.distance(self.Pe)
         self.calc_bounding_box()
