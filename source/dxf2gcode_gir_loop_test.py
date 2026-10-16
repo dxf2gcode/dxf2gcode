@@ -15,6 +15,7 @@ dxf2gcode_stmove_gcode_test are reused. Run from the ``source`` directory:
 from __future__ import absolute_import
 
 import os
+import logging
 import unittest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -24,7 +25,7 @@ from dxf2gcode_stmove_gcode_test import (  # noqa: E402  (config is initialised 
     square_geos, corridor_shape)
 
 from dxf2gcode.core.shape import Shape, Geos
-from dxf2gcode.core.shapeoffset import offShapeClass
+from dxf2gcode.core.shapeoffset import offShapeClass, OffPoint
 from dxf2gcode.core.linegeo import LineGeo
 from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.core.point import Point
@@ -184,6 +185,121 @@ class TestShortSegmentFilter(unittest.TestCase):
         # the gap left by the dropped segment is within the rounding step
         gap = kept[0].Pe.distance(kept[1].Ps)
         self.assertLessEqual(gap, 2.0 * 10.0 ** (-self.post_dec))
+
+
+# ---------------------------------------------------------------------------
+class _LogCapture(logging.Handler):
+    def __init__(self):
+        logging.Handler.__init__(self)
+        self.records = []
+
+    def emit(self, record):
+        self.records.append((record.levelname, record.getMessage(),
+                             record.exc_info is not None))
+
+
+def _load_1997_shapes():
+    from dxf2gcode.dxfimport.importer import ReadDXF
+    from copy import copy
+
+    dxf = ReadDXF(filename=DXF_1997)
+    ent_geos = dxf.entities.geo
+    shapes = []
+    for cont in dxf.entities.cont:
+        tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]))
+        for k in range(len(cont.order)):
+            eg = ent_geos[cont.order[k][0]]
+            if cont.order[k][1]:
+                eg.geo.reverse()
+                for geo in eg.geo:
+                    geo = copy(geo); geo.reverse(); tmp.append(geo)
+                eg.geo.reverse()
+            else:
+                for geo in eg.geo:
+                    tmp.append(copy(geo))
+        tmp.AnalyseAndOptimize()
+        shapes.append(tmp)
+    return shapes
+
+
+@unittest.skipUnless(os.path.exists(DXF_1997), "1997.DXF not available")
+class TestExpectedGirWalkLogs(unittest.TestCase):
+    """The expected OffPoint GIR walk must not produce a false ERROR/traceback."""
+
+    def _run(self, idx):
+        shapes = _load_1997_shapes()
+        logger = logging.getLogger("core.shapeoffset")
+        old = logger.level
+        logger.setLevel(logging.DEBUG)
+        cap = _LogCapture()
+        logger.addHandler(cap)
+        try:
+            off = offShapeClass(parent=shapes[idx], offset=1.5, offtype="out")
+        finally:
+            logger.removeHandler(cap)
+            logger.setLevel(old)
+        return off, cap.records
+
+    def test_shape1_no_false_error_and_unchanged_result(self):
+        off, recs = self._run(1)
+        self.assertEqual(off.offset_status, "ok")
+        self.assertEqual(len(off.rawoff), 126)     # unchanged result
+        self.assertEqual(len(off.loops), 1)
+        # the expected OffPoint walk must no longer be an ERROR and must
+        # carry no traceback
+        self.assertFalse([r for r in recs
+                          if "Cannot do cutter compensation" in r[1]
+                          and r[0] == "ERROR"])
+        self.assertFalse([r for r in recs
+                          if "Cannot do cutter compensation" in r[1] and r[2]],
+                         "no traceback expected for the expected walk")
+        # it is reported at DEBUG instead
+        self.assertTrue([r for r in recs
+                         if r[0] == "DEBUG" and "cannot start" in r[1]])
+
+    def test_shape3_no_false_error_and_unchanged_result(self):
+        off, recs = self._run(3)
+        self.assertEqual(off.offset_status, "ok")
+        self.assertEqual(len(off.rawoff), 127)
+        self.assertEqual(len(off.loops), 2)
+        self.assertFalse([r for r in recs
+                          if "Cannot do cutter compensation" in r[1]
+                          and r[0] == "ERROR"])
+
+    def test_no_valid_walk_is_only_a_warning(self):
+        # Both walk directions cannot start for some seeds -> the documented
+        # fallback skips the seed. That must be a WARNING, not an ERROR, and
+        # the offset must still complete.
+        off, recs = self._run(1)
+        self.assertEqual(off.offset_status, "ok")
+        self.assertFalse(any(r[0] == "ERROR" for r in recs))
+        self.assertTrue(any("no valid walk" in r[1] for r in recs),
+                        "expected the documented seed-skip warning")
+
+
+class TestOffPointWalkUnit(unittest.TestCase):
+    """Deterministic unit test without the DXF file."""
+
+    def test_expected_offpoint_start_returns_none_at_debug(self):
+        off = make_off(make_shape(square_geos(10.0)), offset=1.0, offtype="in")
+        # craft a segment list whose forward index is a vertex placeholder
+        off.segments = Geos([OffPoint(0.0, 0.0),
+                             LineGeo(Point(0, 0), Point(10, 0)),
+                             LineGeo(Point(10, 0), Point(0, 0))])
+        logger = logging.getLogger("core.shapeoffset")
+        old = logger.level
+        logger.setLevel(logging.DEBUG)
+        cap = _LogCapture()
+        logger.addHandler(cap)
+        try:
+            res = off.PairWiseInterferenceDetection(0, 1)
+        finally:
+            logger.removeHandler(cap)
+            logger.setLevel(old)
+        self.assertIsNone(res)                       # control flow unchanged
+        self.assertFalse([r for r in cap.records if r[0] == "ERROR"])
+        self.assertTrue([r for r in cap.records
+                         if r[0] == "DEBUG" and "cannot start" in r[1]])
 
 
 if __name__ == "__main__":

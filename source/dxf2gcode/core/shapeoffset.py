@@ -563,6 +563,17 @@ class offShapeClass(Shape):
 
         try:
             SPoint=self.segments[forward].Ps
+        except AttributeError:
+            # Expected case while seeding the GIR walk: the forward element
+            # is a vertex placeholder (OffPoint/ConvexPoint) without a Ps
+            # attribute. remove_global_interferences() tries both walk
+            # directions (i,j) and (j,i) and uses the one that can start;
+            # this direction simply cannot. It is NOT an error - keep the
+            # walk result None (control flow unchanged).
+            logger.debug("Pairwise walk cannot start at segment %s "
+                         "(no Ps attribute) - opposite direction is tried",
+                         forward)
+            return
         except Exception:
             logger.exception("Cannot do cutter compensation, please check "
                              "file / diameter of tool")
