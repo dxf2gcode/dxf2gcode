@@ -39,7 +39,6 @@ import dxf2gcode.globals.globals as g
 from dxf2gcode.core.linegeo import LineGeo
 from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.core.point import Point
-from dxf2gcode.core.intersect import Intersect
 from dxf2gcode.core.shape import Geos
 from dxf2gcode.core.shape import Shape
 from dxf2gcode.core.shapeoffset import *

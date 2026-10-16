@@ -18,7 +18,6 @@ SOURCES += \
     dxf2gcode/core/customgcode.py \
     dxf2gcode/core/entitycontent.py \
     dxf2gcode/core/holegeo.py \
-    dxf2gcode/core/intersect.py \
     dxf2gcode/core/layercontent.py \
     dxf2gcode/core/linegeo.py \
     dxf2gcode/core/pocketmill.py \
