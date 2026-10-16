@@ -309,7 +309,17 @@ class BBArray(object):
             if point.distance(p) < distance:
                 distance = point.distance(p)
                 closestPoint = p
-                
+        
+        if closestPoint is None:
+            # Fallback: none of the four extreme grid ends is within
+            # overDistance. This happens e.g. for a G40 pocket whose start
+            # point (the first contour vertex, see PocketMill.createLines) is
+            # farther away than overDistance. There ARE millable points
+            # (checked above), so do not abort the zig-zag - start at the
+            # nearest of the four extreme ends. They are real millable row
+            # ends inside the pocket area, so this is geometrically safe.
+            closestPoint = min(points, key=point.distance)
+        
         return closestPoint        
     
 class PocketMill(object):
