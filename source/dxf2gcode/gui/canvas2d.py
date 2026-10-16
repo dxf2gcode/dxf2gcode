@@ -776,7 +776,7 @@ class StMoveGUI(QGraphicsItem, StMove):
             
             prev_pe = Point(pe.x, pe.y)
     
-    def setSelected(self, flag=True):
+    def setSelected(self, flag=True, blockSignals=True):
         """
         Override inherited function to turn off selection of Arrows.
         @param flag: The flag to enable or disable Selection
