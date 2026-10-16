@@ -165,10 +165,7 @@ class MyDropDownMenu(QMenu):
                 pass
             else:
                 self.PocketAction.triggered.connect(self.setPocket)
-            if self.selectedItems[0].Pocket == True:
-                self.PocketAction.setChecked(True)
-            else:
-                self.PocketAction.setChecked(False)
+            self._updateBoolActionState(self.PocketAction, "Pocket Mill", "Pocket")
                     
 
         #ONly allow it it's a closed shaep
@@ -177,10 +174,7 @@ class MyDropDownMenu(QMenu):
             self.DrillAction.setCheckable(True)
             #HoleAction.triggered.connect(self.setHoleGeo)
             self.DrillAction.triggered.connect(self.setDrill)
-            if self.selectedItems[0].Drill:
-                self.DrillAction.setChecked(True)
-            else:
-                self.DrillAction.setChecked(False)
+            self._updateBoolActionState(self.DrillAction, "Drill Bore", "Drill")
             
 
         if g.config.machine_type == 'drag_knife':
@@ -196,7 +190,13 @@ class MyDropDownMenu(QMenu):
             self.reCompAction.setCheckable(True)
 
             logger.debug(self.tr("The selected shapes have the following direction: %i") % (self.calcMenuDir()))
-            self.checkMenuDir(self.calcMenuDir())
+            menu_dir = self.calcMenuDir()
+            self.checkMenuDir(menu_dir)
+            if menu_dir == -1:
+                # "different" cutter compensation in the selection: make the
+                # mixed state recognisable (QAction has no PartiallyChecked).
+                submenu1.setTitle(self.tr('Cutter Compensation') + " "
+                                  + self.tr('(mixed selection)'))
 
             self.addMenu(submenu1)
 
@@ -257,6 +257,35 @@ class MyDropDownMenu(QMenu):
             self.leCompAction.setChecked(True)
         elif dir == 2:
             self.reCompAction.setChecked(True)
+
+    def _selectionBoolState(self, attr):
+        """
+        Aggregate the boolean attribute 'attr' over the selected shapes.
+        @return: "on" if all are True, "off" if all are False, "mixed" otherwise
+        """
+        values = [bool(getattr(shape, attr)) for shape in self.selectedItems]
+        if all(values):
+            return "on"
+        if not any(values):
+            return "off"
+        return "mixed"
+
+    def _updateBoolActionState(self, action, base_text, attr):
+        """
+        Update a checkable action to reflect the aggregated state of the
+        selection. A mixed selection is made recognisable by an extended label
+        (QAction has no native PartiallyChecked display).
+        @param action: the checkable QAction
+        @param base_text: the untranslated, untagged action text
+        @param attr: the boolean attribute name on the shapes
+        """
+        state = self._selectionBoolState(attr)
+        action.setChecked(state == "on")
+        if state == "mixed":
+            action.setText(self.tr(base_text) + " "
+                           + self.tr('(mixed selection)'))
+        else:
+            action.setText(self.tr(base_text))
 
     def invertSelection(self):
         """
@@ -378,18 +407,21 @@ class MyDropDownMenu(QMenu):
         self.canvas_scene.update()
     
     def setDrill(self):
+        """
+        Enable or disable G73 drilling for the selected shapes.
+
+        The new state is applied to ALL selected shapes as ONE uniform group
+        (all off -> all on, otherwise all off), never by inverting each shape
+        individually.
+        """
+        if not self.selectedItems:
+            return
+        target = not all(shape.Drill for shape in self.selectedItems)
         for shape in self.selectedItems:
-            if shape.Drill == False:
-                shape.Drill = True
-                #shape.DrillType = "G73"
-                self.DrillAction.setChecked(True)
-                logger.debug(self.tr('Set to True for G73 Drill, for shape: %i') % shape.nr)
-                g.window.TreeHandler.updateDrill(shape,True)
-            else:
-                shape.Drill = False
-                self.DrillAction.setChecked(False)
-                logger.debug(self.tr('Set to False for G73 Drill, for shape: %i') % shape.nr)
-                g.window.TreeHandler.updateDrill(shape,False)
+            shape.Drill = target
+            logger.debug(self.tr('Set to %s for G73 Drill, for shape: %i')
+                         % (target, shape.nr))
+            g.window.TreeHandler.updateDrill(shape, target)
             self.canvas_scene.repaint_shape(shape)
-        self.canvas_scene.repaint_shape(shape)
+        self.DrillAction.setChecked(target)
         self.canvas_scene.update()

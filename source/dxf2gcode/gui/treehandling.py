@@ -334,6 +334,8 @@ class TreeHandler(QWidget):
             parent_item = modele_root_element.child(modele_root_element.rowCount() - 1, 0)
             containsChecked = False
             containsUnchecked = False
+            containsTspChecked = False
+            containsTspUnchecked = False
             for shape in layer.shapes:
                 if isinstance(shape, CustomGCode):
                     self.AddCustomGCodeRowLayer(shape, parent_item)
@@ -343,12 +345,23 @@ class TreeHandler(QWidget):
                     containsUnchecked = True
                 else:
                     containsChecked = True
+                # The TSP checkbox exists only for real shapes (CustomGCode
+                # rows have no "Optimal path" checkbox).
+                if not isinstance(shape, CustomGCode):
+                    if shape.isToolPathOptimized():
+                        containsTspChecked = True
+                    else:
+                        containsTspUnchecked = True
 
             checkbox_element.setCheckState(self.getCheckState(containsChecked, containsUnchecked))
             checkbox_element.setFlags(QtCore.Qt.ItemFlag.ItemIsDragEnabled | QtCore.Qt.ItemFlag.ItemIsDropEnabled | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
             modele_element.setFlags(QtCore.Qt.ItemFlag.ItemIsDragEnabled | QtCore.Qt.ItemFlag.ItemIsDropEnabled | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
             nbr_element.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled)
-            optimise_element.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled)
+            # "Optimal path" (TSP) checkbox on the layer row: it aggregates the
+            # states of its shape children (PartiallyChecked when mixed), like
+            # the enable/disable checkbox in column 0.
+            optimise_element.setCheckState(self.getCheckState(containsTspChecked, containsTspUnchecked))
+            optimise_element.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
 
         # Signal to get events when a checkbox state changes (enable or disable shapes)
         self.layer_item_model.itemChanged.connect(self.on_itemChanged)
@@ -1518,6 +1531,62 @@ class TreeHandler(QWidget):
             return selected_items
         return [model.itemFromIndex(clicked)]
 
+    def _pathOptimisationChildItems(self, model, parent_index):
+        """
+        Return the column-3 (Optimal path) items of all shape rows below
+        parent_index (recursive). Used to apply a layer row's target state to
+        every shape child.
+        """
+        items = []
+        for row in range(model.rowCount(parent_index)):
+            child0_index = model.index(row, 0, parent_index)
+            child0_item = model.itemFromIndex(child0_index)
+            if child0_item is not None and isValid(child0_item.data(SHAPE_OBJECT)):
+                col3_item = model.itemFromIndex(
+                    child0_index.sibling(child0_index.row(), PATH_OPTIMISATION_COL))
+                if col3_item is not None:
+                    items.append(col3_item)
+            if model.hasChildren(child0_index):
+                items.extend(self._pathOptimisationChildItems(model, child0_index))
+        return items
+
+    def _updatePathOptimisationParentState(self, item):
+        """
+        Recompute the aggregated "Optimal path" (TSP) state of the parent row
+        (layer/entity) from its shape children after a child changed:
+        all on -> Checked, all off -> Unchecked, mixed -> PartiallyChecked.
+        @param item: a shape's column-3 item
+        """
+        model = item.model()
+        col0_index = item.index().sibling(item.row(), 0)
+        parent_col0_index = col0_index.parent()
+        if not parent_col0_index.isValid():
+            return
+        contains_checked = False
+        contains_unchecked = False
+        for row in range(model.rowCount(parent_col0_index)):
+            child0_item = model.itemFromIndex(
+                model.index(row, 0, parent_col0_index))
+            if child0_item is None:
+                continue
+            obj = child0_item.data(SHAPE_OBJECT)
+            if isValid(obj):
+                if toPyObject(obj).shapeobj.isToolPathOptimized():
+                    contains_checked = True
+                else:
+                    contains_unchecked = True
+        parent_col3_index = model.index(parent_col0_index.row(),
+                                        PATH_OPTIMISATION_COL,
+                                        parent_col0_index.parent())
+        parent_col3_item = model.itemFromIndex(parent_col3_index)
+        if parent_col3_item is not None:
+            model.blockSignals(True)
+            try:
+                parent_col3_item.setCheckState(
+                    self.getCheckState(contains_checked, contains_unchecked))
+            finally:
+                model.blockSignals(False)
+
     def on_itemChanged(self, item):
         """
         This slot is called when some data changes in one of the
@@ -1528,14 +1597,15 @@ class TreeHandler(QWidget):
         """
         if item.column() == PATH_OPTIMISATION_COL:
             # User has clicked on the Path Optimisation (TSP) checkbox => update
-            # the corresponding data. If the clicked row belongs to a multi-row
-            # selection, the new state is applied to ALL selected shapes - a
-            # click must not change only one row of the selection (this also
-            # keeps an already enabled shape enabled when it is part of a mixed
-            # multi-selection).
+            # the corresponding data.
             item_model_index = item.index().sibling(item.row(), 0)  # get the first column of the selected row, since it's the only one that contains data
             first_col_item = item_model_index.model().itemFromIndex(item_model_index)
             if isValid(first_col_item.data(SHAPE_OBJECT)):
+                # Shape row: if the clicked row belongs to a multi-row
+                # selection, the new state is applied to ALL selected shapes -
+                # a click must not change only one row of the selection (this
+                # also keeps an already enabled shape enabled when it is part
+                # of a mixed multi-selection).
                 checked = (item.checkState() != QtCore.Qt.CheckState.Unchecked)
                 affected_items = self._pathOptimisationItemsForChange(item)
                 model = item.model()
@@ -1550,6 +1620,28 @@ class TreeHandler(QWidget):
                     shapeobj = toPyObject(
                         model.itemFromIndex(idx).data(SHAPE_OBJECT)).shapeobj
                     shapeobj.setToolPathOptimized(checked)
+                # keep the layer/entity row aggregation in sync
+                for affected_item in affected_items:
+                    self._updatePathOptimisationParentState(affected_item)
+            elif isValid(first_col_item.data(LAYER_OBJECT)):
+                # Layer row: apply ONE explicit target state to every shape
+                # child (never invert each child individually). The layer
+                # checkbox itself stays binary.
+                checked = (item.checkState() != QtCore.Qt.CheckState.Unchecked)
+                model = item.model()
+                model.blockSignals(True)
+                try:
+                    for affected_item in self._pathOptimisationChildItems(
+                            model, item.index().sibling(item.row(), 0)):
+                        affected_item.setCheckState(
+                            QtCore.Qt.CheckState.Checked if checked
+                            else QtCore.Qt.CheckState.Unchecked)
+                        idx = affected_item.index().sibling(affected_item.row(), 0)
+                        shapeobj = toPyObject(
+                            model.itemFromIndex(idx).data(SHAPE_OBJECT)).shapeobj
+                        shapeobj.setToolPathOptimized(checked)
+                finally:
+                    model.blockSignals(False)
 
         elif isValid(item.data(SHAPE_OBJECT)) or isValid(item.data(CUSTOM_GCODE_OBJECT)):
             self.updateCheckboxOfItem(item, item.checkState())

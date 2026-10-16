@@ -85,7 +85,7 @@ class _FakeUI(object):
 class MultiSelectHarness(object):
     """Builds a real TreeHandler with a real QTreeView and 3 shapes."""
 
-    def __init__(self, n=3):
+    def __init__(self, n=3, disabled_flags=None, tsp_flags=None):
         global _APP
         _APP = QApplication.instance() or QApplication([])
         g.window = _Win()
@@ -93,6 +93,12 @@ class MultiSelectHarness(object):
         self.layer = LayerContent(0, "L", self.shapes)
         for s in self.shapes:
             s.parentLayer = self.layer
+        if disabled_flags is not None:
+            for s, flag in zip(self.shapes, disabled_flags):
+                s.setDisable(bool(flag))
+        if tsp_flags is not None:
+            for s, flag in zip(self.shapes, tsp_flags):
+                s.setToolPathOptimized(bool(flag))
 
         self.th = TreeHandler.__new__(TreeHandler)
         QWidget.__init__(self.th)
@@ -105,6 +111,12 @@ class MultiSelectHarness(object):
         self.th.layers_list = [self.layer]
         self.th.buildLayerTree([self.layer])
         self.model = self.th.layer_item_model
+
+    def layer_col0(self):
+        return self.model.item(0, 0)
+
+    def layer_col3(self):
+        return self.model.item(0, 3)
 
     def col3(self, shape):
         idx = self.th.findLayerItemIndexFromShape(shape)
@@ -223,6 +235,74 @@ class TestOptimalPathMultiSelection(unittest.TestCase):
         finally:
             self.h.model.itemChanged.disconnect(_count)
         self.assertLessEqual(counter["n"], 1)
+
+
+class TestEnableAggregation(unittest.TestCase):
+    """Column 0 (enable/disable) parent aggregation stays correct."""
+
+    def test_all_enabled_checked(self):
+        h = MultiSelectHarness(3, disabled_flags=[False, False, False])
+        self.assertEqual(h.layer_col0().checkState(), _CHECKED)
+
+    def test_all_disabled_unchecked(self):
+        h = MultiSelectHarness(3, disabled_flags=[True, True, True])
+        self.assertEqual(h.layer_col0().checkState(), _UNCHECKED)
+
+    def test_mixed_partially_checked(self):
+        h = MultiSelectHarness(3, disabled_flags=[True, False, False])
+        self.assertEqual(h.layer_col0().checkState(),
+                         QtCore.Qt.CheckState.PartiallyChecked)
+
+
+class TestOptimalPathLayerAggregation(unittest.TestCase):
+    """Column 3 (TSP) layer row aggregates its shape children."""
+
+    def setUp(self):
+        self.h = MultiSelectHarness(3)
+
+    def test_all_off_unchecked(self):
+        h = MultiSelectHarness(3, tsp_flags=[False, False, False])
+        self.assertEqual(h.layer_col3().checkState(), _UNCHECKED)
+
+    def test_all_on_checked(self):
+        h = MultiSelectHarness(3, tsp_flags=[True, True, True])
+        self.assertEqual(h.layer_col3().checkState(), _CHECKED)
+
+    def test_mixed_partially_checked(self):
+        h = MultiSelectHarness(3, tsp_flags=[True, False, False])
+        self.assertEqual(h.layer_col3().checkState(),
+                         QtCore.Qt.CheckState.PartiallyChecked)
+
+    def test_layer_checkbox_applies_to_all_children(self):
+        self.h.layer_col3().setCheckState(_CHECKED)
+        self.assertEqual(self.h.state(),
+                         [(True, True), (True, True), (True, True)])
+        self.assertEqual(self.h.layer_col3().checkState(), _CHECKED)
+
+    def test_child_change_updates_layer_aggregation(self):
+        h = MultiSelectHarness(3, tsp_flags=[True, True, True])
+        self.assertEqual(h.layer_col3().checkState(), _CHECKED)
+        h.col3(h.shapes[1]).setCheckState(_UNCHECKED)
+        self.assertEqual(h.layer_col3().checkState(),
+                         QtCore.Qt.CheckState.PartiallyChecked)
+        h.col3(h.shapes[0]).setCheckState(_UNCHECKED)
+        h.col3(h.shapes[2]).setCheckState(_UNCHECKED)
+        self.assertEqual(h.layer_col3().checkState(), _UNCHECKED)
+
+    def test_layer_click_does_not_touch_other_layers(self):
+        # a second layer must not be affected by the first layer's checkbox
+        h = MultiSelectHarness(3)
+        other_shapes = [_mk_shape(10), _mk_shape(11)]
+        other_layer = LayerContent(1, "L2", other_shapes)
+        for s in other_shapes:
+            s.parentLayer = other_layer
+        h.th.layers_list.append(other_layer)
+        h.th.buildLayerTree([h.layer, other_layer])
+        model = h.th.layer_item_model
+        model.item(0, 3).setCheckState(_CHECKED)          # first layer -> on
+        # second layer's shapes stay unchanged (off)
+        self.assertEqual([s.send_to_TSP for s in other_shapes], [False, False])
+        self.assertEqual(model.item(1, 3).checkState(), _UNCHECKED)
 
 
 if __name__ == "__main__":
