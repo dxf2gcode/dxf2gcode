@@ -1491,6 +1491,33 @@ class TreeHandler(QWidget):
             return False
         return True
 
+    def _pathOptimisationItemsForChange(self, item):
+        """
+        Return the column-3 items to which a change of the Path Optimisation
+        (TSP) checkbox applies: the whole current selection if the changed row
+        is part of a multi-row shape selection, otherwise only the changed
+        item.
+        @param item: the column-3 item whose check state changed
+        """
+        model = item.model()
+        clicked = item.index().sibling(item.row(), PATH_OPTIMISATION_COL)
+        view = getattr(self.ui, "layersShapesTreeView", None)
+        selected_items = []
+        if view is not None and model is self.layer_item_model:
+            for sel_index in view.selectedIndexes():
+                if not isValid(sel_index):
+                    continue
+                col0_item = model.itemFromIndex(sel_index.sibling(sel_index.row(), 0))
+                if col0_item is not None and isValid(col0_item.data(SHAPE_OBJECT)):
+                    col3_item = model.itemFromIndex(
+                        sel_index.sibling(sel_index.row(), PATH_OPTIMISATION_COL))
+                    if col3_item is not None:
+                        selected_items.append(col3_item)
+        if len(selected_items) > 1 and any(
+                it.index() == clicked for it in selected_items):
+            return selected_items
+        return [model.itemFromIndex(clicked)]
+
     def on_itemChanged(self, item):
         """
         This slot is called when some data changes in one of the
@@ -1500,12 +1527,29 @@ class TreeHandler(QWidget):
         @param item: item is the modified element. It can be a Shape, a Layer or an Entity
         """
         if item.column() == PATH_OPTIMISATION_COL:
-            # User has clicked on the Path Optimisation (TSP) checkbox => update the corresponding data into the shape
+            # User has clicked on the Path Optimisation (TSP) checkbox => update
+            # the corresponding data. If the clicked row belongs to a multi-row
+            # selection, the new state is applied to ALL selected shapes - a
+            # click must not change only one row of the selection (this also
+            # keeps an already enabled shape enabled when it is part of a mixed
+            # multi-selection).
             item_model_index = item.index().sibling(item.row(), 0)  # get the first column of the selected row, since it's the only one that contains data
             first_col_item = item_model_index.model().itemFromIndex(item_model_index)
             if isValid(first_col_item.data(SHAPE_OBJECT)):
-                # Set tool path optimisation for the matching shape
-                toPyObject(first_col_item.data(SHAPE_OBJECT)).shapeobj.setToolPathOptimized(False if item.checkState() == QtCore.Qt.CheckState.Unchecked else True)
+                checked = (item.checkState() != QtCore.Qt.CheckState.Unchecked)
+                affected_items = self._pathOptimisationItemsForChange(item)
+                model = item.model()
+                model.blockSignals(True)  # avoid re-entrant itemChanged signals
+                try:
+                    for affected_item in affected_items:
+                        affected_item.setCheckState(item.checkState())
+                finally:
+                    model.blockSignals(False)
+                for affected_item in affected_items:
+                    idx = affected_item.index().sibling(affected_item.row(), 0)
+                    shapeobj = toPyObject(
+                        model.itemFromIndex(idx).data(SHAPE_OBJECT)).shapeobj
+                    shapeobj.setToolPathOptimized(checked)
 
         elif isValid(item.data(SHAPE_OBJECT)) or isValid(item.data(CUSTOM_GCODE_OBJECT)):
             self.updateCheckboxOfItem(item, item.checkState())
