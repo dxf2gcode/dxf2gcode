@@ -82,6 +82,23 @@ CUSTOM_GCODE_OBJECT = QtCore.Qt.ItemDataRole.UserRole + 4  # For storing refs to
 PATH_OPTIMISATION_COL = 3  # Column that corresponds to TSP enable checkbox
 
 
+def next_group_check_state(states):
+    """
+    Decide the uniform check state for a group toggle.
+
+    @param states: iterable of the current checked states (booleans) of the
+                   selected items
+    @return: the state to apply to ALL selected items: if every item is
+             already checked, uncheck all; otherwise check all. This is
+             deterministic for mixed selections (a mixed group is switched
+             on instead of inverting each item individually).
+    """
+    states = list(states)
+    if states and all(states):
+        return False
+    return True
+
+
 class TreeHandler(QWidget):
     """
     Class to handle both QTreeView :  entitiesTreeView (for blocks, and the tree of blocks) and layersShapesTreeView (for layers and shapes)
@@ -1448,6 +1465,11 @@ class TreeHandler(QWidget):
 
         # Optimize path checkbox
         elif event.key() == QtCore.Qt.Key_O:
+            # Collect the affected checkboxes first, then apply ONE uniform
+            # target state to all of them: inverting each item individually
+            # would leave a mixed multi-selection mixed and would disable an
+            # already enabled shape when more shapes are selected.
+            sub_items = []
             for layer in self.layers_list:
                 for shape in layer.shapes:
                     if shape.isSelected():
@@ -1456,8 +1478,15 @@ class TreeHandler(QWidget):
                         sub_item_index = sub_item_index.sibling(sub_item_index.row(), PATH_OPTIMISATION_COL)
                         sub_item = sub_item_index.model().itemFromIndex(sub_item_index)
                         if sub_item.isEnabled():
-                            # Toggle checkbox
-                            sub_item.setCheckState(QtCore.Qt.Unchecked if sub_item.checkState() == QtCore.Qt.Checked else QtCore.Qt.Checked)
+                            sub_items.append(sub_item)
+
+            target_checked = next_group_check_state(
+                [it.checkState() == QtCore.Qt.CheckState.Checked
+                 for it in sub_items])
+            new_state = (QtCore.Qt.CheckState.Checked if target_checked
+                         else QtCore.Qt.CheckState.Unchecked)
+            for sub_item in sub_items:
+                sub_item.setCheckState(new_state)
         else:
             return False
         return True
