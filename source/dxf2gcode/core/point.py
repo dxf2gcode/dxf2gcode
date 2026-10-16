@@ -207,17 +207,6 @@ class Point(object):
         else:
             return 0
 
-    def cross_product(self, other):
-        """
-        Returns the cross Product of two points
-        @param P1: The first Point
-        @param P2: The 2nd Point
-        @return: dot Product of the points.
-        """
-        return Point(self.y * other.z - self.z * other.y,
-                     self.z * other.x - self.x * other.z,
-                     self.x * other.y - self.y * other.x)
-
     def distance(self, other=None):
         """
         Returns distance between two given points
