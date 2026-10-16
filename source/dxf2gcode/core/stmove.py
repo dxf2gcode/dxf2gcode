@@ -158,19 +158,43 @@ class StMove(object):
             offshape = offShapeClass(parent = self.shape, offset = toolwidth, offtype = offtype)
 
             if len(offshape.rawoff) == 0:
-                # P1: The offset could not be computed or it vanished (e.g.
-                # the contour is too narrow for the tool). Never mill the
-                # shape silently without the requested cutter compensation:
-                # with an empty stmove, Write_GCode skips this shape.
-                if self.shape.Pocket:
-                    logging.warning(
-                        "Cutter compensation failed for shape %i - only the "
-                        "pocket will be milled, the boundary pass is skipped!"
-                        % self.shape.nr)
-                else:
+                # P1: No offset geometry was produced. Distinguish the
+                # expected border case (the selected cutter diameter removed
+                # the whole contour) from genuine computation failures, so
+                # the user gets a meaningful hint. With an empty stmove,
+                # Write_GCode skips this shape.
+                status = getattr(offshape, "offset_status", None)
+                tool_dia = self.shape.parentLayer.tool_diameter
+                if status == "vanished":
+                    # Reliable border case: nothing left to mill.
+                    if self.shape.Pocket:
+                        logging.warning(
+                            "Shape %i: the cutter diameter (%.3f mm) removes "
+                            "the whole boundary - only the pocket will be "
+                            "milled!" % (self.shape.nr, tool_dia))
+                    else:
+                        logging.warning(
+                            "Shape %i cannot be milled: the selected cutter "
+                            "diameter (%.3f mm) leaves no valid toolpath for "
+                            "this contour." % (self.shape.nr, tool_dia))
+                elif status in ("walk_overflow", "no_intersection",
+                                "exception"):
+                    # A real computation problem, not an expected border case.
                     logging.error(
-                        "Cutter compensation failed for shape %i - the shape "
-                        "will NOT be milled!" % self.shape.nr)
+                        "Cutter compensation failed for shape %i (%s) - the "
+                        "shape will NOT be milled!"
+                        % (self.shape.nr, status))
+                else:
+                    # Unknown cause - keep the previous safe handling.
+                    if self.shape.Pocket:
+                        logging.warning(
+                            "Cutter compensation failed for shape %i - only "
+                            "the pocket will be milled, the boundary pass is "
+                            "skipped!" % self.shape.nr)
+                    else:
+                        logging.error(
+                            "Cutter compensation failed for shape %i - the "
+                            "shape will NOT be milled!" % self.shape.nr)
 
             if len(offshape.rawoff) > 0:
                 # The rapid positioning must target the start of the FIRST

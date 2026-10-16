@@ -84,6 +84,19 @@ class offShapeClass(Shape):
         # segment - pinch points where separate milling regions meet.
         self.split_cips = []
 
+        # Offset computation status, so the caller can distinguish the
+        # expected border case "the cutter diameter removed the whole
+        # contour" from genuine computation failures:
+        #   "pending"        - not finished yet
+        #   "ok"             - valid offset geometry was produced
+        #   "vanished"       - the interference handling removed the whole
+        #                      remaining geometry (Begin = End; Remove all)
+        #   "walk_overflow"  - the pairwise walk hit its safety limit
+        #   "no_intersection"- a required intersection point was missing
+        #   "exception"      - an exception occurred during the computation
+        #   "unknown"        - empty result without a reliably known cause
+        self.offset_status = "pending"
+
         self.geos_preprocessing(parent)
 
         self.make_segment_types()
@@ -99,16 +112,24 @@ class offShapeClass(Shape):
                 forward, backward = self.PairWiseInterferenceDetection(
                     convex_vertex_nr + 1, convex_vertex_nr - 1)
             except Exception:
+                self.offset_status = "exception"
                 logger.exception("Not able to finish cutter compensation "
                                  "without error - Skipping it")
                 return
 
             if forward is None:
+                # The pairwise walk did not reach a partial/partial status
+                # within its safety limit (counter overflow).
+                self.offset_status = "walk_overflow"
                 return
 
             if (backward == 0 and
                     forward == (len(self.segments) - 1) and
                     self.closed):
+                # Begin = End; Remove all: forward and backward walk meet
+                # on the same segment, i.e. the whole remaining raw offset
+                # interferes and nothing is left to mill.
+                self.offset_status = "vanished"
                 self.segments = Geos()
                 break
 
@@ -127,6 +148,7 @@ class offShapeClass(Shape):
                              (fw_rawoff_seg, bw_rawoff_seg))
 
                 logger.warning("No intersection found?!")
+                self.offset_status = "no_intersection"
                 self.segments = Geos()
                 return
 
@@ -174,6 +196,14 @@ class offShapeClass(Shape):
         # broken connections. Each loop is milled as its own path and the
         # caller connects the loops with rapid moves.
         self.split_into_loops()
+
+        # Final classification: a non-empty raw offset is a valid result.
+        # An empty result keeps whatever cause was recorded above; a truly
+        # unknown empty result is never silently treated as "vanished".
+        if self.rawoff:
+            self.offset_status = "ok"
+        elif self.offset_status == "pending":
+            self.offset_status = "unknown"
 
     def __repr__(self):
         """
