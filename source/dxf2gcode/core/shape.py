@@ -39,6 +39,7 @@ from dxf2gcode.core.point import Point
 from dxf2gcode.core.linegeo import LineGeo
 from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.core.holegeo import HoleGeo
+from dxf2gcode.core.breakgeo import BreakGeo
 from dxf2gcode.core.pocketmove import PocketMove
 
 import dxf2gcode.globals.constants as c
@@ -93,6 +94,10 @@ class Shape(object):
         # Parameters for drag knife
         self.drag_angle = radians(
             g.config.vars.Drag_Knife_Options['drag_angle'])
+
+        # Break tab processing: -1 = last pass (default), 0 = never,
+        # 1..n = process the tabs from this pass number on.
+        self.break_pass = -1
 
     def __repr__(self):
         """
@@ -404,6 +409,30 @@ class Shape(object):
         else:
             return ""
 
+    def get_pass_depths(self, single_pass=False):
+        """
+        Returns the Z depths of all milling passes as they are written by
+        Write_GCode(): the first pass at the initial mill depth followed by
+        one pass per additional slice. The arithmetic mirrors the while loop
+        in Write_GCode() exactly (same order of operations) so that the
+        number and depth of the passes is always identical to the export.
+        @param single_pass: True when the export is limited to a single pass
+        (DXF output type or a drill without repeated drill moves).
+        """
+        max_slice = -abs(self.axis3_slice_depth)
+        initial_mill_depth = self.axis3_start_mill_depth + max_slice
+        if single_pass:
+            initial_mill_depth = self.axis3_mill_depth
+
+        depths = [initial_mill_depth]
+        mom_depth = initial_mill_depth
+        while mom_depth > self.axis3_mill_depth and max_slice < 0.0:
+            mom_depth = mom_depth + max_slice
+            if mom_depth < self.axis3_mill_depth:
+                mom_depth = self.axis3_mill_depth
+            depths.append(mom_depth)
+        return depths
+
     def Write_GCode(self, PostPro):
         """
         This method returns the string to be exported for this shape, including
@@ -431,7 +460,12 @@ class Shape(object):
             self.cut_cor = prv_cut_cor
             return ""
 
-        new_geos = PostPro.breaks.getNewGeos(new_geos)
+        # Break the contour once; for each pass it is decided whether the
+        # original (unbroken) contour or the broken contour is exported.
+        plain_geos = Geos(new_geos)
+        split_geos = PostPro.breaks.getNewGeos(new_geos)
+        break_heights = [geo.height for geo in split_geos
+                         if isinstance(geo, BreakGeo)]
         # initialisation of the string
         exstr = ""
 
@@ -447,9 +481,6 @@ class Shape(object):
         depth = self.axis3_mill_depth
         f_g1_plane = self.f_g1_plane
         f_g1_depth = self.f_g1_depth
-
-        # Save the initial Cutter correction in a variable
-        has_reversed = False
 
         # If the Output Format is DXF do not perform more then one cut or specially defined for Drill move..
         if ((PostPro.vars.General["output_type"] == 'dxf') or ((self.Drill) and PostPro.vars.General["repeat_drill_move"]==False)):
@@ -485,6 +516,58 @@ class Shape(object):
 
         mom_depth = initial_mill_depth
 
+        # Resolve the pass from which the break tabs are processed.
+        # break_pass: -1 = last pass (default), 0 = never, 1..n = pass number.
+        # "Last pass" only processes the tabs when the final pass reaches
+        # them, using the same Z height semantics as BreakGeo.Write_GCode().
+        pass_depths = self.get_pass_depths(
+            single_pass=(PostPro.vars.General["output_type"] == 'dxf' or
+                         ((self.Drill) and
+                          PostPro.vars.General["repeat_drill_move"] == False)))
+        n_passes = len(pass_depths)
+        break_pass = getattr(self, 'break_pass', -1)
+        if self.Drill:
+            # Drills never write the broken contour pieces: keep the
+            # previous behavior (split list everywhere) unchanged.
+            start_pass = 1
+        elif break_pass == -1:
+            start_pass = n_passes if any(
+                height > pass_depths[-1] for height in break_heights) else 0
+        elif break_pass == 0:
+            start_pass = 0
+        else:
+            start_pass = min(int(break_pass), n_passes)
+
+        if 1 < start_pass <= n_passes:
+            # Both contour variants are exported: the broken one must not
+            # share geometry objects with the original one, because the
+            # per pass reversal of open contours would corrupt the other
+            # list otherwise.
+            plain_ids = set(id(geo) for geo in plain_geos.abs_iter())
+            split_geos = Geos(
+                deepcopy(geo) if id(geo) in plain_ids else geo
+                for geo in split_geos)
+
+        # Per pass contour selection with orientation bookkeeping for open
+        # contours: pass 1 runs forward, passes 2, 4, ... run backwards. The
+        # final restore reverses each contour variant that is left flipped
+        # and balances the cutter compensation switches.
+        flipped = {id(plain_geos): False, id(split_geos): False}
+        reversals = [0]
+
+        def pass_geos(pass_nr, pop_last=False):
+            use_split = 0 < start_pass <= pass_nr
+            geos = split_geos if use_split else plain_geos
+            if pop_last:
+                geos.pop()
+            if not self.Drill and not self.closed:
+                if flipped[id(geos)] != (pass_nr % 2 == 0):
+                    self.reverse(geos)
+                    flipped[id(geos)] = not flipped[id(geos)]
+                    reversals[0] += 1
+                    self.switch_cut_cor()
+            return geos
+
 
         # This will be performed for "normal shapes only"
         if not(self.Drill):
@@ -517,7 +600,7 @@ class Shape(object):
                 exstr += self.stmove.geos.abs_el(1).Write_GCode(PostPro)
                 exstr += self.stmove.geos.abs_el(2).Write_GCode(PostPro)
             
-            for geo in new_geos.abs_iter():
+            for geo in pass_geos(1).abs_iter():
                 if isinstance(geo, PocketMove):
                     geo.setZMove(f_g1_depth, f_g1_plane, workpiece_top_Z + abs(safe_margin), mom_depth, safe_retract_depth)
                     exstr += geo.Write_GCode(PostPro)
@@ -563,9 +646,8 @@ class Shape(object):
                 
             #If this is last slice, remove last element
             # (no need to return to start point)
-            if mom_depth == depth and self.Pocket == True:
-                popped = new_geos.pop()
-                #print("Pop from geos %s." % (popped))
+            cur_geos = pass_geos(snr + 1,
+                                 mom_depth == depth and self.Pocket == True)
 
             # Erneutes Eintauchen
             # This will be performed for "normal shapes only"
@@ -574,16 +656,11 @@ class Shape(object):
                 exstr += PostPro.lin_pol_z(mom_depth)
                 exstr += PostPro.chg_feed_rate(f_g1_plane)
 
-                # If it is not a closed contour
+                # If it is not a closed contour: the reversal itself (and the
+                # cutter compensation switch belonging to it) is handled in
+                # pass_geos(); some interpreters cannot handle a switch, so
+                # the compensation is turned off and on again around the pass
                 if not self.closed:
-                    self.reverse(new_geos)
-                    self.switch_cut_cor()
-                    # switch the "reversed" state (in order to restore it at the
-                    # end)
-                    has_reversed = not has_reversed
-
-                    # If cutter radius compensation is turned on. Turn it off - because some interpreters cannot handle
-                    # a switch
                     if self.cut_cor != 40 and not PostPro.vars.General["cancel_cc_for_depth"]:
                         exstr += PostPro.deactivate_cut_cor()
                         exstr += PostPro.set_cut_cor(self.cut_cor)
@@ -592,7 +669,7 @@ class Shape(object):
                 if self.cut_cor != 40 and PostPro.vars.General["cancel_cc_for_depth"]:
                     exstr += PostPro.set_cut_cor(self.cut_cor)
                 
-                for geo in new_geos.abs_iter():
+                for geo in cur_geos.abs_iter():
                     if isinstance(geo, PocketMove):
                         geo.setZMove(f_g1_depth, f_g1_plane, workpiece_top_Z + abs(safe_margin), mom_depth, safe_retract_depth)
                         exstr += geo.Write_GCode(PostPro)
@@ -622,9 +699,13 @@ class Shape(object):
         if self.cut_cor != 40 and not PostPro.vars.General["cancel_cc_for_depth"]:
             exstr += PostPro.deactivate_cut_cor()
 
-        # Initial value of direction restored if necessary
-        if has_reversed:
-            self.reverse(new_geos)
+        # Initial values of direction and cutter compensation restored if
+        # necessary
+        if flipped[id(plain_geos)]:
+            self.reverse(plain_geos)
+        if flipped[id(split_geos)]:
+            self.reverse(split_geos)
+        if reversals[0] % 2 == 1:
             self.switch_cut_cor()
 
         self.cut_cor = prv_cut_cor

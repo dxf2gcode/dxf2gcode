@@ -161,6 +161,7 @@ class Project(object):
                                    'mill_depth': shape.axis3_mill_depth,
                                    'f_g1_plane': shape.f_g1_plane,
                                    'f_g1_depth': shape.f_g1_depth,
+                                   'break_pass': getattr(shape, 'break_pass', -1),
                                    'start_x': stpoint.x,
                                    'start_y': stpoint.y})
             layers.append({'name': layer.name,
@@ -278,7 +279,10 @@ d2g.layers = ''' + str(layers)
                         shape.axis3_mill_depth = parent_shape['mill_depth']
                         shape.f_g1_plane = parent_shape['f_g1_plane']
                         shape.f_g1_depth = parent_shape['f_g1_depth']
-                        
+                        # Older project files do not contain break_pass;
+                        # restore the default "last pass" (auto) in that case.
+                        shape.break_pass = parent_shape.get('break_pass', -1)
+
                         if parent_shape['cw'] != shape.cw:
                             shape.reverse()
                         shape.setNearestStPoint(Point(parent_shape['start_x'], parent_shape['start_y']))

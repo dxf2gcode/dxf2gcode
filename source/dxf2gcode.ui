@@ -444,7 +444,7 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="0">
+              <item row="8" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_13">
                 <property name="spacing">
                  <number>2</number>
@@ -567,6 +567,42 @@
                 </property>
                </widget>
               </item>
+              <item row="7" column="0">
+               <layout class="QHBoxLayout" name="horizontalLayout_15">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="breaksPassLabel">
+                  <property name="text">
+                   <string>Process breaks from</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="7" column="1">
+               <widget class="QComboBox" name="breaksPassComboBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Pass from which the break tabs are milled through. Earlier passes cut the unbroken contour. &quot;Last pass&quot; (default) processes the tabs in the final pass, provided it reaches them. &quot;0 - never&quot; keeps the unbroken contour for all passes.</string>
+                </property>
+                <property name="maxVisibleItems">
+                 <number>20</number>
+                </property>
+               </widget>
+              </item>
               <item row="3" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <property name="spacing">
@@ -667,7 +703,7 @@
                 </item>
                </layout>
               </item>
-              <item row="8" column="1">
+              <item row="9" column="1">
                <widget class="QLineEdit" name="g1FeedZLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -717,7 +753,7 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="1">
+              <item row="8" column="1">
                <widget class="QLineEdit" name="g1FeedXYLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -727,7 +763,7 @@
                 </property>
                </widget>
               </item>
-              <item row="8" column="0">
+              <item row="9" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_14">
                 <property name="spacing">
                  <number>2</number>
@@ -1275,6 +1311,7 @@
   <tabstop>zInitialMillDepthLineEdit</tabstop>
   <tabstop>zInfeedDepthLineEdit</tabstop>
   <tabstop>zFinalMillDepthLineEdit</tabstop>
+  <tabstop>breaksPassComboBox</tabstop>
   <tabstop>g1FeedXYLineEdit</tabstop>
   <tabstop>g1FeedZLineEdit</tabstop>
  </tabstops>

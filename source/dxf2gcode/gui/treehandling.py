@@ -82,6 +82,19 @@ CUSTOM_GCODE_OBJECT = QtCore.Qt.ItemDataRole.UserRole + 4  # For storing refs to
 PATH_OPTIMISATION_COL = 3  # Column that corresponds to TSP enable checkbox
 
 
+def break_geometries_present():
+    """
+    Returns True when at least one shape of a BREAKS layer exists and is
+    enabled, i.e. when the BREAKS function can influence the export.
+    """
+    layers_list = getattr(getattr(g, "window", None), "layerContents", None)
+    if layers_list is None:
+        return False
+    return any(layer.isBreakLayer() and any(not shape.disabled
+                                            for shape in layer.shapes)
+               for layer in layers_list)
+
+
 def next_group_check_state(states):
     """
     Decide the uniform check state for a group toggle.
@@ -149,6 +162,7 @@ class TreeHandler(QWidget):
         self.ui.zInitialMillDepthLineEdit.editingFinished.connect(self.toolParameterzInitialMillDepthUpdate)
         self.ui.zInfeedDepthLineEdit.editingFinished.connect(self.toolParameterzInfeedDepthUpdate)
         self.ui.zFinalMillDepthLineEdit.editingFinished.connect(self.toolParameterzFinalMillDepthUpdate)
+        self.ui.breaksPassComboBox.activated.connect(self.breaksPassUpdate)
         self.ui.g1FeedXYLineEdit.editingFinished.connect(self.toolParameterg1FeedXYUpdate)
         self.ui.g1FeedZLineEdit.editingFinished.connect(self.toolParameterg1FeedZUpdate)
         
@@ -195,6 +209,9 @@ class TreeHandler(QWidget):
         self.ui.unitLabel_2.hide()
         self.ui.startAtXLineEdit.hide()
         self.ui.startAtYLineEdit.hide()
+
+        # Hidden until the loaded project contains break geometries
+        self.updateBreaksPassWidget()
 
     def tr(self, string_to_translate):
         """
@@ -379,6 +396,9 @@ class TreeHandler(QWidget):
 
         for i in range(4):
             self.ui.layersShapesTreeView.resizeColumnToContents(i)
+
+        # Show/hide the "Process breaks from" combobox for the new content
+        self.updateBreaksPassWidget()
 
     def AddShapeRowLayer(self, shape, parent_item):
         icon = QIcon()
@@ -734,6 +754,9 @@ class TreeHandler(QWidget):
             self.ui.entitiesTreeView.update(item_index)  # update the treeList drawing
             self.traverseParentsAndUpdateEnableDisable(self.entity_item_model, item_index)  # update the parents checkboxes
 
+        # The number of break geometries may have changed
+        self.updateBreaksPassWidget()
+
     def findLayerItemIndexFromShape(self, shape):
         """
         Find internal layers treeView reference (item index) matching a
@@ -995,6 +1018,7 @@ class TreeHandler(QWidget):
                             self.axis3_slice_depth = real_item.axis3_slice_depth
                             g.window.canvas_scene.repaint_shape(real_item)
             self.prepareExportOrderUpdate()
+            self.updateBreaksPassWidget()
             g.window.canvas_scene.update()
 
     def toolParameterg1FeedXYUpdate(self):
@@ -1065,6 +1089,7 @@ class TreeHandler(QWidget):
                             self.axis3_start_mill_depth = real_item.axis3_start_mill_depth
                             g.window.canvas_scene.repaint_shape(real_item)
             self.prepareExportOrderUpdate()
+            self.updateBreaksPassWidget()
             g.window.canvas_scene.update()
 
     def toolParameterzFinalMillDepthUpdate(self):
@@ -1091,6 +1116,7 @@ class TreeHandler(QWidget):
                             self.axis3_mill_depth = real_item.axis3_mill_depth
                             g.window.canvas_scene.repaint_shape(real_item)
             self.prepareExportOrderUpdate()
+            self.updateBreaksPassWidget()
             g.window.canvas_scene.update()
             
     def actionOnSelectionChange(self, parent, selected, deselected):
@@ -1255,6 +1281,78 @@ class TreeHandler(QWidget):
         else:
             self.ui.millSettingsFrame.setEnabled(True)
 
+    def updateBreaksPassWidget(self):
+        """
+        Updates the "Process breaks from" combobox: it is shown only when
+        break geometries exist. When a shape is selected, the combobox is
+        filled with one entry per actually generated milling pass of that
+        shape ("Last pass", "0 - never" and "Pass 1..n"). The selection of
+        the shape is restored; an explicit pass that exceeds the current
+        number of passes is reset to the default "Last pass" (this reset is
+        visible in the combobox and logged).
+        """
+        visible = break_geometries_present()
+        label = getattr(self.ui, 'breaksPassLabel', None)
+        combo = getattr(self.ui, 'breaksPassComboBox', None)
+        if label is None or combo is None:
+            return
+        label.setVisible(visible)
+        combo.setVisible(visible)
+        if not visible:
+            return
+
+        shape_item = getattr(self, 'display_tool_shape', None)
+        if not isinstance(shape_item, Shape):
+            combo.setEnabled(False)
+            return
+
+        combo.setEnabled(True)
+        n_passes = len(shape_item.get_pass_depths())
+        break_pass = getattr(shape_item, 'break_pass', -1)
+        if break_pass not in (-1, 0) and break_pass > n_passes:
+            break_pass = -1
+            shape_item.break_pass = -1
+            logger.warning(self.tr(
+                "Break pass selection reset to 'Last pass': the shape "
+                "generates only %d passes") % n_passes)
+
+        combo.blockSignals(True)
+        try:
+            combo.clear()
+            combo.addItem(self.tr("Last pass (default)"), -1)
+            combo.addItem(self.tr("0 - never"), 0)
+            for nr in range(1, n_passes + 1):
+                combo.addItem(self.tr("Pass %d") % nr, nr)
+            index = combo.findData(break_pass)
+            combo.setCurrentIndex(index if index >= 0 else 0)
+        finally:
+            combo.blockSignals(False)
+
+    def breaksPassUpdate(self, index=None):
+        """
+        Slot of the "Process breaks from" combobox. Applies the selected
+        value (-1 = last pass, 0 = never, 1..n = pass number) to all
+        selected shapes and updates the export route.
+        @param index: the index of the activated combobox entry
+        """
+        if index is None:
+            index = self.ui.breaksPassComboBox.currentIndex()
+        if index < 0:
+            return
+        value = self.ui.breaksPassComboBox.itemData(index)
+        if value is None:
+            return
+
+        selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
+        for model_index in selected_indexes_list:
+            if isValid(model_index):
+                model_index = model_index.sibling(model_index.row(), 0)
+                element = model_index.model().itemFromIndex(model_index)
+                if isValid(element.data(SHAPE_OBJECT)):
+                    real_item = toPyObject(element.data(SHAPE_OBJECT)).shapeobj
+                    real_item.break_pass = int(value)
+        self.prepareExportOrderUpdate()
+
     def updateToolParameters(self):
         """
         Refresh tool parameters for currently selected shape/layer.
@@ -1346,7 +1444,9 @@ class TreeHandler(QWidget):
                           self.ui.g1FeedZLineEdit:
                 widget.setText("")
                 widget.setEnabled(False)
-                
+
+        self.updateBreaksPassWidget()
+
     def updatePocketMill(self, shape_item, enable):
         """
         This method is a "slot" (callback) called from the main when the
