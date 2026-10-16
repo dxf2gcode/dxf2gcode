@@ -92,10 +92,17 @@ def _make_menu(shapes):
     QMenu.__init__(menu)
     menu.selectedItems = shapes
     menu.canvas_scene = _Scene()
-    menu.PocketAction = QAction()
+    menu.PocketAction = QAction("Pocket Mill")
     menu.PocketAction.setCheckable(True)
-    menu.DrillAction = QAction()
+    menu.DrillAction = QAction("Drill Bore")
     menu.DrillAction.setCheckable(True)
+    menu.noCompAction = QAction("G40 No Compensation")
+    menu.noCompAction.setCheckable(True)
+    menu.leCompAction = QAction("G41 Left Compensation")
+    menu.leCompAction.setCheckable(True)
+    menu.reCompAction = QAction("G42 Right Compensation")
+    menu.reCompAction.setCheckable(True)
+    menu.compMenuAction = QAction("Cutter Compensation")
     return menu, th
 
 
@@ -120,37 +127,54 @@ class TestSelectionBoolState(unittest.TestCase):
 
 
 class TestActionLabel(unittest.TestCase):
+    """Mixed state must be shown by an icon, never by extra text."""
 
-    def test_uniform_on_checked(self):
+    def test_uniform_on_checked_no_icon(self):
         s0, s1 = _mk_shape(0), _mk_shape(1)
         s0.Pocket = True
         s1.Pocket = True
         m, _ = _make_menu([s0, s1])
-        m._updateBoolActionState(m.PocketAction, "Pocket Mill", "Pocket")
+        m._updateBoolActionState(m.PocketAction, "Pocket")
         self.assertTrue(m.PocketAction.isChecked())
-        self.assertNotIn("mixed", m.PocketAction.text().lower())
+        self.assertEqual(m.PocketAction.text(), "Pocket Mill")   # unchanged
+        self.assertTrue(m.PocketAction.icon().isNull())          # no mixed icon
 
-    def test_uniform_off_unchecked(self):
+    def test_uniform_off_unchecked_no_icon(self):
         m, _ = _make_menu([_mk_shape(0), _mk_shape(1)])
-        m._updateBoolActionState(m.PocketAction, "Pocket Mill", "Pocket")
+        m._updateBoolActionState(m.PocketAction, "Pocket")
         self.assertFalse(m.PocketAction.isChecked())
-        self.assertNotIn("mixed", m.PocketAction.text().lower())
+        self.assertEqual(m.PocketAction.text(), "Pocket Mill")
+        self.assertTrue(m.PocketAction.icon().isNull())
 
-    def test_mixed_label_and_unchecked(self):
+    def test_mixed_has_icon_and_unchanged_text(self):
         s0, s1 = _mk_shape(0), _mk_shape(1)
         s0.Pocket = True
         m, _ = _make_menu([s0, s1])
-        m._updateBoolActionState(m.PocketAction, "Pocket Mill", "Pocket")
+        m._updateBoolActionState(m.PocketAction, "Pocket")
         self.assertFalse(m.PocketAction.isChecked())
-        self.assertIn("mixed", m.PocketAction.text().lower())
+        self.assertEqual(m.PocketAction.text(), "Pocket Mill")   # unchanged
+        self.assertNotIn("mixed", m.PocketAction.text().lower())
+        self.assertFalse(m.PocketAction.icon().isNull())         # mixed icon
 
-    def test_drill_mixed_label(self):
+    def test_drill_mixed_icon_and_text(self):
         s0, s1 = _mk_shape(0), _mk_shape(1)
         s1.Drill = True
         m, _ = _make_menu([s0, s1])
-        m._updateBoolActionState(m.DrillAction, "Drill Bore", "Drill")
+        m._updateBoolActionState(m.DrillAction, "Drill")
         self.assertFalse(m.DrillAction.isChecked())
-        self.assertIn("mixed", m.DrillAction.text().lower())
+        self.assertEqual(m.DrillAction.text(), "Drill Bore")
+        self.assertNotIn("mixed", m.DrillAction.text().lower())
+        self.assertFalse(m.DrillAction.icon().isNull())
+
+    def test_switching_back_clears_mixed_icon(self):
+        s0, s1 = _mk_shape(0), _mk_shape(1)
+        s0.Pocket = True                              # mixed
+        m, _ = _make_menu([s0, s1])
+        m._updateBoolActionState(m.PocketAction, "Pocket")
+        self.assertFalse(m.PocketAction.icon().isNull())
+        s1.Pocket = True                              # now uniform on
+        m._updateBoolActionState(m.PocketAction, "Pocket")
+        self.assertTrue(m.PocketAction.icon().isNull())   # stale icon cleared
 
 
 class TestCutterCompDirection(unittest.TestCase):
@@ -211,6 +235,46 @@ class TestDrillGroupAction(unittest.TestCase):
         m.setDrill()
         self.assertEqual([s0.Drill, s1.Drill], [False, False])
         self.assertFalse(m.DrillAction.isChecked())
+
+
+class TestCutterCompIcon(unittest.TestCase):
+    """Mixed cutter compensation is shown by the submenu icon, text unchanged."""
+
+    def _menu(self, cut_cors):
+        shapes = [_mk_shape(i) for i in range(len(cut_cors))]
+        for s, cc in zip(shapes, cut_cors):
+            s.cut_cor = cc
+        return _make_menu(shapes)[0]
+
+    def test_uniform_no_checked_no_icon(self):
+        m = self._menu([40, 40])
+        m.checkMenuDir(m.calcMenuDir())
+        self.assertTrue(m.compMenuAction.icon().isNull())
+        self.assertTrue(m.noCompAction.isChecked())
+        self.assertFalse(m.leCompAction.isChecked())
+        self.assertFalse(m.reCompAction.isChecked())
+
+    def test_uniform_left_no_icon(self):
+        m = self._menu([41, 41])
+        m.checkMenuDir(m.calcMenuDir())
+        self.assertTrue(m.compMenuAction.icon().isNull())
+        self.assertTrue(m.leCompAction.isChecked())
+
+    def test_uniform_right_no_icon(self):
+        m = self._menu([42, 42])
+        m.checkMenuDir(m.calcMenuDir())
+        self.assertTrue(m.compMenuAction.icon().isNull())
+        self.assertTrue(m.reCompAction.isChecked())
+
+    def test_mixed_shows_icon_and_none_checked(self):
+        m = self._menu([41, 42])
+        m.checkMenuDir(m.calcMenuDir())
+        self.assertFalse(m.compMenuAction.icon().isNull())     # mixed icon
+        self.assertFalse(m.noCompAction.isChecked())           # NOT shown as No
+        self.assertFalse(m.leCompAction.isChecked())
+        self.assertFalse(m.reCompAction.isChecked())
+        self.assertEqual(m.compMenuAction.text(), "Cutter Compensation")
+        self.assertNotIn("mixed", m.compMenuAction.text().lower())
 
 
 if __name__ == "__main__":

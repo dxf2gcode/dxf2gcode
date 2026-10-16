@@ -37,12 +37,37 @@ from dxf2gcode.core.arcgeo import ArcGeo
 import dxf2gcode.globals.constants as c
 from dxf2gcode.Qt.QtWidgets import QGraphicsView, QMenu
 from dxf2gcode.Qt import QtCore
-from dxf2gcode.Qt.QtGui import QMouseEvent, QKeyEvent
+from dxf2gcode.Qt.QtGui import QMouseEvent, QKeyEvent, QIcon, QPixmap, QPainter, QPen
 from dxf2gcode.Qt.QtWidgets import QApplication
 from dxf2gcode.Qt.QtCore import Qt
 
 
 logger = logging.getLogger("Gui.Canvas")
+
+_MIXED_SELECTION_ICON = None
+
+
+def mixedSelectionIcon():
+    """
+    A small "partially checked" icon (a boxed minus), drawn programmatically so
+    no resource file is needed. It is shown to the left of a context menu entry
+    to indicate a mixed selection state (QAction has no native
+    Qt.PartiallyChecked display).
+    """
+    global _MIXED_SELECTION_ICON
+    if _MIXED_SELECTION_ICON is None:
+        size = 14
+        pixmap = QPixmap(size, size)
+        pixmap.fill(QtCore.Qt.transparent)
+        painter = QPainter(pixmap)
+        pen = QPen(QtCore.Qt.black)
+        pen.setWidth(1)
+        painter.setPen(pen)
+        painter.drawRect(1, 1, size - 3, size - 3)              # box frame
+        painter.drawLine(4, size // 2, size - 5, size // 2)     # "minus"
+        painter.end()
+        _MIXED_SELECTION_ICON = QIcon(pixmap)
+    return _MIXED_SELECTION_ICON
 
 """
 This Canvas function can be called as any class.
@@ -165,7 +190,7 @@ class MyDropDownMenu(QMenu):
                 pass
             else:
                 self.PocketAction.triggered.connect(self.setPocket)
-            self._updateBoolActionState(self.PocketAction, "Pocket Mill", "Pocket")
+            self._updateBoolActionState(self.PocketAction, "Pocket")
                     
 
         #ONly allow it it's a closed shaep
@@ -174,7 +199,7 @@ class MyDropDownMenu(QMenu):
             self.DrillAction.setCheckable(True)
             #HoleAction.triggered.connect(self.setHoleGeo)
             self.DrillAction.triggered.connect(self.setDrill)
-            self._updateBoolActionState(self.DrillAction, "Drill Bore", "Drill")
+            self._updateBoolActionState(self.DrillAction, "Drill")
             
 
         if g.config.machine_type == 'drag_knife':
@@ -189,14 +214,9 @@ class MyDropDownMenu(QMenu):
             self.reCompAction = submenu1.addAction(self.tr("G42 Right Compensation"))
             self.reCompAction.setCheckable(True)
 
+            self.compMenuAction = submenu1.menuAction()
             logger.debug(self.tr("The selected shapes have the following direction: %i") % (self.calcMenuDir()))
-            menu_dir = self.calcMenuDir()
-            self.checkMenuDir(menu_dir)
-            if menu_dir == -1:
-                # "different" cutter compensation in the selection: make the
-                # mixed state recognisable (QAction has no PartiallyChecked).
-                submenu1.setTitle(self.tr('Cutter Compensation') + " "
-                                  + self.tr('(mixed selection)'))
+            self.checkMenuDir(self.calcMenuDir())
 
             self.addMenu(submenu1)
 
@@ -258,6 +278,19 @@ class MyDropDownMenu(QMenu):
         elif dir == 2:
             self.reCompAction.setChecked(True)
 
+        # Mixed cutter compensation (dir == -1): no option is checked; show the
+        # "mixed" icon on the submenu action instead (its text stays unchanged).
+        comp_action = getattr(self, "compMenuAction", None)
+        if comp_action is not None:
+            comp_action.blockSignals(True)
+            try:
+                if dir == -1:
+                    comp_action.setIcon(mixedSelectionIcon())
+                else:
+                    comp_action.setIcon(QIcon())
+            finally:
+                comp_action.blockSignals(False)
+
     def _selectionBoolState(self, attr):
         """
         Aggregate the boolean attribute 'attr' over the selected shapes.
@@ -270,22 +303,26 @@ class MyDropDownMenu(QMenu):
             return "off"
         return "mixed"
 
-    def _updateBoolActionState(self, action, base_text, attr):
+    def _updateBoolActionState(self, action, attr):
         """
         Update a checkable action to reflect the aggregated state of the
-        selection. A mixed selection is made recognisable by an extended label
-        (QAction has no native PartiallyChecked display).
+        selection: checked when all shapes have the attribute set, unchecked
+        when none has it, and a dedicated "mixed" icon (drawn without a check
+        mark) when the selection is mixed. The action text is never touched.
         @param action: the checkable QAction
-        @param base_text: the untranslated, untagged action text
         @param attr: the boolean attribute name on the shapes
         """
         state = self._selectionBoolState(attr)
-        action.setChecked(state == "on")
-        if state == "mixed":
-            action.setText(self.tr(base_text) + " "
-                           + self.tr('(mixed selection)'))
-        else:
-            action.setText(self.tr(base_text))
+        action.blockSignals(True)  # never fire triggered/toggled here
+        try:
+            if state == "mixed":
+                action.setChecked(False)
+                action.setIcon(mixedSelectionIcon())
+            else:
+                action.setChecked(state == "on")
+                action.setIcon(QIcon())
+        finally:
+            action.blockSignals(False)
 
     def invertSelection(self):
         """
