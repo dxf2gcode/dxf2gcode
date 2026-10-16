@@ -144,24 +144,6 @@ class ArcGeo(object):
                "\nO:   %s; r: %0.3f" % (self.O.save_v1(), self.r) +\
                "\next: %0.5f; length: %0.5f" % (self.ext, self.length)
 
-    def angle_between(self, min_ang, max_ang, angle):
-        """
-        Returns if the angle is in the range between 2 other angles
-        @param min_ang: The starting angle
-        @param parent: The end angel. Always in ccw direction from min_ang
-        @return: True or False
-        """
-        if min_ang < 0.0:
-            min_ang += 2 * pi
-
-        while max_ang < min_ang:
-            max_ang += 2 * pi
-
-        while angle < min_ang:
-            angle += 2 * pi
-
-        return (min_ang < angle) and (angle <= max_ang)
-
     def calc_bounding_box(self):
         """
         Calculated the BoundingBox of the geometry and saves it into self.BB
