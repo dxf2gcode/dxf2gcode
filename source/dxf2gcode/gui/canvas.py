@@ -356,19 +356,25 @@ class MyDropDownMenu(QMenu):
         self.canvas_scene.update()
 
     def setPocket(self):
+        """
+        Enable or disable pocket milling for the selected shapes.
+
+        The new state is applied to ALL selected shapes as ONE uniform group:
+        if every selected shape already mills its pocket, the group is turned
+        off, otherwise it is turned on. This avoids inverting each shape
+        individually (which left a mixed multi-selection inconsistent and
+        disabled an already enabled shape).
+        """
+        if not self.selectedItems:
+            return
+        target = not all(shape.Pocket for shape in self.selectedItems)
         for shape in self.selectedItems:
-            if shape.Pocket == False:
-                shape.Pocket = True
-                self.PocketAction.setChecked(True)
-                logger.debug(self.tr('Set to True for Pocket Mill for shape: %i') % shape.nr)
-                g.window.TreeHandler.updatePocketMill(shape,True)
-            else:
-                shape.Pocket = False
-                self.PocketAction.setChecked(False)
-                logger.debug(self.tr('Set to False for Pocket Mill for shape: %i') % shape.nr)
-                g.window.TreeHandler.updatePocketMill(shape,False)
+            shape.Pocket = target
+            logger.debug(self.tr('Set to %s for Pocket Mill for shape: %i')
+                         % (target, shape.nr))
+            g.window.TreeHandler.updatePocketMill(shape, target)
             self.canvas_scene.repaint_shape(shape)
-        self.canvas_scene.repaint_shape(shape)
+        self.PocketAction.setChecked(target)
         self.canvas_scene.update()
     
     def setDrill(self):
