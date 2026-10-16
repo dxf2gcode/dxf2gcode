@@ -164,13 +164,13 @@ class offShapeClass(Shape):
 
         self.geos_postprocessing(eps*5)
 
-        # P2a: Remove raw offset geometries which gouge the original
-        # contour (e.g. the offset of a corridor/slot narrower than the
-        # cutter). Such passes may be geometrically self-intersecting or
-        # run parallel without intersecting - the pairwise LIR mechanism
-        # (which starts at convex vertices) cannot find them. Removing
-        # them breaks the raw offset curve at these regions.
-        self.remove_gouging_geos()
+        # GIR (Choi & Park 1999): the raw offset curve may still
+        # self-intersect after the LIR removal (global interferences).
+        # Every self-intersection seeds the unchanged pairwise walk; the
+        # collected interference regions are trimmed at their crossings,
+        # so the remaining loops stay CLOSED (the former heuristic
+        # gouging cleanup is kept as a fallback method below).
+        self.remove_global_interferences()
 
         # If parent shape is ccw, switch direction. This MUST happen
         # before the loops are built: reverse() flips the raw offset
@@ -180,9 +180,8 @@ class offShapeClass(Shape):
             self.reverse()
 
         # P2b: Split the raw offset curve into separate loops at the
-        # broken connections (the gouging regions removed above). Each
-        # loop is milled as its own path and the caller connects the
-        # loops with rapid moves.
+        # broken connections. Each loop is milled as its own path and the
+        # caller connects the loops with rapid moves.
         self.split_into_loops()
 
     def __repr__(self):
@@ -970,6 +969,380 @@ class offShapeClass(Shape):
             logger.debug("Removed %i gouging raw offset geometries"
                          % (len(self.rawoff) - len(keep)))
             self.rawoff = keep
+
+    def remove_global_interferences(self):
+        """
+        GIR removal per Choi & Park (1999), global interference section.
+
+        After the LIR removal the raw offset curve may still self-intersect
+        (global interferences). Every self-intersection point seeds the
+        existing, UNCHANGED PairWiseInterferenceDetection: its walk yields
+        the neighbouring contact pair - the opposite boundary of the same
+        interference. The cyclic region between seed and contact
+        (GIR = [f_s, f_e] U [b_e, b_s]) is collected; ALL GIRs are
+        collected before any geometry is modified (delayed removal), so
+        overlapping regions cannot corrupt each other.
+
+        rawoff[k] corresponds 1:1 to segments[k] (make_rawoff_seg creates
+        exactly one offset geometry per segment), so the walk can be seeded
+        with raw-offset indices directly.
+        """
+        n = len(self.rawoff)
+        if n < 3:
+            return
+
+        # --- Step 1: self-intersections of the raw offset curve ----------
+        # _find_crossings() checks all non-adjacent (cyclic) pairs with the
+        # production intersection routine and deduplicates by location.
+        seeds = self._find_crossings(self.rawoff)
+
+        # --- Steps 2-5: seed walks, collect GIRs (no geometry changes) ---
+        girs = []
+        marked = set()
+        skipped = 0
+
+        def key_of(a, b):
+            return (min(a, b), max(a, b))
+
+        for (i, j, X_seed) in seeds:
+            if key_of(i, j) in marked:
+                continue
+
+            # Step 2: forward/backward directions - exactly one of the two
+            # assignments yields a walk that does not stop at the seed
+            # (the other is either degenerate [partial,partial] at the
+            # crossing or cannot start because its forward element is an
+            # OffPoint without a Ps attribute).
+            accepted = None
+            for (a, b) in ((i, j), (j, i)):
+                self.counter = 0
+                try:
+                    res = self.PairWiseInterferenceDetection(a, b)
+                except Exception:
+                    logger.exception("GIR seed walk failed for (%i,%i)", i, j)
+                    continue
+                if not (isinstance(res, tuple) and res[0] is not None):
+                    continue
+                f_e, b_e = res[0], res[1]
+                if f_e == a and b_e == b:
+                    # walk stopped immediately at the seed - degenerate
+                    continue
+                accepted = (a, b, f_e, b_e)
+                break
+
+            if accepted is None:
+                skipped += 1
+                logger.warning(
+                    "GIR: no valid walk from self-intersection (%i,%i) - "
+                    "seed skipped (if it is a boundary of an interference, "
+                    "the walk of the opposite boundary covers it)", i, j)
+                continue
+
+            f_s, b_s, f_e, b_e = accepted
+
+            # Step 3/4: the walk contact must be a real intersection of its
+            # two elements - never invent GIR endpoints.
+            X_end = self.rawoff[f_e].find_inter_point(self.rawoff[b_e])
+            if X_end is None:
+                skipped += 1
+                logger.warning(
+                    "GIR: walk from (%i,%i) ended at (%i,%i) without an "
+                    "intersection point - seed skipped", i, j, f_e, b_e)
+                continue
+            if isinstance(X_end, list):
+                # several intersections: deterministic, geometry based
+                # choice - the one nearest to the seed point
+                X_end = min(X_end, key=lambda P: P.distance(X_seed))
+
+            # sanity: the two cyclic intervals must be well defined. The
+            # observed special cases (walk ends on the same element it
+            # started from):
+            # - f_s == f_e: interval A lies WITHIN the element f_s
+            # - b_e == b_s: interval B lies WITHIN the element b_s
+            # In the paper's continuous parameterization [f_s, f_e] resp.
+            # [b_e, b_s] then cover a part of that element between the two
+            # crossing points. Any other coincident boundaries are
+            # ill-defined and skipped.
+            vals = (f_s, b_s, f_e, b_e)
+            bad = False
+            for x in range(4):
+                for y in range(x + 1, 4):
+                    if vals[x] == vals[y] and {x, y} not in ({0, 2}, {1, 3}):
+                        bad = True
+            if bad:
+                skipped += 1
+                logger.warning(
+                    "GIR: degenerate boundary set (%i,%i,%i,%i) - skipped",
+                    f_s, b_s, f_e, b_e)
+                continue
+
+            girs.append((f_s, b_s, f_e, b_e, X_seed, X_end))
+            # Step 4: mark BOTH boundaries so the same interference is not
+            # processed twice
+            marked.add(key_of(i, j))
+            marked.add(key_of(f_e, b_e))
+            logger.debug("GIR collected: seed (%i,%i) -> contact (%i,%i)",
+                         f_s, b_s, f_e, b_e)
+
+        # --- Step 6: delayed removal of all collected GIRs ---------------
+        if girs:
+            self._remove_girs(girs)
+        if skipped:
+            logger.debug("GIR: %i seed(s) skipped", skipped)
+
+    def _trim_raw_geo(self, geo, X, d):
+        """
+        Trim a RAW OFFSET geometry (element of self.rawoff) at point X and
+        keep the [Ps..X] part (d = -1) or the [X..Pe] part (d = +1).
+
+        The OffLineGeo/OffArcGeo.trim() methods copy start_normal/end_normal
+        onto the result - but raw offset geometries created by
+        make_rawoff_seg() do not carry normals (only the LIR segments do),
+        so trim() would fail with AttributeError. The result normals are
+        unused downstream (the raw offset curve is finished); therefore the
+        same split/projection logic is applied here without them.
+        """
+        if isinstance(geo, ArcGeo):
+            newPoint = geo.O.get_arc_point(geo.O.norm_angle(X), r=geo.r)
+            parts = geo.split_into_2geos(newPoint)
+            if len(parts) < 2:
+                return geo
+            return parts[0] if d == -1 else parts[1]
+        else:
+            newPoint = geo.perpedicular_on_line(X)
+            if d == 1:
+                return OffLineGeo(newPoint, geo.Pe)
+            return OffLineGeo(geo.Ps, newPoint)
+
+    def _remove_girs(self, girs):
+        """
+        Remove the collected global interference regions (paper step 6).
+
+        For every GIR the two cyclic intervals [f_s..f_e] and [b_e..b_s]:
+        - all elements strictly inside the intervals are deleted,
+        - the boundary elements are trimmed at their crossing points:
+          on a boundary element the interference removes the part that the
+          interval covers, the rest is kept. On different elements this is
+          the classic convention (interval start keeps [Ps..X], interval
+          end keeps [X..Pe]); the cut ends of an interval meet each other
+          exactly at the crossing point, so the remaining curve closes
+          without artificial gaps.
+
+        Same-element intervals (f_s == f_e or b_e == b_s): the interference
+        boundary lies WITHIN one element, between the two crossing points.
+        Then the covered part is the sub-segment from the interval start
+        crossing forward to its end crossing (along Ps -> Pe, wrapping at
+        the element ends); the valid remainder (complement within the
+        element, possibly two pieces for a line or an arc) is kept. This
+        is why cyc_range(a, a) must yield NO strictly-inside element: the
+        interval lives inside a single element, so nothing between two
+        distinct elements is deleted.
+
+        All GIRs are collected before any geometry is touched, and the
+        removed sub-intervals per element are merged, so several GIRs on
+        the same element never use stale parameters or trim twice.
+
+        The trimmed geometries are raw-offset lines/arcs (OffLineGeo /
+        OffArcGeo); OffPoint elements have no trim method, but their raw
+        offset is an OffArcGeo, which is trimmed here.
+        """
+        n = len(self.rawoff)
+
+        def cyc_range(a, b):
+            """Indices strictly between a and b, cyclic forward (a -> b).
+            Empty when a == b (within-element interval)."""
+            out = []
+            if a == b:
+                return out
+            k = (a + 1) % n
+            while k != b:
+                out.append(k)
+                k = (k + 1) % n
+            return out
+
+        deletes = set()
+        removed_ivs = {}   # idx -> list of (t0, t1) removed along Ps->Pe
+
+        def add_iv(idx, a, b):
+            if a is None or b is None:
+                return
+            a, b = max(0.0, min(1.0, a)), max(0.0, min(1.0, b))
+            if b - a > 1e-9:
+                removed_ivs.setdefault(idx, []).append((a, b))
+
+        def add_iv_forward(idx, ta, tb):
+            """Remove the forward sub-segment ta -> tb (wraps if ta > tb)."""
+            if ta is None or tb is None:
+                return
+            if ta <= tb:
+                add_iv(idx, ta, tb)
+            else:
+                add_iv(idx, ta, 1.0)
+                add_iv(idx, 0.0, tb)
+
+        for (f_s, b_s, f_e, b_e, X_P, X_Q) in girs:
+            # strictly-inside elements (empty for same-element intervals)
+            for k in cyc_range(f_s, f_e):
+                deletes.add(k)
+            for k in cyc_range(b_e, b_s):
+                deletes.add(k)
+
+            # forward interval A: start f_s, end f_e
+            if f_s == f_e:
+                g = self.rawoff[f_s]
+                add_iv_forward(f_s, self._geo_param(g, X_P),
+                               self._geo_param(g, X_Q))
+            else:
+                add_iv(f_s, self._geo_param(self.rawoff[f_s], X_P), 1.0)
+                add_iv(f_e, 0.0, self._geo_param(self.rawoff[f_e], X_Q))
+
+            # backward interval B: start b_e, end b_s
+            if b_e == b_s:
+                g = self.rawoff[b_s]
+                add_iv_forward(b_s, self._geo_param(g, X_Q),
+                               self._geo_param(g, X_P))
+            else:
+                add_iv(b_e, self._geo_param(self.rawoff[b_e], X_Q), 1.0)
+                add_iv(b_s, 0.0, self._geo_param(self.rawoff[b_s], X_P))
+
+        # apply: delete first, then keep the valid remainder of the rest
+        new_rawoff = []
+        removed = 0
+        for k, geo in enumerate(self.rawoff):
+            if k in deletes:
+                removed += 1
+                continue
+            if k in removed_ivs:
+                pieces = self._kept_pieces(geo, removed_ivs[k])
+                added = 0
+                for p in pieces:
+                    if getattr(p, 'length', 0.0) > eps * 10:
+                        new_rawoff.append(p)
+                        added += 1
+                if added == 0:
+                    # degenerate rest - drop it; its neighbours meet at
+                    # the same crossing point anyway
+                    removed += 1
+            else:
+                new_rawoff.append(geo)
+
+        self.rawoff = self._reconnect_rawoff(new_rawoff)
+        logger.debug("GIR removal: %i element(s) removed", removed)
+
+    def _reconnect_rawoff(self, pieces, tol=None):
+        """
+        Re-order the raw-offset pieces so that the curve stays continuous:
+        a piece whose Ps coincides with the Pe of another piece is placed
+        directly after it (re-connection exactly at the GIR crossing
+        points).
+
+        When several GIRs cut the SAME element, the valid remainder can
+        start/end at crossing points of DIFFERENT interferences; in the
+        original element order its true neighbours are the trimmed
+        boundary elements of those interferences, which are NOT adjacent in
+        the sequence. A plain (index) ordering then leaves an orphaned
+        fragment. Following the geometric continuity (Pe == next.Ps)
+        re-joins such pieces into their proper chains - the removal of all
+        GIRs is thereby applied jointly, never per GIR.
+
+        Pieces without a partner keep their relative order; they are
+        genuine free fragments (handled later by split_into_loops).
+        """
+        if tol is None:
+            tol = eps * 10
+        pieces = list(pieces)
+        n = len(pieces)
+        if n <= 2:
+            return pieces
+        used = [False] * n
+        order = []
+        for s in range(n):
+            if used[s]:
+                continue
+            used[s] = True
+            order.append(s)
+            cur = s
+            while True:
+                nxt = None
+                for j in range(n):
+                    if not used[j] and pieces[cur].Pe.distance(pieces[j].Ps) <= tol:
+                        nxt = j
+                        break
+                if nxt is None:
+                    break
+                used[nxt] = True
+                order.append(nxt)
+                cur = nxt
+        return [pieces[i] for i in order]
+
+    def _geo_param(self, geo, X):
+        """
+        Parameter 0..1 of point X along a raw offset geometry (Ps -> Pe).
+        For arcs the angle fraction along ext is used, so the direction is
+        respected. Returns None when undefined (degenerate element).
+        """
+        try:
+            if isinstance(geo, ArcGeo):
+                if abs(geo.ext) < eps:
+                    return None
+                return geo.dif_ang(geo.Ps, X, geo.ext) / geo.ext
+            L = geo.Ps.distance(geo.Pe)
+            if L < eps:
+                return None
+            return geo.Ps.distance(X) / L
+        except Exception:
+            logger.exception("GIR: parameter of a crossing not determinable")
+            return None
+
+    def _sub_geo(self, geo, t0, t1):
+        """
+        Sub-geometry of a raw offset geometry for the parameter range
+        [t0, t1] along Ps -> Pe. Arcs keep center, radius and direction.
+        Returns None for a degenerate range.
+        """
+        t0 = max(0.0, min(1.0, t0))
+        t1 = max(0.0, min(1.0, t1))
+        if t1 - t0 <= 1e-12:
+            return None
+        if isinstance(geo, ArcGeo):
+            a0 = geo.s_ang + geo.ext * t0
+            a1 = geo.s_ang + geo.ext * t1
+            return OffArcGeo(Ps=geo.O.get_arc_point(a0, r=geo.r),
+                             Pe=geo.O.get_arc_point(a1, r=geo.r),
+                             O=geo.O, r=geo.r,
+                             direction=(1 if geo.ext >= 0 else -1))
+        P0 = Point(geo.Ps.x + (geo.Pe.x - geo.Ps.x) * t0,
+                   geo.Ps.y + (geo.Pe.y - geo.Ps.y) * t0)
+        P1 = Point(geo.Ps.x + (geo.Pe.x - geo.Ps.x) * t1,
+                   geo.Ps.y + (geo.Pe.y - geo.Ps.y) * t1)
+        return OffLineGeo(P0, P1)
+
+    def _kept_pieces(self, geo, removed):
+        """
+        The parts of geo (parameter 0..1) NOT covered by the removed
+        intervals (complement within the element, merged and ordered).
+        """
+        ivs = sorted((max(0.0, a), min(1.0, b)) for a, b in removed
+                     if b - a > 1e-12)
+        merged = []
+        for a, b in ivs:
+            if merged and a <= merged[-1][1] + 1e-9:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+            else:
+                merged.append((a, b))
+        pieces = []
+        cur = 0.0
+        for a, b in merged:
+            if a - cur > 1e-9:
+                p = self._sub_geo(geo, cur, a)
+                if p is not None:
+                    pieces.append(p)
+            cur = max(cur, b)
+        if 1.0 - cur > 1e-9:
+            p = self._sub_geo(geo, cur, 1.0)
+            if p is not None:
+                pieces.append(p)
+        return pieces
 
     def _loop_signed_area(self, geos):
         """
