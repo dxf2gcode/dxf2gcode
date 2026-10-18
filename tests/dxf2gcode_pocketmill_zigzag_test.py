@@ -7,9 +7,9 @@ be farther than overDistance from all four extreme pocket-grid ends, which
 previously aborted the zig-zag (empty pocket). findClosestEnd must fall back to
 the nearest valid grid end instead of returning None.
 
-Run from the ``source`` directory:
+Run from the repository root:
 
-    python -m unittest dxf2gcode_pocketmill_zigzag_test -v
+    python -m unittest discover -s tests -t tests -p "dxf2gcode_pocketmill_zigzag_test.py" -v
 """
 from __future__ import absolute_import
 
@@ -18,6 +18,10 @@ import tempfile
 import unittest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+import sys
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():

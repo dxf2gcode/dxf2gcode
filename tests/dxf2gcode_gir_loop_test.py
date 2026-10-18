@@ -8,9 +8,9 @@ Regression tests for two GIR/export risks:
    endpoints round to the same value at the post processor's post_decimals.
 
 Only tests are added; no production code is changed. The helpers of
-dxf2gcode_stmove_gcode_test are reused. Run from the ``source`` directory:
+dxf2gcode_stmove_gcode_test are reused. Run from the repository root:
 
-    python -m unittest dxf2gcode_gir_loop_test -v
+    python -m unittest discover -s tests -t tests -p "dxf2gcode_gir_loop_test.py" -v
 """
 from __future__ import absolute_import
 
@@ -19,6 +19,10 @@ import logging
 import unittest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+import sys
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402  (config is initialised there)
     make_postpro, make_shape, build_stmove, lines_with, norm,

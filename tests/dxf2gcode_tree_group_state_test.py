@@ -9,9 +9,9 @@ GUI. A Qt-model level test additionally verifies the uniform application on
 real QStandardItems. The remaining GUI wiring (``TreeHandler.actionOnKeyPress``)
 still needs a full application and is documented as a test gap.
 
-Run from the ``source`` directory:
+Run from the repository root:
 
-    python -m unittest dxf2gcode_tree_group_state_test -v
+    python -m unittest discover -s tests -t tests -p "dxf2gcode_tree_group_state_test.py" -v
 """
 from __future__ import absolute_import
 
@@ -20,6 +20,10 @@ import tempfile
 import unittest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+import sys
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():

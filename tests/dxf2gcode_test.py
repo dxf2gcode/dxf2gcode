@@ -30,6 +30,10 @@ import unittest
 from pathlib import Path
 from pathlib import PurePath
 
+import sys
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+
 
 class TestDXF2Gcode(unittest.TestCase):
     """Test the DXF2GCODE command-line workflow."""
@@ -77,8 +81,9 @@ def make_test_function(description, dxf2gcode, in_file, out_file):
 
 def run_tests():
     """Register a conversion test for every bundled DXF file and run it."""
-    dxf2gcode = './dxf2gcode.py'
-    in_dir_name = '../dxf'
+    _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dxf2gcode = os.path.join(_root, 'source', 'dxf2gcode.py')
+    in_dir_name = os.path.join(_root, 'dxf')
     out_dir_name = '.'
     files = os.listdir(in_dir_name)
 

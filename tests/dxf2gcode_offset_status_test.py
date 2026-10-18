@@ -4,9 +4,9 @@ Regression tests for the offset computation status of offShapeClass and the
 differentiated messages in StMove.make_start_moves.
 
 The test run needs no GUI: it uses the offscreen Qt platform and a minimal
-in-memory configuration. Run from the ``source`` directory:
+in-memory configuration. Run from the repository root:
 
-    python -m unittest dxf2gcode_offset_status_test -v
+    python -m unittest discover -s tests -t tests -p "dxf2gcode_offset_status_test.py" -v
 """
 from __future__ import absolute_import
 
@@ -17,6 +17,10 @@ import unittest
 from unittest import mock
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+import sys
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():

@@ -10,9 +10,9 @@ They cover the actual GUI paths that change the checkbox:
 for single and mixed multi-selections, and verify the consistency between the
 visible checkbox state and shape.send_to_TSP.
 
-Run from the ``source`` directory:
+Run from the repository root:
 
-    python -m unittest dxf2gcode_tree_multiselect_test -v
+    python -m unittest discover -s tests -t tests -p "dxf2gcode_tree_multiselect_test.py" -v
 """
 from __future__ import absolute_import
 
@@ -21,6 +21,10 @@ import tempfile
 import unittest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+import sys
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():

@@ -11,9 +11,9 @@ full MainWindow cannot be instantiated offscreen (it crashes, like the other
 existing GUI tests) so the widget position is verified against the generated
 UI module and the layout collapse is verified with a plain QGridLayout.
 
-Run from the ``source`` directory:
+Run from the repository root:
 
-    python -m unittest dxf2gcode_breaks_pass_test -v
+    python -m unittest discover -s tests -t tests -p "dxf2gcode_breaks_pass_test.py" -v
 """
 from __future__ import absolute_import
 
@@ -25,6 +25,10 @@ import logging
 import unittest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+import sys
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():
@@ -623,7 +627,7 @@ class TestBreakPassGUILayout(unittest.TestCase):
         base = os.path.dirname(os.path.abspath(__file__))
         path = os.path.join(base, "dxf2gcode_ui5.py")
         if not os.path.isfile(path):  # source tree variant
-            path = os.path.join(base, "source", "dxf2gcode_ui5.py")
+            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode_ui5.py")
         with open(path, "r", encoding="utf-8") as f:
             tree = ast.parse(f.read())
         rows = {}
@@ -649,7 +653,7 @@ class TestBreakPassGUILayout(unittest.TestCase):
         base = os.path.dirname(os.path.abspath(__file__))
         path = os.path.join(base, "dxf2gcode_ui5.py")
         if not os.path.isfile(path):
-            path = os.path.join(base, "source", "dxf2gcode_ui5.py")
+            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode_ui5.py")
         with open(path, "r", encoding="utf-8") as f:
             content = f.read()
         self.assertIn(
