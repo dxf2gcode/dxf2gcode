@@ -2031,6 +2031,54 @@ La longueur doit être supérieure à la tolérance</translation>
         <source>Don&apos;t optimize route for selection</source>
         <translation>Ne pas optimiser le parcours pour la sélection</translation>
     </message>
+    <message>
+        <source>Diameter of the tool used for this layer. [mm] Defined in the Tools table.</source>
+        <translation>Diamètre de l'outil utilisé pour ce calque. [mm] Défini dans le tableau des outils.</translation>
+    </message>
+    <message>
+        <source>Spindle speed of the tool. [rpm] Defined in the Tools table.</source>
+        <translation>Vitesse de broche de l'outil. [rpm] Définie dans le tableau des outils.</translation>
+    </message>
+    <message>
+        <source>Start radius of the cutter compensation entry move. [mm] Defined in the Tools table.</source>
+        <translation>Rayon de départ du mouvement d'entrée de la compensation d'outil. [mm] Défini dans le tableau des outils.</translation>
+    </message>
+    <message>
+        <source>Z retraction plane: height the tool moves to before a rapid move (G0). [mm] Larger values lift the tool higher.</source>
+        <translation>Haut. Z sécurité : hauteur à laquelle l'outil est amené avant les déplacements rapides (G0). [mm] Des valeurs plus grandes lèvent l'outil plus haut.</translation>
+    </message>
+    <message>
+        <source>Z safety margin: distance above the workpiece top used for rapid moves. [mm]</source>
+        <translation>Haut. Z liaison : distance au-dessus du haut du brut utilisée pour les déplacements rapides. [mm]</translation>
+    </message>
+    <message>
+        <source>Z workpiece top: Z coordinate of the workpiece surface. [mm] All cutting depths are measured relative to it.</source>
+        <translation>Haut. Z brut : coordonnée Z de la surface du brut. [mm] Toutes les profondeurs d'usinage s'y rapportent.</translation>
+    </message>
+    <message>
+        <source>Z infeed depth: maximum depth removed per pass in Z direction. [mm] Smaller values create more passes.</source>
+        <translation>Prof. passe Z : profondeur maximale enlevée par passe en Z. [mm] Des valeurs plus petites créent plus de passes.</translation>
+    </message>
+    <message>
+        <source>Z final mill depth: final Z target of the milling of this shape. [mm] Absolute Z value; a more negative value mills deeper.</source>
+        <translation>Prof. usinage totale Z : cible finale en Z de l'usinage de cette forme. [mm] Valeur Z absolue ; plus négative = plus profond.</translation>
+    </message>
+    <message>
+        <source>XY feed rate for cutting moves in the XY plane. [mm/min]</source>
+        <translation>Vitesse d'avance XY : vitesse pour les mouvements de coupe dans le plan XY. [mm/min]</translation>
+    </message>
+    <message>
+        <source>Z feed rate for cutting moves in Z direction. [mm/min]</source>
+        <translation>Vitesse avance Z : vitesse pour les mouvements de coupe en Z. [mm/min]</translation>
+    </message>
+    <message>
+        <source>Tool used for this layer. Diameter, speed, start radius and additional offset are defined per tool in the Tools table.</source>
+        <translation>Outil utilisé pour ce calque. Diamètre, vitesse, rayon de départ et décalage additionnel sont définis par outil dans le tableau des outils.</translation>
+    </message>
+    <message>
+        <source>Different</source>
+        <translation>Différent</translation>
+    </message>
 </context>
 <context>
     <name>self.self</name>

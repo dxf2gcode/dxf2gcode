@@ -2234,6 +2234,54 @@ Skipped Geometries</source>
         <source>Don&apos;t optimize route for selection</source>
         <translation>Не оптимизировать маршрут для выбранного</translation>
     </message>
+    <message>
+        <source>Diameter of the tool used for this layer. [mm] Defined in the Tools table.</source>
+        <translation>Диаметр инструмента, используемого для этого слоя. [mm] Задаётся в таблице инструментов.</translation>
+    </message>
+    <message>
+        <source>Spindle speed of the tool. [rpm] Defined in the Tools table.</source>
+        <translation>Скорость шпинделя инструмента. [rpm] Задаётся в таблице инструментов.</translation>
+    </message>
+    <message>
+        <source>Start radius of the cutter compensation entry move. [mm] Defined in the Tools table.</source>
+        <translation>Начальный радиус входа компенсации инструмента. [mm] Задаётся в таблице инструментов.</translation>
+    </message>
+    <message>
+        <source>Z retraction plane: height the tool moves to before a rapid move (G0). [mm] Larger values lift the tool higher.</source>
+        <translation>Отвод по Z: высота, на которую инструмент выводится перед ускоренными перемещениями (G0). [mm] Большие значения поднимают инструмент выше.</translation>
+    </message>
+    <message>
+        <source>Z safety margin: distance above the workpiece top used for rapid moves. [mm]</source>
+        <translation>Граница безопасности по Z: расстояние над верхом заготовки для ускоренных перемещений. [mm]</translation>
+    </message>
+    <message>
+        <source>Z workpiece top: Z coordinate of the workpiece surface. [mm] All cutting depths are measured relative to it.</source>
+        <translation>Z верха заготовки: координата Z поверхности заготовки. [mm] Все глубины фрезерования отсчитываются от неё.</translation>
+    </message>
+    <message>
+        <source>Z infeed depth: maximum depth removed per pass in Z direction. [mm] Smaller values create more passes.</source>
+        <translation>Шаг погружения по Z: максимальная глубина за проход по Z. [mm] Меньшие значения увеличивают число проходов.</translation>
+    </message>
+    <message>
+        <source>Z final mill depth: final Z target of the milling of this shape. [mm] Absolute Z value; a more negative value mills deeper.</source>
+        <translation>Конечная глубина реза: конечная позиция Z для этого контура. [mm] Абсолютное значение Z; более отрицательное значение режет глубже.</translation>
+    </message>
+    <message>
+        <source>XY feed rate for cutting moves in the XY plane. [mm/min]</source>
+        <translation>Подача XY: скорость подачи для режущих перемещений в плоскости XY. [mm/min]</translation>
+    </message>
+    <message>
+        <source>Z feed rate for cutting moves in Z direction. [mm/min]</source>
+        <translation>Подача Z: скорость подачи для режущих перемещений по Z. [mm/min]</translation>
+    </message>
+    <message>
+        <source>Tool used for this layer. Diameter, speed, start radius and additional offset are defined per tool in the Tools table.</source>
+        <translation>Инструмент для этого слоя. Диаметр, скорость, начальный радиус и дополнительный отступ задаются для каждого инструмента в таблице.</translation>
+    </message>
+    <message>
+        <source>Different</source>
+        <translation>Разные</translation>
+    </message>
 </context>
 <context>
     <name>Validator</name>

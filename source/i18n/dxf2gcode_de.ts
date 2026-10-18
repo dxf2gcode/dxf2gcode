@@ -2076,6 +2076,54 @@ Die Länge muss größer der Toleranz sein.
         <source>Don&apos;t optimize route for selection</source>
         <translation>Reihenfolge für Auswahl nicht optimieren</translation>
     </message>
+    <message>
+        <source>Diameter of the tool used for this layer. [mm] Defined in the Tools table.</source>
+        <translation>Durchmesser des für diese Ebene verwendeten Werkzeugs. [mm] Wird in der Werkzeugtabelle definiert.</translation>
+    </message>
+    <message>
+        <source>Spindle speed of the tool. [rpm] Defined in the Tools table.</source>
+        <translation>Spindeldrehzahl des Werkzeugs. [rpm] Wird in der Werkzeugtabelle definiert.</translation>
+    </message>
+    <message>
+        <source>Start radius of the cutter compensation entry move. [mm] Defined in the Tools table.</source>
+        <translation>Startradius der Anfahrtbewegung der Fräserkompensation. [mm] Wird in der Werkzeugtabelle definiert.</translation>
+    </message>
+    <message>
+        <source>Z retraction plane: height the tool moves to before a rapid move (G0). [mm] Larger values lift the tool higher.</source>
+        <translation>Z Rückzugsebene: Höhe, auf die das Werkzeug vor Eilgängen (G0) gefahren wird. [mm] Größere Werte heben das Werkzeug höher.</translation>
+    </message>
+    <message>
+        <source>Z safety margin: distance above the workpiece top used for rapid moves. [mm]</source>
+        <translation>Z Sicherheits Abstand: Abstand über der Werkstückoberseite für Eilgänge. [mm]</translation>
+    </message>
+    <message>
+        <source>Z workpiece top: Z coordinate of the workpiece surface. [mm] All cutting depths are measured relative to it.</source>
+        <translation>Z Werkstück TOP: Z-Koordinate der Werkstückoberfläche. [mm] Alle Frästiefen werden darauf bezogen.</translation>
+    </message>
+    <message>
+        <source>Z infeed depth: maximum depth removed per pass in Z direction. [mm] Smaller values create more passes.</source>
+        <translation>Z Zustell Tiefe: maximale Zustellung pro Durchgang in Z-Richtung. [mm] Kleinere Werte erzeugen mehr Durchgänge.</translation>
+    </message>
+    <message>
+        <source>Z final mill depth: final Z target of the milling of this shape. [mm] Absolute Z value; a more negative value mills deeper.</source>
+        <translation>Z Frästiefe: endgültige Z-Zielposition der Bearbeitung dieser Form. [mm] Absoluter Z-Wert; negativere Werte fräsen tiefer.</translation>
+    </message>
+    <message>
+        <source>XY feed rate for cutting moves in the XY plane. [mm/min]</source>
+        <translation>XY Vorschub: Vorschubgeschwindigkeit für Schnittbewegungen in der XY-Ebene. [mm/min]</translation>
+    </message>
+    <message>
+        <source>Z feed rate for cutting moves in Z direction. [mm/min]</source>
+        <translation>Z Vorschub: Vorschubgeschwindigkeit für Schnittbewegungen in Z-Richtung. [mm/min]</translation>
+    </message>
+    <message>
+        <source>Tool used for this layer. Diameter, speed, start radius and additional offset are defined per tool in the Tools table.</source>
+        <translation>Werkzeug für diese Ebene. Durchmesser, Drehzahl, Startradius und Zusatz-Offset werden in der Werkzeugtabelle pro Werkzeug definiert.</translation>
+    </message>
+    <message>
+        <source>Different</source>
+        <translation>Unterschiedlich</translation>
+    </message>
 </context>
 <context>
     <name>self.self</name>

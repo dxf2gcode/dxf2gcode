@@ -80,7 +80,7 @@ RCFILEver = f"dxf2gcode_images{PYQT_VERSION}.qrc"
 RCPYFILEver = f"dxf2gcode_images{PYQT_VERSION}_rc.py"
 
 ui_data = ""
-with open(os.path.join(FILEPATH,UIFILE), "r") as myfile:
+with open(os.path.join(FILEPATH,UIFILE), "r", encoding="utf-8") as myfile:
     ui_data = myfile.read().replace(RCFILE, RCFILEver)
 
 fd, tmp_ui_filename = tempfile.mkstemp()

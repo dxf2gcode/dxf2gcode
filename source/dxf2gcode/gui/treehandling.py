@@ -44,6 +44,7 @@ import logging
 
 import dxf2gcode.globals.globals as g
 
+from dxf2gcode.gui import shapeparameterstate as sps
 from dxf2gcode.core.shape import Shape
 from dxf2gcode.core.entitycontent import EntityContent
 from dxf2gcode.core.customgcode import CustomGCode
@@ -153,6 +154,9 @@ class TreeHandler(QWidget):
         # The layer/shape which is currently displayed in the parameters box
         self.display_tool_layer = None
         self.display_tool_shape = None
+        # whole selection (used to detect and display mixed parameter values)
+        self.display_tool_layers = []
+        self.display_tool_shapes = []
 
         # Don't change this line, the signal _must_ be "activated" (only activates on user action) and _not_ "currentIndexChanged" (activates programmatically and on user action)
         self.ui.toolDiameterComboBox.textActivated[str].connect(self.toolUpdate)
@@ -166,6 +170,13 @@ class TreeHandler(QWidget):
         self.ui.breaksPassComboBox.activated.connect(self.breaksPassUpdate)
         self.ui.g1FeedXYLineEdit.editingFinished.connect(self.toolParameterg1FeedXYUpdate)
         self.ui.g1FeedZLineEdit.editingFinished.connect(self.toolParameterg1FeedZUpdate)
+
+        # mill settings frame: tooltips and the central display/refresh of
+        # the parameter fields (standard, individual and mixed values)
+        self.setupMillParameterTooltips()
+        for _widget in self._mill_parameter_widgets():
+            if hasattr(_widget, "editingFinished"):
+                _widget.editingFinished.connect(self.updateToolParameters)
         
         # Entities TreeView
         self.entity_item_model = None
@@ -680,8 +691,10 @@ class TreeHandler(QWidget):
         if item_index:
             # we found the matching index for the shape in our layers treeView model
             self.ui.layersShapesTreeView.blockSignals(True)  # Avoid signal loops (we dont want the treeView to re-emit selectionChanged signal)
-            self.columnsSelectDeselect(selection_model, item_index, select)
+            # setCurrentIndex also (re-)selects the item: do it first so
+            # that the requested select/deselect state is the final one
             self.ui.layersShapesTreeView.setCurrentIndex(item_index)
+            self.columnsSelectDeselect(selection_model, item_index, select)
             self.ui.layersShapesTreeView.blockSignals(False)
 
         # Entities treeView
@@ -691,13 +704,24 @@ class TreeHandler(QWidget):
         if item_index:
             # we found the matching index for the shape in our entities treeView model
             self.ui.entitiesTreeView.blockSignals(True)  # Avoid signal loops (we dont want the treeView to re-emit selectionChanged signal)
-            self.columnsSelectDeselect(selection_model, item_index, select)
             self.ui.entitiesTreeView.setCurrentIndex(item_index)
+            self.columnsSelectDeselect(selection_model, item_index, select)
             self.ui.entitiesTreeView.blockSignals(False)
 
-        # Update the tool parameters fields
+        # The canvas keeps its selection in the shapes themselves: mirror it
+        # into the tree selection so that the tree selection always matches
+        # the canvas selection (the parameter update slots apply the entered
+        # value to the tree selection).
+        self.updateSelection(self.ui.layersShapesTreeView)
+        self.updateSelection(self.ui.entitiesTreeView)
+
+        # Update the tool parameters fields of the whole selection
         self.clearToolsParameters()
-        self.displayToolParametersForItem(shape.parentLayer, shape)
+        layers, shapes = self._selectedShapesAndLayers()
+        if shapes or layers:
+            self.displayToolParametersForSelection(layers, shapes)
+        else:
+            self.displayToolParametersForItem(shape.parentLayer, shape)
 
     def updateShapeEnabling(self, shape, enable):
         """
@@ -1224,10 +1248,12 @@ class TreeHandler(QWidget):
         self.updateSelection(self.ui.layersShapesTreeView)
         self.updateSelection(self.ui.entitiesTreeView)
 
-        if lastSelected is not None:
-            # update the tools parameters according to the selection
-            parentLayer = getattr (lastSelected, 'parentLayer', None) or lastSelected
-            self.displayToolParametersForItem(parentLayer, lastSelected)
+        # Show the parameters of the whole CURRENT selection (not only of the
+        # last clicked item / the selection delta) so that mixed values are
+        # detected and displayed.
+        layers, shapes = self._selectedShapesAndLayers()
+        if shapes or layers:
+            self.displayToolParametersForSelection(layers, shapes)
 
         if g.window.canvas_scene:
             g.window.canvas_scene.update()
@@ -1390,102 +1416,301 @@ class TreeHandler(QWidget):
                     real_item.break_pass = int(value)
         self.prepareExportOrderUpdate()
 
+    def _selectedShapesAndLayers(self):
+        """
+        @return (layers, shapes) of the CURRENT tree selection.
+
+        The selection is read from the tree (and not from the change delta
+        of the selection callback) so that a multiple selection is complete
+        and mixed parameter values can be detected reliably.
+        """
+        layers = []
+        shapes = []
+        selection_model = self.ui.layersShapesTreeView.selectionModel()
+        if selection_model is None:
+            return layers, shapes
+        for model_index in selection_model.selectedIndexes():
+            if not isValid(model_index):
+                continue
+            model_index = model_index.sibling(model_index.row(), 0)
+            element = model_index.model().itemFromIndex(model_index)
+            if element is None:
+                continue
+            if isValid(element.data(SHAPE_OBJECT)):
+                shape = toPyObject(element.data(SHAPE_OBJECT)).shapeobj
+                if isinstance(shape, Shape):
+                    if shape not in shapes:
+                        shapes.append(shape)
+                    layer = getattr(shape, 'parentLayer', None)
+                    if layer is not None and layer not in layers:
+                        layers.append(layer)
+            elif isValid(element.data(LAYER_OBJECT)):
+                layer = toPyObject(element.data(LAYER_OBJECT))
+                if layer not in layers:
+                    layers.append(layer)
+                for shape in getattr(layer, 'shapes', None) or []:
+                    if isinstance(shape, Shape) and shape not in shapes:
+                        shapes.append(shape)
+        # The canvas keeps its selection in the shapes themselves (and not
+        # only in the tree): include those, otherwise a selection made on
+        # the canvas would be incomplete and mixed values would not be
+        # detected.
+        for shape in self._allShapesInTree():
+            if shape.isSelected() and shape not in shapes:
+                shapes.append(shape)
+                layer = getattr(shape, 'parentLayer', None)
+                if layer is not None and layer not in layers:
+                    layers.append(layer)
+        return layers, shapes
+
+    def _allShapesInTree(self):
+        """
+        @return every Shape object of the layer tree
+        """
+        shapes = []
+        model = self.layer_item_model
+        if model is None:
+            return shapes
+        for branch in range(model.rowCount()):
+            self._collectShapesRecursive(model, model.index(branch, 0), shapes)
+        return shapes
+
+    def _collectShapesRecursive(self, model, root, shapes):
+        """
+        Helper for _allShapesInTree() used for recursion
+        """
+        if model.hasChildren(root):
+            for branch in range(model.rowCount(root)):
+                self._collectShapesRecursive(
+                    model, model.index(branch, 0, root), shapes)
+        elif isValid(root.data(SHAPE_OBJECT)):
+            shape = toPyObject(root.data(SHAPE_OBJECT)).shapeobj
+            if isinstance(shape, Shape) and shape not in shapes:
+                shapes.append(shape)
+
     def updateToolParameters(self):
         """
-        Refresh tool parameters for currently selected shape/layer.
+        Refresh the mill settings frame for the current selection.
+
+        The current tree selection is used, so a refresh can never fall
+        back to the value of a single shape while several shapes are
+        selected (that would hide the mixed state).
         """
-        if self.display_tool_layer is not None:
-            self.displayToolParametersForItem(self.display_tool_layer, self.display_tool_shape)
+        layers, shapes = self._selectedShapesAndLayers()
+        if shapes or layers:
+            self.displayToolParametersForSelection(layers, shapes)
+        elif getattr(self, "display_tool_shapes", None) or \
+                getattr(self, "display_tool_layers", None):
+            self.displayToolParametersForSelection(self.display_tool_layers,
+                                                   self.display_tool_shapes)
+        elif self.display_tool_layer is not None:
+            self.displayToolParametersForItem(self.display_tool_layer,
+                                              self.display_tool_shape)
 
     def displayToolParametersForItem(self, layer_item, shape_item = None):
         """
         Display the current tools settings (fill the QLineEdit, ...)
-        for the Layer / Shape passed as parameter
+        for a single Layer / Shape (thin wrapper around the selection
+        display so that both paths share the same central logic)
         @param layer_item: layer instance as defined in LayerContent.py
         @param shape_item: shape instance as defined in Shape.py
         """
-
-        self.display_tool_layer = layer_item
-        self.display_tool_shape = shape_item
-
-        # Selects the tool for the selected layer
-        self.ui.toolDiameterComboBox.setCurrentIndex(self.ui.toolDiameterComboBox.findText(str(layer_item.tool_nr)))
-        if self.tool_nr is not None and layer_item.tool_nr != self.tool_nr:
-            # Several different tools are currently selected => grey background for the combobox
-            palette = QPalette()
-            palette.setColor(QPalette.Button, QtCore.Qt.GlobalColor.gray)
-            self.ui.toolDiameterComboBox.setPalette(palette)
-
-        # Layer options
-        self.tool_nr = layer_item.tool_nr
-
-        self.tool_diameter = self.updateAndColorizeWidget(self.ui.toolDiameterLabel,
-                                                          self.tool_diameter,
-                                                          layer_item.tool_diameter)
-
-        self.speed = self.updateAndColorizeWidget(self.ui.toolSpeedLabel,
-                                                  self.speed, layer_item.speed)
-
-        self.start_radius = self.updateAndColorizeWidget(self.ui.startRadiusLabel,
-                                                         self.start_radius,
-                                                         layer_item.start_radius)
-
-        self.axis3_retract = self.updateAndColorizeWidget(self.ui.zRetractionArealLineEdit,
-                                                          self.axis3_retract,
-                                                          layer_item.axis3_retract)
-
-        self.axis3_safe_margin = self.updateAndColorizeWidget(self.ui.zSafetyMarginLineEdit,
-                                                              self.axis3_safe_margin,
-                                                              layer_item.axis3_safe_margin)
-
-        # Shape options
-        if isinstance(shape_item, Shape): # To avoid segfault when someone passes eg Custom GCode as a shape_item
-            self.axis3_start_mill_depth = self.updateAndColorizeWidget(self.ui.zInitialMillDepthLineEdit,
-                                                                       self.axis3_start_mill_depth,
-                                                                       shape_item.axis3_start_mill_depth)
-
-            self.axis3_slice_depth = self.updateAndColorizeWidget(self.ui.zInfeedDepthLineEdit,
-                                                                  self.axis3_slice_depth,
-                                                                  shape_item.axis3_slice_depth)
-
-            self.axis3_mill_depth = self.updateAndColorizeWidget(self.ui.zFinalMillDepthLineEdit,
-                                                                 self.axis3_mill_depth,
-                                                                 shape_item.axis3_mill_depth)
-
-            self.milling_offset = self.updateAndColorizeWidget(self.ui.millingOffsetLineEdit,
-                                                               self.milling_offset,
-                                                               shape_item.milling_offset)
-            
-            if(False): #shape_item.Drill == True #drill removed
-                self.ui.g1FeedXYLineEdit.setEnabled(False)
-                self.f_g1_plane = self.updateAndColorizeWidget(self.ui.g1FeedXYLineEdit,
-                                                           self.f_g1_plane,
-                                                           shape_item.f_g1_plane)
-            else:
-                self.ui.g1FeedXYLineEdit.setEnabled(True)
-                self.f_g1_plane = self.updateAndColorizeWidget(self.ui.g1FeedXYLineEdit,
-                                                           self.f_g1_plane,
-                                                           shape_item.f_g1_plane)
-            
-
-            self.f_g1_depth = self.updateAndColorizeWidget(self.ui.g1FeedZLineEdit,
-                                                           self.f_g1_depth,
-                                                           shape_item.f_g1_depth)
-
-            #self.ui.OffsetXYLineEdit.setEnabled(shape_item.Pocket)
-            #self.OffsetXY = self.updateAndColorizeWidget(self.ui.OffsetXYLineEdit,
-            #                                               self.OffsetXY,
-            #                                               shape_item.OffsetXY)
-                
+        if isinstance(shape_item, Shape):
+            layers = [layer_item if layer_item is not None
+                      else getattr(shape_item, "parentLayer", None)]
+            self.displayToolParametersForSelection(layers, [shape_item])
         else:
-            for widget in self.ui.zInitialMillDepthLineEdit,\
-                          self.ui.zInfeedDepthLineEdit,\
-                          self.ui.zFinalMillDepthLineEdit,\
-                          self.ui.millingOffsetLineEdit,\
-                          self.ui.g1FeedXYLineEdit,\
-                          self.ui.g1FeedZLineEdit:
-                widget.setText("")
-                widget.setEnabled(False)
+            self.displayToolParametersForSelection(
+                [layer_item] if layer_item is not None else [], [])
+
+    # ------------------------------------------------------------------
+    # Mill settings frame: central parameter handling
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _tool_parameter_default(item, key):
+        """
+        Tool default (from the Tools table) that applies to a shape/layer.
+        """
+        layer = getattr(item, "parentLayer", None) or item
+        tool_nr = str(getattr(layer, "tool_nr", 1))
+        try:
+            return float(g.config.vars.Tool_Parameters[tool_nr][key])
+        except Exception:
+            return None
+
+    def _mill_parameter_fields(self):
+        """
+        Central description of the mill settings parameters.
+
+        Each entry is (attribute, widget, on_layer, default getter, tooltip):
+        the default getter returns the value the item would get from the
+        global configuration or from its own tool, so that shapes with
+        different tools are handled correctly.
+        @return the list of parameter descriptions
+        """
+        def config_default(section, key):
+            def getter(item):
+                return float(g.config.vars[section][key])
+            return getter
+
+        def tool_default(key):
+            return lambda item: self._tool_parameter_default(item, key)
+
+        return [
+            ("tool_diameter", self.ui.toolDiameterLabel, True,
+             tool_default("diameter"),
+             self.tr("Diameter of the tool used for this layer."
+                     " [mm] Defined in the Tools table.")),
+            ("speed", self.ui.toolSpeedLabel, True,
+             tool_default("speed"),
+             self.tr("Spindle speed of the tool. [rpm]"
+                     " Defined in the Tools table.")),
+            ("start_radius", self.ui.startRadiusLabel, True,
+             tool_default("start_radius"),
+             self.tr("Start radius of the cutter compensation entry move."
+                     " [mm] Defined in the Tools table.")),
+            ("axis3_retract", self.ui.zRetractionArealLineEdit, True,
+             config_default("Depth_Coordinates", "axis3_retract"),
+             self.tr("Z retraction plane: height the tool moves to before"
+                     " a rapid move (G0). [mm] Larger values lift the"
+                     " tool higher.")),
+            ("axis3_safe_margin", self.ui.zSafetyMarginLineEdit, True,
+             config_default("Depth_Coordinates", "axis3_safe_margin"),
+             self.tr("Z safety margin: distance above the workpiece top"
+                     " used for rapid moves. [mm]")),
+            ("axis3_start_mill_depth", self.ui.zInitialMillDepthLineEdit,
+             False,
+             config_default("Depth_Coordinates", "axis3_start_mill_depth"),
+             self.tr("Z workpiece top: Z coordinate of the workpiece"
+                     " surface. [mm] All cutting depths are measured"
+                     " relative to it.")),
+            ("axis3_slice_depth", self.ui.zInfeedDepthLineEdit, False,
+             config_default("Depth_Coordinates", "axis3_slice_depth"),
+             self.tr("Z infeed depth: maximum depth removed per pass in"
+                     " Z direction. [mm] Smaller values create more"
+                     " passes.")),
+            ("axis3_mill_depth", self.ui.zFinalMillDepthLineEdit, False,
+             config_default("Depth_Coordinates", "axis3_mill_depth"),
+             self.tr("Z final mill depth: final Z target of the milling"
+                     " of this shape. [mm] Absolute Z value; a more"
+                     " negative value mills deeper.")),
+            ("milling_offset", self.ui.millingOffsetLineEdit, False,
+             tool_default("milling_offset"),
+             None),  # tooltip is defined in the .ui form (translated)
+            ("f_g1_plane", self.ui.g1FeedXYLineEdit, False,
+             config_default("Feed_Rates", "f_g1_plane"),
+             self.tr("XY feed rate for cutting moves in the XY plane."
+                     " [mm/min]")),
+            ("f_g1_depth", self.ui.g1FeedZLineEdit, False,
+             config_default("Feed_Rates", "f_g1_depth"),
+             self.tr("Z feed rate for cutting moves in Z direction."
+                     " [mm/min]")),
+        ]
+
+    def _mill_parameter_widgets(self):
+        """
+        @return the widgets of all mill settings parameters
+        """
+        return [field[1] for field in self._mill_parameter_fields()]
+
+    def setupMillParameterTooltips(self):
+        """
+        Give every visible mill settings parameter a helpful tooltip
+        (meaning, unit and effect of the parameter).
+        """
+        for attribute, widget, on_layer, default_getter, tooltip in \
+                self._mill_parameter_fields():
+            if tooltip:
+                widget.setToolTip(tooltip)
+        self.ui.toolDiameterComboBox.setToolTip(self.tr(
+            "Tool used for this layer. Diameter, speed, start radius and"
+            " additional offset are defined per tool in the Tools table."))
+
+    @staticmethod
+    def _gray_palette(palette):
+        """
+        De-emphasize the text of a parameter widget (standard value or
+        mixed state). Both text roles are set so that line edits and
+        labels are shown in grey.
+        """
+        for role in (QPalette.ColorRole.Text, QPalette.ColorRole.WindowText):
+            palette.setColor(role, QtCore.Qt.GlobalColor.gray)
+        return palette
+
+    def _set_parameter_widget(self, widget, state, value, standard):
+        """
+        Show one parameter state in its widget (single central styling).
+        A standard value stays fully usable and is only de-emphasized;
+        a mixed/unavailable state shows a placeholder that never parses as
+        a number, so it can not be written back into a shape.
+        """
+        palette = QPalette(self.palette)
+        if state == sps.SAME:
+            widget.setText(str(round(value, 4)))
+            if standard:
+                self._gray_palette(palette)
+            widget.setPalette(palette)
+            widget.setEnabled(True)
+        elif state == sps.MIXED:
+            widget.setText(self.tr("Different"))
+            self._gray_palette(palette)
+            widget.setPalette(palette)
+            widget.setEnabled(True)
+        elif state == sps.UNAVAILABLE:
+            # the parameter is not available for a part of the selection:
+            # never apply a value to the shapes that do not support it
+            widget.setText(self.tr("Different"))
+            self._gray_palette(palette)
+            widget.setPalette(palette)
+            widget.setEnabled(False)
+        else:
+            widget.setText("")
+            widget.setPalette(palette)
+            widget.setEnabled(False)
+
+    def displayToolParametersForSelection(self, layers, shapes):
+        """
+        Show the parameters of the whole selection (single or multiple).
+
+        Equal values are shown normally (standard values de-emphasized),
+        parameters with different values show the placeholder "Different".
+        The placeholder is an indication only and is never stored or passed
+        to the milling calculation (it is not a number).
+        @param layers: layers of the selection (layer/tool parameters)
+        @param shapes: selected shapes (shape parameters)
+        """
+        self.display_tool_layers = list(layers)
+        self.display_tool_shapes = list(shapes)
+        self.display_tool_layer = (self.display_tool_layers[0]
+                                   if self.display_tool_layers else None)
+        self.display_tool_shape = (self.display_tool_shapes[0]
+                                   if self.display_tool_shapes else None)
+
+        layer_item = self.display_tool_layer
+        if layer_item is not None:
+            self.ui.toolDiameterComboBox.setCurrentIndex(
+                self.ui.toolDiameterComboBox.findText(str(layer_item.tool_nr)))
+            self.tool_nr = layer_item.tool_nr
+            tool_numbers = set(getattr(layer, "tool_nr", None)
+                               for layer in self.display_tool_layers)
+            if len(tool_numbers) > 1:
+                # several different tools selected
+                palette = QPalette()
+                palette.setColor(QPalette.Button, QtCore.Qt.GlobalColor.gray)
+                self.ui.toolDiameterComboBox.setPalette(palette)
+            else:
+                self.ui.toolDiameterComboBox.setPalette(self.palette)
+
+        for attribute, widget, on_layer, default_getter, tooltip in \
+                self._mill_parameter_fields():
+            items = (self.display_tool_layers if on_layer
+                     else self.display_tool_shapes)
+            state, value = sps.parameter_state(items, attribute)
+            standard = (state == sps.SAME and
+                        sps.is_standard_value(items, attribute, default_getter))
+            self._set_parameter_widget(widget, state, value, standard)
+            # keep the state used by the update slots / paint routines
+            setattr(self, attribute, value if state == sps.SAME else None)
 
         self.updateBreaksPassWidget()
 
@@ -1549,7 +1774,7 @@ class TreeHandler(QWidget):
         if previous_value and value != previous_value:
             # Several different tools parameter are currently selected (eg: mill deph = -3 for the first selected item and -2 for the second) => grey color for the text
             palette = QPalette()
-            palette.setColor(QPalette.ColorRole.Text, QtCore.Qt.GlobalColor.gray)
+            self._gray_palette(palette)
             widget.setPalette(palette)
 
         widget.setEnabled(True)
