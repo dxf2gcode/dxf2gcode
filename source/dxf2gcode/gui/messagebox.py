@@ -54,7 +54,7 @@ class MessageBox(QTextBrowser):
         self.append(self.tr("Version %s (%s)") % (c.VERSION, c.DATE))
         self.append(self.tr("For more information and updates visit:"))
         self.append("<a href='http://sourceforge.net/projects/dxf2gcode/'>http://sourceforge.net/projects/dxf2gcode/</a>")
-        self.append("For Configuration files refer to folder:")
+        self.append(self.tr("For Configuration files refer to folder:"))
         self.append("<a href='%s'>%s</a>" %(g.folder,g.folder))
         self.append("")
 

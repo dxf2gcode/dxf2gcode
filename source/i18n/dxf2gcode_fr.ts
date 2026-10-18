@@ -166,6 +166,13 @@ Pas assez de caractère(exception de {0},trouve {1} pour le Champ &quot;{2}&quot
     </message>
 </context>
 <context>
+    <name>LayerContent</name>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration ; using tool {2} instead</source>
+        <translation>L'outil {0} utilisé pour le calque &quot;{1}&quot; n'existe plus dans la configuration ; l'outil {2} est utilisé à la place</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <source>Python version 2 is not supported, please use it with python version 3.</source>
@@ -305,7 +312,7 @@ Pas assez de caractère(exception de {0},trouve {1} pour le Champ &quot;{2}&quot
     </message>
     <message>
         <source>Drawing units: inches</source>
-        <translation>Unités du dessin: inches</translation>
+        <translation>Unités du dessin: pouces</translation>
     </message>
     <message>
         <source>[in]</source>
@@ -789,7 +796,7 @@ renvoi le code erreur:{1}</translation>
     </message>
     <message>
         <source>&amp;Inches</source>
-        <translation>&amp;Inches</translation>
+        <translation>&amp;Pouces</translation>
     </message>
     <message>
         <source>Process breaks from</source>
@@ -873,6 +880,18 @@ Voulez-vous les enregistrer avant de changer de profil ?</translation>
         <source> IPS</source>
         <translation> IPS</translation>
     </message>
+    <message>
+        <source>ERROR</source>
+        <translation>ERREUR</translation>
+    </message>
+    <message>
+        <source>Configuration error</source>
+        <translation>Erreur de configuration</translation>
+    </message>
+    <message>
+        <source>Project files (*%s)</source>
+        <translation>Fichiers de projet (*%s)</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -887,6 +906,10 @@ Voulez-vous les enregistrer avant de changer de profil ?</translation>
     <message>
         <source>For more information and updates visit:</source>
         <translation>Pour plus d'informations et mise a jour visite:</translation>
+    </message>
+    <message>
+        <source>For Configuration files refer to folder:</source>
+        <translation>Les fichiers de configuration se trouvent dans le dossier :</translation>
     </message>
 </context>
 <context>
@@ -1679,6 +1702,14 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
 </source>
         <translation type="obsolete">(Généré avec: %s, Version: %s, Date: %s)</translation>
     </message>
+    <message>
+        <source>An error occured while removing the postprocessor config file {0} ; do the operation manually and restart the software.</source>
+        <translation>Une erreur est survenue lors de la suppression du fichier de configuration du post-processeur {0} ; effectuez l'opération manuellement et redémarrez le logiciel.</translation>
+    </message>
+    <message>
+        <source>An error occured while duplicating the postprocessor config file {0} ; do the operation manually and restart the software.</source>
+        <translation>Une erreur est survenue lors de la duplication du fichier de configuration du post-processeur {0} ; effectuez l'opération manuellement et redémarrez le logiciel.</translation>
+    </message>
 </context>
 <context>
     <name>OffArcGeo</name>
@@ -1692,6 +1723,25 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     <message>
         <source>Unsupported geometry type: %s</source>
         <translation>Types de géométries :%s Non supporté</translation>
+    </message>
+</context>
+<context>
+    <name>PocketMill</name>
+    <message>
+        <source>Shape %i: a circular pocket cannot be milled with cutter diameter %.3f mm (usable radius %.3f mm) - pocket skipped.</source>
+        <translation>Forme %i : une poche circulaire ne peut pas être fraisée avec un diamètre d'outil de %.3f mm (rayon utilisable %.3f mm) - poche ignorée.</translation>
+    </message>
+    <message>
+        <source>Shape %i: a rectangular pocket cannot be milled with cutter diameter %.3f mm (tool too large for the pocket area) - pocket skipped.</source>
+        <translation>Forme %i : une poche rectangulaire ne peut pas être fraisée avec un diamètre d'outil de %.3f mm (outil trop grand pour la surface de la poche) - poche ignorée.</translation>
+    </message>
+    <message>
+        <source>Shape %i: pocket cannot be milled with cutter diameter %.3f mm (the tool is too large for the pocket area) - pocket skipped.</source>
+        <translation>Forme %i : la poche ne peut pas être fraisée avec un diamètre d'outil de %.3f mm (l'outil est trop grand pour la surface de la poche) - poche ignorée.</translation>
+    </message>
+    <message>
+        <source>Shape %i: pocket cannot be milled with cutter diameter %.3f mm - no reachable pocket area, pocket skipped.</source>
+        <translation>Forme %i : la poche ne peut pas être fraisée avec un diamètre d'outil de %.3f mm - aucune surface de poche accessible, poche ignorée.</translation>
     </message>
 </context>
 <context>
@@ -1766,6 +1816,14 @@ La longueur doit être supérieure à la tolérance</translation>
         <source>Short Elements</source>
         <translation>Eléments courts</translation>
     </message>
+    <message>
+        <source>Reading Block %s; Nr: %i</source>
+        <translation>Lecture du bloc %s ; N° : %i</translation>
+    </message>
+    <message>
+        <source>Found unsupported geometry type: %s !</source>
+        <translation>Type de géométrie non supporté trouvé : %s !</translation>
+    </message>
 </context>
 <context>
     <name>Shape</name>
@@ -1823,10 +1881,39 @@ La longueur doit être supérieure à la tolérance</translation>
     </message>
 </context>
 <context>
+    <name>StMove</name>
+    <message>
+        <source>Shape %i: the cutter diameter (%.3f mm) removes the whole boundary - only the pocket will be milled!</source>
+        <translation>Forme %i : le diamètre de l'outil (%.3f mm) enlève tout le contour - seule la poche sera fraisée !</translation>
+    </message>
+    <message>
+        <source>Shape %i cannot be milled: the selected cutter diameter (%.3f mm) leaves no valid toolpath for this contour.</source>
+        <translation>La forme %i ne peut pas être fraisée : le diamètre d'outil sélectionné (%.3f mm) ne laisse aucun parcours d'outil valide pour ce contour.</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i (%s) - the shape will NOT be milled!</source>
+        <translation>La compensation d'outil a échoué pour la forme %i (%s) - la forme ne sera PAS fraisée !</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i - only the pocket will be milled, the boundary pass is skipped!</source>
+        <translation>La compensation d'outil a échoué pour la forme %i - seule la poche sera fraisée, la passe de contour est ignorée !</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i - the shape will NOT be milled!</source>
+        <translation>La compensation d'outil a échoué pour la forme %i - la forme ne sera PAS fraisée !</translation>
+    </message>
+    <message>
+        <source>Pocket milling failed for shape %i - the pocket is skipped. This is a bug, please report it with the offending DXF file.
+%s</source>
+        <translation>Le fraisage de poche a échoué pour la forme %i - la poche est ignorée. C'est un bug, veuillez le signaler avec le fichier DXF concerné.
+%s</translation>
+    </message>
+</context>
+<context>
     <name>TreeHandler</name>
     <message>
         <source>[en]</source>
-        <translation>[fr]</translation>
+        <translation>[act]</translation>
     </message>
     <message>
         <source>Name</source>
@@ -1871,6 +1958,62 @@ La longueur doit être supérieure à la tolérance</translation>
     <message>
         <source>Pass %d</source>
         <translation>Passe %d</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <translation>Tout sélectionner</translation>
+    </message>
+    <message>
+        <source>Deselect all</source>
+        <translation>Tout désélectionner</translation>
+    </message>
+    <message>
+        <source>Enable selection</source>
+        <translation>Activer la sélection</translation>
+    </message>
+    <message>
+        <source>Disable selection</source>
+        <translation>Désactiver la sélection</translation>
+    </message>
+    <message>
+        <source>Optimize route for selection</source>
+        <translation>Optimiser le parcours pour la sélection</translation>
+    </message>
+    <message>
+        <source>Don&apos;t opti. route for selection</source>
+        <translation type="obsolete">Ne pas optimiser le parcours pour la sélection</translation>
+    </message>
+    <message>
+        <source>Remove custom GCode</source>
+        <translation>Supprimer le GCode personnalisé</translation>
+    </message>
+    <message>
+        <source>Add custom GCode ...</source>
+        <translation>Ajouter du GCode personnalisé ...</translation>
+    </message>
+    <message>
+        <source>Entity</source>
+        <translation>Entité</translation>
+    </message>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration ; using tool {2} instead</source>
+        <translation>L'outil {0} utilisé pour le calque &quot;{1}&quot; n'existe plus dans la configuration ; l'outil {2} est utilisé à la place</translation>
+    </message>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer has changed, updating layer&apos;s data</source>
+        <translation>L'outil {0} utilisé pour le calque &quot;{1}&quot; a changé, mise à jour des données du calque</translation>
+    </message>
+    <message>
+        <source>Custom action &quot;{0}&quot; used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration, removing it</source>
+        <translation>L'action personnalisée &quot;{0}&quot; utilisée pour le calque &quot;{1}&quot; n'existe plus dans la configuration, elle est supprimée</translation>
+    </message>
+    <message>
+        <source>Only Custom GCode items are removable!</source>
+        <translation>Seuls les éléments GCode personnalisés sont supprimables !</translation>
+    </message>
+    <message>
+        <source>Don&apos;t optimize route for selection</source>
+        <translation>Ne pas optimiser le parcours pour la sélection</translation>
     </message>
 </context>
 <context>

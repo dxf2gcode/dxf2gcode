@@ -193,6 +193,13 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
     </message>
 </context>
 <context>
+    <name>LayerContent</name>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration ; using tool {2} instead</source>
+        <translation>Das für Layer &quot;{1}&quot; verwendete Werkzeug {0} existiert nicht mehr in der Konfiguration ; stattdessen wird Werkzeug {2} verwendet</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <source>Python version 2 is not supported, please use it with python version 3.</source>
@@ -200,7 +207,7 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
     </message>
     <message>
         <source>Export the enabled shapes</source>
-        <translation>Exportiere die Enabled Shapes</translation>
+        <translation>Exportiere die aktivierten Shapes</translation>
     </message>
     <message>
         <source>Sorted layers:</source>
@@ -464,7 +471,7 @@ zurückgegebener Fehlercode: {1}</translation>
     </message>
     <message>
         <source>/ speed </source>
-        <translation>/ speed </translation>
+        <translation>/ Drehzahl </translation>
     </message>
     <message>
         <source>Milling will start at Z = &quot;Workpiece top Z&quot; - &quot;Z infeed depth&quot;</source>
@@ -908,6 +915,18 @@ Möchten Sie diese vor dem Profilwechsel speichern?</translation>
         <source> IPS</source>
         <translation> IPS</translation>
     </message>
+    <message>
+        <source>ERROR</source>
+        <translation>FEHLER</translation>
+    </message>
+    <message>
+        <source>Configuration error</source>
+        <translation>Konfigurationsfehler</translation>
+    </message>
+    <message>
+        <source>Project files (*%s)</source>
+        <translation>Projektdateien (*%s)</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -922,6 +941,10 @@ Möchten Sie diese vor dem Profilwechsel speichern?</translation>
     <message>
         <source>For more information and updates visit:</source>
         <translation>Weitere Informationen und Aktualisierungen finden Sie unter:</translation>
+    </message>
+    <message>
+        <source>For Configuration files refer to folder:</source>
+        <translation>Konfigurationsdateien finden Sie im Ordner:</translation>
     </message>
 </context>
 <context>
@@ -1162,7 +1185,7 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
     </message>
     <message>
         <source>Max population:</source>
-        <translation>Max population:</translation>
+        <translation>Maximale Population:</translation>
     </message>
     <message>
         <source>Max iterations:</source>
@@ -1723,6 +1746,14 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation type="obsolete">(Generiert mit: %s, Version: %s, Datum: %s)
 </translation>
     </message>
+    <message>
+        <source>An error occured while removing the postprocessor config file {0} ; do the operation manually and restart the software.</source>
+        <translation>Beim Entfernen der Postprozessor-Konfigurationsdatei {0} ist ein Fehler aufgetreten ; führen Sie den Vorgang manuell aus und starten Sie die Software neu.</translation>
+    </message>
+    <message>
+        <source>An error occured while duplicating the postprocessor config file {0} ; do the operation manually and restart the software.</source>
+        <translation>Beim Duplizieren der Postprozessor-Konfigurationsdatei {0} ist ein Fehler aufgetreten ; führen Sie den Vorgang manuell aus und starten Sie die Software neu.</translation>
+    </message>
 </context>
 <context>
     <name>OffArcGeo</name>
@@ -1736,6 +1767,25 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
     <message>
         <source>Unsupported geometry type: %s</source>
         <translation>Nicht unterstützter Geometrietyp: %s</translation>
+    </message>
+</context>
+<context>
+    <name>PocketMill</name>
+    <message>
+        <source>Shape %i: a circular pocket cannot be milled with cutter diameter %.3f mm (usable radius %.3f mm) - pocket skipped.</source>
+        <translation>Shape %i: eine kreisförmige Tasche kann nicht mit Fräserdurchmesser %.3f mm gefräst werden (nutzbarer Radius %.3f mm) - Tasche übersprungen.</translation>
+    </message>
+    <message>
+        <source>Shape %i: a rectangular pocket cannot be milled with cutter diameter %.3f mm (tool too large for the pocket area) - pocket skipped.</source>
+        <translation>Shape %i: eine rechteckige Tasche kann nicht mit Fräserdurchmesser %.3f mm gefräst werden (Werkzeug zu groß für die Taschenfläche) - Tasche übersprungen.</translation>
+    </message>
+    <message>
+        <source>Shape %i: pocket cannot be milled with cutter diameter %.3f mm (the tool is too large for the pocket area) - pocket skipped.</source>
+        <translation>Shape %i: Tasche kann nicht mit Fräserdurchmesser %.3f mm gefräst werden (das Werkzeug ist zu groß für die Taschenfläche) - Tasche übersprungen.</translation>
+    </message>
+    <message>
+        <source>Shape %i: pocket cannot be milled with cutter diameter %.3f mm - no reachable pocket area, pocket skipped.</source>
+        <translation>Shape %i: Tasche kann nicht mit Fräserdurchmesser %.3f mm gefräst werden - keine erreichbare Taschenfläche, Tasche übersprungen.</translation>
     </message>
 </context>
 <context>
@@ -1811,6 +1861,14 @@ Die Länge muss größer der Toleranz sein.
         <source>Short Elements</source>
         <translation>Kurze Elemente</translation>
     </message>
+    <message>
+        <source>Reading Block %s; Nr: %i</source>
+        <translation>Lese Block %s; Nr: %i</translation>
+    </message>
+    <message>
+        <source>Found unsupported geometry type: %s !</source>
+        <translation>Nicht unterstützter Geometrietyp gefunden: %s !</translation>
+    </message>
 </context>
 <context>
     <name>Shape</name>
@@ -1868,10 +1926,39 @@ Die Länge muss größer der Toleranz sein.
     </message>
 </context>
 <context>
+    <name>StMove</name>
+    <message>
+        <source>Shape %i: the cutter diameter (%.3f mm) removes the whole boundary - only the pocket will be milled!</source>
+        <translation>Shape %i: Der Fräserdurchmesser (%.3f mm) entfernt die gesamte Kontur - nur die Tasche wird gefräst!</translation>
+    </message>
+    <message>
+        <source>Shape %i cannot be milled: the selected cutter diameter (%.3f mm) leaves no valid toolpath for this contour.</source>
+        <translation>Shape %i kann nicht gefräst werden: Der gewählte Fräserdurchmesser (%.3f mm) lässt keinen gültigen Werkzeugweg für diese Kontur übrig.</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i (%s) - the shape will NOT be milled!</source>
+        <translation>Fräserkompensation für Shape %i fehlgeschlagen (%s) - das Shape wird NICHT gefräst!</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i - only the pocket will be milled, the boundary pass is skipped!</source>
+        <translation>Fräserkompensation für Shape %i fehlgeschlagen - nur die Tasche wird gefräst, der Konturdurchgang wird übersprungen!</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i - the shape will NOT be milled!</source>
+        <translation>Fräserkompensation für Shape %i fehlgeschlagen - das Shape wird NICHT gefräst!</translation>
+    </message>
+    <message>
+        <source>Pocket milling failed for shape %i - the pocket is skipped. This is a bug, please report it with the offending DXF file.
+%s</source>
+        <translation>Taschenfräsen für Shape %i fehlgeschlagen - die Tasche wird übersprungen. Dies ist ein Fehler, bitte melden Sie ihn zusammen mit der betroffenen DXF-Datei.
+%s</translation>
+    </message>
+</context>
+<context>
     <name>TreeHandler</name>
     <message>
         <source>[en]</source>
-        <translation>[en]</translation>
+        <translation>[ein]</translation>
     </message>
     <message>
         <source>Name</source>
@@ -1916,6 +2003,62 @@ Die Länge muss größer der Toleranz sein.
     <message>
         <source>Pass %d</source>
         <translation>Durchgang %d</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <translation>Alles auswählen</translation>
+    </message>
+    <message>
+        <source>Deselect all</source>
+        <translation>Auswahl aufheben</translation>
+    </message>
+    <message>
+        <source>Enable selection</source>
+        <translation>Auswahl aktivieren</translation>
+    </message>
+    <message>
+        <source>Disable selection</source>
+        <translation>Auswahl deaktivieren</translation>
+    </message>
+    <message>
+        <source>Optimize route for selection</source>
+        <translation>Reihenfolge für Auswahl optimieren</translation>
+    </message>
+    <message>
+        <source>Don&apos;t opti. route for selection</source>
+        <translation type="obsolete">Reihenfolge für Auswahl nicht optimieren</translation>
+    </message>
+    <message>
+        <source>Remove custom GCode</source>
+        <translation>Benutzerdefinierten GCode entfernen</translation>
+    </message>
+    <message>
+        <source>Add custom GCode ...</source>
+        <translation>Benutzerdefinierten GCode hinzufügen ...</translation>
+    </message>
+    <message>
+        <source>Entity</source>
+        <translation>Entität</translation>
+    </message>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration ; using tool {2} instead</source>
+        <translation>Das für Layer &quot;{1}&quot; verwendete Werkzeug {0} existiert nicht mehr in der Konfiguration ; stattdessen wird Werkzeug {2} verwendet</translation>
+    </message>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer has changed, updating layer&apos;s data</source>
+        <translation>Das für Layer &quot;{1}&quot; verwendete Werkzeug {0} hat sich geändert, die Daten des Layers werden aktualisiert</translation>
+    </message>
+    <message>
+        <source>Custom action &quot;{0}&quot; used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration, removing it</source>
+        <translation>Die benutzerdefinierte Aktion &quot;{0}&quot;, die für Layer &quot;{1}&quot; verwendet wird, existiert nicht mehr in der Konfiguration und wird entfernt</translation>
+    </message>
+    <message>
+        <source>Only Custom GCode items are removable!</source>
+        <translation>Nur benutzerdefinierte GCode-Elemente können entfernt werden!</translation>
+    </message>
+    <message>
+        <source>Don&apos;t optimize route for selection</source>
+        <translation>Reihenfolge für Auswahl nicht optimieren</translation>
     </message>
 </context>
 <context>

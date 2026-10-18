@@ -179,18 +179,18 @@ class TreeHandler(QWidget):
 
         # Build the contextual menu (mouse right click)
         self.context_menu = QMenu(self)
-        self.context_menu.addAction(QAction("Select all", self, triggered=self.ui.layersShapesTreeView.selectAll))
-        self.context_menu.addAction(QAction("Deselect all", self, triggered=self.ui.layersShapesTreeView.clearSelection))
+        self.context_menu.addAction(QAction(self.tr("Select all"), self, triggered=self.ui.layersShapesTreeView.selectAll))
+        self.context_menu.addAction(QAction(self.tr("Deselect all"), self, triggered=self.ui.layersShapesTreeView.clearSelection))
         self.context_menu.addSeparator()
-        self.context_menu.addAction(QAction("Enable selection", self, triggered=self.enableSelectedItems))
-        self.context_menu.addAction(QAction("Disable selection", self, triggered=self.disableSelectedItems))
+        self.context_menu.addAction(QAction(self.tr("Enable selection"), self, triggered=self.enableSelectedItems))
+        self.context_menu.addAction(QAction(self.tr("Disable selection"), self, triggered=self.disableSelectedItems))
         self.context_menu.addSeparator()
-        self.context_menu.addAction(QAction("Optimize route for selection", self, triggered=self.optimizeRouteForSelectedItems))
-        self.context_menu.addAction(QAction("Don't opti. route for selection", self, triggered=self.doNotOptimizeRouteForSelectedItems))
+        self.context_menu.addAction(QAction(self.tr("Optimize route for selection"), self, triggered=self.optimizeRouteForSelectedItems))
+        self.context_menu.addAction(QAction(self.tr("Don't optimize route for selection"), self, triggered=self.doNotOptimizeRouteForSelectedItems))
         self.context_menu.addSeparator()
-        self.context_menu.addAction(QAction("Remove custom GCode", self, triggered=self.removeCustomGCodeSelected))
+        self.context_menu.addAction(QAction(self.tr("Remove custom GCode"), self, triggered=self.removeCustomGCodeSelected))
 
-        self.sub_menu = QMenu("Add custom GCode ...", self)
+        self.sub_menu = QMenu(self.tr("Add custom GCode ..."), self)
         # Save the exact name of the action, as is defined in the config file. Later on we use it to identify the action
         for custom_action in g.config.vars.Custom_Actions:
             menu_action = self.sub_menu.addAction(custom_action.replace('_', ' '))
@@ -258,7 +258,7 @@ class TreeHandler(QWidget):
                 update_drawing = False
                 if real_layer is not None and str(real_layer.tool_nr) not in g.config.vars.Tool_Parameters:
                     # The tool used for this layer doesn't exist anymore, we are going to replace it with the first tool
-                    logger.warning("Tool {0} used for \"{1}\" layer doesn't exist anymore in the configuration ; using tool {2} instead".format(real_layer.tool_nr, real_layer.name, default_tool))
+                    logger.warning(self.tr("Tool {0} used for \"{1}\" layer doesn't exist anymore in the configuration ; using tool {2} instead").format(real_layer.tool_nr, real_layer.name, default_tool))
                     # Update the layer's tool and repaint
                     real_layer.tool_nr = default_tool # Tool 1 normally always exists
                     update_drawing = True
@@ -268,7 +268,7 @@ class TreeHandler(QWidget):
                       or real_layer.speed != g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['speed']\
                       or real_layer.start_radius != g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['start_radius']):
                     # The tool used for this layer exists, but its definition has changed, we need to update the layer
-                    logger.warning("Tool {0} used for \"{1}\" layer has changed, updating layer's data".format(real_layer.tool_nr, real_layer.name))
+                    logger.warning(self.tr("Tool {0} used for \"{1}\" layer has changed, updating layer's data").format(real_layer.tool_nr, real_layer.name))
                     real_layer.tool_diameter = g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['diameter']
                     real_layer.speed = g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['speed']
                     real_layer.start_radius = g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['start_radius']
@@ -288,7 +288,7 @@ class TreeHandler(QWidget):
                     if isValid(shape_item_index.data(CUSTOM_GCODE_OBJECT)):
                         real_custom_action = toPyObject(shape_item_index.data(CUSTOM_GCODE_OBJECT))
                         if real_custom_action is not None and real_custom_action.name not in g.config.vars.Custom_Actions:
-                            logger.warning("Custom action \"{0}\" used for \"{1}\" layer doesn't exist anymore in the configuration, removing it".format(real_custom_action.name, real_layer.name))
+                            logger.warning(self.tr("Custom action \"{0}\" used for \"{1}\" layer doesn't exist anymore in the configuration, removing it").format(real_custom_action.name, real_layer.name))
                             self.removeCustomGCode(shape_item_index)
 
         # Reselect the previous tool and update the tool display for the _selected_ layers
@@ -522,7 +522,7 @@ class TreeHandler(QWidget):
             item_col_0.setData(QtCore.QVariant(element), ENTITY_OBJECT)  # store a ref in our treeView element
             item_col_1 = QStandardItem(element.name)
             item_col_2 = QStandardItem(str(element.nr))
-            item_col_3 = QStandardItem("Entity")
+            item_col_3 = QStandardItem(self.tr("Entity"))
             item_col_4 = QStandardItem(str(element.p0))
             item_col_5 = QStandardItem(str(element.sca))
             item_col_6 = QStandardItem(str(round(degrees(element.rot), 3)))  # convert the angle into degrees with 3 digit after the decimal point
@@ -1873,7 +1873,7 @@ class TreeHandler(QWidget):
                 first_col_item.parent().removeRow(remove_row)
 
             else:
-                logger.warning('Only Custom GCode items are removable!')
+                logger.warning(self.tr('Only Custom GCode items are removable!'))
 
     def addCustomGCodeAfter(self, action_name):
         """

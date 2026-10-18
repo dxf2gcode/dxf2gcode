@@ -232,6 +232,13 @@ Not enough chars (expected {0}, found {1}) for the field &quot;{2}&quot;
     </message>
 </context>
 <context>
+    <name>LayerContent</name>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration ; using tool {2} instead</source>
+        <translation>Инструмент {0}, используемый для слоя &quot;{1}&quot;, больше не существует в конфигурации ; вместо него используется инструмент {2}</translation>
+    </message>
+</context>
+<context>
     <name>LoggerClass</name>
     <message>
         <source>file logging started at %s</source>
@@ -1059,6 +1066,18 @@ Do you want to save them before switching the profile?</source>
         <source> IPS</source>
         <translation> дюйм/мин</translation>
     </message>
+    <message>
+        <source>ERROR</source>
+        <translation>ОШИБКА</translation>
+    </message>
+    <message>
+        <source>Configuration error</source>
+        <translation>Ошибка конфигурации</translation>
+    </message>
+    <message>
+        <source>Project files (*%s)</source>
+        <translation>Файлы проектов (*%s)</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -1073,6 +1092,10 @@ Do you want to save them before switching the profile?</source>
     <message>
         <source>For more information and updates visit:</source>
         <translation>Для дальнейшей информации см.:</translation>
+    </message>
+    <message>
+        <source>For Configuration files refer to folder:</source>
+        <translation>Файлы конфигурации находятся в папке:</translation>
     </message>
 </context>
 <context>
@@ -1866,6 +1889,14 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <translation type="obsolete">(Сгенерировано: %s, Версия: %s, Дата: %s)
 </translation>
     </message>
+    <message>
+        <source>An error occured while removing the postprocessor config file {0} ; do the operation manually and restart the software.</source>
+        <translation>При удалении файла конфигурации пост-процессора {0} произошла ошибка ; выполните операцию вручную и перезапустите программу.</translation>
+    </message>
+    <message>
+        <source>An error occured while duplicating the postprocessor config file {0} ; do the operation manually and restart the software.</source>
+        <translation>При копировании файла конфигурации пост-процессора {0} произошла ошибка ; выполните операцию вручную и перезапустите программу.</translation>
+    </message>
 </context>
 <context>
     <name>OffArcGeo</name>
@@ -1879,6 +1910,25 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     <message>
         <source>Unsupported geometry type: %s</source>
         <translation>Тип геометрии не поддерживается: %s</translation>
+    </message>
+</context>
+<context>
+    <name>PocketMill</name>
+    <message>
+        <source>Shape %i: a circular pocket cannot be milled with cutter diameter %.3f mm (usable radius %.3f mm) - pocket skipped.</source>
+        <translation>Контур %i: круглая выемка не может быть отфрезерована фрезой диаметром %.3f мм (доступный радиус %.3f мм) - карман пропущен.</translation>
+    </message>
+    <message>
+        <source>Shape %i: a rectangular pocket cannot be milled with cutter diameter %.3f mm (tool too large for the pocket area) - pocket skipped.</source>
+        <translation>Контур %i: прямоугольная выемка не может быть отфрезерована фрезой диаметром %.3f мм (инструмент слишком велик для площади кармана) - карман пропущен.</translation>
+    </message>
+    <message>
+        <source>Shape %i: pocket cannot be milled with cutter diameter %.3f mm (the tool is too large for the pocket area) - pocket skipped.</source>
+        <translation>Контур %i: карман не может быть отфрезерован фрезой диаметром %.3f мм (инструмент слишком велик для площади кармана) - карман пропущен.</translation>
+    </message>
+    <message>
+        <source>Shape %i: pocket cannot be milled with cutter diameter %.3f mm - no reachable pocket area, pocket skipped.</source>
+        <translation>Контур %i: карман не может быть отфрезерован фрезой диаметром %.3f мм - нет доступной площади кармана, карман пропущен.</translation>
     </message>
 </context>
 <context>
@@ -1954,6 +2004,14 @@ Skipped Geometries</source>
         <source>Short Elements</source>
         <translation>Короткие элементы</translation>
     </message>
+    <message>
+        <source>Reading Block %s; Nr: %i</source>
+        <translation>Чтение блока %s; №: %i</translation>
+    </message>
+    <message>
+        <source>Found unsupported geometry type: %s !</source>
+        <translation>Обнаружен неподдерживаемый тип геометрии: %s !</translation>
+    </message>
 </context>
 <context>
     <name>Section</name>
@@ -2026,6 +2084,35 @@ Skipped Geometries</source>
     </message>
 </context>
 <context>
+    <name>StMove</name>
+    <message>
+        <source>Shape %i: the cutter diameter (%.3f mm) removes the whole boundary - only the pocket will be milled!</source>
+        <translation>Контур %i: диаметр фрезы (%.3f мм) удаляет весь контур - будет отфрезерован только карман!</translation>
+    </message>
+    <message>
+        <source>Shape %i cannot be milled: the selected cutter diameter (%.3f mm) leaves no valid toolpath for this contour.</source>
+        <translation>Контур %i не может быть отфрезерован: выбранный диаметр фрезы (%.3f мм) не оставляет допустимой траектории для этого контура.</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i (%s) - the shape will NOT be milled!</source>
+        <translation>Компенсация инструмента не удалась для контура %i (%s) - контур НЕ будет отфрезерован!</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i - only the pocket will be milled, the boundary pass is skipped!</source>
+        <translation>Компенсация инструмента не удалась для контура %i - будет отфрезерован только карман, проход по контуру пропущен!</translation>
+    </message>
+    <message>
+        <source>Cutter compensation failed for shape %i - the shape will NOT be milled!</source>
+        <translation>Компенсация инструмента не удалась для контура %i - контур НЕ будет отфрезерован!</translation>
+    </message>
+    <message>
+        <source>Pocket milling failed for shape %i - the pocket is skipped. This is a bug, please report it with the offending DXF file.
+%s</source>
+        <translation>Фрезерование кармана не удалось для контура %i - карман пропущен. Это ошибка, сообщите о ней вместе с проблемным DXF-файлом.
+%s</translation>
+    </message>
+</context>
+<context>
     <name>TreeHandler</name>
     <message>
         <source>[en]</source>
@@ -2074,6 +2161,62 @@ Skipped Geometries</source>
     <message>
         <source>Pass %d</source>
         <translation>Проход %d</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <translation>Выбрать всё</translation>
+    </message>
+    <message>
+        <source>Deselect all</source>
+        <translation>Снять выделение</translation>
+    </message>
+    <message>
+        <source>Enable selection</source>
+        <translation>Включить выбранное</translation>
+    </message>
+    <message>
+        <source>Disable selection</source>
+        <translation>Отключить выбранное</translation>
+    </message>
+    <message>
+        <source>Optimize route for selection</source>
+        <translation>Оптимизировать маршрут для выбранного</translation>
+    </message>
+    <message>
+        <source>Don&apos;t opti. route for selection</source>
+        <translation type="obsolete">Не оптимизировать маршрут для выбранного</translation>
+    </message>
+    <message>
+        <source>Remove custom GCode</source>
+        <translation>Удалить пользовательский G-код</translation>
+    </message>
+    <message>
+        <source>Add custom GCode ...</source>
+        <translation>Добавить пользовательский G-код ...</translation>
+    </message>
+    <message>
+        <source>Entity</source>
+        <translation>Объект</translation>
+    </message>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration ; using tool {2} instead</source>
+        <translation>Инструмент {0}, используемый для слоя &quot;{1}&quot;, больше не существует в конфигурации ; вместо него используется инструмент {2}</translation>
+    </message>
+    <message>
+        <source>Tool {0} used for &quot;{1}&quot; layer has changed, updating layer&apos;s data</source>
+        <translation>Инструмент {0}, используемый для слоя &quot;{1}&quot;, изменился, данные слоя обновляются</translation>
+    </message>
+    <message>
+        <source>Custom action &quot;{0}&quot; used for &quot;{1}&quot; layer doesn&apos;t exist anymore in the configuration, removing it</source>
+        <translation>Пользовательское действие &quot;{0}&quot;, используемое для слоя &quot;{1}&quot;, больше не существует в конфигурации, оно удаляется</translation>
+    </message>
+    <message>
+        <source>Only Custom GCode items are removable!</source>
+        <translation>Удалять можно только элементы пользовательского G-кода!</translation>
+    </message>
+    <message>
+        <source>Don&apos;t optimize route for selection</source>
+        <translation>Не оптимизировать маршрут для выбранного</translation>
     </message>
 </context>
 <context>

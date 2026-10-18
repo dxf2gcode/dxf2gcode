@@ -36,9 +36,21 @@ from dxf2gcode.core.point import Point
 
 from dxf2gcode.core.arcgeo import ArcGeo
 
+from dxf2gcode.Qt import QtCore
+
 logger = logging.getLogger("Core.LayerContent")
 
+
 class LayerContent(object):
+    def tr(self, string_to_translate):
+        """
+        Translate a string using the QCoreApplication translation framework
+        @param: string_to_translate: a unicode string
+        @return: the translated unicode string if it was possible to translate
+        """
+        return str(QtCore.QCoreApplication.translate("LayerContent",
+                                                     string_to_translate))
+
     def __init__(self, nr, name, shapes):
         self.nr = nr
         self.name = name
@@ -102,7 +114,7 @@ class LayerContent(object):
                     self.tool_nr = int(value)
                     # Check that the requested tool exists in the tool table & substitute tool 1 if not
                     if str(self.tool_nr) not in g.config.vars.Tool_Parameters:
-                        logger.warning("Tool {0} used for \"{1}\" layer doesn't exist anymore in the configuration ; using tool {2} instead".format(self.tool_nr, self.name, default_tool))
+                        logger.warning(self.tr("Tool {0} used for \"{1}\" layer doesn't exist anymore in the configuration ; using tool {2} instead").format(self.tool_nr, self.name, default_tool))
                         self.tool_nr = default_tool
                     # set the diameter, speed and start radius according to the selected tool
                     self.tool_diameter = g.config.vars.Tool_Parameters[str(self.tool_nr)]['diameter']

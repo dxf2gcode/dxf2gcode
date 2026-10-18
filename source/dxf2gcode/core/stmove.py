@@ -46,6 +46,8 @@ from dxf2gcode.core.pocketmill import PocketMill
 from dxf2gcode.core.pocketmove import PocketMove
 from dxf2gcode.core.shapeoffset import *
 
+from dxf2gcode.Qt import QtCore
+
 import logging
 logger = logging.getLogger('core.stmove')
 
@@ -68,6 +70,15 @@ class StMove(object):
     def __repr__(self):
         return "StMove(shape %d start %s angle %s end %s)" % \
             (self.shape.nr, str(self.start), str(self.angle), str(self.end))
+
+    def tr(self, string_to_translate):
+        """
+        Translate a string using the QCoreApplication translation framework
+        @param: string_to_translate: a unicode string
+        @return: the translated unicode string if it was possible to translate
+        """
+        return str(QtCore.QCoreApplication.translate("StMove",
+                                                     string_to_translate))
 
     def append(self, geo):
         # we don't want to additional scale / rotate the stmove geo
@@ -205,32 +216,32 @@ class StMove(object):
                         # Reliable border case: nothing left to mill.
                         if self.shape.Pocket:
                             logging.warning(
-                                "Shape %i: the cutter diameter (%.3f mm) removes "
-                                "the whole boundary - only the pocket will be "
-                                "milled!" % (self.shape.nr, tool_dia))
+                                self.tr("Shape %i: the cutter diameter (%.3f mm) removes "
+                                        "the whole boundary - only the pocket will be "
+                                        "milled!") % (self.shape.nr, tool_dia))
                         else:
                             logging.warning(
-                                "Shape %i cannot be milled: the selected cutter "
-                                "diameter (%.3f mm) leaves no valid toolpath for "
-                                "this contour." % (self.shape.nr, tool_dia))
+                                self.tr("Shape %i cannot be milled: the selected cutter "
+                                        "diameter (%.3f mm) leaves no valid toolpath for "
+                                        "this contour.") % (self.shape.nr, tool_dia))
                     elif status in ("walk_overflow", "no_intersection",
                                     "exception"):
                         # A real computation problem, not an expected border case.
                         logging.error(
-                            "Cutter compensation failed for shape %i (%s) - the "
-                            "shape will NOT be milled!"
+                            self.tr("Cutter compensation failed for shape %i (%s) - the "
+                                    "shape will NOT be milled!")
                             % (self.shape.nr, status))
                     else:
                         # Unknown cause - keep the previous safe handling.
                         if self.shape.Pocket:
                             logging.warning(
-                                "Cutter compensation failed for shape %i - only "
-                                "the pocket will be milled, the boundary pass is "
-                                "skipped!" % self.shape.nr)
+                                self.tr("Cutter compensation failed for shape %i - only "
+                                        "the pocket will be milled, the boundary pass is "
+                                        "skipped!") % self.shape.nr)
                         else:
                             logging.error(
-                                "Cutter compensation failed for shape %i - the "
-                                "shape will NOT be milled!" % self.shape.nr)
+                                self.tr("Cutter compensation failed for shape %i - the "
+                                        "shape will NOT be milled!") % self.shape.nr)
 
                 if len(offshape.rawoff) > 0:
                     # The rapid positioning must target the start of the FIRST
@@ -340,9 +351,9 @@ class StMove(object):
                 # the boundary pass so no broken path is exported.
                 del self.geos[self.pocket_geos_start:]
                 logging.error(
-                    "Pocket milling failed for shape %i - the pocket is "
-                    "skipped. This is a bug, please report it with the "
-                    "offending DXF file.\n%s"
+                    self.tr("Pocket milling failed for shape %i - the pocket is "
+                            "skipped. This is a bug, please report it with the "
+                            "offending DXF file.\n%s")
                     % (self.shape.nr, traceback.format_exc()))
             
     def make_swivelknife_move(self):

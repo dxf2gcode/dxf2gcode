@@ -145,7 +145,7 @@ class MyPostProcessor(object):
         try:
             os.remove(file_to_remove) #Definitely removes the selected configfile
         except:
-            logger.error("An error occured while removing the postprocessor config file {0} ; do the operation manually and restart the software.".format(file_to_remove))
+            logger.error(self.tr("An error occured while removing the postprocessor config file {0} ; do the operation manually and restart the software.").format(file_to_remove))
             result = False
         self.loadCreateConfigFiles()
         self.config_postpro_window.setConfigSelectorFilesList(self.getConfigsList()) #Set the list of current configuration files
@@ -169,7 +169,7 @@ class MyPostProcessor(object):
             try:
                 shutil.copy(duplicate_file, new_file) #Duplicate the files
             except:
-                logger.error("An error occured while duplicating the postprocessor config file {0} ; do the operation manually and restart the software.".format(duplicate_name))
+                logger.error(self.tr("An error occured while duplicating the postprocessor config file {0} ; do the operation manually and restart the software.").format(duplicate_name))
                 result = False
             self.loadCreateConfigFiles()
             self.config_postpro_window.setConfigSelectorFilesList(self.getConfigsList(), new_name) #Set the list of current configuration files

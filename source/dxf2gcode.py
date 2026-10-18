@@ -117,14 +117,14 @@ class MainWindow(QMainWindow):
         self.configuration_changed.connect(self.TreeHandler.updateConfiguration)
 
         if sys.version_info[0] == 2:
-            error_message = QMessageBox(QMessageBox.Critical, 'ERROR', self.tr("Python version 2 is not supported, please use it with python version 3."))
+            error_message = QMessageBox(QMessageBox.Critical, self.tr('ERROR'), self.tr("Python version 2 is not supported, please use it with python version 3."))
             sys.exit(error_message.exec())
 
         # Load the post-processor configuration and build the post-processor configuration window
         self.MyPostProcessor = MyPostProcessor()
         # If string version_mismatch isn't empty, we popup an error and exit
         if self.MyPostProcessor.version_mismatch:
-            error_message = QMessageBox(QMessageBox.Critical, 'Configuration error', self.MyPostProcessor.version_mismatch)
+            error_message = QMessageBox(QMessageBox.Critical, self.tr('Configuration error'), self.MyPostProcessor.version_mismatch)
             sys.exit(error_message.exec())
 
         self.d2g = Project(self)
@@ -1039,7 +1039,7 @@ class MainWindow(QMainWindow):
                     if rv != 0:
                         self.unsetCursor()
                         QMessageBox.critical(self,
-                                             "ERROR",
+                                             self.tr("ERROR"),
                                              self.tr(
                                                  "Command:\n{0}\nreturned error code: {1}").format(' '.join(cmd), rv))
                         return True
@@ -1048,7 +1048,7 @@ class MainWindow(QMainWindow):
                     logger.error(e.strerror)
                     self.unsetCursor()
                     QMessageBox.critical(self,
-                                         "ERROR",
+                                         self.tr("ERROR"),
                                          self.tr(
                                              "Please make sure you have installed {0}, and configured it in the config file.").format("pdftops"))
                     return True
@@ -1071,7 +1071,7 @@ class MainWindow(QMainWindow):
                 if rv != 0:
                     self.unsetCursor()
                     QMessageBox.critical(self,
-                                         "ERROR",
+                                         self.tr("ERROR"),
                                          self.tr(
                                              "Command:\n{0}\nreturned error code: {1}").format(' '.join(cmd), rv))
                     return True
@@ -1080,7 +1080,7 @@ class MainWindow(QMainWindow):
                 logger.error(e.strerror)
                 self.unsetCursor()
                 QMessageBox.critical(self,
-                                     "ERROR",
+                                     self.tr("ERROR"),
                                      self.tr("Please make sure you have installed {0}, and configured it in the config file.").format("pstoedit"))
                 return True
             # If the return code was non-zero it raises a
@@ -1363,7 +1363,7 @@ class MainWindow(QMainWindow):
         Save all variables to file
         """
         prj_filename = self.showSaveDialog(self.tr('Save project to file'),
-                                           "Project files (*%s)" % c.PROJECT_EXTENSION,
+                                           self.tr("Project files (*%s)") % c.PROJECT_EXTENSION,
                                            g.config.vars.Paths['project_dir'])
 
         save_prj_filename = qstr_encode(prj_filename[0])
@@ -1499,7 +1499,7 @@ if __name__ == "__main__":
 
     # If string version_mismatch isn't empty, we popup an error and exit
     if g.config.version_mismatch:
-        error_message = QMessageBox(QMessageBox.Critical, 'Configuration error', g.config.version_mismatch)
+        error_message = QMessageBox(QMessageBox.Critical, QtCore.QCoreApplication.translate('MainWindow', 'Configuration error'), g.config.version_mismatch)
         sys.exit(error_message.exec())
 
     # Delay imports - needs to be done after logger and config initialization; and before the main window

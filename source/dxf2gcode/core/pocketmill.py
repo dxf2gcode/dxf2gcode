@@ -44,6 +44,8 @@ from dxf2gcode.core.shape import Shape
 from dxf2gcode.core.shapeoffset import *
 from dxf2gcode.core.pocketmove import PocketMove
 
+from dxf2gcode.Qt import QtCore
+
 import logging
 logger = logging.getLogger('core.pocketmill')
 
@@ -371,7 +373,16 @@ class PocketMill(object):
         self.dist = 0
         
         self.inters = []
-                
+
+    def tr(self, string_to_translate):
+        """
+        Translate a string using the QCoreApplication translation framework
+        @param: string_to_translate: a unicode string
+        @return: the translated unicode string if it was possible to translate
+        """
+        return str(QtCore.QCoreApplication.translate("PocketMill",
+                                                     string_to_translate))
+
     def removeNearShape(self):
         #Looks for points in array that are too close to shape
         # to be milled.
@@ -670,8 +681,8 @@ class PocketMill(object):
             # pass is left untouched.
             if millRad <= 0 or rotNum <= 0:
                 logger.warning(
-                    "Shape %i: a circular pocket cannot be milled with cutter "
-                    "diameter %.3f mm (usable radius %.3f mm) - pocket skipped."
+                    self.tr("Shape %i: a circular pocket cannot be milled with cutter "
+                            "diameter %.3f mm (usable radius %.3f mm) - pocket skipped.")
                     % (self.stmove.shape.nr,
                        self.stmove.shape.parentLayer.tool_diameter, millRad))
                 return
@@ -772,9 +783,9 @@ class PocketMill(object):
             # (numRot + 2) becoming zero. Skip the pocket cleanly.
             if numRot < 0 or xOff <= 0 or yOff <= 0:
                 logger.warning(
-                    "Shape %i: a rectangular pocket cannot be milled with "
-                    "cutter diameter %.3f mm (tool too large for the pocket "
-                    "area) - pocket skipped."
+                    self.tr("Shape %i: a rectangular pocket cannot be milled with "
+                            "cutter diameter %.3f mm (tool too large for the pocket "
+                            "area) - pocket skipped.")
                     % (self.stmove.shape.nr,
                        self.stmove.shape.parentLayer.tool_diameter))
                 return
@@ -940,9 +951,9 @@ class PocketMill(object):
                 # exists. Handle it like the expected border case instead of
                 # crashing on an empty grid and never emit a bogus toolpath.
                 logger.warning(
-                    "Shape %i: pocket cannot be milled with cutter diameter "
-                    "%.3f mm (the tool is too large for the pocket area) - "
-                    "pocket skipped."
+                    self.tr("Shape %i: pocket cannot be milled with cutter diameter "
+                            "%.3f mm (the tool is too large for the pocket area) - "
+                            "pocket skipped.")
                     % (self.stmove.shape.nr,
                        self.stmove.shape.parentLayer.tool_diameter))
                 return
@@ -1023,7 +1034,7 @@ class PocketMill(object):
                 # closer to the contour than the tool radius). Do not emit a
                 # degenerate PocketMove(start, start) as a successful pocket.
                 logger.warning(
-                    "Shape %i: pocket cannot be milled with cutter diameter "
-                    "%.3f mm - no reachable pocket area, pocket skipped."
+                    self.tr("Shape %i: pocket cannot be milled with cutter diameter "
+                            "%.3f mm - no reachable pocket area, pocket skipped.")
                     % (self.stmove.shape.nr,
                        self.stmove.shape.parentLayer.tool_diameter))

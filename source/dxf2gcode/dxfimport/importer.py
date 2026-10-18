@@ -297,7 +297,7 @@ class ReadDXF(QtCore.QObject):
         """
         blocks = BlocksClass([])
         for block_nr in range(len(blocks_pos)):
-            logger.info("Reading Block %s; Nr: %i" % (blocks_pos[block_nr].name, block_nr))
+            logger.info(self.tr("Reading Block %s; Nr: %i") % (blocks_pos[block_nr].name, block_nr))
 
             blocks.Entities.append(EntitiesClass(block_nr, blocks_pos[block_nr].name, []))
             # Read the Baseline values for the block
@@ -414,7 +414,7 @@ class ReadDXF(QtCore.QObject):
         elif name == "POINT":
             geo = GeoentPoint(geo_nr, self)
         else:
-            logger.info(("Found unsupported geometry type: %s !" % name))
+            logger.info(self.tr("Found unsupported geometry type: %s !") % name)
             self.start += 1  # Eins hochz�hlen sonst gibts ne dauer Schleife
             return None
 
