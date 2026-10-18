@@ -69,6 +69,29 @@ def mixedSelectionIcon():
         _MIXED_SELECTION_ICON = QIcon(pixmap)
     return _MIXED_SELECTION_ICON
 
+
+def pocket_compensation_selectable(selected_shapes):
+    """
+    Whether the G40/G41/G42 cutter compensation choice can affect the current
+    selection.
+
+    In the default "always_inward" pocket mode the pocket boundary is always
+    offset into the contour, so the compensation direction has no effect on a
+    pocket. The context menu should therefore not offer the choice for a
+    selection that consists entirely of pocket shapes. In the
+    "selected_direction" mode the choice is always meaningful.
+    """
+    try:
+        mode = g.config.vars.Pocketing.pocket_compensation_mode
+    except Exception:
+        mode = "always_inward"
+    if mode != "always_inward":
+        return True
+    if not selected_shapes:
+        return True
+    # no effect only if EVERY selected shape currently mills a pocket
+    return not all(getattr(shape, "Pocket", False) for shape in selected_shapes)
+
 """
 This Canvas function can be called as any class.
 Since it will pretend to be, depending on the settings,
@@ -219,6 +242,12 @@ class MyDropDownMenu(QMenu):
             self.checkMenuDir(self.calcMenuDir())
 
             self.addMenu(submenu1)
+
+            # Do not offer a compensation choice that has no effect: in the
+            # "always_inward" pocket mode a pocket always uses an inward
+            # boundary pass, so G40/G41/G42 change nothing for it.
+            if not pocket_compensation_selectable(self.selectedItems):
+                self.compMenuAction.setEnabled(False)
 
         invertAction.triggered.connect(self.invertSelection)
         disableAction.triggered.connect(self.disableSelection)

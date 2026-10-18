@@ -30,7 +30,7 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from math import sin, cos, pi, sqrt, ceil
+from math import sin, cos, pi, sqrt, ceil, asin, floor
 from copy import deepcopy
 from bisect import bisect_left, bisect_right, insort
 
@@ -46,6 +46,12 @@ from dxf2gcode.core.pocketmove import PocketMove
 
 import logging
 logger = logging.getLogger('core.pocketmill')
+
+# Historical pocket stand-off was "cutter radius / 0.7", i.e. an edge clearance
+# of radius * (1 / 0.7 - 1) = 21.4286 % of the tool diameter. Used as a fallback
+# when the configuration (or the new option) is unavailable so that old
+# configurations keep the previous behaviour.
+HISTORIC_POCKET_EDGE_CLEARANCE_PERCENT = 100.0 * 3 / 14
 
 import time
 
@@ -73,6 +79,11 @@ class BBArray(object):
         
         #Y-index for fast O(1) lookups during zig-zag milling
         self.points_by_y = {}
+
+        # Row spans (first/last index of every grid row inside self.array),
+        # built together with the Y-index. They let removeLine() touch only
+        # the affected row instead of scanning the whole grid.
+        self.row_span = {}
         
         #Start point - top, right
         
@@ -133,6 +144,10 @@ class BBArray(object):
         #This will stop work if array will be not in order
         #This function tries to dump to stdout whole array
         # in somehow readable way.
+        if not self.array:
+            # Nothing to dump (e.g. the tool is too large for the grid);
+            # never index into an empty array.
+            return
         yi = self.array[0].y
         print("%8.2f" % (yi) , end = "\t")
         
@@ -153,10 +168,16 @@ class BBArray(object):
     def _build_y_index(self):
         """Pre-build a dict mapping y to sorted list of x-values for fast lookups."""
         self.points_by_y = {}
-        for pt in self.array:
+        self.row_span = {}
+        for i, pt in enumerate(self.array):
+            y_key = pt.y
+            span = self.row_span.get(y_key)
+            if span is None:
+                self.row_span[y_key] = [i, i]
+            else:
+                span[1] = i
             if not pt.mill:
                 continue
-            y_key = pt.y
             if y_key not in self.points_by_y:
                 self.points_by_y[y_key] = []
             insort(self.points_by_y[y_key], pt.x)
@@ -179,10 +200,17 @@ class BBArray(object):
             if not self.points_by_y[yi]:
                 del self.points_by_y[yi]
                 
-        # Mark corresponding points in main array as non-millable
-        for pt in self.array:
-            if pt.y == yi and pt.mill and left_x <= pt.x <= right_x + 0.0001:
-                pt.setMill(False)
+        # Mark the corresponding points as non-millable. Only the affected
+        # grid row has to be touched (rows are contiguous in self.array), so
+        # this stays O(row width) instead of scanning the whole grid.
+        span = self.row_span.get(yi)
+        if span is not None:
+            array = self.array
+            limit = right_x + 0.0001
+            for i in range(span[0], span[1] + 1):
+                pt = array[i]
+                if pt.mill and left_x <= pt.x <= limit:
+                    pt.setMill(False)
     
     def findHorizontalWithPoint(self, point):
         # Search the Y-index for the longest CONTIGUOUS millable line at
@@ -347,19 +375,66 @@ class PocketMill(object):
     def removeNearShape(self):
         #Looks for points in array that are too close to shape
         # to be milled.
-        for BBPoint in self.bbarray.array:
-            #check only points that are meant to be milled
-            if BBPoint.mill == True:
-                #check if this point is not too close to any geo in shape
-                for geo in self.stmove.shape.geos.abs_iter():
-                    if isinstance(geo, LineGeo):
-                        if geo.distance_l_p(BBPoint.p) < self.dist:
-                            BBPoint.setMill(False)
-                            break
-                    elif isinstance(geo, ArcGeo):
-                        if geo.distance_a_p(BBPoint.p) < self.dist:
-                            BBPoint.setMill(False)
-                            break
+        #
+        # Broad-phase filter, geometry-outer: a grid point can only be closer
+        # than self.dist to a geometry if it lies inside that geometry's
+        # bounding box expanded by self.dist. The grid is grouped by row
+        # (rows and their x values are already sorted, see BBArray.create),
+        # so for every geometry only the rows and columns inside its expanded
+        # box are visited. That avoids the previous O(points * geometries)
+        # exact distance evaluations without changing the result.
+        dist = self.dist
+        rows = {}
+        for point in self.bbarray.array:
+            rows.setdefault(point.y, []).append(point)
+        ys = sorted(rows.keys())
+        row_xs = {}
+        for y, points in rows.items():
+            row_xs[y] = [p.x for p in points]
+
+        for geo in self.stmove.shape.geos.abs_iter():
+            if isinstance(geo, LineGeo):
+                gx0 = geo.Ps.x
+                gx1 = geo.Pe.x
+                gy0 = geo.Ps.y
+                gy1 = geo.Pe.y
+                if gx0 > gx1:
+                    gx0, gx1 = gx1, gx0
+                if gy0 > gy1:
+                    gy0, gy1 = gy1, gy0
+                is_line = True
+            elif isinstance(geo, ArcGeo):
+                # conservative box of the full circle (always contains the arc)
+                o = geo.O
+                gx0 = o.x - geo.r
+                gx1 = o.x + geo.r
+                gy0 = o.y - geo.r
+                gy1 = o.y + geo.r
+                is_line = False
+            else:
+                continue
+
+            x0 = gx0 - dist
+            x1 = gx1 + dist
+            y0 = gy0 - dist
+            y1 = gy1 + dist
+
+            for k in range(bisect_left(ys, y0), bisect_right(ys, y1)):
+                y = ys[k]
+                points = rows[y]
+                xs = row_xs[y]
+                start = bisect_left(xs, x0)
+                end = bisect_right(xs, x1)
+                for t in range(start, end):
+                    point = points[t]
+                    if not point.mill:
+                        continue
+                    if is_line:
+                        if geo.distance_l_p(point.p) < dist:
+                            point.setMill(False)
+                    else:
+                        if geo.distance_a_p(point.p) < dist:
+                            point.setMill(False)
     def movePoint(self, point):
         #Moves point by particular value (addX and Y are
         # calculated before creating "point")
@@ -398,96 +473,130 @@ class PocketMill(object):
         # imagine horizontal line from particular point up to the end
         # of BBox containing shape. if the line crosses shape even times
         # we are outside the shape.
-        
+        #
+        # Every geometry contributes its crossings using a consistent
+        # half-open rule (lower endpoint inclusive, upper endpoint
+        # exclusive). This keeps the even-odd parity in removeOutOfShape()
+        # correct at shared vertices/tangencies and never emits a crossing
+        # outside the real extent of a segment (see the ticket #176 fix).
         while yi > self.bbarray.yEnd:
             for interGeo in self.stmove.shape.geos.abs_iter():
-                if isinstance(interGeo, LineGeo):   
-                    if interGeo.Ps.x == interGeo.Pe.x:
-                        #this is vertical line
-                        #check if obvius intersection lays on finite line
-                        if yi > min(interGeo.Ps.y, interGeo.Pe.y) and yi < max(interGeo.Ps.y, interGeo.Pe.y):
-                            self.inters.append(Point(interGeo.Pe.x, yi))
-                        continue
-                    
-                    #calculate line coords
-                    lineA = (interGeo.Ps.y - interGeo.Pe.y)/(interGeo.Ps.x - interGeo.Pe.x)
-                    lineB = interGeo.Ps.y - lineA * interGeo.Ps.x
-                    
-                    if lineA == 0:
-                        #TODO: check if shape like this:
-                        #  \____
-                        #       \
-                        # won't cause problem...
-                        #
-                        #print("Horizontal!")
-                        continue
-                    
-                    #TODO: joints will propably cause problems
-                    
-                    interX = (yi - lineB)/lineA
-                    
-                    #check if intersection does belong to line
-                    if interX < min(interGeo.Ps.x, interGeo.Pe.x) or interX > max(interGeo.Ps.x, interGeo.Pe.x):
-                        continue 
-                    
-                    self.inters.append(Point(interX, yi))
-                    
+                if isinstance(interGeo, LineGeo):
+                    x = self._line_horizontal_intersection(interGeo, yi)
+                    if x is not None:
+                        self.inters.append(Point(x, yi))
                 elif isinstance(interGeo, ArcGeo):
-                    #based on intersect.py:line_arc_intersect
-                    baX = self.bbarray.xEnd - self.bbarray.xStart
-                    baY = 0
-                    caX = interGeo.O.x - self.bbarray.xStart
-                    caY = interGeo.O.y - yi
+                    for x in self._arc_horizontal_intersections(interGeo, yi):
+                        self.inters.append(Point(x, yi))
 
-                    a = baX * baX + baY * baY
-                    bBy2 = baX * caX + baY * caY
-                    c = caX * caX + caY * caY - interGeo.r * interGeo.r
-
-                    if a == 0:
-                        continue
-
-                    pBy2 = bBy2 / a
-                    q = c / a
-
-                    disc = pBy2 * pBy2 - q
-                    if disc > 0:
-                        tmpSqrt = sqrt(disc)
-                        abScalingFactor1 = -pBy2 + tmpSqrt
-                        abScalingFactor2 = -pBy2 - tmpSqrt
-
-                        p1 = Point(self.bbarray.xStart - baX * abScalingFactor1,
-                                yi - baY * abScalingFactor1)
-                        p2 = Point(self.bbarray.xStart - baX * abScalingFactor2,
-                                yi - baY * abScalingFactor2)
-                        
-                        linex = sorted([self.bbarray.xStart, self.bbarray.xEnd])
-                        liney = sorted([yi, yi])
-                        
-                        ang = interGeo.dif_ang(interGeo.Ps, p1, interGeo.ext)
-                        
-                        if interGeo.ext > 0:
-                            arcOut = interGeo.ext + 1e-8 >= ang >= -1e-8
-                        else:
-                            arcOut = interGeo.ext - 1e-8 <= ang <= 1e-8
-                        
-                        if  linex[0] - 1e-8 <= p1.x and p1.x <= linex[1] + 1e-8 and liney[0] - 1e-8 <= p1.y and p1.y <= liney[1] + 1e-8 and arcOut:
-                                #print("Good point! %s" % (p1))
-                                self.inters.append(p1)
-                                
-                        ang = interGeo.dif_ang(interGeo.Ps, p2, interGeo.ext)
-                        
-                        if interGeo.ext > 0:
-                            arcOut = interGeo.ext + 1e-8 >= ang >= -1e-8
-                        else:
-                            arcOut = interGeo.ext - 1e-8 <= ang <= 1e-8
-                        
-                        if  linex[0] - 1e-8 <= p2.x <= linex[1] + 1e-8 and liney[0] - 1e-8 <= p2.y <= liney[1] + 1e-8 and arcOut:
-                                #print("Good point! %s" % (p2))
-                                self.inters.append(p2)
-                                
             yi -= self.diff/self.bbarray.divY
             #print("End of finding intersections")
-        
+
+    @staticmethod
+    def _pocket_edge_clearance_percent():
+        """Pocket edge clearance as a percentage of the tool diameter.
+
+        Returns the historical value (cutter radius / 0.7 stand-off) when the
+        configuration or the option is missing, so old configurations keep
+        working unchanged.
+        """
+        try:
+            return float(g.config.vars.Pocketing.pocket_edge_clearance)
+        except Exception:
+            return HISTORIC_POCKET_EDGE_CLEARANCE_PERCENT
+
+    @staticmethod
+    def _line_horizontal_intersection(geo, yi):
+        """X coordinate where the line segment ``geo`` crosses ``y = yi``.
+
+        Uses a half-open Y rule (lower endpoint inclusive, upper endpoint
+        exclusive) so shared vertices are counted exactly once and horizontal
+        segments contribute no crossing. Returns ``None`` when the segment does
+        not cross ``yi``.
+
+        Unlike the previous implementation this checks the segment's real
+        extent in X *and* Y and never relies on an exact float equality to
+        detect vertical lines, so vertical, near-vertical, horizontal and
+        slanted segments are all handled correctly.
+        """
+        y0 = geo.Ps.y
+        y1 = geo.Pe.y
+        if not ((y0 <= yi < y1) or (y1 <= yi < y0)):
+            return None
+        return geo.Ps.x + (yi - y0) * (geo.Pe.x - geo.Ps.x) / (y1 - y0)
+
+    @staticmethod
+    def _arc_horizontal_intersections(arc, yi):
+        """X coordinates where the arc crosses the horizontal line ``y = yi``.
+
+        The arc is split at its Y extrema into monotone runs and the same
+        half-open Y rule as for line segments is applied to every run. This
+        keeps the even-odd parity consistent at shared vertices and at
+        tangencies (a run touching ``yi`` at its extreme adds no crossing) and
+        avoids duplicate crossings. The arc orientation (``ext``) is respected.
+        """
+        O = arc.O
+        r = arc.r
+        ext = arc.ext
+        if abs(ext) <= 1e-12:
+            return []
+
+        k = (yi - O.y) / r
+        if k < -1.0 - 1e-8 or k > 1.0 + 1e-8:
+            return []
+        k = max(-1.0, min(1.0, k))
+
+        # A complete circle is handled without endpoint logic (it is normally
+        # caught by the circle special case in createLines()).
+        if abs(ext) >= 2 * pi - 1e-8:
+            if abs(k) >= 1.0 - 1e-12:
+                return []
+            d = sqrt(max(0.0, 1.0 - k * k))
+            return [O.x - r * d, O.x + r * d]
+
+        s_ang = arc.s_ang
+        if ext > 0:
+            lo, hi = 0.0, ext
+        else:
+            lo, hi = ext, 0.0
+
+        # Parameters t in [lo, hi] where dy/dt = r*cos(s_ang + t) vanishes,
+        # i.e. the Y extrema that split the arc into monotone runs.
+        splits = []
+        base = pi / 2 - s_ang
+        m = floor((lo - base) / pi) - 1
+        m_end = ceil((hi - base) / pi) + 1
+        while m <= m_end:
+            t = base + m * pi
+            if lo + 1e-9 < t < hi - 1e-9:
+                splits.append(t)
+            m += 1
+
+        ts = [lo] + sorted(splits) + [hi]
+        result = []
+        for i in range(len(ts) - 1):
+            ta, tb = ts[i], ts[i + 1]
+            if tb - ta <= 1e-12:
+                continue
+            ya = O.y + r * sin(s_ang + ta)
+            yb = O.y + r * sin(s_ang + tb)
+            if not ((ya <= yi < yb) or (yb <= yi < ya)):
+                continue
+            a_lo = s_ang + min(ta, tb)
+            a_hi = s_ang + max(ta, tb)
+            # sin(s_ang + t) == k has two base solutions; exactly one of them
+            # lies inside this monotone run.
+            base_a = asin(k)
+            for cand in (base_a, pi - base_a,
+                         base_a + 2 * pi, pi - base_a + 2 * pi,
+                         base_a - 2 * pi, pi - base_a - 2 * pi):
+                if a_lo - 1e-9 <= cand <= a_hi + 1e-9:
+                    x = O.x + r * cos(cand)
+                    if not result or abs(result[-1] - x) > 1e-9:
+                        result.append(x)
+                    break
+        return result
+
     def createLines(self):
         #This function will decide what kind of shape do we deal with
         # then creates milling lines and move paths.
@@ -499,7 +608,9 @@ class PocketMill(object):
         
         cutComp = self.stmove.shape.cut_cor
             
-        if cutComp == 40 or len(self.stmove.geos) == 0: #no compensation
+        if len(self.stmove.geos) == 0:
+            # Nothing was appended before the pocket (the caller normally
+            # anchors the pocket at the shape start point).
             realStart = self.stmove.shape.geos[0].Ps
         else:
             lastGeo = self.stmove.geos[-1]
@@ -551,7 +662,20 @@ class PocketMill(object):
             
             rotNum = (millRad - 2 * self.tool_rad * stepOverlay)/(self.tool_rad * (1 + stepOverlay))
             rotNum = ceil(rotNum)
-                        
+
+            # Guard against a geometrically impossible circular pocket and
+            # against a division by zero (rotNum == 0). rotNum must NOT simply
+            # be forced to 1 here - that could produce an invalid toolpath.
+            # Instead skip the pocket cleanly; a possibly existing boundary
+            # pass is left untouched.
+            if millRad <= 0 or rotNum <= 0:
+                logger.warning(
+                    "Shape %i: a circular pocket cannot be milled with cutter "
+                    "diameter %.3f mm (usable radius %.3f mm) - pocket skipped."
+                    % (self.stmove.shape.nr,
+                       self.stmove.shape.parentLayer.tool_diameter, millRad))
+                return
+
             stepOverlay = (millRad - rotNum * self.tool_rad)/(self.tool_rad * 2 * rotNum)
             currentRad = millRad - self.tool_rad * stepOverlay
             
@@ -623,7 +747,11 @@ class PocketMill(object):
             #distance between center and farrest mill line
             xOff = abs(centerPoint.x - self.stmove.shape.geos[0].Ps.x)
             yOff = abs(centerPoint.y - self.stmove.shape.geos[0].Ps.y)
-            
+
+            # NOTE: this special case for simple 4-line rectangles uses the
+            # cutter radius directly as the fill stand-off (edge clearance 0)
+            # and does not yet honour the configurable "pocket edge clearance"
+            # that the general fill below uses.
             if self.stmove.shape.cut_cor == 41:
                 xOff += self.tool_rad
                 yOff += self.tool_rad
@@ -638,6 +766,18 @@ class PocketMill(object):
             numRotY = (yOff - 2*stepOverlay*self.tool_rad - self.tool_rad)/(self.tool_rad * (1 + stepOverlay))
             
             numRot = ceil(min(numRotX, numRotY))
+
+            # A negative rotation count means the (compensated) pocket is
+            # smaller than the cutter; also avoid the division by
+            # (numRot + 2) becoming zero. Skip the pocket cleanly.
+            if numRot < 0 or xOff <= 0 or yOff <= 0:
+                logger.warning(
+                    "Shape %i: a rectangular pocket cannot be milled with "
+                    "cutter diameter %.3f mm (tool too large for the pocket "
+                    "area) - pocket skipped."
+                    % (self.stmove.shape.nr,
+                       self.stmove.shape.parentLayer.tool_diameter))
+                return
             
             #Off = 2*stepOverlay*self.tool_rad + n*(1+stepOverlay)*self.tool_rad + tool_rad
             # Off - tool_rad - n*self.tool_rad = 2*stepOverlay*self.tool_rad + n*stepOverlay*self.tool_rad
@@ -772,22 +912,44 @@ class PocketMill(object):
             
             print("BBBounds: X%s to X%s, Y%s to Y%s" % (self.bbarray.xStart, self.bbarray.xEnd, self.bbarray.yStart, self.bbarray.yEnd))
             
-            #how close can be point to shape
-            #TODO: tweak?
-            self.dist = self.tool_rad/0.7
-            
+            # The pocket fill keeps the configured edge clearance c relative to
+            # the OFFSET contour selected by the compensation direction:
+            #     clearance c = pocket_edge_clearance [% of tool diameter] * dia
+            #     d           = cutter radius + c   (cutter CENTER to offset contour)
+            # The cutter radius is therefore counted once and the percentage is
+            # only the additional clearance (it never replaces the radius).
+            #
+            # The offset contour is `signed_offset` away from the original
+            # contour (0 = no compensation, +radius = offset outward,
+            # -radius = offset inward). Expressed as a stand-off from the
+            # ORIGINAL contour this is |signed_offset - d|; that equals the
+            # distance to the offset contour wherever the offset is a parallel
+            # curve and stays robust where an offset contour would vanish.
+            clearance = self._pocket_edge_clearance_percent() / 100.0 * (2 * self.tool_rad)
+            d = self.tool_rad + clearance
+            signed_offset = getattr(self.stmove, "pocket_fill_offset", 0.0) or 0.0
+            self.dist = abs(signed_offset - d)
+
             ### fill array with TRUEs
             self.bbarray.create()
             ### end of filling array with TRUEs
-            
-            print("Empty array: ")
-            self.bbarray.print()
-            print("End of empty array.")
-            
-            ### check if point is not to close to shape
-            #TODO: compensation type 41
-            if compType == 42:
-                self.removeNearShape()
+
+            if not self.bbarray.array:
+                # With this cutter diameter the step-over (self.diff) is
+                # larger than the pocket bounding box, so no valid fill grid
+                # exists. Handle it like the expected border case instead of
+                # crashing on an empty grid and never emit a bogus toolpath.
+                logger.warning(
+                    "Shape %i: pocket cannot be milled with cutter diameter "
+                    "%.3f mm (the tool is too large for the pocket area) - "
+                    "pocket skipped."
+                    % (self.stmove.shape.nr,
+                       self.stmove.shape.parentLayer.tool_diameter))
+                return
+
+            ### keep the cutter center clear of the contour so the cutting
+            ### edge does not cut into (or past) the contour
+            self.removeNearShape()
           
             #imagine parallel, horizontal lines (distance of self.diff)
             # this function will find all intersections of those lines
@@ -804,6 +966,7 @@ class PocketMill(object):
             ### but we need to convert it into LINES now...
                     
             currentPoint = realStart
+            milledAny = False
                                      
             while self.bbarray.checkIfAny():
                 #Find start for new zig-zag and go there.
@@ -829,6 +992,7 @@ class PocketMill(object):
                         self.stmove.append(LineGeo(currentPoint, line.Ps))                        
                     
                     self.stmove.append(line)
+                    milledAny = True
                     self.bbarray.removeLine(line)
                     currentPoint = line.Pe
                     
@@ -852,4 +1016,14 @@ class PocketMill(object):
                     currentPoint = goToPoint
 
                 #self.stmove.append(LineGeo(currentPoint, self.stmove.end))
-            self.stmove.append(PocketMove(currentPoint, realStart))
+            if milledAny:
+                self.stmove.append(PocketMove(currentPoint, realStart))
+            else:
+                # No cutting line survived (e.g. the whole pocket area is
+                # closer to the contour than the tool radius). Do not emit a
+                # degenerate PocketMove(start, start) as a successful pocket.
+                logger.warning(
+                    "Shape %i: pocket cannot be milled with cutter diameter "
+                    "%.3f mm - no reachable pocket area, pocket skipped."
+                    % (self.stmove.shape.nr,
+                       self.stmove.shape.parentLayer.tool_diameter))

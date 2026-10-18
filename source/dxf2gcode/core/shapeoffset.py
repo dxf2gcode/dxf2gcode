@@ -1133,14 +1133,44 @@ class offShapeClass(Shape):
         deduplicated by location.
         """
         n = len(geos)
+        # Broad-phase filter: two geometries can only intersect if their
+        # bounding boxes overlap, so precompute one box per geometry (the full
+        # circle box for arcs) and skip the expensive exact intersection test
+        # for the (usually many) pairs that cannot cross. The result is
+        # identical - this only avoids work that could never contribute a
+        # crossing.
+        boxes = []
+        for geo in geos:
+            if isinstance(geo, LineGeo):
+                ax, bx = geo.Ps.x, geo.Pe.x
+                ay, by = geo.Ps.y, geo.Pe.y
+                if ax > bx:
+                    ax, bx = bx, ax
+                if ay > by:
+                    ay, by = by, ay
+                boxes.append((ax, bx, ay, by))
+            elif isinstance(geo, ArcGeo):
+                o = geo.O
+                boxes.append((o.x - geo.r, o.x + geo.r,
+                              o.y - geo.r, o.y + geo.r))
+            else:
+                boxes.append(None)
+
         crossings = []
         for i in range(n):
+            box_i = boxes[i]
+            geo_i = geos[i]
             for j in range(i + 1, n):
                 # Adjacent geometries share an endpoint by construction
                 if j - i == 1 or (i == 0 and j == n - 1):
                     continue
+                box_j = boxes[j]
+                if box_i is not None and box_j is not None:
+                    if (box_j[0] > box_i[1] + eps or box_j[1] < box_i[0] - eps or
+                            box_j[2] > box_i[3] + eps or box_j[3] < box_i[2] - eps):
+                        continue
                 try:
-                    P = geos[i].find_inter_point(geos[j])
+                    P = geo_i.find_inter_point(geos[j])
                 except Exception:
                     logger.exception("Intersection search failed for "
                                      "geometries %i and %i" % (i, j))

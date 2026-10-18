@@ -29,6 +29,7 @@ from __future__ import division
 
 from math import sin, cos, pi, sqrt
 from copy import deepcopy
+import traceback
 
 #for dumps
 from inspect import getmembers
@@ -98,6 +99,11 @@ class StMove(object):
         be generated based on the given values for start and angle.
         """
         self.geos = Geos([])
+        # Signed distance of the pocket fill's reference contour from the
+        # original contour (0 = original contour, +radius = offset outward,
+        # -radius = offset inward). The pocket fill keeps its edge clearance
+        # relative to this reference contour. 0.0 keeps the previous behaviour.
+        self.pocket_fill_offset = 0.0
 
         if g.config.machine_type == 'drag_knife':
             self.make_swivelknife_move()
@@ -132,17 +138,38 @@ class StMove(object):
             self.append(circle)
 
 
-        elif self.shape.cut_cor == 40:
-            #if self.shape.Pocket == False:
-            self.append(RapidPos(start))
+        elif (not g.config.vars.Cutter_Compensation["done_by_machine"] and
+                (self.shape.cut_cor != 40 or self.shape.Pocket)):
+            # Software cutter compensation: the compensated contour is baked
+            # into the exported geometry.
+            #
+            # For pocket milling the boundary pass offset is selected below
+            # according to the configured pocket_compensation_mode. Non-pocket
+            # shapes always keep the plain G41/G42 direction mapping.
 
-        elif self.shape.cut_cor != 40 and not g.config.vars.Cutter_Compensation["done_by_machine"]:
-            
             logging.debug("We have custom offset by tool")
 
             toolwidth = self.shape.parentLayer.getToolRadius()
 
-            if self.shape.cut_cor == 41 and self.shape.cw is True:
+            # How pocket milling is compensated is configurable:
+            #  * always_inward      : the pocket is always cleared from the
+            #                         inside (inward boundary pass); the
+            #                         G40/G41/G42 selection has no effect on
+            #                         the pocket (default, previous behaviour).
+            #  * selected_direction : the selected direction decides the
+            #                         boundary pass offset (G42/G41 = right/
+            #                         left offset relative to the contour
+            #                         direction; G40 = no cutter compensation,
+            #                         the contour itself is the toolpath).
+            pocket_mode = getattr(g.config.vars.Pocketing,
+                                  "pocket_compensation_mode",
+                                  "always_inward")
+            forced_inward = (self.shape.Pocket and
+                             pocket_mode == "always_inward")
+
+            if forced_inward:
+                offtype = "in"
+            elif self.shape.cut_cor == 41 and self.shape.cw is True:
                 offtype = "out"
             elif self.shape.cut_cor == 41 and self.shape.cw is False:
                 offtype = "in"
@@ -155,71 +182,95 @@ class StMove(object):
                 Warning("should not be here")
             logger.debug("Shape.cw %s; shape.cut_cor %i; Offset in direction: %s" %(self.shape.cw, self.shape.cut_cor,offtype))
 
-            offshape = offShapeClass(parent = self.shape, offset = toolwidth, offtype = offtype)
-
-            if len(offshape.rawoff) == 0:
-                # P1: No offset geometry was produced. Distinguish the
-                # expected border case (the selected cutter diameter removed
-                # the whole contour) from genuine computation failures, so
-                # the user gets a meaningful hint. With an empty stmove,
-                # Write_GCode skips this shape.
-                status = getattr(offshape, "offset_status", None)
-                tool_dia = self.shape.parentLayer.tool_diameter
-                if status == "vanished":
-                    # Reliable border case: nothing left to mill.
-                    if self.shape.Pocket:
-                        logging.warning(
-                            "Shape %i: the cutter diameter (%.3f mm) removes "
-                            "the whole boundary - only the pocket will be "
-                            "milled!" % (self.shape.nr, tool_dia))
-                    else:
-                        logging.warning(
-                            "Shape %i cannot be milled: the selected cutter "
-                            "diameter (%.3f mm) leaves no valid toolpath for "
-                            "this contour." % (self.shape.nr, tool_dia))
-                elif status in ("walk_overflow", "no_intersection",
-                                "exception"):
-                    # A real computation problem, not an expected border case.
-                    logging.error(
-                        "Cutter compensation failed for shape %i (%s) - the "
-                        "shape will NOT be milled!"
-                        % (self.shape.nr, status))
-                else:
-                    # Unknown cause - keep the previous safe handling.
-                    if self.shape.Pocket:
-                        logging.warning(
-                            "Cutter compensation failed for shape %i - only "
-                            "the pocket will be milled, the boundary pass is "
-                            "skipped!" % self.shape.nr)
-                    else:
-                        logging.error(
-                            "Cutter compensation failed for shape %i - the "
-                            "shape will NOT be milled!" % self.shape.nr)
-
-            if len(offshape.rawoff) > 0:
-                # The rapid positioning must target the start of the FIRST
-                # milling loop: after a loop split the sequence is rotated,
-                # so loops[0][0] is not necessarily rawoff[0]. Positioning
-                # at rawoff[0] instead would leave an unmarked gap which
-                # the post processor would cut as a straight line.
-                if offshape.loops:
-                    start, angle = offshape.loops[0][0].get_start_end_points(True, True)
-                else:
-                    start, angle = offshape.rawoff[0].get_start_end_points(True, True)
-
+            if (self.shape.Pocket and not forced_inward and
+                    self.shape.cut_cor == 40):
+                # G40 = no cutter compensation: the contour itself is the tool
+                # center path (no radius offset). The pocket fill is appended
+                # afterwards by the pocket block below.
                 self.append(RapidPos(start))
+                self.geos += Geos(deepcopy(geo)
+                                  for geo in self.shape.geos.abs_iter())
+            else:
+                offshape = offShapeClass(parent = self.shape, offset = toolwidth, offtype = offtype)
 
-                # P2: Mill each loop as its own path; the loops are connected
-                # with rapid moves (retract / move / plunge) like the pocket
-                # milling paths.
-                prev_end = None
-                for loop in offshape.loops:
-                    if not loop:
-                        continue
-                    if prev_end is not None:
-                        self.append(PocketMove(prev_end, loop[0].Ps))
-                    self.geos += loop
-                    prev_end = loop[-1].Pe
+                if len(offshape.rawoff) == 0:
+                    # P1: No offset geometry was produced. Distinguish the
+                    # expected border case (the selected cutter diameter removed
+                    # the whole contour) from genuine computation failures, so
+                    # the user gets a meaningful hint. With an empty stmove,
+                    # Write_GCode skips this shape.
+                    status = getattr(offshape, "offset_status", None)
+                    tool_dia = self.shape.parentLayer.tool_diameter
+                    if status == "vanished":
+                        # Reliable border case: nothing left to mill.
+                        if self.shape.Pocket:
+                            logging.warning(
+                                "Shape %i: the cutter diameter (%.3f mm) removes "
+                                "the whole boundary - only the pocket will be "
+                                "milled!" % (self.shape.nr, tool_dia))
+                        else:
+                            logging.warning(
+                                "Shape %i cannot be milled: the selected cutter "
+                                "diameter (%.3f mm) leaves no valid toolpath for "
+                                "this contour." % (self.shape.nr, tool_dia))
+                    elif status in ("walk_overflow", "no_intersection",
+                                    "exception"):
+                        # A real computation problem, not an expected border case.
+                        logging.error(
+                            "Cutter compensation failed for shape %i (%s) - the "
+                            "shape will NOT be milled!"
+                            % (self.shape.nr, status))
+                    else:
+                        # Unknown cause - keep the previous safe handling.
+                        if self.shape.Pocket:
+                            logging.warning(
+                                "Cutter compensation failed for shape %i - only "
+                                "the pocket will be milled, the boundary pass is "
+                                "skipped!" % self.shape.nr)
+                        else:
+                            logging.error(
+                                "Cutter compensation failed for shape %i - the "
+                                "shape will NOT be milled!" % self.shape.nr)
+
+                if len(offshape.rawoff) > 0:
+                    # The rapid positioning must target the start of the FIRST
+                    # milling loop: after a loop split the sequence is rotated,
+                    # so loops[0][0] is not necessarily rawoff[0]. Positioning
+                    # at rawoff[0] instead would leave an unmarked gap which
+                    # the post processor would cut as a straight line.
+                    if offshape.loops:
+                        start, angle = offshape.loops[0][0].get_start_end_points(True, True)
+                    else:
+                        start, angle = offshape.rawoff[0].get_start_end_points(True, True)
+
+                    self.append(RapidPos(start))
+
+                    # P2: Mill each loop as its own path; the loops are connected
+                    # with rapid moves (retract / move / plunge) like the pocket
+                    # milling paths.
+                    prev_end = None
+                    for loop in offshape.loops:
+                        if not loop:
+                            continue
+                        if prev_end is not None:
+                            self.append(PocketMove(prev_end, loop[0].Ps))
+                        self.geos += loop
+                        prev_end = loop[-1].Pe
+
+                    if (self.shape.Pocket and not forced_inward and
+                            self.shape.cut_cor in (41, 42)):
+                        # selected_direction: the pocket fill keeps its edge
+                        # clearance relative to THIS compensated offset
+                        # contour, so record how far it sits from the original
+                        # contour (offtype "out" -> offset outward, +radius).
+                        self.pocket_fill_offset = (
+                            -toolwidth if offtype == "in" else toolwidth)
+
+        elif self.shape.cut_cor == 40:
+            # No cutter compensation: the shape contour itself is the tool
+            # center path. (Pockets with G40 are handled by the software
+            # compensation branch above so they are exported correctly.)
+            self.append(RapidPos(start))
 
         # Cutting Compensation Left
         elif self.shape.cut_cor == 41:
@@ -280,7 +331,19 @@ class StMove(object):
                 self.append(RapidPos(self.start))
             
             pocket = PocketMill(self)
-            pocket.createLines()
+            try:
+                pocket.createLines()
+            except Exception:
+                # Safety net: an unexpected error in the pocket calculation
+                # must not crash the application nor leave a half-built
+                # toolpath behind. Drop everything the pocket appended after
+                # the boundary pass so no broken path is exported.
+                del self.geos[self.pocket_geos_start:]
+                logging.error(
+                    "Pocket milling failed for shape %i - the pocket is "
+                    "skipped. This is a bug, please report it with the "
+                    "offending DXF file.\n%s"
+                    % (self.shape.nr, traceback.format_exc()))
             
     def make_swivelknife_move(self):
         """

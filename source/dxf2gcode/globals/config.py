@@ -46,7 +46,7 @@ from dxf2gcode.Qt import QtCore
 
 logger = logging.getLogger("Core.Config")
 
-SUPPORTED_CONFIGS = [9.11, 9.12]
+SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14]
 CONFIG_VERSION = SUPPORTED_CONFIGS[-1]
 """
 version tag - increment this each time you edit CONFIG_SPEC
@@ -182,6 +182,33 @@ CONFIG_SPEC = str('''
     [Cutter_Compensation]
     # If not checked, DXF2GCODE will create a virtual path for G41 and G42 command. And output will be set to G40; i.e. it will create the path that normally your machine would create with it's cutter compensation.
     done_by_machine = boolean(default = True)
+
+
+    [Pocketing]
+    # Pocket milling keeps the cutter center at (cutter radius + edge clearance)
+    # away from the contour, so the cutting edge stops this far from the
+    # unmachined contour. This is the "Pocketing edge clearance" and is given
+    # here as a percentage of the cutter diameter.
+    # - 0   : the cutting edge just touches the contour (no material left).
+    # - The value is applied for every compensation direction (G40/G41/G42)
+    #   and to inner and outer contour features alike; the cutter radius is
+    #   only counted once.
+    # The default reproduces the historical behaviour (center stand-off of
+    # cutter radius / 0.7 for G42 pocketing).
+    pocket_edge_clearance = float(min = 0, max = 100, default = 21.4286)
+
+    # How the cutter compensation is applied while pocket milling a closed
+    # contour:
+    # - always_inward     : the pocket is always cleared from the inside with
+    #                       an inward boundary pass; the G40/G41/G42 selection
+    #                       does not change the pocket geometry (default,
+    #                       keeps the previous behaviour).
+    # - selected_direction: the selected G40/G41/G42 direction determines the
+    #                       offset geometry of the boundary pass (G42/G41 give
+    #                       the right/left offset relative to the contour
+    #                       direction, G40 uses the contour without any cutter
+    #                       radius compensation).
+    pocket_compensation_mode = option('always_inward', 'selected_direction', default = 'always_inward')
 
 
     [Drag_Knife_Options]
@@ -443,7 +470,7 @@ class MyConfig(object):
                     section_string = ', '.join(section_list)
                     if not error:
                         error = self.tr('Missing value or section.')
-                    logger.error(section_string + ' = ' + error)
+                    logger.error("%s = %s" % (section_string, error))
 
                 if validate_errors:
                     raise BadConfigFileError("syntax errors in config file")
@@ -470,7 +497,10 @@ class MyConfig(object):
                 badfilename = base + c.BAD_CONFIG_EXTENSION
                 logger.debug(self.tr("trying to rename bad cfg %s to %s") % (self.filename, badfilename))
                 try:
-                    os.rename(self.filename, badfilename)
+                    # os.replace overwrites an already existing .bad file
+                    # (os.rename would raise FileExistsError on Windows when a
+                    # previous corrupted config was not cleaned up).
+                    os.replace(self.filename, badfilename)
                 except OSError as e:
                     logger.error(self.tr("rename(%s,%s) failed: %s") % (self.filename, badfilename, e.strerror))
                     raise
@@ -595,6 +625,12 @@ class MyConfig(object):
                 ('__section_title__', self.tr("Output settings")),
                 ('__subtitle__', CfgSubtitle(self.tr("Cutter compensation"))),
                 ('done_by_machine', CfgCheckBox(self.tr('Cutter compensation is done by machine (check box if machine reconizes G41 and G42 commands / uncheck otherwise. This also disables pocket milling.)')))
+            ])),
+            ('Pocketing', OrderedDict([
+                ('__section_title__', self.tr("Output settings")),
+                ('__subtitle__', CfgSubtitle(self.tr("Pocket milling"))),
+                ('pocket_edge_clearance', CfgDoubleSpinBox(self.tr('Pocket edge clearance (distance between cutting edge and contour, as % of tool diameter):'), ' %', 0, 100, 2)),
+                ('pocket_compensation_mode', CfgComboBox(self.tr('Cutter compensation while pocket milling:')))
             ])),
             ('Drag_Knife_Options', OrderedDict([
                 ('__section_title__', self.tr("Output settings")),

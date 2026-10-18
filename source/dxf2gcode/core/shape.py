@@ -447,9 +447,14 @@ class Shape(object):
             self.Drill            
 
         prv_cut_cor = self.cut_cor
-        if (self.cut_cor != 40 and
+        if ((self.cut_cor != 40 or self.Pocket) and
                 not g.config.vars.Cutter_Compensation["done_by_machine"] and 
                 not self.Drill):
+            # Software compensation (G41/G42) or a pocket: the exported
+            # geometry is the pre-computed toolpath held in stmove (the
+            # compensated contour and/or the pocket fill), not the raw shape
+            # contour. Without this a G40 pocket would export only the
+            # contour and silently drop the whole pocket toolpath.
             self.cut_cor = 40
             new_geos = Geos(self.stmove.geos[1:])
         else:
