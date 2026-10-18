@@ -33,6 +33,7 @@ see http://code.activestate.com/recipes/65207/ for module const
 """
 
 import logging
+import os
 import platform
 
 from dxf2gcode.Qt import QtCore
@@ -53,6 +54,17 @@ PROJECT_EXTENSION = '.d2g'
 BAD_CONFIG_EXTENSION = '.bad'
 DEFAULT_CONFIG_DIR = 'config'
 DEFAULT_POSTPRO_DIR = 'postpro_config'
+
+# Configuration profiles: the default profile is stored directly in
+# DEFAULT_CONFIG_FOLDER, an alternative profile appends
+# CONFIG_PROFILE_SEPARATOR + <suffix> to that folder name. On Linux this gives
+# for example ~/.config/dxf2gcode (default) and ~/.config/dxf2gcode.laser
+# (profile "laser"). All platform specific path resolution stays in
+# DEFAULT_CONFIG_FOLDER below, so profiles work the same on every platform.
+BASE_CONFIG_NAME = 'dxf2gcode'
+CONFIG_PROFILE_SEPARATOR = '.'
+DEFAULT_CONFIG_FOLDER = os.path.join(os.path.expanduser("~"), ".config",
+                                     BASE_CONFIG_NAME).replace("\\", "/")
 
 # log related
 DEFAULT_LOGFILE = 'dxf2gcode.log'

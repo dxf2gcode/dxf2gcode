@@ -48,7 +48,11 @@ from dxf2gcode.core.linegeo import LineGeo
 from dxf2gcode.core.point import Point
 from dxf2gcode.core.project import Project
 from dxf2gcode.dxfimport.importer import ReadDXF
-from dxf2gcode.globals.config import MyConfig
+from dxf2gcode.globals.config import (MyConfig, active_config_profile_suffix,
+                                      available_config_profiles,
+                                      config_profile_folder, store_config_profile,
+                                      stored_config_profile,
+                                      validate_config_profile_suffix)
 from dxf2gcode.globals.helperfunctions import qstr_encode, str_decode, str_encode
 from dxf2gcode.globals.logger import LoggerClass
 from dxf2gcode.gui.aboutdialog import AboutDialog
@@ -56,16 +60,17 @@ from dxf2gcode.gui.configwindow import ConfigWindow
 from dxf2gcode.gui.popupdialog import PopUpDialog
 from dxf2gcode.gui.treehandling import TreeHandler
 from dxf2gcode.postpro.postprocessor import MyPostProcessor
+from dxf2gcode.postpro.postprocessorconfig import MyPostProConfig
 from dxf2gcode.postpro.tspoptimisation import TspOptimization
 
-from dxf2gcode.Qt.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMessageBox
+from dxf2gcode.Qt.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMenu, QActionGroup, QMessageBox
 from dxf2gcode.Qt.QtGui import QSurfaceFormat
 from dxf2gcode.Qt import QtCore
 from dxf2gcode.Qt import PYQT_VERSION
 
 logger = logging.getLogger()
 
-g.folder = os.path.join(os.path.expanduser("~"), ".config/dxf2gcode").replace("\\", "/")
+g.folder = c.DEFAULT_CONFIG_FOLDER
 
 
 class MainWindow(QMainWindow):
@@ -185,6 +190,7 @@ class MainWindow(QMainWindow):
         # Options
         self.ui.actionConfiguration.triggered.connect(self.config_window.show)
         self.ui.actionConfigurationPostprocessor.triggered.connect(self.MyPostProcessor.config_postpro_window.show)
+        self.createConfigProfileMenu()
         self.ui.actionTolerances.triggered.connect(self.setTolerances)
         self.ui.actionRotateAll.triggered.connect(self.rotateAll)
         self.ui.actionScaleAll.triggered.connect(self.scaleAll)
@@ -200,6 +206,164 @@ class MainWindow(QMainWindow):
 
         # Help
         self.ui.actionAbout.triggered.connect(self.about)
+
+    def createConfigProfileMenu(self):
+        """
+        Add the configuration profile selector to the existing Options menu.
+        The submenu lists every detected profile (based on the real
+        configuration folder of this platform) and allows to create a new
+        profile. Switching a profile requires a restart: the choice is
+        remembered and applied on the next program start.
+        """
+        self.menu_config_profile = QMenu(self.tr("Configuration profile"), self.ui.menuOptions)
+        self.menu_config_profile.setObjectName("menuConfigProfile")
+        self.config_profile_group = QActionGroup(self)
+        self.config_profile_group.setExclusive(True)
+        # Insert at the top of the Options menu, right in front of the
+        # configuration entries it belongs to.
+        self.ui.menuOptions.insertMenu(self.ui.actionConfiguration, self.menu_config_profile)
+        self.updateConfigProfileMenu()
+
+    def updateConfigProfileMenu(self):
+        """
+        Rebuild the profile submenu from the profiles found on disk. The active
+        profile is checked, a profile that was selected but needs a restart to
+        become active is marked accordingly.
+        """
+        self.menu_config_profile.clear()
+
+        active = active_config_profile_suffix()
+        pending = stored_config_profile()
+        profiles = available_config_profiles()
+
+        suffixes = [''] + [suffix for suffix in profiles if suffix]
+        for suffix in suffixes:
+            label = suffix if suffix else self.tr("default")
+            if suffix == active:
+                label = label + " " + self.tr("(active)")
+            elif pending is not None and suffix == pending and pending != active:
+                label = label + " " + self.tr("(restart to apply)")
+
+            action = self.menu_config_profile.addAction(label)
+            action.setCheckable(True)
+            action.setChecked(suffix == active)
+            action.triggered.connect(lambda checked=False, s=suffix: self.selectConfigProfile(s))
+            self.config_profile_group.addAction(action)
+
+        self.menu_config_profile.addSeparator()
+        new_profile_action = self.menu_config_profile.addAction(self.tr("New profile..."))
+        new_profile_action.triggered.connect(self.createConfigProfile)
+
+    def selectConfigProfile(self, suffix):
+        """
+        Remember the requested profile and ask the user to restart. A safe
+        switch at runtime is deliberately not performed: the configuration,
+        the tool table and the post-processor configuration are all loaded
+        once at startup, so only a restart guarantees a consistent profile.
+        @param suffix: the suffix of the requested profile ('' for default)
+        """
+        if suffix == active_config_profile_suffix():
+            return
+
+        if not self.handleUnsavedConfigChanges():
+            self.updateConfigProfileMenu()
+            return
+
+        store_config_profile(suffix)
+        self.updateConfigProfileMenu()
+
+        name = suffix if suffix else self.tr("default")
+        QMessageBox.information(self, self.tr("Configuration profile"),
+                                self.tr('The configuration profile "{0}" will be used '
+                                        'after DXF2GCODE has been restarted.').format(name))
+
+    def handleUnsavedConfigChanges(self):
+        """
+        Make sure no pending modifications are lost when the profile changes.
+        Uses the existing edit state of the configuration windows.
+        @return: True when the profile switch may continue, False when the user
+                 cancelled or the changes could not be saved.
+        """
+        windows = [self.config_window, self.MyPostProcessor.config_postpro_window]
+        windows = [window for window in windows if window.isEditing()]
+        if not windows:
+            return True
+
+        answer = QMessageBox.question(self, self.tr("Unsaved changes"),
+                                      self.tr("The configuration contains unsaved changes.\n"
+                                              "Do you want to save them before switching the profile?"),
+                                      QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel)
+        if answer != QMessageBox.StandardButton.Save:
+            return False
+
+        for window in windows:
+            window.applyChanges()
+            if window.isEditing():
+                # The changes could not be saved (eg invalid values), so the
+                # profile must not be switched.
+                return False
+        return True
+
+    def createConfigProfile(self):
+        """
+        Create a new configuration profile. The new profile starts with the
+        application's default values (it is not a copy of the current profile),
+        matching how a new post-processor configuration is created.
+        """
+        title = self.tr('Create a configuration profile')
+        label = [self.tr("Enter a name for the new profile:")]
+        value = [""]
+        wtype = ["lineEdit"]
+        name_dialog = PopUpDialog(title, label, value, wtype)
+
+        if name_dialog.result is None:
+            return
+
+        suffix = str(name_dialog.result[0]).strip()
+        valid, message = validate_config_profile_suffix(suffix)
+        if not valid:
+            QMessageBox.warning(self, title, message)
+            return
+
+        if suffix in available_config_profiles():
+            QMessageBox.warning(self, title,
+                                self.tr('A configuration profile named "{0}" already exists.').format(suffix))
+            return
+
+        if not self.initializeConfigProfile(suffix):
+            QMessageBox.warning(self, title,
+                                self.tr('The configuration profile "{0}" could not be created.').format(suffix))
+            return
+
+        self.selectConfigProfile(suffix)
+
+    def initializeConfigProfile(self, suffix):
+        """
+        Create the folder of a new profile and initialize it with default
+        configuration files, reusing the regular configuration management.
+        @param suffix: the suffix of the new profile
+        @return: True on success
+        """
+        folder = config_profile_folder(suffix)
+        if os.path.exists(folder):
+            # The folder exists already, so it is not a new profile. Its
+            # configuration files are created on first use.
+            return True
+
+        previous_folder = g.folder
+        try:
+            g.folder = folder
+            # Reuses the existing configuration classes: they create the
+            # profile folder plus a config.cfg / postpro_config.cfg with the
+            # application's default values.
+            MyConfig()
+            MyPostProConfig().create_default_config()
+            return True
+        except Exception as inst:
+            logger.error(self.tr("Could not initialize configuration profile '%s': %s") % (suffix, inst))
+            return False
+        finally:
+            g.folder = previous_folder
 
     def connectToolbarToConfig(self, project=False, block_signals=True):
         # View
@@ -1264,6 +1428,46 @@ if __name__ == "__main__":
     """
     The main function which is executed after program start.
     """
+
+    # Command line options must be evaluated before the configuration is
+    # initialized, because the configuration folder depends on the selected
+    # configuration profile.
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("filename", nargs="?")
+
+    #    parser.add_argument("-f", "--file", dest = "filename",
+    #                        help = "read data from FILENAME")
+    parser.add_argument("-e", "--export", dest="export_filename",
+                        help="export data to FILENAME")
+    parser.add_argument("-p", "--postpro", dest="post_pro",
+                        help="Post Processor to use")
+    parser.add_argument("-o", "--optimize", action="store_true",
+                        dest="optimize", help="optimize before export")
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        dest="quiet", help="no GUI")
+    parser.add_argument("-c", "--cfg", "--config-suffix", dest="cfg_suffix",
+                        help="configuration profile to load (e.g. 'laser' loads the "
+                             "profile stored in the dxf2gcode.laser folder). Without "
+                             "it the profile selected last in the GUI is used.")
+    #    parser.add_option("-v", "--verbose",
+    #                      action = "store_true", dest = "verbose")
+    options = parser.parse_args()
+
+    # Resolve the configuration profile. An explicit command line suffix has
+    # priority; otherwise the profile selected in the GUI is used (it is
+    # persisted in the application settings so that the restart after a
+    # profile switch picks it up). Without any selection the previous default
+    # profile is used, so the previous behaviour is preserved.
+    if options.cfg_suffix is not None:
+        valid_suffix, suffix_message = validate_config_profile_suffix(options.cfg_suffix)
+        if not valid_suffix:
+            parser.error(suffix_message)
+        g.folder = config_profile_folder(options.cfg_suffix)
+    else:
+        selected_suffix = stored_config_profile()
+        g.folder = config_profile_folder(selected_suffix) if selected_suffix else config_profile_folder()
+
     Log = LoggerClass(logger)
 
     g.config = MyConfig()
@@ -1317,24 +1521,6 @@ if __name__ == "__main__":
     g.window = window
     Log.add_window_logger(window.ui.messageBox)
 
-    # command line options
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("filename", nargs="?")
-
-    #    parser.add_argument("-f", "--file", dest = "filename",
-    #                        help = "read data from FILENAME")
-    parser.add_argument("-e", "--export", dest="export_filename",
-                        help="export data to FILENAME")
-    parser.add_argument("-p", "--postpro", dest="post_pro",
-                        help="Post Processor to use")
-    parser.add_argument("-o", "--optimize", action="store_true",
-                        dest="optimize", help="optimize before export")
-    parser.add_argument("-q", "--quiet", action="store_true",
-                        dest="quiet", help="no GUI")
-    #    parser.add_option("-v", "--verbose",
-    #                      action = "store_true", dest = "verbose")
-    options = parser.parse_args()
     g.quiet = options.quiet
 
     # (options, args) = parser.parse_args()

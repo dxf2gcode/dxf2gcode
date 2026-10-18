@@ -210,6 +210,15 @@ class ConfigWindow(QDialog):
         """
         self.tab_window.setCurrentWidget(self.list_items[str(text)])
 
+    def isEditing(self):
+        """
+        @return: True when this configuration window holds modifications that
+                 were not applied/saved yet. While a modification is pending
+                 the "Apply" and "Discard" buttons are enabled (see
+                 setEditInProgress()), so their state reflects the edit mode.
+        """
+        return self.button_box.button(QDialogButtonBox.StandardButton.Apply).isEnabled()
+
 
     def accept(self):
         """

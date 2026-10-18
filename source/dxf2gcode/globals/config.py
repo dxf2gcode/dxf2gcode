@@ -30,6 +30,7 @@ import os
 import sys
 import pprint
 import logging
+import re
 
 from collections import OrderedDict
 from configobj import ConfigObj, flatten_errors
@@ -778,3 +779,138 @@ class DictDotLookup(object):
 #     del cfg.foo.bar
 #     cfg.foo.bar = 4711
 #     print 'dot lookup    :', cfg.foo.bar #.tdata[0].baz
+
+
+############################################################################
+# Configuration profiles
+#
+# A configuration profile is simply a different folder below ~/.config. The
+# default profile lives in DEFAULT_CONFIG_FOLDER, an alternative profile adds
+# '.suffix' to that folder name (e.g. ~/.config/dxf2gcode.laser). The global
+# variable g.folder always points to the folder of the currently active
+# profile; the whole existing configuration management (config/config.cfg and
+# postpro_config/*.cfg) then works unchanged for every profile.
+############################################################################
+
+# A profile suffix becomes part of a directory name, so keep it to a safe
+# subset and never allow path separators or relative path components.
+CONFIG_PROFILE_SUFFIX_PATTERN = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_-]*$')
+
+
+def validate_config_profile_suffix(suffix):
+    """
+    Check whether a profile suffix can safely be used as a directory name.
+    @param suffix: the requested profile suffix (without the leading separator)
+    @return (valid, message): valid is True when the suffix may be used,
+            otherwise message explains the problem.
+    """
+    if not suffix:
+        return (False, "Empty configuration profile name.")
+    if not CONFIG_PROFILE_SUFFIX_PATTERN.match(str(suffix)):
+        return (False, "Invalid configuration profile name '{0}'. Only letters, "
+                       "digits, '-' and '_' are allowed (and it must start with "
+                       "a letter or digit).".format(suffix))
+    return (True, '')
+
+
+def config_profile_folder(suffix=None):
+    """
+    @param suffix: profile suffix or None/'' for the default profile
+    @return: the configuration folder of the requested profile
+    """
+    if suffix:
+        return c.DEFAULT_CONFIG_FOLDER + c.CONFIG_PROFILE_SEPARATOR + suffix
+    return c.DEFAULT_CONFIG_FOLDER
+
+
+def active_config_profile_suffix():
+    """
+    @return: the suffix of the currently active profile ('' for the default
+             profile). Derived from g.folder, so it always matches the folder
+             the running configuration was loaded from.
+    """
+    base = c.DEFAULT_CONFIG_FOLDER
+    folder = (g.folder if g.folder else base).replace("\\", "/")
+    if folder == base:
+        return ''
+    prefix = base + c.CONFIG_PROFILE_SEPARATOR
+    if folder.startswith(prefix):
+        return folder[len(prefix):]
+    return ''
+
+
+def available_config_profiles():
+    """
+    Detect the configuration profiles that exist next to DEFAULT_CONFIG_FOLDER.
+    Only real directories named like the default folder or the default folder
+    plus a valid '.suffix' are reported.
+    @return: an ordered dict mapping the profile suffix ('' for the default
+             profile) to its folder. The default profile and the currently
+             active profile are always present.
+    """
+    base = c.DEFAULT_CONFIG_FOLDER
+    base_name = os.path.basename(base)
+    parent = os.path.dirname(base)
+    prefix = base_name + c.CONFIG_PROFILE_SEPARATOR
+
+    profiles = OrderedDict([('', base)])
+
+    try:
+        entries = sorted(os.listdir(parent))
+    except OSError:
+        entries = []
+
+    for entry in entries:
+        if entry == base_name or not entry.startswith(prefix):
+            continue
+        suffix = entry[len(prefix):]
+        valid, _message = validate_config_profile_suffix(suffix)
+        if valid and os.path.isdir(os.path.join(parent, entry)):
+            profiles[suffix] = os.path.join(parent, entry)
+
+    # Make sure the active profile is selectable even if its folder does not
+    # exist yet (it is created on first use).
+    active = active_config_profile_suffix()
+    if active and active not in profiles:
+        profiles[active] = config_profile_folder(active)
+
+    return profiles
+
+
+def _config_profile_settings():
+    """
+    QSettings store used to remember the profile selected in the GUI. It is
+    shared with the window state settings and lives outside of any profile
+    folder, so it is not affected by a profile switch.
+    """
+    return QtCore.QSettings("dxf2gcode", "dxf2gcode")
+
+
+def stored_config_profile():
+    """
+    @return: the profile suffix selected in the GUI ('' for the default
+             profile), or None when no profile was selected yet. Invalid
+             values are treated as "not selected".
+    """
+    settings = _config_profile_settings()
+    if not settings.contains("Config/profile"):
+        return None
+    value = settings.value("Config/profile")
+    if value is None:
+        return ''
+    value = str(value)
+    if value:
+        valid, _message = validate_config_profile_suffix(value)
+        if not valid:
+            return None
+    return value
+
+
+def store_config_profile(suffix):
+    """
+    Remember the profile selected in the GUI so that the next program start
+    uses it. Pass '' to select the default profile again.
+    """
+    settings = _config_profile_settings()
+    settings.setValue("Config/profile", suffix if suffix else '')
+    settings.sync()
