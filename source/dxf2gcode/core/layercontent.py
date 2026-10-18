@@ -62,6 +62,7 @@ class LayerContent(object):
         self.tool_diameter = g.config.vars.Tool_Parameters['1']['diameter']
         self.speed = g.config.vars.Tool_Parameters['1']['speed']
         self.start_radius = g.config.vars.Tool_Parameters['1']['start_radius']
+        self.milling_offset = g.config.vars.Tool_Parameters['1']['milling_offset']
 
         # preset defaults
         self.axis3_retract = g.config.vars.Depth_Coordinates['axis3_retract']
@@ -120,12 +121,23 @@ class LayerContent(object):
                     self.tool_diameter = g.config.vars.Tool_Parameters[str(self.tool_nr)]['diameter']
                     self.speed = g.config.vars.Tool_Parameters[str(self.tool_nr)]['speed']
                     self.start_radius = g.config.vars.Tool_Parameters[str(self.tool_nr)]['start_radius']
+                    # the tool also provides the default additional offset for
+                    # its shapes (an explicit identifier overrides it below)
+                    self.milling_offset = g.config.vars.Tool_Parameters[str(self.tool_nr)]['milling_offset']
+                    for shape in self.shapes:
+                        shape.milling_offset = self.milling_offset
                 elif name in g.config.vars.Layer_Options['tool_diameter_identifiers']:
                     self.tool_diameter = float(value)
                 elif name in g.config.vars.Layer_Options['spindle_speed_identifiers']:
                     self.speed = float(value)
                 elif name in g.config.vars.Layer_Options['start_radius_identifiers']:
                     self.start_radius = float(value)
+                elif name in g.config.vars.Layer_Options['milling_offset_identifiers']:
+                    # additional offset (finishing allowance) of this layer;
+                    # it is an individual value per shape
+                    self.milling_offset = float(value)
+                    for shape in self.shapes:
+                        shape.milling_offset = float(value)
                 elif name in g.config.vars.Layer_Options['retract_identifiers']:
                     self.axis3_retract = float(value)
                 elif name in g.config.vars.Layer_Options['safe_margin_identifiers']:
@@ -199,6 +211,7 @@ class LayerContent(object):
         scale = 1/25.4 if metric_is == 0 else 25.4
         self.tool_diameter *= scale
         self.start_radius *= scale
+        self.milling_offset *= scale
         self.axis3_retract *= scale
         self.axis3_safe_margin *= scale
 
@@ -206,6 +219,7 @@ class LayerContent(object):
             shape.axis3_start_mill_depth *= scale
             shape.axis3_slice_depth *= scale
             shape.axis3_mill_depth *= scale
+            shape.milling_offset *= scale
             shape.f_g1_plane *= scale
             shape.f_g1_depth *= scale
 

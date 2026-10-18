@@ -162,6 +162,7 @@ class TreeHandler(QWidget):
         self.ui.zInitialMillDepthLineEdit.editingFinished.connect(self.toolParameterzInitialMillDepthUpdate)
         self.ui.zInfeedDepthLineEdit.editingFinished.connect(self.toolParameterzInfeedDepthUpdate)
         self.ui.zFinalMillDepthLineEdit.editingFinished.connect(self.toolParameterzFinalMillDepthUpdate)
+        self.ui.millingOffsetLineEdit.editingFinished.connect(self.toolParameterMillingOffsetUpdate)
         self.ui.breaksPassComboBox.activated.connect(self.breaksPassUpdate)
         self.ui.g1FeedXYLineEdit.editingFinished.connect(self.toolParameterg1FeedXYUpdate)
         self.ui.g1FeedZLineEdit.editingFinished.connect(self.toolParameterg1FeedZUpdate)
@@ -902,6 +903,7 @@ class TreeHandler(QWidget):
             new_diameter = g.config.vars.Tool_Parameters[str(text)]['diameter']
             new_speed = g.config.vars.Tool_Parameters[str(text)]['speed']
             new_start_radius = g.config.vars.Tool_Parameters[str(text)]['start_radius']
+            new_milling_offset = g.config.vars.Tool_Parameters[str(text)]['milling_offset']
 
             self.ui.toolDiameterComboBox.setPalette(self.palette)
             self.ui.toolDiameterLabel.setText(str(round(new_diameter, 3)))
@@ -931,12 +933,19 @@ class TreeHandler(QWidget):
                                 real_item.tool_diameter = new_diameter
                                 real_item.speed = new_speed
                                 real_item.start_radius = new_start_radius
+                                real_item.milling_offset = new_milling_offset
                                 self.tool_nr = real_item.tool_nr
                                 self.tool_diameter = new_diameter
                                 self.speed = new_speed
                                 self.start_radius = new_start_radius
+                                self.milling_offset = new_milling_offset
                                 for shape in real_item.shapes:
                                     if isinstance(shape, Shape):
+                                        # The tool provides the default
+                                        # additional offset (finishing
+                                        # allowance) for its shapes; it can be
+                                        # changed individually per shape.
+                                        shape.milling_offset = new_milling_offset
                                         # Only repaint _real_ shapes (and not the custom GCode for example)
                                         g.window.canvas_scene.repaint_shape(shape)
                 if g.window and g.window.canvas_scene:
@@ -1119,6 +1128,32 @@ class TreeHandler(QWidget):
             self.updateBreaksPassWidget()
             g.window.canvas_scene.update()
             
+    def toolParameterMillingOffsetUpdate(self):
+        """
+        Slot that updates the individual additional offset (finishing
+        allowance) of the selected shapes when the corresponding LineEdit
+        changes
+        """
+        self.ui.millingOffsetLineEdit.setPalette(self.palette)  # Restore color
+
+        # Get the new value and convert it to float
+        val = toFloat(self.ui.millingOffsetLineEdit.text())
+        if val[1]:
+            selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
+
+            for model_index in selected_indexes_list:
+                if isValid(model_index):
+                    model_index = model_index.sibling(model_index.row(), 0)  # get the first column of the selected row, since it's the only one that contains data
+                    element = model_index.model().itemFromIndex(model_index)
+                    if isValid(element.data(SHAPE_OBJECT)):
+                        real_item = toPyObject(element.data(SHAPE_OBJECT)).shapeobj
+                        if real_item.milling_offset != val[0]:
+                            real_item.milling_offset = val[0]
+                            self.milling_offset = real_item.milling_offset
+                            g.window.canvas_scene.repaint_shape(real_item)
+            self.prepareExportOrderUpdate()
+            g.window.canvas_scene.update()
+
     def actionOnSelectionChange(self, parent, selected, deselected):
         """
         This function is a callback called from QTreeView class when
@@ -1260,6 +1295,7 @@ class TreeHandler(QWidget):
             self.axis3_slice_depth = None
             self.axis3_start_mill_depth = None
             self.axis3_mill_depth = None
+            self.milling_offset = None
             self.f_g1_plane = None
             self.f_g1_depth = None
 
@@ -1274,6 +1310,7 @@ class TreeHandler(QWidget):
             self.ui.g1FeedZLineEdit.setPalette(self.palette)
             self.ui.zInitialMillDepthLineEdit.setPalette(self.palette)
             self.ui.zFinalMillDepthLineEdit.setPalette(self.palette)
+            self.ui.millingOffsetLineEdit.setPalette(self.palette)
 
         if number_of_selected_items == 0:
             self.ui.millSettingsFrame.setEnabled(False)
@@ -1414,6 +1451,10 @@ class TreeHandler(QWidget):
             self.axis3_mill_depth = self.updateAndColorizeWidget(self.ui.zFinalMillDepthLineEdit,
                                                                  self.axis3_mill_depth,
                                                                  shape_item.axis3_mill_depth)
+
+            self.milling_offset = self.updateAndColorizeWidget(self.ui.millingOffsetLineEdit,
+                                                               self.milling_offset,
+                                                               shape_item.milling_offset)
             
             if(False): #shape_item.Drill == True #drill removed
                 self.ui.g1FeedXYLineEdit.setEnabled(False)
@@ -1440,6 +1481,7 @@ class TreeHandler(QWidget):
             for widget in self.ui.zInitialMillDepthLineEdit,\
                           self.ui.zInfeedDepthLineEdit,\
                           self.ui.zFinalMillDepthLineEdit,\
+                          self.ui.millingOffsetLineEdit,\
                           self.ui.g1FeedXYLineEdit,\
                           self.ui.g1FeedZLineEdit:
                 widget.setText("")

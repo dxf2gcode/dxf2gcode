@@ -1280,12 +1280,16 @@ class MainWindow(QMainWindow):
             if LayCon.nr == lay_nr:
                 LayCon.shapes.append(shape)
                 shape.parentLayer = LayCon
+                # A new shape adopts the layer/tool default as its individual
+                # additional offset (it can be changed per shape afterwards).
+                shape.milling_offset = LayCon.milling_offset
                 return
 
         # If the Layer does not exist create a new one.
         LayerName = self.valuesDXF.layers[lay_nr].name
         self.layerContents.append(LayerContent(lay_nr, LayerName, [shape]))
         shape.parentLayer = self.layerContents[-1]
+        shape.milling_offset = shape.parentLayer.milling_offset
 
     def updateConfiguration(self, result):
         """

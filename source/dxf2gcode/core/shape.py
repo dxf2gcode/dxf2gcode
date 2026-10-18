@@ -99,6 +99,12 @@ class Shape(object):
         # 1..n = process the tabs from this pass number on.
         self.break_pass = -1
 
+        # Additional offset (finishing allowance) added to the tool radius of
+        # the software cutter compensation. 0.0 keeps the previous behaviour.
+        # The initial value is taken from the layer/tool the shape is attached
+        # to (see LayerContent.overrideDefaults() and the shape window).
+        self.milling_offset = 0.0
+
     def __repr__(self):
         """
         Standard method to print the object

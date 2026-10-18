@@ -39,6 +39,7 @@ import dxf2gcode.globals.globals as g
 from dxf2gcode.core.linegeo import LineGeo
 from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.core.point import Point
+from dxf2gcode.core.boundingbox import BoundingBox
 from dxf2gcode.core.shape import Geos
 from dxf2gcode.core.shape import Shape
 from dxf2gcode.core.shapeoffset import *
@@ -383,6 +384,38 @@ class PocketMill(object):
         return str(QtCore.QCoreApplication.translate("PocketMill",
                                                      string_to_translate))
 
+    def _reference_geos(self):
+        """Geometry the pocket fill is derived from.
+
+        Normally the shape contour. The additional offset (finishing allowance)
+        shifts the contour the tool really mills, so the pocket grows (or
+        shrinks) with it: ``StMove.pocket_wall_reference`` then holds that
+        shifted contour ("wall") and the fill is derived from it. Cached
+        because the fill code queries it repeatedly.
+        """
+        reference = getattr(self, "_ref_geos", None)
+        if reference is None:
+            reference = getattr(self.stmove, "pocket_wall_reference", None)
+            if not reference:
+                reference = self.stmove.shape.geos
+            self._ref_geos = reference
+        return reference
+
+    def _reference_bb(self):
+        """Bounding box of the geometry the pocket fill is derived from."""
+        reference = self._reference_geos()
+        if reference is self.stmove.shape.geos:
+            return self.stmove.shape.BB
+        xs = []
+        ys = []
+        for geo in reference.abs_iter():
+            xs += [geo.Ps.x, geo.Pe.x]
+            ys += [geo.Ps.y, geo.Pe.y]
+            if isinstance(geo, ArcGeo):
+                xs += [geo.O.x - geo.r, geo.O.x + geo.r]
+                ys += [geo.O.y - geo.r, geo.O.y + geo.r]
+        return BoundingBox(Point(min(xs), min(ys)), Point(max(xs), max(ys)))
+
     def removeNearShape(self):
         #Looks for points in array that are too close to shape
         # to be milled.
@@ -403,7 +436,7 @@ class PocketMill(object):
         for y, points in rows.items():
             row_xs[y] = [p.x for p in points]
 
-        for geo in self.stmove.shape.geos.abs_iter():
+        for geo in self._reference_geos().abs_iter():
             if isinstance(geo, LineGeo):
                 gx0 = geo.Ps.x
                 gx1 = geo.Pe.x
@@ -491,7 +524,7 @@ class PocketMill(object):
         # correct at shared vertices/tangencies and never emits a crossing
         # outside the real extent of a segment (see the ticket #176 fix).
         while yi > self.bbarray.yEnd:
-            for interGeo in self.stmove.shape.geos.abs_iter():
+            for interGeo in self._reference_geos().abs_iter():
                 if isinstance(interGeo, LineGeo):
                     x = self._line_horizontal_intersection(interGeo, yi)
                     if x is not None:
@@ -613,8 +646,8 @@ class PocketMill(object):
         # then creates milling lines and move paths.
         circle = 0
         horizontalRectangle = 0
-        
-        geosNum = len(self.stmove.shape.geos)
+
+        geosNum = len(self._reference_geos())
         print("Number of geos: %s" % (geosNum))
         
         cutComp = self.stmove.shape.cut_cor
@@ -622,7 +655,7 @@ class PocketMill(object):
         if len(self.stmove.geos) == 0:
             # Nothing was appended before the pocket (the caller normally
             # anchors the pocket at the shape start point).
-            realStart = self.stmove.shape.geos[0].Ps
+            realStart = self._reference_geos()[0].Ps
         else:
             lastGeo = self.stmove.geos[-1]
             # RapidPos marks the current position and has no Pe attribute
@@ -635,15 +668,15 @@ class PocketMill(object):
             direction = 1;
         
         if geosNum == 2:
-            if self.stmove.shape.geos[0].r == self.stmove.shape.geos[1].r and self.stmove.shape.geos[0].Ps == self.stmove.shape.geos[1].Pe and self.stmove.shape.geos[0].Pe == self.stmove.shape.geos[1].Ps:
+            if self._reference_geos()[0].r == self._reference_geos()[1].r and self._reference_geos()[0].Ps == self._reference_geos()[1].Pe and self._reference_geos()[0].Pe == self._reference_geos()[1].Ps:
                     circle = 1
                     
         if geosNum == 4:
             hLines = 0
             vLines = 0
             linesNum = 0
-            
-            for gLine in self.stmove.shape.geos:
+
+            for gLine in self._reference_geos():
                 if isinstance(gLine, LineGeo) and gLine.Ps.x == gLine.Pe.x:
                     vLines += 1
                 if isinstance(gLine, LineGeo) and gLine.Ps.y == gLine.Pe.y:
@@ -651,7 +684,15 @@ class PocketMill(object):
                     
             if hLines == 2 and vLines == 2:
                 horizontalRectangle = 1
-                
+
+        if self._reference_geos() is not self.stmove.shape.geos:
+            # The additional offset shifted the milled contour, so the
+            # pocket grows (or shrinks) with it. Use the general fill, which
+            # honours the configured stand-off, instead of the special cases,
+            # so the fill follows the shifted contour consistently.
+            circle = 0
+            horizontalRectangle = 0
+
         currentPoint = self.stmove.start
             
         if False:
@@ -665,12 +706,12 @@ class PocketMill(object):
             
             #this is radius of whole shape
             if cutComp == 40: #no compensation
-                millRad = self.stmove.shape.geos[0].r - self.tool_rad
+                millRad = self._reference_geos()[0].r - self.tool_rad
             elif cutComp == 41: #outside
-                millRad = self.stmove.shape.geos[0].r
+                millRad = self._reference_geos()[0].r
             elif cutComp == 42: #comp inside
-                millRad = self.stmove.shape.geos[0].r - 2 * self.tool_rad
-            
+                millRad = self._reference_geos()[0].r - 2 * self.tool_rad
+
             rotNum = (millRad - 2 * self.tool_rad * stepOverlay)/(self.tool_rad * (1 + stepOverlay))
             rotNum = ceil(rotNum)
 
@@ -691,10 +732,10 @@ class PocketMill(object):
             currentRad = millRad - self.tool_rad * stepOverlay
             
             circleOff = self.tool_rad * (1 + stepOverlay)
-            
-            centerPoint = self.stmove.shape.geos[0].O
-            print("Shape radius: %s, circle rotNum: %s, stepOverlay: %s." % (self.stmove.shape.geos[0].r, rotNum + 1, stepOverlay))
-            
+
+            centerPoint = self._reference_geos()[0].O
+            print("Shape radius: %s, circle rotNum: %s, stepOverlay: %s." % (self._reference_geos()[0].r, rotNum + 1, stepOverlay))
+
             currentPoint = realStart
             rLimit = self.tool_rad * (1 - stepOverlay)
             
@@ -727,8 +768,8 @@ class PocketMill(object):
             #calculate center point
             xes = []
             yes = []
-            
-            for geo in self.stmove.shape.geos:
+
+            for geo in self._reference_geos():
                 xes.append(geo.Ps.x)
                 yes.append(geo.Ps.y)
                 
@@ -756,8 +797,8 @@ class PocketMill(object):
                 startLeft = 0
             
             #distance between center and farrest mill line
-            xOff = abs(centerPoint.x - self.stmove.shape.geos[0].Ps.x)
-            yOff = abs(centerPoint.y - self.stmove.shape.geos[0].Ps.y)
+            xOff = abs(centerPoint.x - self._reference_geos()[0].Ps.x)
+            yOff = abs(centerPoint.y - self._reference_geos()[0].Ps.y)
 
             # NOTE: this special case for simple 4-line rectangles uses the
             # cutter radius directly as the fill stand-off (edge clearance 0)
@@ -918,9 +959,10 @@ class PocketMill(object):
             
             #print('BB: ' + self.stmove.shape.BB)
             print("self.stmove.BB: %s" % self.stmove.shape.BB)
-            
-            self.bbarray = BBArray(self.stmove.shape.BB.Ps, self.stmove.shape.BB.Pe, self.diff)
-            
+
+            bb = self._reference_bb()
+            self.bbarray = BBArray(bb.Ps, bb.Pe, self.diff)
+
             print("BBBounds: X%s to X%s, Y%s to Y%s" % (self.bbarray.xStart, self.bbarray.xEnd, self.bbarray.yStart, self.bbarray.yEnd))
             
             # The pocket fill keeps the configured edge clearance c relative to

@@ -927,6 +927,14 @@ Möchten Sie diese vor dem Profilwechsel speichern?</translation>
         <source>Project files (*%s)</source>
         <translation>Projektdateien (*%s)</translation>
     </message>
+    <message>
+        <source>Milling offset</source>
+        <translation>Zusatz-Offset</translation>
+    </message>
+    <message>
+        <source>Additional offset added to the cutter compensation (finishing allowance). Positive values leave more material for a following finishing pass, 0 keeps the normal contour. It is applied by the software cutter compensation (option &apos;Cutter compensation is done by machine&apos; unchecked).</source>
+        <translation>Zusätzlicher Offset, der zur Fräserkompensation addiert wird (Schlichtaufmaß). Positive Werte lassen mehr Material für einen anschließenden Schlichtdurchgang stehen, 0 behält die normale Kontur. Wirksam nur, wenn die Fräserkompensation nicht durch die Maschine erfolgt.</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -1306,6 +1314,10 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
     <message>
         <source>Cutter compensation while pocket milling:</source>
         <translation>Früserkompensation beim Taschenfräsen:</translation>
+    </message>
+    <message>
+        <source>Additional offset (finishing allowance):</source>
+        <translation>Zusätzlicher Offset (Schlichtaufmaß):</translation>
     </message>
 </context>
 <context>
@@ -1952,6 +1964,10 @@ Die Länge muss größer der Toleranz sein.
 %s</source>
         <translation>Taschenfräsen für Shape %i fehlgeschlagen - die Tasche wird übersprungen. Dies ist ein Fehler, bitte melden Sie ihn zusammen mit der betroffenen DXF-Datei.
 %s</translation>
+    </message>
+    <message>
+        <source>Shape %i: the additional offset (%.3f mm) cancels the cutter compensation (tool diameter %.3f mm) - the shape will NOT be milled!</source>
+        <translation>Shape %i: Der zusätzliche Offset (%.3f mm) hebt die Fräserkompensation auf (Werkzeugdurchmesser %.3f mm) - das Shape wird NICHT gefräst!</translation>
     </message>
 </context>
 <context>

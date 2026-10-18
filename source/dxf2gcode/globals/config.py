@@ -283,32 +283,42 @@ CONFIG_SPEC = str('''
     spindle_speed_identifiers = list(default = list('SpindleSpeed', 'Drehzahl', 'RPM', 'UPM', 'S'))
     # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
     start_radius_identifiers = list(default = list('StartRadius', 'Sr'))
+    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    milling_offset_identifiers = list(default = list('MillingOffset', 'Mo'))
 
     # Tools table: define here the tools used for milling:
     # - name: this is the number of the tool, it will be used directly in the GCODE (eg 20 for tool T20)
     # - diameter: diameter of the tool
     # - speed: spindle speed in rpm
     # - start_radius: start radius for tool compensation when using G41 / G42 moves
+    # - milling_offset: additional offset (finishing allowance) added to the tool
+    #   radius of the software cutter compensation; 0 = unchanged behaviour.
+    #   It is only used as the default value for the individual outline offset
+    #   of a shape (Tools table -> Shape window), which can be edited there.
     [Tool_Parameters]
     [[1]]
     diameter = float(default = 2.0)
     speed = float(default = 6000)
     start_radius = float(default = 0.2)
+    milling_offset = float(default = 0.0)
 
     [[2]]
     diameter = float(default = 2.0)
     speed = float(default = 6000.0)
     start_radius = float(default = 1.0)
+    milling_offset = float(default = 0.0)
 
     [[10]]
     diameter = float(default = 10.0)
     speed = float(default = 6000.0)
     start_radius = float(default = 2.0)
+    milling_offset = float(default = 0.0)
 
     [[__many__]]
     diameter = float(default = 3.0)
     speed = float(default = 6000)
     start_radius = float(default = 3.0)
+    milling_offset = float(default = 0.0)
 
     # Define here custom GCODE actions:
     # - name: this is the unique name of the action
@@ -438,6 +448,7 @@ class MyConfig(object):
         for tool in self.var_dict['Tool_Parameters']:
             self.var_dict['Tool_Parameters'][tool]['diameter'] = float(self.var_dict['Tool_Parameters'][tool]['diameter']) * scale
             self.var_dict['Tool_Parameters'][tool]['start_radius'] = float(self.var_dict['Tool_Parameters'][tool]['start_radius']) * scale
+            self.var_dict['Tool_Parameters'][tool]['milling_offset'] = float(self.var_dict['Tool_Parameters'][tool]['milling_offset']) * scale
 
     def make_settings_folder(self):
         """Create settings folder if necessary"""
@@ -669,7 +680,8 @@ class MyConfig(object):
                 ('tool_nr_identifiers', CfgListEdit(self.tr('Tool number:'), ',')),
                 ('tool_diameter_identifiers', CfgListEdit(self.tr('Tool diameter:'), ',')),
                 ('spindle_speed_identifiers', CfgListEdit(self.tr('Spindle speed:'), ',')),
-                ('start_radius_identifiers', CfgListEdit(self.tr('Start radius (cutter compensation):'), ','))
+                ('start_radius_identifiers', CfgListEdit(self.tr('Start radius (cutter compensation):'), ',')),
+                ('milling_offset_identifiers', CfgListEdit(self.tr('Additional offset (finishing allowance):'), ','))
             ])),
             ('Tool_Parameters', CfgTableToolParameters(self.tr('Define the tools here:'))),
             ('Custom_Actions', CfgTableCustomActions(self.tr('Define here custom GCODE that can be inserted anywhere in the program:'))),
@@ -707,7 +719,8 @@ class MyConfig(object):
             for tool in self.vars.Tool_Parameters:
                 self.vars.Tool_Parameters[tool]['diameter'] *= scale
                 self.vars.Tool_Parameters[tool]['start_radius'] *= scale
-            self.tool_units_metric = self.metric
+                self.vars.Tool_Parameters[tool]['milling_offset'] *= scale
+        self.tool_units_metric = self.metric
 
 
 class DictDotLookup(object):

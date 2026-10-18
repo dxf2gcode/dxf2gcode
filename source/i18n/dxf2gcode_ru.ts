@@ -1078,6 +1078,14 @@ Do you want to save them before switching the profile?</source>
         <source>Project files (*%s)</source>
         <translation>Файлы проектов (*%s)</translation>
     </message>
+    <message>
+        <source>Milling offset</source>
+        <translation>Дополнительный отступ</translation>
+    </message>
+    <message>
+        <source>Additional offset added to the cutter compensation (finishing allowance). Positive values leave more material for a following finishing pass, 0 keeps the normal contour. It is applied by the software cutter compensation (option &apos;Cutter compensation is done by machine&apos; unchecked).</source>
+        <translation>Дополнительный отступ, прибавляемый к компенсации инструмента (припуск на чистовую обработку). Положительные значения оставляют больше материала для последующего чистового прохода, 0 сохраняет обычный контур. Работает только если компенсация инструмента выполняется не станком.</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -1459,6 +1467,10 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     <message>
         <source>Cutter compensation while pocket milling:</source>
         <translation>Компенсация инструмента при карманном фрезеровании:</translation>
+    </message>
+    <message>
+        <source>Additional offset (finishing allowance):</source>
+        <translation>Дополнительный отступ (припуск на чистовую обработку):</translation>
     </message>
 </context>
 <context>
@@ -2110,6 +2122,10 @@ Skipped Geometries</source>
 %s</source>
         <translation>Фрезерование кармана не удалось для контура %i - карман пропущен. Это ошибка, сообщите о ней вместе с проблемным DXF-файлом.
 %s</translation>
+    </message>
+    <message>
+        <source>Shape %i: the additional offset (%.3f mm) cancels the cutter compensation (tool diameter %.3f mm) - the shape will NOT be milled!</source>
+        <translation>Контур %i: дополнительный отступ (%.3f мм) отменяет компенсацию инструмента (диаметр инструмента %.3f мм) - контур НЕ будет отфрезерован!</translation>
     </message>
 </context>
 <context>

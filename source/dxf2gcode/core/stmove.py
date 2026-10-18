@@ -115,6 +115,10 @@ class StMove(object):
         # -radius = offset inward). The pocket fill keeps its edge clearance
         # relative to this reference contour. 0.0 keeps the previous behaviour.
         self.pocket_fill_offset = 0.0
+        # Geometry the pocket fill is derived from when the additional offset
+        # (finishing allowance) shifts the milled contour. None means: the fill
+        # works on the original contour (previous behaviour).
+        self.pocket_wall_reference = None
 
         if g.config.machine_type == 'drag_knife':
             self.make_swivelknife_move()
@@ -162,6 +166,30 @@ class StMove(object):
 
             toolwidth = self.shape.parentLayer.getToolRadius()
 
+            # Additional offset (finishing allowance) of this individual shape:
+            # it is added to the cutter radius so that a roughing pass can leave
+            # material which a following finishing pass removes. 0.0 keeps the
+            # previous behaviour. A positive value shifts the compensated
+            # toolpath away from the outline on the compensated side (outward
+            # for outside contours, inward for inside contours/pockets), i.e.
+            # it always leaves more material. Only the software cutter
+            # compensation can apply it geometrically.
+            extra_offset = getattr(self.shape, 'milling_offset', 0.0)
+            comp_offset = toolwidth + extra_offset
+            if comp_offset <= 0.0:
+                # The additional offset cancels the cutter compensation, so no
+                # valid compensated toolpath exists for this shape. Keep the
+                # previous safe handling: warn and export nothing (Write_GCode
+                # drops shapes whose stmove contains no geometry).
+                logging.error(
+                    self.tr("Shape %i: the additional offset (%.3f mm) cancels "
+                            "the cutter compensation (tool diameter %.3f mm) - "
+                            "the shape will NOT be milled!")
+                    % (self.shape.nr, extra_offset,
+                       self.shape.parentLayer.tool_diameter))
+                self.pocket_geos_start = len(self.geos)
+                return
+
             # How pocket milling is compensated is configurable:
             #  * always_inward      : the pocket is always cleared from the
             #                         inside (inward boundary pass); the
@@ -202,7 +230,7 @@ class StMove(object):
                 self.geos += Geos(deepcopy(geo)
                                   for geo in self.shape.geos.abs_iter())
             else:
-                offshape = offShapeClass(parent = self.shape, offset = toolwidth, offtype = offtype)
+                offshape = offShapeClass(parent = self.shape, offset = comp_offset, offtype = offtype)
 
                 if len(offshape.rawoff) == 0:
                     # P1: No offset geometry was produced. Distinguish the
@@ -274,8 +302,31 @@ class StMove(object):
                         # clearance relative to THIS compensated offset
                         # contour, so record how far it sits from the original
                         # contour (offtype "out" -> offset outward, +radius).
+                        # Only the cutter radius is recorded here; the
+                        # additional offset (finishing allowance) is applied to
+                        # the fill stand-off in pocketmill so that it works the
+                        # same way for every pocket mode.
                         self.pocket_fill_offset = (
                             -toolwidth if offtype == "in" else toolwidth)
+
+                    if self.shape.Pocket and extra_offset:
+                        # The additional offset (finishing allowance) shifts the
+                        # contour the tool really mills, so the pocket grows (or
+                        # shrinks) with it. Derive the pocket fill from that
+                        # shifted contour ("wall" = compensated contour inset by
+                        # the tool radius = original contour shifted by the extra
+                        # offset to the compensated side) so the fill follows the
+                        # additional offset.
+                        wall_outside = ((offtype == "out") ==
+                                        (extra_offset > 0.0))
+                        wall = offShapeClass(
+                            parent=self.shape, offset=abs(extra_offset),
+                            offtype=("out" if wall_outside else "in"))
+                        if wall.loops:
+                            reference = Geos()
+                            for loop in wall.loops:
+                                reference += loop
+                            self.pocket_wall_reference = reference
 
         elif self.shape.cut_cor == 40:
             # No cutter compensation: the shape contour itself is the tool

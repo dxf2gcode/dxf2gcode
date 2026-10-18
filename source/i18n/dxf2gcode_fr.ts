@@ -892,6 +892,14 @@ Voulez-vous les enregistrer avant de changer de profil ?</translation>
         <source>Project files (*%s)</source>
         <translation>Fichiers de projet (*%s)</translation>
     </message>
+    <message>
+        <source>Milling offset</source>
+        <translation>Décalage additionnel</translation>
+    </message>
+    <message>
+        <source>Additional offset added to the cutter compensation (finishing allowance). Positive values leave more material for a following finishing pass, 0 keeps the normal contour. It is applied by the software cutter compensation (option &apos;Cutter compensation is done by machine&apos; unchecked).</source>
+        <translation>Décalage supplémentaire ajouté à la compensation d'outil (surépaisseur de finition). Les valeurs positives laissent plus de matière pour une passe de finition suivante, 0 conserve le contour normal. Actif uniquement si la compensation d'outil n'est pas effectuée par la machine.</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -1268,6 +1276,10 @@ Vous devez détruire(ou éditer soigneusement) le fichier de configuration &quot
     <message>
         <source>Cutter compensation while pocket milling:</source>
         <translation>Compensation outil pendant le fraisage de poche :</translation>
+    </message>
+    <message>
+        <source>Additional offset (finishing allowance):</source>
+        <translation>Décalage supplémentaire (surépaisseur de finition) :</translation>
     </message>
 </context>
 <context>
@@ -1907,6 +1919,10 @@ La longueur doit être supérieure à la tolérance</translation>
 %s</source>
         <translation>Le fraisage de poche a échoué pour la forme %i - la poche est ignorée. C'est un bug, veuillez le signaler avec le fichier DXF concerné.
 %s</translation>
+    </message>
+    <message>
+        <source>Shape %i: the additional offset (%.3f mm) cancels the cutter compensation (tool diameter %.3f mm) - the shape will NOT be milled!</source>
+        <translation>Forme %i : le décalage supplémentaire (%.3f mm) annule la compensation d'outil (diamètre d'outil %.3f mm) - la forme ne sera PAS fraisée !</translation>
     </message>
 </context>
 <context>

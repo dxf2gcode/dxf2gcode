@@ -159,6 +159,7 @@ class Project(object):
                                    'start_mill_depth': shape.axis3_start_mill_depth,
                                    'slice_depth': shape.axis3_slice_depth,
                                    'mill_depth': shape.axis3_mill_depth,
+                                   'milling_offset': getattr(shape, 'milling_offset', 0.0),
                                    'f_g1_plane': shape.f_g1_plane,
                                    'f_g1_depth': shape.f_g1_depth,
                                    'break_pass': getattr(shape, 'break_pass', -1),
@@ -169,6 +170,7 @@ class Project(object):
                            'diameter': layer.tool_diameter,
                            'speed': layer.speed,
                            'start_radius': layer.start_radius,
+                           'milling_offset': getattr(layer, 'milling_offset', 0.0),
                            'retract': layer.axis3_retract,
                            'safe_margin': layer.axis3_safe_margin,
                            'shapes': shapes})
@@ -240,6 +242,9 @@ d2g.layers = ''' + str(layers)
                 layer.tool_diameter = parent_layer['diameter']
                 layer.speed = parent_layer['speed']
                 layer.start_radius = parent_layer['start_radius']
+                # Older project files do not contain the additional offset;
+                # fall back to the neutral value (unchanged behaviour).
+                layer.milling_offset = parent_layer.get('milling_offset', 0.0)
 
                 layer.axis3_retract = parent_layer['retract']
                 layer.axis3_safe_margin = parent_layer['safe_margin']
@@ -277,6 +282,9 @@ d2g.layers = ''' + str(layers)
                         shape.axis3_start_mill_depth = parent_shape['start_mill_depth']
                         shape.axis3_slice_depth = parent_shape['slice_depth']
                         shape.axis3_mill_depth = parent_shape['mill_depth']
+                        # Older project files do not contain the additional
+                        # offset; fall back to the neutral value.
+                        shape.milling_offset = parent_shape.get('milling_offset', 0.0)
                         shape.f_g1_plane = parent_shape['f_g1_plane']
                         shape.f_g1_depth = parent_shape['f_g1_depth']
                         # Older project files do not contain break_pass;
