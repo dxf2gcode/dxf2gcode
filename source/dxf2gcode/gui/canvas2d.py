@@ -33,6 +33,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import logging
+import math
 
 from dxf2gcode.core.point import Point
 from dxf2gcode.core.shape import Shape
@@ -44,6 +45,7 @@ from dxf2gcode.gui.wpzero import WpZero
 from dxf2gcode.gui.arrow import Arrow
 from dxf2gcode.gui.routetext import RouteText
 from dxf2gcode.gui.canvas import CanvasBase, MyDropDownMenu
+from dxf2gcode.gui.scalebar import (ScaleBar, drawing_unit, scale_bar_enabled)
 
 import dxf2gcode.globals.globals as g
 
@@ -80,6 +82,10 @@ class MyGraphicsView(CanvasBase):
 
         self.parent = parent
         self.mppos = None
+
+        # The scale bar is a viewport overlay (see drawForeground), it is not
+        # part of the scene and therefore never part of the exported geometry.
+        self.scaleBar = ScaleBar()
 
         self.rubberBand = QRubberBand(QRubberBand.Shape.Rectangle, self)
         self.prvRectRubberBand = QtCore.QRect()
@@ -234,6 +240,67 @@ class MyGraphicsView(CanvasBase):
         scext = QtCore.QRectF(scene.BB.Ps.x, -scene.BB.Pe.y, width * 1.05, height * 1.05)
         self.fitInView(scext, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         logger.debug(self.tr("Autoscaling to extend: %s") % scext)
+
+    def scaleBarPixelsPerUnit(self):
+        """
+        The number of viewport pixels per drawing unit of the current drawing.
+        The value is measured with the real view transformation (the same one
+        that is used to draw the geometry), so it follows every zoom, pan and
+        resize of the canvas.
+        @return: the pixels per drawing unit or None if it cannot be measured
+        """
+        origin = self.mapToScene(QtCore.QPoint(0, 0))
+        right = self.mapToScene(QtCore.QPoint(1, 0))
+        scene_per_pixel = math.hypot(right.x() - origin.x(),
+                                     right.y() - origin.y())
+        if scene_per_pixel <= 0:
+            return None
+        # One scene unit is one drawing unit (millimetre or inch).
+        return 1.0 / scene_per_pixel
+
+    def updateScaleBar(self):
+        """
+        Recalculate the scale bar and repaint the canvas. This is called when
+        the configuration (e.g. the 'show_scale_bar' option) or the
+        measurement units changed.
+        """
+        self.scaleBar.state.reset()
+        self.viewport().update()
+
+    def drawForeground(self, painter, rect):
+        """
+        Draw the scale bar on top of the geometry.
+        The scale bar is a viewport overlay: it is not an item of the scene,
+        so it can never become part of the contour processing or of the
+        exported G-Code.
+        @param painter: the painter of the viewport
+        @param rect: the exposed area of the scene
+        """
+        super(MyGraphicsView, self).drawForeground(painter, rect)
+
+        if not scale_bar_enabled():
+            return
+
+        pixels_per_unit = self.scaleBarPixelsPerUnit()
+        if not pixels_per_unit:
+            return
+
+        self.scaleBar.update(pixels_per_unit, drawing_unit())
+
+        viewport_rect = self.viewport().rect()
+
+        painter.save()
+        try:
+            # Draw in viewport coordinates: the zoom of the canvas is
+            # compensated, so the scale bar always stays at the same place in
+            # the visible area. The transformation of the canvas itself is
+            # not modified, the drawing of the geometry is not influenced.
+            origin = self.mapToScene(QtCore.QPoint(0, 0))
+            painter.translate(origin)
+            painter.scale(1.0 / pixels_per_unit, 1.0 / pixels_per_unit)
+            self.scaleBar.paint(painter, viewport_rect)
+        finally:
+            painter.restore()
 
     def setShowPathDirections(self, flag):
         """

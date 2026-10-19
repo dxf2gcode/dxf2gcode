@@ -1060,6 +1060,10 @@ Sie müssen die Konfigurationsdatei &quot;{2}&quot; löschen (oder sorgfältig b
         <translation>Live-Update der Exportroute (Standard)</translation>
     </message>
     <message>
+        <source>Show a scale bar in the canvas</source>
+        <translation>Maßstabsanzeige im Zeichenbereich anzeigen</translation>
+    </message>
+    <message>
         <source>Milling</source>
         <translation>Fräsen</translation>
     </message>

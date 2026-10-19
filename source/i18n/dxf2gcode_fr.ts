@@ -1023,6 +1023,10 @@ Vous devez supprimer (ou éditer soigneusement) le fichier de configuration &quo
         <translation>Route de mise à jour réseau (Defaut)</translation>
     </message>
     <message>
+        <source>Show a scale bar in the canvas</source>
+        <translation>Afficher une échelle dans la zone de dessin</translation>
+    </message>
+    <message>
         <source>Milling</source>
         <translation>Fraisage</translation>
     </message>

@@ -115,6 +115,9 @@ class MainWindow(QMainWindow):
 
         self.TreeHandler = TreeHandler(self.ui)
         self.configuration_changed.connect(self.TreeHandler.updateConfiguration)
+        # The canvas overlays (e.g. the scale bar) depend on the configuration
+        # and on the measurement units.
+        self.configuration_changed.connect(self.updateCanvasOverlay)
 
         if sys.version_info[0] == 2:
             error_message = QMessageBox(QMessageBox.Critical, self.tr('ERROR'), self.tr("Python version 2 is not supported, please use it with python version 3."))
@@ -1290,6 +1293,18 @@ class MainWindow(QMainWindow):
         self.layerContents.append(LayerContent(lay_nr, LayerName, [shape]))
         shape.parentLayer = self.layerContents[-1]
         shape.milling_offset = shape.parentLayer.milling_offset
+
+    def updateCanvasOverlay(self):
+        """
+        Refresh the overlays of the canvas (e.g. the scale bar) after a
+        configuration change (option or measurement units).
+        """
+        canvas = getattr(self, 'canvas', None)
+        if canvas is None:
+            return
+        update = getattr(canvas, 'updateScaleBar', None)
+        if callable(update):
+            update()
 
     def updateConfiguration(self, result):
         """

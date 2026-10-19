@@ -107,6 +107,7 @@ The default discovery pattern `test*.py` does **not** match the module names
 | `dxf2gcode_pocket_comp_mode_test.py` | regression | `pocket_compensation_mode` behaviour + GUI gating |
 | `dxf2gcode_pocket_edge_clearance_test.py` | regression | edge clearance relative to the offset contour |
 | `dxf2gcode_config_pocketing_test.py` | unit/regression | config versioning and migration |
+| `dxf2gcode_scalebar_test.py` | unit/integration | scale bar: units, zoom, viewport position, config option |
 
 Modules that mutate global configuration state reset it again in
 `tearDownModule` so the suite passes independently of the module order.

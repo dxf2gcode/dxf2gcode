@@ -1209,6 +1209,10 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <translation>Постоянный экспорт маршрута</translation>
     </message>
     <message>
+        <source>Show a scale bar in the canvas</source>
+        <translation>Показывать масштабную линейку в области рисования</translation>
+    </message>
+    <message>
         <source>Milling</source>
         <translation>Фрезерная</translation>
     </message>

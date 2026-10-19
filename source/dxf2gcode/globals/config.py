@@ -171,6 +171,8 @@ CONFIG_SPEC = str('''
     show_disabled_paths = boolean(default = True)
     # When enabled, export path is live updated on the graphic view.
     live_update_export_route = boolean(default = False)
+    # When enabled, a scale bar is drawn in the bottom right corner of the canvas. It shows the physical size of the imported geometry.
+    show_scale_bar = boolean(default = False)
     # Divide the lines in 2 parts, in order to start the cutting in the middle of a line (usefull for cutter compensation)
     split_line_segments = boolean(default = False)
     # Automatically enable cutter compensation for all the shapes (G41 & G42)
@@ -596,6 +598,7 @@ class MyConfig(object):
                 ('mode3d', CfgCheckBox(self.tr('3D mode (requires OpenGL - restart needed)'))),
                 ('show_disabled_paths', CfgCheckBox(self.tr('Display disabled paths (default)'))),
                 ('live_update_export_route', CfgCheckBox(self.tr('Live update export route (default)'))),
+                ('show_scale_bar', CfgCheckBox(self.tr('Show a scale bar in the canvas'))),
                 ('__subtitle2__', CfgSubtitle(self.tr("Milling"))),
                 ('split_line_segments', CfgCheckBox(self.tr('Split line segments (default)'))),
                 ('automatic_cutter_compensation', CfgCheckBox(self.tr('Automatic cutter compensation (default)'))),
