@@ -35,6 +35,9 @@ import dxf2gcode.globals.globals as g
 from dxf2gcode.core.point import Point
 
 from dxf2gcode.core.arcgeo import ArcGeo
+from dxf2gcode.core.leadmove import (LEAD_DEFAULT, LEAD_OFF, LEAD_STRAIGHT,
+                                     LEAD_RADIUS, LEAD_STARTMOVE,
+                                     OVERCUT_DEFAULT, resolve_overcut)
 
 from dxf2gcode.Qt import QtCore
 
@@ -62,11 +65,27 @@ class LayerContent(object):
         self.tool_diameter = g.config.vars.Tool_Parameters['1']['diameter']
         self.speed = g.config.vars.Tool_Parameters['1']['speed']
         self.start_radius = g.config.vars.Tool_Parameters['1']['start_radius']
+        self.lead_radius = g.config.vars.Tool_Parameters['1']['lead_radius']
+        self.lead_length = g.config.vars.Tool_Parameters['1']['lead_length']
+        self.overcut_length = g.config.vars.Tool_Parameters['1']['overcut_length']
         self.milling_offset = g.config.vars.Tool_Parameters['1']['milling_offset']
 
         # preset defaults
         self.axis3_retract = g.config.vars.Depth_Coordinates['axis3_retract']
         self.axis3_safe_margin = g.config.vars.Depth_Coordinates['axis3_safe_margin']
+
+        # Track which values were overridden by layer name identifiers
+        self.lead_radius_overridden = False
+        self.lead_length_overridden = False
+        self.lead_in_mode_overridden = False
+        self.lead_out_mode_overridden = False
+        self.overcut_length_overridden = False
+        self.overcut_enabled_overridden = False
+
+        # Lead in/out modes (LEAD_DEFAULT means use global config default)
+        self.lead_in_mode = LEAD_DEFAULT
+        self.lead_out_mode = LEAD_DEFAULT
+        self.overcut_enabled = OVERCUT_DEFAULT
 
     def __repr__(self):
         """
@@ -121,6 +140,9 @@ class LayerContent(object):
                     self.tool_diameter = g.config.vars.Tool_Parameters[str(self.tool_nr)]['diameter']
                     self.speed = g.config.vars.Tool_Parameters[str(self.tool_nr)]['speed']
                     self.start_radius = g.config.vars.Tool_Parameters[str(self.tool_nr)]['start_radius']
+                    self.lead_radius = g.config.vars.Tool_Parameters[str(self.tool_nr)]['lead_radius']
+                    self.lead_length = g.config.vars.Tool_Parameters[str(self.tool_nr)]['lead_length']
+                    self.overcut_length = g.config.vars.Tool_Parameters[str(self.tool_nr)]['overcut_length']
                     # the tool also provides the default additional offset for
                     # its shapes (an explicit identifier overrides it below)
                     self.milling_offset = g.config.vars.Tool_Parameters[str(self.tool_nr)]['milling_offset']
@@ -131,13 +153,48 @@ class LayerContent(object):
                 elif name in g.config.vars.Layer_Options['spindle_speed_identifiers']:
                     self.speed = float(value)
                 elif name in g.config.vars.Layer_Options['start_radius_identifiers']:
-                    self.start_radius = float(value)
+                    # The deprecated start radius: it was the radius of the
+                    # tool center path of the start move. The common radius is
+                    # the radius at the workpiece, so the radius of the tool
+                    # has to be added to it.
+                    self.lead_radius = float(value) + self.getToolRadius()
                 elif name in g.config.vars.Layer_Options['milling_offset_identifiers']:
                     # additional offset (finishing allowance) of this layer;
                     # it is an individual value per shape
                     self.milling_offset = float(value)
                     for shape in self.shapes:
                         shape.milling_offset = float(value)
+                elif name in g.config.vars.Layer_Options['lead_radius_identifiers']:
+                    self.lead_radius = float(value)
+                    self.lead_radius_overridden = True
+                elif name in g.config.vars.Layer_Options['lead_length_identifiers']:
+                    self.lead_length = float(value)
+                    self.lead_length_overridden = True
+                elif name in g.config.vars.Layer_Options['lead_in_mode_identifiers']:
+                    # The mode of the lead in of this layer:
+                    # 0 = startmove, 1 = off, 2 = straight, 3 = radius, 4 = default
+                    mode_map = {0: LEAD_STARTMOVE, 1: LEAD_OFF, 2: LEAD_STRAIGHT,
+                                3: LEAD_RADIUS, 4: LEAD_DEFAULT}
+                    try:
+                        idx = int(float(value))
+                        self.lead_in_mode = mode_map.get(idx, LEAD_DEFAULT)
+                        self.lead_in_mode_overridden = True
+                    except (ValueError, TypeError):
+                        pass
+                elif name in g.config.vars.Layer_Options['lead_out_mode_identifiers']:
+                    # The mode of the lead out of this layer:
+                    # 0 = off, 1 = straight, 2 = radius, 3 = startmove, 4 = default
+                    mode_map = {0: LEAD_OFF, 1: LEAD_STRAIGHT, 2: LEAD_RADIUS,
+                                3: LEAD_STARTMOVE, 4: LEAD_DEFAULT}
+                    try:
+                        idx = int(float(value))
+                        self.lead_out_mode = mode_map.get(idx, LEAD_DEFAULT)
+                        self.lead_out_mode_overridden = True
+                    except (ValueError, TypeError):
+                        pass
+                elif name in g.config.vars.Layer_Options['overcut_length_identifiers']:
+                    self.overcut_length = float(value)
+                    self.overcut_length_overridden = True
                 elif name in g.config.vars.Layer_Options['retract_identifiers']:
                     self.axis3_retract = float(value)
                 elif name in g.config.vars.Layer_Options['safe_margin_identifiers']:
@@ -171,12 +228,49 @@ class LayerContent(object):
                 for geo in shape.geos:
                     if not(isinstance(geo, ArcGeo)):
                         allArcs = False
-                
                 if allClosed and allArcs:
                     shape.Drill=True
                 else: 
                     logger.warn("Warning none closed / Arc shapes on Drill layer")
 
+
+    def get_lead_in_mode(self):
+        """
+        The method of the lead in which is really used for this layer:
+        the own value wins, LEAD_DEFAULT follows the global default
+        value of the configuration file.
+        @return: the method
+        """
+        if getattr(self, 'lead_in_mode', LEAD_DEFAULT) != LEAD_DEFAULT:
+            return self.lead_in_mode
+        return g.config.vars.Lead_In_Out['lead_in_mode']
+
+    def get_lead_out_mode(self):
+        """
+        The method of the lead out which is really used for this layer:
+        the own value wins, LEAD_DEFAULT follows the global default
+        value of the configuration file.
+        @return: the method
+        """
+        if getattr(self, 'lead_out_mode', LEAD_DEFAULT) != LEAD_DEFAULT:
+            return self.lead_out_mode
+        return g.config.vars.Lead_In_Out['lead_out_mode']
+
+    def get_overcut_enabled(self):
+        """
+        Whether the overcut is active for this layer.
+        The own value wins; OVERCUT_DEFAULT follows the global default
+        of the configuration file.
+        @return: True if the overcut is active
+        """
+        if getattr(self, 'overcut_enabled', OVERCUT_DEFAULT) != OVERCUT_DEFAULT:
+            return resolve_overcut(self.overcut_enabled, False)
+        # If the overcut length was set via layer name identifier, the
+        # overcut is considered active (the user explicitly requested it).
+        if getattr(self, 'overcut_length_overridden', False) and \
+                getattr(self, 'overcut_length', 0.0) > 0:
+            return True
+        return resolve_overcut(OVERCUT_DEFAULT, g.config.vars.Lead_In_Out['overcut_enabled'])
 
 
     def optimize(self):
@@ -210,7 +304,9 @@ class LayerContent(object):
 
         scale = 1/25.4 if metric_is == 0 else 25.4
         self.tool_diameter *= scale
-        self.start_radius *= scale
+        self.lead_radius *= scale
+        self.lead_length *= scale
+        self.overcut_length *= scale
         self.milling_offset *= scale
         self.axis3_retract *= scale
         self.axis3_safe_margin *= scale

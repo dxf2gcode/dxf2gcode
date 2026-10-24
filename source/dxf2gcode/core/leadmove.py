@@ -507,12 +507,10 @@ def build_start_move(end_point, angle, side, workpiece_radius, tool_radius,
     In the nominal plane the programmed path is compensated by the machine
     (G41/G42 is active while the start move is cut). The straight line then
     approaches the start of the quarter arc radially (it is tangent to the arc
-    there) and its length is the tool center radius (R_w - r_tool); the arc
-    itself is nominal, so the machine offsets it by the tool radius. The common
-    length is used for the G40 approach line (the tool center path before
-    G41/G42 is activated). In the tool center plane the programmed path is
-    already the offset tool center path: the straight line continues the travel
-    direction (tangentially) before the arc.
+    there) and its length is the common length; the arc itself is nominal, so
+    the machine offsets it by the tool radius. In the tool center plane the
+    programmed path is already the offset tool center path: the straight line
+    continues the travel direction (tangentially) before the arc.
 
     @param end_point: the point where the start move ends (the contour start
             in the programmed plane)
@@ -520,8 +518,7 @@ def build_start_move(end_point, angle, side, workpiece_radius, tool_radius,
     @param side: +1 = the arc curves to the left of the travel direction
     @param workpiece_radius: the radius which shall be milled (R_w)
     @param tool_radius: the radius of the tool
-    @param length: the common length of the straight part (used for the G40
-            approach line in the nominal plane)
+    @param length: the length of the straight part of the start move
     @param space: SPACE_NOMINAL (the machine compensates the programmed
             nominal path) or SPACE_TOOL_CENTER (the programmed path is already
             the tool center path, offset by the tool radius)
@@ -549,10 +546,8 @@ def build_start_move(end_point, angle, side, workpiece_radius, tool_radius,
     if space == SPACE_NOMINAL:
         # The programmed (nominal) path is compensated by the machine: the
         # straight line approaches the arc radially (tangential to the arc at
-        # its start) and its length is the tool center radius (R_w - r_tool).
-        # The common length is used for the G40 approach line only.
-        build_up_length = radius - tool_radius
-        dive_point = arc_start + normal * build_up_length
+        # its start) and its length is the common length.
+        dive_point = arc_start + normal * length
     else:
         # The programmed path is already the tool center path (the offset is
         # applied by dxf2gcode): the straight line continues the travel
