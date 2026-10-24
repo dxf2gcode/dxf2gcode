@@ -66,6 +66,7 @@ from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.core.point import Point  # noqa: E402
 from dxf2gcode.core.layercontent import LayerContent, Layers  # noqa: E402
 from dxf2gcode.core.project import Project  # noqa: E402
+from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
     make_postpro, make_shape, build_stmove, square_geos, norm)
@@ -114,6 +115,10 @@ def export_shape(break_pass=-1, depths=(0.0, -8.0, -1.0), cut_cor=40,
     if geos is None:
         geos = square_geos()
     sh = make_shape(geos, cut_cor=cut_cor, closed=closed, cw=True, nr=0)
+    if not machine:
+        # These tests check the passes / the tabs, not the lead in of the
+        # internal cutter compensation.
+        sh.parentLayer.lead_in_mode = LEAD_OFF
     build_stmove(sh)
     sh.axis3_start_mill_depth, sh.axis3_mill_depth, sh.axis3_slice_depth = depths
     sh.break_pass = break_pass
@@ -360,8 +365,12 @@ class TestBreakPassGCode(unittest.TestCase):
         self.assertIn("G41", code)
         passes = split_passes(code)
         self.assertEqual(len(passes), 8)
-        for k, pass_lines in enumerate(passes[:-1]):
-            self.assertEqual(len(xy_blocks(pass_lines)), 4)
+        # The first pass contains the nominal lead in (line + arc) and the
+        # unbroken contour; the following passes contain the contour only.
+        self.assertEqual(len(xy_blocks(passes[0])), 6)
+        for k, pass_lines in enumerate(passes[1:-1], start=2):
+            self.assertEqual(len(xy_blocks(pass_lines)), 4,
+                             "pass %d must use the unbroken contour" % k)
         self.assertEqual(len(xy_blocks(passes[-1])), 6)
         self.assertEqual(len(tab_lifts(passes[-1], -6.5)), 1)
 
@@ -656,8 +665,14 @@ class TestBreakPassGUILayout(unittest.TestCase):
             path = os.path.join(os.path.dirname(base), "source", "dxf2gcode_ui5.py")
         with open(path, "r", encoding="utf-8") as f:
             content = f.read()
+        # The breaks-pass combobox lives in the "Shape parameters" group box,
+        # which is itself a child of the mill settings frame, so disabling the
+        # frame (no selection) disables it as before.
         self.assertIn(
-            "self.breaksPassComboBox = QtWidgets.QComboBox(self.millSettingsFrame)",
+            "self.breaksPassComboBox = QtWidgets.QComboBox(self.shapeGroupBox)",
+            content)
+        self.assertIn(
+            "self.shapeGroupBox = QtWidgets.QGroupBox(self.millSettingsFrame)",
             content)
 
     def test_hidden_widget_collapses_in_grid_layout(self):

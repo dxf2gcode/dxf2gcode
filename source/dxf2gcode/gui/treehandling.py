@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 ############################################################################
 #
@@ -48,6 +48,11 @@ from dxf2gcode.gui import shapeparameterstate as sps
 from dxf2gcode.core.shape import Shape
 from dxf2gcode.core.entitycontent import EntityContent
 from dxf2gcode.core.customgcode import CustomGCode
+from dxf2gcode.core.leadmove import (LEAD_DEFAULT, LEAD_OFF, LEAD_RADIUS,
+                                     LEAD_STARTMOVE, LEAD_STRAIGHT,
+                                     OVERCUT_DEFAULT, OVERCUT_OFF, OVERCUT_ON,
+                                     lead_mode_labels, mode_needs_length,
+                                     mode_needs_radius)
 from dxf2gcode.gui.treeview import MyStandardItemModel
 
 from dxf2gcode.globals.helperfunctions import toInt, toFloat
@@ -71,6 +76,53 @@ class QVariantShape(QtCore.QVariant):
 
 
 logger = logging.getLogger("Gui.TreeHandling")
+
+
+def update_lead_move_values(layer):
+    """
+    Update the lead in / lead out / overcut values of a layer with the values
+    of the tool of the layer and with the global values of the configuration.
+
+    The values which were set by a layer name (see the layer name
+    identifiers) are not overwritten.
+
+    The methods of the lead in and of the lead out are not copied into the
+    layer: a layer which uses the configuration default (LEAD_DEFAULT)
+    follows the global default value, so that a change of the global default
+    is applied to all the layers which do not have their own value.
+    The same is true for the overcut: a layer which uses the configuration
+    default (OVERCUT_DEFAULT) follows the global default value.
+
+    The length of the overcut is defined per tool (see the tools table): the
+    layer uses the value of its tool. The values of the tools table are in the
+    unit of the drawing.
+
+    @param layer: the layer content
+    @return: True if a value of the layer has changed
+    """
+    updated = False
+    if not getattr(layer, 'overcut_length_overridden', False):
+        # The length of the overcut is defined per tool (see the tools
+        # table), the layer uses the value of its tool.
+        try:
+            tool = g.config.vars.Tool_Parameters[str(layer.tool_nr)]
+            new_value = tool['overcut_length']
+        except (KeyError, AttributeError, TypeError):
+            new_value = 0.0
+        if getattr(layer, 'overcut_length') != new_value:
+            layer.overcut_length = new_value
+            updated = True
+
+    if not getattr(layer, 'overcut_length_overridden', False):
+        # The overcut is a setting of the layer: the layer uses the standard
+        # of the configuration file, unless it has its own value.
+        if getattr(layer, 'overcut_enabled', OVERCUT_DEFAULT) != \
+                OVERCUT_DEFAULT:
+            layer.overcut_enabled = OVERCUT_DEFAULT
+            updated = True
+
+    return updated
+
 
 # defines some arbitrary types for the objects stored into the treeView.
 # These types will eg help us to find which kind of data is stored
@@ -160,6 +212,18 @@ class TreeHandler(QWidget):
 
         # Don't change this line, the signal _must_ be "activated" (only activates on user action) and _not_ "currentIndexChanged" (activates programmatically and on user action)
         self.ui.toolDiameterComboBox.textActivated[str].connect(self.toolUpdate)
+
+        # The methods of the lead in and of the lead out: they are selected
+        # independently for every layer. "Configuration default" uses the
+        # method which is configured in the configuration file.
+        self._fill_lead_mode_combo(self.ui.leadInComboBox, lead_in=True)
+        self._fill_lead_mode_combo(self.ui.leadOutComboBox, lead_in=False)
+        self.ui.leadInComboBox.activated.connect(self.leadInUpdate)
+        self.ui.leadOutComboBox.activated.connect(self.leadOutUpdate)
+        # The overcut: it is a setting of the layer, like the method of the
+        # lead in and of the lead out.
+        self._fill_overcut_combo(self.ui.overcutComboBox)
+        self.ui.overcutComboBox.activated.connect(self.overcutUpdate)
 
         self.ui.zRetractionArealLineEdit.editingFinished.connect(self.toolParameterzRetractionArealUpdate)
         self.ui.zSafetyMarginLineEdit.editingFinished.connect(self.toolParameterzSafetyMarginUpdate)
@@ -278,12 +342,31 @@ class TreeHandler(QWidget):
                 if real_layer is not None\
                     and (real_layer.tool_diameter != g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['diameter']\
                       or real_layer.speed != g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['speed']\
-                      or real_layer.start_radius != g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['start_radius']):
+                      or (not getattr(real_layer, 'lead_radius_overridden', False)\
+                          and real_layer.lead_radius != g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['lead_radius'])\
+                      or (not getattr(real_layer, 'lead_length_overridden', False)\
+                          and real_layer.lead_length != g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['lead_length'])):
                     # The tool used for this layer exists, but its definition has changed, we need to update the layer
                     logger.warning(self.tr("Tool {0} used for \"{1}\" layer has changed, updating layer's data").format(real_layer.tool_nr, real_layer.name))
                     real_layer.tool_diameter = g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['diameter']
                     real_layer.speed = g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['speed']
-                    real_layer.start_radius = g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['start_radius']
+                    if not getattr(real_layer, 'lead_radius_overridden', False):
+                        real_layer.lead_radius = g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['lead_radius']
+                    if not getattr(real_layer, 'lead_length_overridden', False):
+                        real_layer.lead_length = g.config.vars.Tool_Parameters[str(real_layer.tool_nr)]['lead_length']
+                    update_drawing = True
+
+                if real_layer is not None:
+                    # The lead in / lead out / overcut values of the layer are
+                    # the global defaults, as long as they were not set by a
+                    # layer name (those values must not be overwritten).
+                    if update_lead_move_values(real_layer):
+                        update_drawing = True
+                    # The methods of the lead in and of the lead out are not
+                    # copied into the layer: a layer which uses the
+                    # configuration default follows the global default value.
+                    # The drawing has to be repainted in any case, because the
+                    # default methods may have changed.
                     update_drawing = True
 
                 if update_drawing and g.window:
@@ -720,8 +803,8 @@ class TreeHandler(QWidget):
         layers, shapes = self._selectedShapesAndLayers()
         if shapes or layers:
             self.displayToolParametersForSelection(layers, shapes)
-        else:
-            self.displayToolParametersForItem(shape.parentLayer, shape)
+        # else: nothing is selected - clearToolsParameters() above already
+        # cleared the fields, so no values are shown.
 
     def updateShapeEnabling(self, shape, enable):
         """
@@ -916,26 +999,414 @@ class TreeHandler(QWidget):
             if isValid(parent_item_index.parent()):
                 self.traverseParentsAndUpdateEnableDisable(item_model, parent_item_index.parent())
 
+    def _fill_lead_mode_combo(self, combo, lead_in=False):
+        """
+        Fill a combobox with the methods of the lead in / lead out.
+
+        The data of the entries is the method itself, so that the
+        translation of the labels does not matter.
+        @param combo: the combobox
+        @param lead_in: whether the combobox is for the lead in (True) or for
+                the lead out (False)
+        """
+        combo.clear()
+        for mode, label in self._lead_mode_items(lead_in=lead_in):
+            combo.addItem(label, mode)
+
+    def _lead_mode_items(self, lead_in=False):
+        """
+        The methods of the lead in / lead out with their (translated) labels.
+
+        The configuration default is not an entry of the list: the combobox
+        always shows the method which is really used (the value of the
+        configuration file if the layer does not have its own value).
+
+        The 'radius' method is not selectable for the lead in: with the
+        internal cutter compensation (and with G40) it is the same as the
+        'startmove' method, so it is merged into it. It is only selectable for
+        the lead out (where the build up movement is not needed).
+
+        @param lead_in: whether the items are for the lead in (True) or for
+                the lead out (False)
+        @return: a list of (method, label) tuples
+        """
+        labels = lead_mode_labels()
+        items = [(LEAD_OFF, labels[LEAD_OFF]),
+                 (LEAD_STRAIGHT, labels[LEAD_STRAIGHT]),
+                 (LEAD_STARTMOVE, labels[LEAD_STARTMOVE])]
+        if not lead_in:
+            items.append((LEAD_RADIUS, labels[LEAD_RADIUS]))
+        return items
+
+    def _lead_in_items(self):
+        """The items of the lead in combobox."""
+        return self._lead_mode_items(lead_in=True)
+
+    def _lead_out_items(self):
+        """The items of the lead out combobox."""
+        return self._lead_mode_items(lead_in=False)
+
+    def _map_lead_in_mode(self, mode):
+        """
+        The method which is really used for the lead in: the 'radius' method
+        is not selectable any more, it is the same as the 'startmove' method
+        with the internal cutter compensation (and with G40).
+        @param mode: the method of the layer
+        @return: the method
+        """
+        return LEAD_STARTMOVE if mode == LEAD_RADIUS else mode
+
+    def _update_lead_mode_combo(self, combo, modes, lead_in=False):
+        """
+        Show the method of the selected layers in a combobox. If the layers
+        use different methods, the entry "Different" is shown.
+
+        The 'radius' method is not selectable for the lead in (it is merged
+        into the 'startmove'): a layer which still has the 'radius' method
+        (from an old project or a layer name identifier) shows the
+        'startmove' method instead.
+        @param combo: the combobox
+        @param modes: the methods of the selected layers
+        @param lead_in: whether the combobox is for the lead in (True) or for
+                the lead out (False)
+        """
+        if lead_in:
+            modes = [self._map_lead_in_mode(mode) for mode in modes]
+        unique = set(modes)
+        combo.blockSignals(True)
+        try:
+            combo.clear()
+            if len(unique) > 1:
+                combo.addItem(self.tr("Different"), None)
+            for mode, label in self._lead_mode_items(lead_in=lead_in):
+                combo.addItem(label, mode)
+            if len(unique) == 1:
+                index = combo.findData(modes[0])
+            else:
+                index = 0
+            combo.setCurrentIndex(index if index >= 0 else 0)
+        finally:
+            combo.blockSignals(False)
+
+    def _selected_layers(self):
+        """
+        The layers of the current selection.
+        @return: a list of layer contents
+        """
+        layers = []
+        selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
+        for model_index in selected_indexes_list:
+            if not isValid(model_index):
+                continue
+            model_index = model_index.sibling(model_index.row(), 0)
+            element = model_index.model().itemFromIndex(model_index)
+            if not element:
+                continue
+            real_item = None
+            if isValid(element.data(SHAPE_OBJECT)):
+                real_item = toPyObject(element.data(SHAPE_OBJECT)).shapeobj.parentLayer
+            elif isValid(element.data(LAYER_OBJECT)):
+                real_item = toPyObject(element.data(LAYER_OBJECT))
+            if real_item is not None and real_item not in layers:
+                layers.append(real_item)
+        return layers
+
+    def _fill_overcut_combo(self, combo):
+        """
+        Fill the combobox of the overcut with the possible settings.
+
+        The data of the entries is the setting itself, so that the
+        translation of the labels does not matter.
+        @param combo: the combobox
+        """
+        combo.clear()
+        for state, label in self._overcut_items():
+            combo.addItem(label, state)
+
+    def _overcut_items(self):
+        """
+        The possible settings of the overcut with their (translated) labels.
+
+        The configuration default is not an entry of the list: the combobox
+        always shows the setting which is really used (the value of the
+        configuration file if the layer does not have its own value).
+        @return: a list of (setting, label) tuples
+        """
+        return [(OVERCUT_OFF, self.tr("None")),
+                (OVERCUT_ON, self.tr("Overcut"))]
+
+    def _update_overcut_combo(self, combo, states):
+        """
+        Show the setting of the selected layers in the combobox. If the layers
+        use different settings, the entry "Different" is shown.
+        @param combo: the combobox
+        @param states: the settings of the selected layers
+        """
+        unique = set(states)
+        combo.blockSignals(True)
+        try:
+            combo.clear()
+            if len(unique) > 1:
+                combo.addItem(self.tr("Different"), None)
+            for state, label in self._overcut_items():
+                combo.addItem(label, state)
+            if len(unique) == 1:
+                index = combo.findData(states[0])
+            else:
+                index = 0
+            combo.setCurrentIndex(index if index >= 0 else 0)
+        finally:
+            combo.blockSignals(False)
+
+    def overcutUpdate(self, index=None):
+        """
+        Slot of the "Overcut" combobox: the overcut is changed for the closed
+        contours of the current selection.
+
+        The overcut is a setting of the shape. It is only possible for closed
+        contours: open contours are ignored (they are neither changed nor
+        reported as an error). In a mixed selection (open and closed contours,
+        which can live in the same layer) the setting is therefore applied to
+        the closed contours only.
+
+        @param index: the index of the activated combobox entry
+        """
+        if index is None:
+            index = self.ui.overcutComboBox.currentIndex()
+        state = self.ui.overcutComboBox.itemData(index)
+        if state is None:
+            # The "Different" entry: it is only a display of the selection.
+            return
+        # If the setting is the one of the configuration file, the shapes
+        # follow the standard again.
+        if state == self._global_overcut_state():
+            state = OVERCUT_DEFAULT
+        shapes = self._closed_contours_of_selection()
+        if not shapes:
+            return
+        for shape in shapes:
+            shape.overcut_enabled = state
+            shape.overcut_enabled_overridden = state != OVERCUT_DEFAULT
+        # Repaint the shapes of the layers of the changed contours (the layer
+        # holds the open contours too, so they are repainted as well).
+        repainted = []
+        for shape in shapes:
+            layer = getattr(shape, 'parentLayer', None)
+            for member in getattr(layer, 'shapes', [shape]):
+                if isinstance(member, Shape) and member not in repainted:
+                    repainted.append(member)
+                    g.window.canvas_scene.repaint_shape(member)
+        if g.window and g.window.canvas_scene:
+            g.window.canvas_scene.update()
+
+    def _selection_has_closed_contour(self, shapes, layers):
+        """
+        Whether the given selection contains at least one closed contour.
+
+        The overcut is only possible for closed contours, so the combobox is
+        disabled if the selection consists of open contours only.
+        @param shapes: the selected shapes
+        @param layers: the selected layers
+        @return: True if a closed contour is part of the selection
+        """
+        shapes = list(shapes) if shapes else []
+        if shapes:
+            return any(getattr(shape, 'closed', False) for shape in shapes)
+        # The selection may consist of layer rows only: use the shapes of the
+        # layers then.
+        for layer in layers:
+            for shape in getattr(layer, 'shapes', []):
+                if getattr(shape, 'closed', False):
+                    return True
+        return False
+
+    def _closed_contours_of_selection(self):
+        """
+        The closed contours of the current selection.
+
+        The overcut is a setting of the shape, so in a mixed selection only
+        the closed contours are changed.
+        @return: a list of shapes
+        """
+        layers, shapes = self._selectedShapesAndLayers()
+        result = [shape for shape in shapes
+                  if getattr(shape, 'closed', False)]
+        if result:
+            return result
+        # The selection may consist of layer rows only: use the closed
+        # contours of the layers then.
+        if shapes:
+            # Shapes are selected but none of them is closed.
+            return []
+        for layer in layers:
+            for shape in getattr(layer, 'shapes', []):
+                if getattr(shape, 'closed', False) and shape not in result:
+                    result.append(shape)
+        return result
+
+    def _effective_overcut_state(self, item):
+        """
+        The overcut setting which is really used for the given shape or layer:
+        the own value or the value of the configuration file.
+        @param item: the shape or the layer content
+        @return: OVERCUT_ON or OVERCUT_OFF
+        """
+        getter = getattr(item, 'get_overcut_enabled', None)
+        if getter is not None:
+            return OVERCUT_ON if getter() else OVERCUT_OFF
+        return self._global_overcut_state()
+
+    def _lead_display_contours(self):
+        """
+        The contours (shapes) of the current selection whose lead in / lead
+        out / overcut is shown and changed.
+
+        The settings belong to the shape, so the shapes of the selection are
+        used. If only layer rows are selected, all the shapes of the layers
+        are used.
+        @return: a list of shapes
+        """
+        shapes = [shape for shape in self.display_tool_shapes
+                  if isinstance(shape, Shape)]
+        if shapes:
+            return shapes
+        contours = []
+        for layer in self.display_tool_layers:
+            for shape in getattr(layer, 'shapes', []):
+                if isinstance(shape, Shape) and shape not in contours:
+                    contours.append(shape)
+        return contours
+
+    def _overcut_display_values(self):
+        """
+        The overcut values shown by the combobox.
+
+        The overcut is a setting of the closed contours, so the values of the
+        closed contours of the selection are shown (the open contours are
+        ignored). If only layer rows are selected, the values of the layers
+        are shown.
+        @return: (effective_states, own_values)
+        """
+        contours = self._lead_display_contours()
+        shapes = [shape for shape in contours
+                  if getattr(shape, 'closed', False)]
+        if shapes:
+            return ([self._effective_overcut_state(shape) for shape in shapes],
+                    [getattr(shape, 'overcut_enabled', OVERCUT_DEFAULT)
+                     for shape in shapes])
+        if contours:
+            # Open contours only: the combobox is disabled and shows "None".
+            return [OVERCUT_OFF], [OVERCUT_DEFAULT]
+        layers = self.display_tool_layers
+        return ([self._effective_overcut_state(layer) for layer in layers],
+                [getattr(layer, 'overcut_enabled', OVERCUT_DEFAULT)
+                 for layer in layers])
+
+    def _global_overcut_state(self):
+        """
+        The overcut setting of the configuration file: the state which the
+        layers follow if they do not have their own value.
+        @return: OVERCUT_ON or OVERCUT_OFF
+        """
+        try:
+            enabled = g.config.vars.Lead_In_Out['overcut_enabled']
+        except (KeyError, AttributeError):
+            enabled = False
+        return OVERCUT_ON if enabled else OVERCUT_OFF
+
+    def _lead_mode_update(self, attribute, index):
+        """
+        Apply the method which is selected in a combobox to all the selected
+        shapes (each contour has its own lead in / lead out).
+
+        If the selected method is the one of the configuration file, the
+        shapes follow the standard again (like the milling depth: only the
+        shapes which were changed have their own value).
+
+        @param attribute: the attribute of the shape ('lead_in_mode' or
+                         'lead_out_mode')
+        @param index: the index of the activated combobox entry
+        """
+        combo = (self.ui.leadInComboBox if attribute == 'lead_in_mode'
+                 else self.ui.leadOutComboBox)
+        mode = combo.itemData(index)
+        if mode is None:
+            # The "Different" entry: it is only a display of the selection.
+            return
+        try:
+            standard = g.config.vars.Lead_In_Out[attribute]
+        except (KeyError, AttributeError):
+            standard = None
+        if mode == standard:
+            # The value of the configuration file: the shape follows the
+            # standard again.
+            mode = LEAD_DEFAULT
+        shapes = self._lead_display_contours()
+        if not shapes:
+            return
+        for shape in shapes:
+            setattr(shape, attribute, mode)
+            # The configuration default is not an own value of the shape: it
+            # follows the default of the layer / configuration file.
+            setattr(shape, attribute + '_overridden',
+                    mode != LEAD_DEFAULT)
+        # Repaint the shapes of the layers of the changed contours.
+        repainted = []
+        for shape in shapes:
+            layer = getattr(shape, 'parentLayer', None)
+            for member in getattr(layer, 'shapes', [shape]):
+                if isinstance(member, Shape) and member not in repainted:
+                    repainted.append(member)
+                    g.window.canvas_scene.repaint_shape(member)
+        if g.window and g.window.canvas_scene:
+            g.window.canvas_scene.update()
+        self._update_lead_parameter_relevance(shapes)
+
+    def leadInUpdate(self, index=None):
+        """
+        Slot of the "Lead in" combobox: the method of the lead in of all the
+        selected layers is changed.
+        @param index: the index of the activated combobox entry
+        """
+        if index is None:
+            index = self.ui.leadInComboBox.currentIndex()
+        self._lead_mode_update('lead_in_mode', index)
+
+    def leadOutUpdate(self, index=None):
+        """
+        Slot of the "Lead out" combobox: the method of the lead out of all
+        the selected layers is changed.
+        @param index: the index of the activated combobox entry
+        """
+        if index is None:
+            index = self.ui.leadOutComboBox.currentIndex()
+        self._lead_mode_update('lead_out_mode', index)
+
     def toolUpdate(self):
         """
-        Slot that updates the tool's diameter, speed and start_radius
-        when a new tool is selected
+        Slot that updates the tool's diameter, speed, lead radius and lead
+        length when a new tool is selected
         @param text: the name of the newly selected tool
         """
         text = self.ui.toolDiameterComboBox.currentText()
         if text:
             new_diameter = g.config.vars.Tool_Parameters[str(text)]['diameter']
             new_speed = g.config.vars.Tool_Parameters[str(text)]['speed']
-            new_start_radius = g.config.vars.Tool_Parameters[str(text)]['start_radius']
+            new_lead_radius = g.config.vars.Tool_Parameters[str(text)]['lead_radius']
+            new_lead_length = g.config.vars.Tool_Parameters[str(text)]['lead_length']
+            new_overcut_length = g.config.vars.Tool_Parameters[str(text)]['overcut_length']
             new_milling_offset = g.config.vars.Tool_Parameters[str(text)]['milling_offset']
 
             self.ui.toolDiameterComboBox.setPalette(self.palette)
             self.ui.toolDiameterLabel.setText(str(round(new_diameter, 3)))
-            self.ui.toolDiameterLabel.setPalette(self.palette)  # Restore color
             self.ui.toolSpeedLabel.setText(str(round(new_speed, 1)))
-            self.ui.toolSpeedLabel.setPalette(self.palette)  # Restore color
-            self.ui.startRadiusLabel.setText(str(round(new_start_radius, 3)))
-            self.ui.startRadiusLabel.setPalette(self.palette)  # Restore color
+            self.ui.leadRadiusLabel.setText(str(round(new_lead_radius, 3)))
+            self.ui.leadLengthLabel.setText(str(round(new_lead_length, 3)))
+            self.ui.overcutLengthLabel.setText(
+                str(round(new_overcut_length, 3)))
+            # The tool values are changed only via the tool selection, so they
+            # are always shown de-emphasized (gray) here.
+            self._refresh_tool_values()
 
             # Get the new value and convert it to int
             val = toInt(text)
@@ -956,12 +1427,16 @@ class TreeHandler(QWidget):
                                 real_item.tool_nr = val[0]
                                 real_item.tool_diameter = new_diameter
                                 real_item.speed = new_speed
-                                real_item.start_radius = new_start_radius
+                                real_item.lead_radius = new_lead_radius
+                                real_item.lead_length = new_lead_length
+                                if not getattr(real_item, 'overcut_length_overridden', False):
+                                    real_item.overcut_length = new_overcut_length
                                 real_item.milling_offset = new_milling_offset
                                 self.tool_nr = real_item.tool_nr
                                 self.tool_diameter = new_diameter
                                 self.speed = new_speed
-                                self.start_radius = new_start_radius
+                                self.lead_radius = new_lead_radius
+                                self.lead_length = new_lead_length
                                 self.milling_offset = new_milling_offset
                                 for shape in real_item.shapes:
                                     if isinstance(shape, Shape):
@@ -1315,7 +1790,8 @@ class TreeHandler(QWidget):
             self.tool_nr = None
             self.tool_diameter = None
             self.speed = None
-            self.start_radius = None
+            self.lead_radius = None
+            self.lead_length = None
             self.axis3_retract = None
             self.axis3_safe_margin = None
             self.axis3_slice_depth = None
@@ -1328,7 +1804,8 @@ class TreeHandler(QWidget):
             self.ui.toolDiameterComboBox.setPalette(self.palette)
             self.ui.toolDiameterLabel.setPalette(self.palette)
             self.ui.toolSpeedLabel.setPalette(self.palette)
-            self.ui.startRadiusLabel.setPalette(self.palette)
+            self.ui.leadRadiusLabel.setPalette(self.palette)
+            self.ui.leadLengthLabel.setPalette(self.palette)
             self.ui.zRetractionArealLineEdit.setPalette(self.palette)
             self.ui.zSafetyMarginLineEdit.setPalette(self.palette)
             self.ui.zInfeedDepthLineEdit.setPalette(self.palette)
@@ -1339,6 +1816,11 @@ class TreeHandler(QWidget):
             self.ui.millingOffsetLineEdit.setPalette(self.palette)
 
         if number_of_selected_items == 0:
+            # Nothing is selected: no values are shown at all. This makes the
+            # behaviour of the tool and the shape fields consistent (also
+            # directly after startup, before anything is loaded).
+            for widget in self._mill_parameter_widgets():
+                widget.setText("")
             self.ui.millSettingsFrame.setEnabled(False)
 
         else:
@@ -1499,13 +1981,10 @@ class TreeHandler(QWidget):
         layers, shapes = self._selectedShapesAndLayers()
         if shapes or layers:
             self.displayToolParametersForSelection(layers, shapes)
-        elif getattr(self, "display_tool_shapes", None) or \
-                getattr(self, "display_tool_layers", None):
-            self.displayToolParametersForSelection(self.display_tool_layers,
-                                                   self.display_tool_shapes)
-        elif self.display_tool_layer is not None:
-            self.displayToolParametersForItem(self.display_tool_layer,
-                                              self.display_tool_shape)
+        else:
+            # Nothing is selected: no values are shown (never fall back to the
+            # values of a previously selected shape/layer).
+            self.clearToolsParameters()
 
     def displayToolParametersForItem(self, layer_item, shape_item = None):
         """
@@ -1565,9 +2044,19 @@ class TreeHandler(QWidget):
              tool_default("speed"),
              self.tr("Spindle speed of the tool. [rpm]"
                      " Defined in the Tools table.")),
-            ("start_radius", self.ui.startRadiusLabel, True,
-             tool_default("start_radius"),
-             self.tr("Start radius of the cutter compensation entry move."
+            ("lead_radius", self.ui.leadRadiusLabel, True,
+             tool_default("lead_radius"),
+             self.tr("Common radius at the workpiece of the lead in and of"
+                     " the lead out. [mm] Defined in the Tools table. It"
+                     " has to be greater than the radius of the tool.")),
+            ("lead_length", self.ui.leadLengthLabel, True,
+             tool_default("lead_length"),
+             self.tr("Common length of the straight lead in and of the"
+                     " straight lead out, measured along the contour"
+                     " direction. [mm] Defined in the Tools table.")),
+            ("overcut_length", self.ui.overcutLengthLabel, True,
+             tool_default("overcut_length"),
+             self.tr("Length of the overcut, measured along the contour."
                      " [mm] Defined in the Tools table.")),
             ("axis3_retract", self.ui.zRetractionArealLineEdit, True,
              config_default("Depth_Coordinates", "axis3_retract"),
@@ -1668,6 +2157,80 @@ class TreeHandler(QWidget):
             widget.setPalette(palette)
             widget.setEnabled(False)
 
+    def _de_emphasize_standard(self, widget, values, default):
+        """
+        De-emphasize a combobox which shows the standard of the configuration
+        file: the value is not an own value of the layer, a change of the
+        standard is applied to it.
+        @param widget: the combobox
+        @param values: the own values of the selected layers
+        @param default: the value which means "the standard of the
+               configuration file"
+        """
+        palette = QPalette(self.palette)
+        if all(value == default for value in values):
+            self._gray_palette(palette)
+        widget.setPalette(palette)
+
+    def _refresh_tool_values(self):
+        """
+        Show the parameter values of the currently selected tool and always
+        de-emphasize (gray) them: they can only be changed through the tool
+        selection (the dropdown), never directly in this frame, so they must
+        never look editable and must stay gray independent of the contour
+        selection.
+        """
+        tool_nr = self.ui.toolDiameterComboBox.currentText()
+        if not tool_nr and self.display_tool_layer is not None:
+            tool_nr = getattr(self.display_tool_layer, "tool_nr", None)
+        if not self.ui.layersShapesTreeView.selectedIndexes():
+            # Nothing is selected: the tool values are only meaningful for a
+            # selected shape/layer, so no values are shown (this also keeps the
+            # startup state empty).
+            for widget in (self.ui.toolDiameterLabel, self.ui.toolSpeedLabel,
+                           self.ui.leadRadiusLabel, self.ui.leadLengthLabel,
+                           self.ui.overcutLengthLabel):
+                widget.setText("")
+            return
+        try:
+            params = g.config.vars.Tool_Parameters[str(tool_nr)]
+        except Exception:
+            params = None
+        fields = (("diameter", self.ui.toolDiameterLabel, 3),
+                  ("speed", self.ui.toolSpeedLabel, 1),
+                  ("lead_radius", self.ui.leadRadiusLabel, 3),
+                  ("lead_length", self.ui.leadLengthLabel, 3),
+                  ("overcut_length", self.ui.overcutLengthLabel, 3))
+        palette = QPalette(self.palette)
+        self._gray_palette(palette)
+        for key, widget, digits in fields:
+            if params is not None:
+                try:
+                    widget.setText(str(round(float(params[key]), digits)))
+                except Exception:
+                    widget.setText("")
+            widget.setPalette(palette)
+
+    def _update_lead_parameter_relevance(self, contours):
+        """
+        De-emphasize the common radius and the common length if none of the
+        selected methods needs them: the values are kept, but they are not
+        used for the movements.
+        @param contours: the selected shapes (or layers)
+        """
+        modes = []
+        for item in contours or []:
+            modes.append(item.get_lead_in_mode())
+            modes.append(item.get_lead_out_mode())
+        needs_radius = any(mode_needs_radius(mode) for mode in modes)
+        needs_length = any(mode_needs_length(mode) for mode in modes)
+        for widget, needed in ((self.ui.leadRadiusLabel, needs_radius),
+                               (self.ui.leadLengthLabel, needs_length)):
+            palette = QPalette(self.palette)
+            if not needed:
+                self._gray_palette(palette)
+            widget.setPalette(palette)
+
     def displayToolParametersForSelection(self, layers, shapes):
         """
         Show the parameters of the whole selection (single or multiple).
@@ -1711,6 +2274,64 @@ class TreeHandler(QWidget):
             self._set_parameter_widget(widget, state, value, standard)
             # keep the state used by the update slots / paint routines
             setattr(self, attribute, value if state == sps.SAME else None)
+
+        # The methods of the lead in, of the lead out and the overcut are
+        # settings of the shape (each contour has its own). The combobox shows
+        # the method which is really used (the value of the configuration file
+        # if the shape does not have its own value).
+        contours = self._lead_display_contours()
+        if contours:
+            self._update_lead_mode_combo(
+                self.ui.leadInComboBox,
+                [shape.get_lead_in_mode() for shape in contours],
+                lead_in=True)
+            self._update_lead_mode_combo(
+                self.ui.leadOutComboBox,
+                [shape.get_lead_out_mode() for shape in contours],
+                lead_in=False)
+            overcut_states, overcut_own = self._overcut_display_values()
+            self._update_overcut_combo(
+                self.ui.overcutComboBox, overcut_states)
+            self.ui.leadInComboBox.setEnabled(True)
+            self.ui.leadOutComboBox.setEnabled(True)
+            # The overcut is only possible for closed contours: the combobox
+            # is disabled (greyed) if the selection holds open contours only.
+            self.ui.overcutComboBox.setEnabled(
+                self._selection_has_closed_contour(self.display_tool_shapes,
+                                                   self.display_tool_layers))
+            # A value which is the standard of the configuration file is
+            # de-emphasized (it is not an own value of the shape). The 'radius'
+            # method of the lead in is not selectable any more: it is mapped
+            # to the 'startmove' method.
+            self._de_emphasize_standard(
+                self.ui.leadInComboBox,
+                [self._map_lead_in_mode(
+                     getattr(shape, 'lead_in_mode', LEAD_DEFAULT))
+                 for shape in contours], LEAD_DEFAULT)
+            self._de_emphasize_standard(
+                self.ui.leadOutComboBox,
+                [getattr(shape, 'lead_out_mode', LEAD_DEFAULT)
+                 for shape in contours], LEAD_DEFAULT)
+            self._de_emphasize_standard(
+                self.ui.overcutComboBox, overcut_own, OVERCUT_DEFAULT)
+        else:
+            self._update_lead_mode_combo(self.ui.leadInComboBox,
+                                         [LEAD_OFF], lead_in=True)
+            self._update_lead_mode_combo(self.ui.leadOutComboBox,
+                                         [LEAD_OFF], lead_in=False)
+            self._update_overcut_combo(self.ui.overcutComboBox,
+                                       [OVERCUT_OFF])
+            self.ui.leadInComboBox.setEnabled(False)
+            self.ui.leadOutComboBox.setEnabled(False)
+            self.ui.overcutComboBox.setEnabled(False)
+
+        # The parameters which are not needed by the selected methods are
+        # de-emphasized: their value is kept, but it is not used.
+        self._update_lead_parameter_relevance(contours)
+
+        # The tool values are always shown de-emphasized (they are changed
+        # only through the tool selection).
+        self._refresh_tool_values()
 
         self.updateBreaksPassWidget()
 

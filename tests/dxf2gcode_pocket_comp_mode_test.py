@@ -61,6 +61,7 @@ from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
 from dxf2gcode.core.stmove import StMove  # noqa: E402
+from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode_pocketmill_zigzag_test import _load_shapes  # noqa: E402
 from dxf2gcode_stmove_gcode_test import make_postpro, norm  # noqa: E402
 
@@ -182,6 +183,8 @@ def _build(mode, cut_cor, tool=2.0):
     layer.tool_diameter = tool
     layer.axis3_retract = 9.91
     layer.axis3_safe_margin = 3.05
+    # The test checks the compensated pocket toolpath, not the lead in.
+    layer.lead_in_mode = LEAD_OFF
     s.parentLayer = layer
     s.calc_bounding_box()
     g.config.vars.Cutter_Compensation["done_by_machine"] = False
@@ -369,6 +372,55 @@ class TestCompensationMenuGating(unittest.TestCase):
     def test_menu_enabled_for_pocket_in_selected_direction_mode(self):
         menu = self._menu_for([_StubShape(True)], "selected_direction")
         self.assertTrue(menu.compMenuAction.isEnabled())
+
+
+class TestDragKnifeMenuGating(unittest.TestCase):
+    """The drag knife does not support the pocket milling: the context menu
+    of a shape must not offer it."""
+
+    def setUp(self):
+        from dxf2gcode.Qt import QtWidgets
+        global _APP
+        _APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+        self._app = _APP
+        # the pocket mill is only offered if the compensation is done by
+        # dxf2gcode itself
+        self._done_by_machine = g.config.vars.Cutter_Compensation[
+            "done_by_machine"]
+        g.config.vars.Cutter_Compensation["done_by_machine"] = False
+        self._machine_type = g.config.machine_type
+
+    def tearDown(self):
+        g.config.vars.Cutter_Compensation["done_by_machine"] = \
+            self._done_by_machine
+        g.config.machine_type = self._machine_type
+
+    def _menu(self, shapes):
+        from dxf2gcode.gui import canvas as canvasmod
+        # avoid the modal menu popup
+        canvasmod.MyDropDownMenu.exec = lambda self, pos: None
+        return canvasmod.MyDropDownMenu(_StubScene(shapes), None, Point(0, 0))
+
+    def _action_texts(self, menu):
+        return [action.text() for action in menu.actions()]
+
+    def test_the_pocket_mill_is_not_offered_for_the_drag_knife(self):
+        g.config.machine_type = 'drag_knife'
+        menu = self._menu([_StubShape(False)])
+        self.assertNotIn("Pocket Mill", self._action_texts(menu))
+        self.assertFalse(hasattr(menu, "PocketAction"))
+
+    def test_the_pocket_mill_is_offered_for_the_milling_machine(self):
+        g.config.machine_type = 'milling'
+        menu = self._menu([_StubShape(False)])
+        self.assertIn("Pocket Mill", self._action_texts(menu))
+        self.assertTrue(hasattr(menu, "PocketAction"))
+
+    def test_the_pocket_mill_is_not_offered_for_the_lathe(self):
+        # The lathe is not supported by the pocket milling either.
+        g.config.machine_type = 'lathe'
+        menu = self._menu([_StubShape(False)])
+        self.assertIn("Pocket Mill", self._action_texts(menu))
 
 
 def tearDownModule():

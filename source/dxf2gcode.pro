@@ -19,6 +19,7 @@ SOURCES += \
     dxf2gcode/core/entitycontent.py \
     dxf2gcode/core/holegeo.py \
     dxf2gcode/core/layercontent.py \
+    dxf2gcode/core/leadmove.py \
     dxf2gcode/core/linegeo.py \
     dxf2gcode/core/pocketmill.py \
     dxf2gcode/core/pocketmove.py \

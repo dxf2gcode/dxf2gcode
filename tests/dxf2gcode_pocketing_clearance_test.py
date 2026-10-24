@@ -62,6 +62,7 @@ from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.core.pocketmill import PocketMill  # noqa: E402
 from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
 from dxf2gcode.core.stmove import StMove  # noqa: E402
+from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode.core.pocketmove import PocketMove  # noqa: E402
 from dxf2gcode_pocketmill_zigzag_test import _load_shapes  # noqa: E402
 
@@ -143,6 +144,8 @@ def _pocket(tool_dia, cut_cor, pct):
     layer = LayerContent(0, "top", [shape])
     layer.tool_diameter = tool_dia
     layer.start_radius = 0.0
+    # The test checks the compensated pocket toolpath, not the lead in.
+    layer.lead_in_mode = LEAD_OFF
     shape.parentLayer = layer
     shape.Pocket = True
     shape.cut_cor = cut_cor

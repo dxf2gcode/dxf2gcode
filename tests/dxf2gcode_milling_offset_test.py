@@ -64,6 +64,7 @@ from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.core.point import Point  # noqa: E402
 from dxf2gcode.core.layercontent import LayerContent, Layers, Shapes  # noqa: E402
 from dxf2gcode.core.stmove import StMove  # noqa: E402
+from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode.core.project import Project  # noqa: E402
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
@@ -122,6 +123,8 @@ class TestMillingOffsetGeometry(unittest.TestCase):
         shape = make_shape(square_geos(size), cut_cor=cut_cor, cw=cw,
                            tool_diameter=tool_diameter)
         shape.milling_offset = extra
+        # The test checks the compensated toolpath, not the lead in.
+        shape.parentLayer.lead_in_mode = LEAD_OFF
         build_stmove(shape)
         return stmove_bbox(shape.stmove)
 
@@ -174,6 +177,9 @@ class TestMillingOffsetGeometry(unittest.TestCase):
                              tool_diameter=2.0, nr=1)
         shape_a.milling_offset = 0.5
         shape_b.milling_offset = -0.3
+        # The test checks the compensated toolpath, not the lead in.
+        shape_a.parentLayer.lead_in_mode = LEAD_OFF
+        shape_b.parentLayer.lead_in_mode = LEAD_OFF
         build_stmove(shape_a)
         build_stmove(shape_b)
         self.assertEqual(stmove_bbox(shape_a.stmove),

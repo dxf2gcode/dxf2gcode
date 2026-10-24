@@ -206,15 +206,15 @@ class MyDropDownMenu(QMenu):
             
         #if all are closed and compensation is NOT done by machine,
         # since I do not know how this should work... /SZ
-        if allClosed == True and not g.config.vars.Cutter_Compensation["done_by_machine"]:            
+        # The drag knife does not support the pocket milling: the entry is
+        # not shown at all in the context menu.
+        if (g.config.machine_type != 'drag_knife' and
+                allClosed == True and
+                not g.config.vars.Cutter_Compensation["done_by_machine"]):
             self.PocketAction = self.addAction(self.tr("Pocket Mill"))
             self.PocketAction.setCheckable(True)
-            if g.config.machine_type == 'drag_knife':
-                pass
-            else:
-                self.PocketAction.triggered.connect(self.setPocket)
+            self.PocketAction.triggered.connect(self.setPocket)
             self._updateBoolActionState(self.PocketAction, "Pocket")
-                    
 
         #ONly allow it it's a closed shaep
         if (allClosed == True) and (allArcs == True):

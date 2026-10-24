@@ -78,6 +78,7 @@ from collections import OrderedDict
 from dxf2gcode.globals.helperfunctions import toInt, toFloat, str_encode, qstr_encode
 
 import dxf2gcode.globals.constants as c
+import dxf2gcode.globals.globals as g
 
 from dxf2gcode.Qt.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QVBoxLayout, QHBoxLayout, QLayout, QFrame, \
     QLabel, QLineEdit, QTextEdit, QCheckBox, QSpinBox, QDoubleSpinBox, QComboBox, QTableWidget, QTableWidgetItem, \
@@ -87,6 +88,7 @@ from dxf2gcode.Qt.QtCore import QLocale, QRegularExpression
 from dxf2gcode.Qt import QtCore
 
 from dxf2gcode.gui.popupdialog import PopUpDialog
+from dxf2gcode.core.leadmove import LEAD_OFF, validate_lead_move
 
 logger = logging.getLogger("Gui.ConfigWindow")
 
@@ -566,7 +568,7 @@ class ConfigWindow(QDialog):
             #If the received configspec is a dictionary, we most likely have a table, so we are going to exctract sections names of this table
 
                 #When tables are used, the "__many__" config entry is used for the definition of the configspec, so we try to excract the sections names by using this __many__ special keyword.
-                #Example: 'Tool_Parameters': {[...], '__many__': {'diameter': 'float(default = 3.0)', 'speed': 'float(default = 6000)', 'start_radius': 'float(default = 3.0)'}}
+                #Example: 'Tool_Parameters': {[...], '__many__': {'diameter': 'float(default = 3.0)', 'speed': 'float(default = 6000)', 'lead_radius': 'float(default = 4.5)', 'lead_length': 'float(default = 1.5)'}}
                 if '__many__' in configspec and isinstance(configspec['__many__'], dict):
                     string_list = configspec['__many__'].keys()
                     string_list.insert(0, '') #prepend an empty element since the first column of the table is the row name (eg a unique tool number)
@@ -1210,12 +1212,15 @@ class CfgComboBox(CfgBase):
     Subclassed QComboBox to match our needs.
     """
 
-    def __init__(self, text, items_list = None, default_item = None, parent = None):
+    def __init__(self, text, items_list = None, default_item = None, parent = None, item_labels = None):
         """
         Initialization of the CfgComboBox class (drop-down menu).
         @param text: text string associated with the combobox
         @param items_list: string list containing all the available options
         @param default_item: string containing the default selected item
+        @param item_labels: dictionary {value: label} with the labels of the
+               entries (the value is stored in the configuration file, the
+               label is only shown)
         """
         CfgBase.__init__(self, parent)
 
@@ -1223,6 +1228,8 @@ class CfgComboBox(CfgBase):
             self.setSpec({'string_list': items_list, 'comment': ''})
         if default_item is not None:
             self.setValue(default_item)
+
+        self.item_labels = item_labels if item_labels else {}
 
         self.label = QLabel(text, parent)
 
@@ -1242,7 +1249,10 @@ class CfgComboBox(CfgBase):
         """
         self.combobox.blockSignals(True) # Avoid unnecessary signal (we don't want the config window to emit any signal when filling the fields programatically)
         self.combobox.clear()
-        self.combobox.addItems(spec['string_list'])
+        for item in spec['string_list']:
+            # The label is only shown: the value is stored in the
+            # configuration file.
+            self.combobox.addItem(self.item_labels.get(item, item), item)
 
         if spec['comment']:
             self.setWhatsThis(spec['comment'])
@@ -1266,6 +1276,11 @@ class CfgComboBox(CfgBase):
         """
         @return: the string of the currently selected entry
         """
+        index = self.combobox.currentIndex()
+        value = self.combobox.itemData(index)
+        if value is not None:
+            # The entry has a label: the value is the data of the entry.
+            return value
         return self.combobox.currentText()
 
     def setValue(self, value):
@@ -1274,7 +1289,10 @@ class CfgComboBox(CfgBase):
         @param value: the text of the entry to select in the combobox
         """
         self.combobox.blockSignals(True) # Avoid unnecessary signal (we don't want the config window to emit any signal when filling the fields programatically)
-        self.combobox.setCurrentIndex(self.combobox.findText(value)) #Compatible with both PyQt4 and PyQt5
+        index = self.combobox.findData(value)
+        if index < 0:
+            index = self.combobox.findText(value) #Compatible with both PyQt4 and PyQt5
+        self.combobox.setCurrentIndex(index)
         self.combobox.blockSignals(False)
 
 
@@ -1631,9 +1649,30 @@ class CfgTableToolParameters(CfgTable):
         """
         self.tableChanged.emit()
 
+    def _column_value(self, row, name):
+        """
+        The value of a column of the tools table.
+        @param row: the row of the table
+        @param name: the name of the column
+        @return: the value or None if the column does not exist
+        """
+        try:
+            column = self.keys.index(name)
+        except ValueError:
+            return None
+        widget = self.tablewidget.cellWidget(row, column)
+        if widget is None:
+            return None
+        return widget.value()
+
     def validateValue(self):
         """
-        Check that the keys are unique and not empty
+        Check that the keys are unique and not empty and that the geometry of
+        the lead in / lead out of every tool is valid.
+
+        The geometry is checked with the same function as the calculation of
+        the toolpath (see core/leadmove.py), so that a value which is
+        accepted here is never rejected by the export.
         @return (result_bool, result_string):
          - result_bool: True if no errors were encountered, False otherwise
          - result_string: a string containing all the errors encountered during the validation
@@ -1664,6 +1703,36 @@ class CfgTableToolParameters(CfgTable):
         if not contains_tool_1:
             result_bool = False
             result_string += str(self.tr('\nThe table "{0}" must always contains tool number \'1\'\n')).format(self.label.text()) #Note: str() is needed for PyQt4
+
+        # The geometry of the lead in / lead out: the methods of the
+        # configuration file are used, they are the methods of all the layers
+        # which do not have their own value. Only the parameters which are
+        # really needed by these methods are checked.
+        try:
+            lead_in_mode = g.config.vars.Lead_In_Out['lead_in_mode']
+            lead_out_mode = g.config.vars.Lead_In_Out['lead_out_mode']
+        except (KeyError, AttributeError):
+            lead_in_mode = lead_out_mode = LEAD_OFF
+
+        for i in range(self.tablewidget.rowCount()):
+            tool = self.tablewidget.cellWidget(i, 0)
+            if tool is None:
+                continue
+            diameter = self._column_value(i, 'diameter')
+            radius = self._column_value(i, 'lead_radius')
+            length = self._column_value(i, 'lead_length')
+            ok, errors, warnings = validate_lead_move(diameter, radius, length,
+                                                       lead_in_mode,
+                                                       lead_out_mode)
+            for field, message in errors:
+                result_bool = False
+                result_string += str(self.tr(
+                    '\nTool {0}: the {1} is not valid: {2}\n')).format(
+                        tool.value(), field, message)
+            for field, message in warnings:
+                result_string += str(self.tr(
+                    '\nTool {0}: the {1} is at the limit: {2}\n')).format(
+                        tool.value(), field, message)
 
         return (result_bool, result_string)
 

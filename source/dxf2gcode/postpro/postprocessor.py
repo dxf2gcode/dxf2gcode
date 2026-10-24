@@ -86,7 +86,19 @@ class MyPostProcessor(object):
         @return: the translated unicode string if it was possible to translate
         """
         return str(QtCore.QCoreApplication.translate("MyPostProcessor",
-                                                           string_to_translate))
+                                                     string_to_translate))
+
+    def add_export_error(self, message):
+        """
+        Collect an error of the export. The errors are shown to the user at the
+        end of the export, so that a single message box is enough and the
+        export is not interrupted by a modal dialog for every single shape.
+        @param message: the error message
+        """
+        if message not in self.export_errors:
+            self.export_errors.append(message)
+        logger.error(message)
+
 
     def updatePostprocessorConfiguration(self, result):
         """
@@ -348,6 +360,9 @@ class MyPostProcessor(object):
         self.speed = 0
         self.tool_nr = 1
         self.comment = ""
+        # Errors of the export (e.g. an invalid lead in radius). They are
+        # collected and shown at the end of the export.
+        self.export_errors = []
 
         self.abs_export = self.vars.General["abs_export"]
 

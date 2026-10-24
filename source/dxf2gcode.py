@@ -454,6 +454,40 @@ class MainWindow(QMainWindow):
 
         self.unsetCursor()
 
+    def isToolpathError(self, message):
+        """
+        Check whether an error message belongs to the tool path (the lead in,
+        the lead out or the overcut).
+
+        @param message: the error message
+        @return: True if the error belongs to the tool path
+        """
+        lowered = str(message).lower()
+        return any(keyword in lowered for keyword in (
+            "tool path", "lead out", "lead in", "overcut", "lead-in", "lead-out"))
+
+    def showToolpathErrorMessages(self, errors):
+        """
+        Show the collected errors of the tool path (the lead in, the lead out
+        or the overcut) in one message box.
+
+        @param errors: the error messages
+        """
+        QMessageBox.critical(
+            self, self.tr("Ungültige Werkzeugweg-Einstellungen"),
+            "\n".join(str(error) for error in errors))
+
+    def showToolpathError(self, message):
+        """
+        Show an error of the tool path (the lead in, the lead out or the
+        overcut) in a message box.
+
+        @param message: the error message
+        """
+        if not message:
+            return
+        self.showToolpathErrorMessages([str(message)])
+
     def exportShapes(self, status=False, saveas=None):
         """
         This function is called by the menu "Export/Export Shapes". It may open
@@ -534,6 +568,19 @@ class MainWindow(QMainWindow):
                                         self.layerContents)
         #except Exception as e:
         #    logger.error(self.tr('Error exporting shapes: %s') % str (e))
+
+        # The errors of the export (e.g. an invalid lead in radius or an
+        # invalid lead out / overcut geometry) are collected during the
+        # export and shown at the end of it.
+        export_errors = getattr(self.MyPostProcessor, 'export_errors', []) or []
+        if export_errors:
+            toolpath_errors = [str(error) for error in export_errors
+                                if self.isToolpathError(str(error))]
+            if toolpath_errors:
+                self.showToolpathErrorMessages(toolpath_errors)
+            else:
+                QMessageBox.warning(self, self.tr("Export errors"),
+                                    "\n".join(export_errors))
 
         self.unsetCursor()
 

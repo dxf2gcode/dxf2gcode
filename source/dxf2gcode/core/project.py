@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 ############################################################################
 #
@@ -30,6 +30,7 @@ import re
 from dxf2gcode.core.point import Point
 from dxf2gcode.core.customgcode import CustomGCode
 from dxf2gcode.core.layercontent import Layers, Shapes
+from dxf2gcode.core.leadmove import LEAD_DEFAULT, OVERCUT_DEFAULT
 from dxf2gcode.globals.d2gexceptions import VersionMismatchError
 import dxf2gcode.globals.globals as g
 
@@ -163,14 +164,31 @@ class Project(object):
                                    'f_g1_plane': shape.f_g1_plane,
                                    'f_g1_depth': shape.f_g1_depth,
                                    'break_pass': getattr(shape, 'break_pass', -1),
+                                   'overcut_enabled': getattr(shape, 'overcut_enabled', OVERCUT_DEFAULT),
+                                   'overcut_enabled_overridden': getattr(shape, 'overcut_enabled_overridden', False),
+                                   'lead_in_mode': getattr(shape, 'lead_in_mode', LEAD_DEFAULT),
+                                   'lead_out_mode': getattr(shape, 'lead_out_mode', LEAD_DEFAULT),
+                                   'lead_in_mode_overridden': getattr(shape, 'lead_in_mode_overridden', False),
+                                   'lead_out_mode_overridden': getattr(shape, 'lead_out_mode_overridden', False),
                                    'start_x': stpoint.x,
                                    'start_y': stpoint.y})
             layers.append({'name': layer.name,
                            'tool_nr': layer.tool_nr,
                            'diameter': layer.tool_diameter,
                            'speed': layer.speed,
-                           'start_radius': layer.start_radius,
+                           'lead_radius': getattr(layer, 'lead_radius', 0.0),
+                           'lead_length': getattr(layer, 'lead_length', 0.0),
                            'milling_offset': getattr(layer, 'milling_offset', 0.0),
+                           'lead_in_mode': getattr(layer, 'lead_in_mode', 'default'),
+                           'lead_out_mode': getattr(layer, 'lead_out_mode', 'default'),
+                           'overcut_enabled': getattr(layer, 'overcut_enabled', OVERCUT_DEFAULT),
+                           'overcut_length': getattr(layer, 'overcut_length', 0.0),
+                           'lead_in_mode_overridden': getattr(layer, 'lead_in_mode_overridden', False),
+                           'lead_out_mode_overridden': getattr(layer, 'lead_out_mode_overridden', False),
+                           'lead_radius_overridden': getattr(layer, 'lead_radius_overridden', False),
+                           'lead_length_overridden': getattr(layer, 'lead_length_overridden', False),
+                           'overcut_length_overridden': getattr(layer, 'overcut_length_overridden', False),
+                           'overcut_enabled_overridden': getattr(layer, 'overcut_enabled_overridden', False),
                            'retract': layer.axis3_retract,
                            'safe_margin': layer.axis3_safe_margin,
                            'shapes': shapes})
@@ -241,10 +259,47 @@ d2g.layers = ''' + str(layers)
                 layer.tool_nr = parent_layer['tool_nr']
                 layer.tool_diameter = parent_layer['diameter']
                 layer.speed = parent_layer['speed']
-                layer.start_radius = parent_layer['start_radius']
                 # Older project files do not contain the additional offset;
                 # fall back to the neutral value (unchanged behaviour).
                 layer.milling_offset = parent_layer.get('milling_offset', 0.0)
+                # The radius and the length of the lead in / lead out are
+                # common to both directions and they are defined per tool.
+                # Older project files do not contain them: they fall back to
+                # the values of the tool of the layer.
+                tool = g.config.vars.Tool_Parameters[str(layer.tool_nr)]
+                if tool is None:
+                    tool = g.config.vars.Tool_Parameters['1']
+                default_radius = tool['lead_radius']
+                if default_radius is None:
+                    default_radius = 0.0
+                default_length = tool['lead_length']
+                if default_length is None:
+                    default_length = 0.0
+                layer.lead_radius = parent_layer.get('lead_radius',
+                                                     default_radius)
+                layer.lead_length = parent_layer.get('lead_length',
+                                                     default_length)
+                # The lead in / lead out / overcut settings were added later:
+                # older project files fall back to the global defaults (the
+                # layer uses the default method of the configuration file).
+                layer.lead_in_mode = parent_layer.get('lead_in_mode', 'default')
+                layer.lead_out_mode = parent_layer.get('lead_out_mode', 'default')
+                layer.overcut_enabled = parent_layer.get('overcut_enabled', OVERCUT_DEFAULT)
+                layer.overcut_length = parent_layer.get('overcut_length', 0.0)
+                # The values which were set by a layer name must not be
+                # overwritten by the global defaults.
+                layer.lead_in_mode_overridden = parent_layer.get(
+                    'lead_in_mode_overridden', False)
+                layer.lead_out_mode_overridden = parent_layer.get(
+                    'lead_out_mode_overridden', False)
+                layer.lead_radius_overridden = parent_layer.get(
+                    'lead_radius_overridden', False)
+                layer.lead_length_overridden = parent_layer.get(
+                    'lead_length_overridden', False)
+                layer.overcut_length_overridden = parent_layer.get(
+                    'overcut_length_overridden', False)
+                layer.overcut_enabled_overridden = parent_layer.get(
+                    'overcut_enabled_overridden', False)
 
                 layer.axis3_retract = parent_layer['retract']
                 layer.axis3_safe_margin = parent_layer['safe_margin']
@@ -290,6 +345,25 @@ d2g.layers = ''' + str(layers)
                         # Older project files do not contain break_pass;
                         # restore the default "last pass" (auto) in that case.
                         shape.break_pass = parent_shape.get('break_pass', -1)
+                        # The overcut is a setting of the shape. Older project
+                        # files stored it on the layer: a shape without an own
+                        # value follows the layer (which was loaded above).
+                        shape.overcut_enabled = parent_shape.get(
+                            'overcut_enabled', OVERCUT_DEFAULT)
+                        shape.overcut_enabled_overridden = parent_shape.get(
+                            'overcut_enabled_overridden', False)
+                        # The lead in / lead out methods are settings of the
+                        # shape too. Older project files stored them on the
+                        # layer: a shape without an own value follows the layer
+                        # (which was loaded above).
+                        shape.lead_in_mode = parent_shape.get(
+                            'lead_in_mode', LEAD_DEFAULT)
+                        shape.lead_out_mode = parent_shape.get(
+                            'lead_out_mode', LEAD_DEFAULT)
+                        shape.lead_in_mode_overridden = parent_shape.get(
+                            'lead_in_mode_overridden', False)
+                        shape.lead_out_mode_overridden = parent_shape.get(
+                            'lead_out_mode_overridden', False)
 
                         if parent_shape['cw'] != shape.cw:
                             shape.reverse()

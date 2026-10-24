@@ -37,6 +37,7 @@ from configobj import ConfigObj, flatten_errors
 from validate import Validator
 import dxf2gcode.globals.globals as g
 from dxf2gcode.globals.d2gexceptions import *
+from dxf2gcode.core.leadmove import lead_mode_labels
 from dxf2gcode.gui.configwindow import *
 
 import dxf2gcode.globals.constants as c
@@ -214,10 +215,69 @@ CONFIG_SPEC = str('''
     pocket_compensation_mode = option('always_inward', 'selected_direction', default = 'always_inward')
 
 
+    [Lead_In_Out]
+    # The default method of the lead in at the start of a contour. Every layer
+    # can use this default or its own method (see the "Lead in" / "Lead out"
+    # of the mill settings).
+    # - off     : no lead in at all (not possible with G41/G42: the machine
+    #             can only build the compensation with a movement in the XY
+    #             plane)
+    # - straight: the contour is extended backwards along its tangent, so the
+    #             tool enters the material tangentially (the common length is
+    #             used)
+    # - radius  : a quarter arc which is tangent to the contour (the common
+    #             radius is used). The movement which builds up the cutter
+    #             compensation is added automatically: with G41/G42 the
+    #             machine can only build the compensation with a movement in
+    #             the XY plane. It is not an additional lead in segment, its
+    #             length is derived from the tool radius.
+    # - startmove: the start move of the program is used: a straight line (the
+    #             common length) and a quarter arc (the common radius). This
+    #             is only done with G41/G42 - with the internal cutter
+    #             compensation and for the drag knife there is no lead in.
+    #
+    # The 'radius' method is not selectable for the lead in any more: with
+    # the internal cutter compensation (and with G40) it is the same as the
+    # 'startmove' method, so both are merged into the 'startmove'. The
+    # 'radius' method is only selectable for the lead out (where the build up
+    # movement is not needed).
+    lead_in_mode = option('startmove', 'off', 'straight', default = 'startmove')
+    # The default method of the lead out at the end of a contour. It is
+    # independent of the lead in.
+    # - off     : no lead out (previous behaviour)
+    # - straight: the cut is continued along the tangent of the contour (the
+    #             common length is used)
+    # - radius  : a quarter arc which leaves the contour tangentially (the
+    #             common radius is used). The cutter compensation is already
+    #             active here, so no build up movement is needed.
+    # - startmove: the cut is continued along the tangent of the contour (the
+    #             common length) and it leaves the contour with a quarter arc
+    #             (the common radius)
+    lead_out_mode = option('off', 'straight', 'radius', 'startmove', default = 'off')
+    # The overcut continues the cut along the existing contour beyond the
+    # closing point of a closed contour. It is independent of the lead in and
+    # the lead out and only possible for closed contours.
+    #
+    # This is the standard: every shape uses it, unless the shape has its own
+    # overcut setting (the "Overcut" of the mill settings, see the tree of
+    # the shapes). A change of the standard is therefore applied to all the
+    # shapes which use it, but not to the shapes which have their own setting.
+    # The length of the overcut is defined per tool (see the tools table).
+    overcut_enabled = boolean(default = False)
+
+
     [Drag_Knife_Options]
     # drag_angle: if angle of movement exceeds this angle (in degrees), the tool retracts to dragDepth (The dragDepth is given by axis3_slice_depth parameter).
     # This parameter depends on the knife that you are using. A bigger knife cannot make small corners like a smaller knife. You will simply break your knife or destroy your working piece. Now, if the angle your knife has to make is bigger than this angle it will move to a different depth (a less deep position) such that the knife will experience less resistance but still has some (otherwise it will not change its angle at all, whence DRAG knife).
     drag_angle = float(min = 0, max = 360, default = 20)
+    # The direction the knife points to when the cut starts (in degrees,
+    # 0 = positive X axis). The knife is swung to the direction of the first
+    # contour segment before the first cut.
+    drag_start_angle = float(min = -360, max = 360, default = 0)
+    # The length of the ramp in: the knife is plunged gradually over this
+    # length (measured along the tip path). 0 = the knife is plunged at once
+    # (previous behaviour).
+    ramp_in_length = float(min = 0, default = 0.0)
 
     [Route_Optimisation]
     # If enabled, it will by default check the TSP for all the shapes in the treeview.
@@ -287,12 +347,44 @@ CONFIG_SPEC = str('''
     start_radius_identifiers = list(default = list('StartRadius', 'Sr'))
     # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
     milling_offset_identifiers = list(default = list('MillingOffset', 'Mo'))
+    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # The mode of the lead in: 0 = start move, 1 = off, 2 = straight, 3 = radius,
+    # 4 = the default of the configuration file
+    lead_in_mode_identifiers = list(default = list('LeadInMode', 'Lim'))
+    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # The mode of the lead out: 0 = off, 1 = straight, 2 = radius, 3 = start
+    # move, 4 = the default of the configuration file
+    lead_out_mode_identifiers = list(default = list('LeadOutMode', 'Lom'))
+    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # The common radius at the workpiece of the lead in and of the lead out
+    lead_radius_identifiers = list(default = list('LeadRadius', 'Lr'))
+    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # The common length of the straight lead in and of the straight lead out
+    lead_length_identifiers = list(default = list('LeadLength', 'Ll'))
+    # The length of the overcut (0 = no overcut)
+    overcut_length_identifiers = list(default = list('OvercutLength', 'Ol'))
+
 
     # Tools table: define here the tools used for milling:
     # - name: this is the number of the tool, it will be used directly in the GCODE (eg 20 for tool T20)
     # - diameter: diameter of the tool
     # - speed: spindle speed in rpm
-    # - start_radius: start radius for tool compensation when using G41 / G42 moves
+    # - start_radius: DEPRECATED, use the lead radius of the tools table
+    #   instead. It is the radius of the tool center path of the start move,
+    #   not the radius which is milled at the workpiece.
+    # - lead_radius: the common radius AT THE WORKPIECE of the lead in and of
+    #   the lead out (this is not the radius of the tool center path!). It
+    #   has to be greater than the radius of the tool: a smaller radius can
+    #   not be milled, the geometry is then not calculated and the shape is
+    #   not exported. It is only used by the methods which contain an arc
+    #   ('radius' and 'startmove').
+    # - lead_length: the common length of the straight lead in and of the
+    #   straight lead out. It is measured along the contour direction and it
+    #   is only used by the methods which contain a straight line ('straight'
+    #   and 'startmove').
+    # - overcut_length: the length of the overcut of this tool, measured along
+    #   the contour. It is only used if the overcut is active (see the
+    #   [Lead_In_Out] section and the "Overcut" of the mill settings).
     # - milling_offset: additional offset (finishing allowance) added to the tool
     #   radius of the software cutter compensation; 0 = unchanged behaviour.
     #   It is only used as the default value for the individual outline offset
@@ -301,26 +393,34 @@ CONFIG_SPEC = str('''
     [[1]]
     diameter = float(default = 2.0)
     speed = float(default = 6000)
-    start_radius = float(default = 0.2)
+    lead_radius = float(default = 1.2)
+    lead_length = float(default = 1.0)
     milling_offset = float(default = 0.0)
+    overcut_length = float(min = 0, default = 0.0)
 
     [[2]]
     diameter = float(default = 2.0)
     speed = float(default = 6000.0)
-    start_radius = float(default = 1.0)
+    lead_radius = float(default = 2.0)
+    lead_length = float(default = 1.0)
     milling_offset = float(default = 0.0)
+    overcut_length = float(min = 0, default = 0.0)
 
     [[10]]
     diameter = float(default = 10.0)
     speed = float(default = 6000.0)
-    start_radius = float(default = 2.0)
+    lead_radius = float(default = 7.0)
+    lead_length = float(default = 5.0)
     milling_offset = float(default = 0.0)
+    overcut_length = float(min = 0, default = 0.0)
 
     [[__many__]]
     diameter = float(default = 3.0)
     speed = float(default = 6000)
-    start_radius = float(default = 3.0)
+    lead_radius = float(default = 4.5)
+    lead_length = float(default = 1.5)
     milling_offset = float(default = 0.0)
+    overcut_length = float(min = 0, default = 0.0)
 
     # Define here custom GCODE actions:
     # - name: this is the unique name of the action
@@ -449,7 +549,10 @@ class MyConfig(object):
             self.var_dict['Feed_Rates'][key] = float(self.var_dict['Feed_Rates'][key]) * scale
         for tool in self.var_dict['Tool_Parameters']:
             self.var_dict['Tool_Parameters'][tool]['diameter'] = float(self.var_dict['Tool_Parameters'][tool]['diameter']) * scale
-            self.var_dict['Tool_Parameters'][tool]['start_radius'] = float(self.var_dict['Tool_Parameters'][tool]['start_radius']) * scale
+            if 'lead_radius' in self.var_dict['Tool_Parameters'][tool]:
+                self.var_dict['Tool_Parameters'][tool]['lead_radius'] = float(self.var_dict['Tool_Parameters'][tool]['lead_radius']) * scale
+            if 'lead_length' in self.var_dict['Tool_Parameters'][tool]:
+                self.var_dict['Tool_Parameters'][tool]['lead_length'] = float(self.var_dict['Tool_Parameters'][tool]['lead_length']) * scale
             self.var_dict['Tool_Parameters'][tool]['milling_offset'] = float(self.var_dict['Tool_Parameters'][tool]['milling_offset']) * scale
 
     def make_settings_folder(self):
@@ -468,9 +571,25 @@ class MyConfig(object):
             try:
                 # file exists, read & validate it
                 self.var_dict = ConfigObj(self.filename, configspec=CONFIG_SPEC)
+                # Migration of the lead in mode: the mode 'default' (which
+                # depended on the cutter compensation method) is now called
+                # 'startmove' (the G41/G42 start move of the program).
+                lead_in_mode = self.var_dict.get('Lead_In_Out', {}).get(
+                    'lead_in_mode', None)
+                if lead_in_mode == 'default':
+                    self.var_dict['Lead_In_Out']['lead_in_mode'] = 'startmove'
+                # Migration of the lead in / lead out: the radius and the
+                # length are now common to both directions and they are
+                # defined per tool (see the tools table). The old options of
+                # the [Lead_In_Out] section are removed.
+                self._migrate_lead_in_out()
                 _vdt = Validator()
                 result = self.var_dict.validate(_vdt, preserve_errors=True)
                 validate_errors = flatten_errors(self.var_dict, result)
+                # The migration of the start radius of the tools needs the
+                # diameter of the tools, which is only known after the
+                # validation.
+                self._migrate_tool_lead_parameters()
 
                 if validate_errors:
                     logger.error(self.tr("errors reading %s:") % self.filename)
@@ -534,6 +653,102 @@ class MyConfig(object):
             logger.debug(self.tr("created default varspace '%s'") % self.filename)
 
         self.var_dict.main.interpolation = False  # avoid ConfigObj getting too clever
+
+    def _migrate_lead_in_out(self):
+        """
+        Migration of the configuration files of the previous versions.
+
+        The radius and the length of the lead in and of the lead out are now
+        common to both directions and they are defined per tool (in the tools
+        table). The old 'start_radius' of a tool was the radius of the tool
+        center path of the start move: the new 'lead_radius' is the radius at
+        the workpiece, so the radius of the tool has to be added to it (the
+        geometry of the start move is not changed by this migration). The new
+        'lead_length' is the length of the straight lead in / lead out: it
+        was the radius of the tool before.
+
+        The old options of the [Lead_In_Out] section are removed: their values
+        are not lost, they are replaced by the values of the tools table.
+
+        The conversion of the start radius needs the diameter of the tool,
+        which is only known after the validation of the configuration file
+        (the diameter may be missing in the file). It is therefore done in two
+        steps: the old values are removed here (the validation would reject
+        them) and they are converted in _migrate_tool_lead_parameters().
+        """
+        lead_in_out = self.var_dict.get('Lead_In_Out', None)
+        if lead_in_out is not None:
+            for obsolete in ('lead_in_radius', 'lead_out_radius'):
+                if obsolete in lead_in_out:
+                    del lead_in_out[obsolete]
+            # The length of the overcut is now defined per tool (see the
+            # tools table). The global value is moved to the tools which do
+            # not have their own value yet (see
+            # _migrate_tool_lead_parameters()).
+            if 'overcut_length' in lead_in_out:
+                try:
+                    self._migrated_overcut_length = float(
+                        lead_in_out['overcut_length'])
+                except (TypeError, ValueError):
+                    self._migrated_overcut_length = 0.0
+                del lead_in_out['overcut_length']
+
+        self._migrated_start_radii = {}
+        self._tools_without_overcut_length = []
+        for tool, values in self.var_dict.get('Tool_Parameters', {}).items():
+            if not isinstance(values, dict):
+                continue
+            if 'start_radius' in values:
+                try:
+                    self._migrated_start_radii[tool] = float(
+                        values['start_radius'])
+                except (TypeError, ValueError):
+                    self._migrated_start_radii[tool] = 0.0
+                del values['start_radius']
+            if 'overcut_length' not in values:
+                # The length of the overcut is new for the tools table: the
+                # value of the configuration file is used (see
+                # _migrate_tool_lead_parameters()).
+                self._tools_without_overcut_length.append(tool)
+
+    def _migrate_tool_lead_parameters(self):
+        """
+        The second step of the migration of the tools table (see
+        _migrate_lead_in_out): the old start radius of a tool is converted
+        into the common radius at the workpiece and the common length of the
+        straight lead in / lead out. The length of the overcut of the
+        configuration file is moved to the tools which do not have their own
+        value.
+
+        It is called after the validation of the configuration file, so that
+        the diameter of the tool is known.
+        """
+        for tool, start_radius in getattr(self, '_migrated_start_radii',
+                                          {}).items():
+            values = self.var_dict.get('Tool_Parameters', {}).get(tool, None)
+            if not isinstance(values, dict):
+                continue
+            try:
+                diameter = float(values.get('diameter', 0.0))
+            except (TypeError, ValueError):
+                diameter = 0.0
+            # The radius at the workpiece of the start move
+            values['lead_radius'] = start_radius + diameter / 2.0
+            # The length of the straight lead in / lead out: it was the
+            # radius of the tool before.
+            values['lead_length'] = diameter / 2.0
+
+        # The length of the overcut was a global value: every tool which does
+        # not have its own value takes it over (the behaviour does not
+        # change).
+        overcut_length = getattr(self, '_migrated_overcut_length', None)
+        if overcut_length is not None:
+            for tool in getattr(self, '_tools_without_overcut_length', []):
+                values = self.var_dict.get('Tool_Parameters', {}).get(tool,
+                                                                     None)
+                if not isinstance(values, dict):
+                    continue
+                values['overcut_length'] = overcut_length
 
     def create_default_config(self):
         # check for existing setting folder or create one
@@ -650,12 +865,21 @@ class MyConfig(object):
             ('Drag_Knife_Options', OrderedDict([
                 ('__section_title__', self.tr("Output settings")),
                 ('__subtitle__', CfgSubtitle(self.tr("Drag Knife options"))),
-                ('drag_angle', CfgDoubleSpinBox(self.tr('Retract to drag depth ("Third axis slice depth") if angle exceeds:'), u'°'))#u for unicode
+                ('drag_angle', CfgDoubleSpinBox(self.tr('Retract to drag depth ("Third axis slice depth") if angle exceeds:'), u'°')),#u for unicode
+                ('drag_start_angle', CfgDoubleSpinBox(self.tr('Direction the knife points to when the cut starts (0 = positive X axis):'), u'°')),
+                ('ramp_in_length', CfgDoubleSpinBox(self.tr('Ramp in length (the knife is plunged gradually over this length):'), '', None, None, 3))
+            ])),
+            ('Lead_In_Out', OrderedDict([
+                ('__section_title__', self.tr("Output settings")),
+                ('__subtitle__', CfgSubtitle(self.tr("Lead in / lead out"))),
+                ('lead_in_mode', CfgComboBox(self.tr('Default lead in at the start of the contour:'), item_labels=lead_mode_labels())),
+                ('lead_out_mode', CfgComboBox(self.tr('Default lead out at the end of the contour:'), item_labels=lead_mode_labels())),
+                ('overcut_enabled', CfgCheckBox(self.tr('Overcut: continue the cut along the contour beyond the closing point (closed contours only) - the length is defined per tool in the tools table')))
             ])),
             ('Route_Optimisation', OrderedDict([
                 ('__section_title__', self.tr("Output settings")),
-                ('default_TSP', CfgCheckBox(self.tr("By default enable the TSP optimization for ordering shapes (TSP = Travelling Salesman Problem)"))),
                 ('__subtitle__', CfgSubtitle(self.tr("TSP optimizer"))),
+                ('default_TSP', CfgCheckBox(self.tr("By default enable the TSP optimization for ordering shapes (TSP = Travelling Salesman Problem)"))),
                 ('TSP_shape_order', CfgComboBox(self.tr('Optimizer behaviour:'))),
                 ('mutation_rate', CfgDoubleSpinBox(self.tr('Mutation rate:'))),
                 ('max_population', CfgSpinBox(self.tr('Max population:'))),
@@ -683,8 +907,13 @@ class MyConfig(object):
                 ('tool_nr_identifiers', CfgListEdit(self.tr('Tool number:'), ',')),
                 ('tool_diameter_identifiers', CfgListEdit(self.tr('Tool diameter:'), ',')),
                 ('spindle_speed_identifiers', CfgListEdit(self.tr('Spindle speed:'), ',')),
-                ('start_radius_identifiers', CfgListEdit(self.tr('Start radius (cutter compensation):'), ',')),
-                ('milling_offset_identifiers', CfgListEdit(self.tr('Additional offset (finishing allowance):'), ','))
+                ('start_radius_identifiers', CfgListEdit(self.tr('Start radius (cutter compensation, deprecated - use the lead radius instead):'), ',')),
+                ('milling_offset_identifiers', CfgListEdit(self.tr('Additional offset (finishing allowance):'), ',')),
+                ('lead_in_mode_identifiers', CfgListEdit(self.tr('Lead in mode (0 = start move, 1 = off, 2 = straight, 3 = radius, 4 = configuration default):'), ',')),
+                ('lead_out_mode_identifiers', CfgListEdit(self.tr('Lead out mode (0 = off, 1 = straight, 2 = radius, 3 = start move, 4 = configuration default):'), ',')),
+                ('lead_radius_identifiers', CfgListEdit(self.tr('Common lead in / lead out radius at the workpiece:'), ',')),
+                ('lead_length_identifiers', CfgListEdit(self.tr('Common lead in / lead out length of the straight part:'), ',')),
+                ('overcut_length_identifiers', CfgListEdit(self.tr('Overcut length:'), ','))
             ])),
             ('Tool_Parameters', CfgTableToolParameters(self.tr('Define the tools here:'))),
             ('Custom_Actions', CfgTableCustomActions(self.tr('Define here custom GCODE that can be inserted anywhere in the program:'))),
@@ -721,8 +950,10 @@ class MyConfig(object):
                 self.vars.Feed_Rates[key] *= scale
             for tool in self.vars.Tool_Parameters:
                 self.vars.Tool_Parameters[tool]['diameter'] *= scale
-                self.vars.Tool_Parameters[tool]['start_radius'] *= scale
+                self.vars.Tool_Parameters[tool]['lead_radius'] *= scale
+                self.vars.Tool_Parameters[tool]['lead_length'] *= scale
                 self.vars.Tool_Parameters[tool]['milling_offset'] *= scale
+                self.vars.Tool_Parameters[tool]['overcut_length'] *= scale
         self.tool_units_metric = self.metric
 
 

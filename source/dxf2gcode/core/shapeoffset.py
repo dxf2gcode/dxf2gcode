@@ -27,7 +27,7 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from math import pi, sqrt, sin, cos
+from math import atan2, pi, sqrt, sin, cos
 from copy import deepcopy
 import logging
 
@@ -101,27 +101,73 @@ class offShapeClass(Shape):
 
         self.make_segment_types()
 
-        nextConvexPoint = [
-            e for e in self.segments if isinstance(e, ConvexPoint)]
+        # Each convex vertex is resolved exactly once. The pairwise walk (or
+        # the local miter fallback) must remove the vertex placeholder; if a
+        # vertex can not be resolved safely the whole offset is REJECTED
+        # instead of returning an invalid (gouging) toolpath.
         self.counter = 0
+        n_segments = len(self.segments)
+        resolved_guard = 0
 
-        while len(nextConvexPoint):  # [self.convex_vertex[-1]]:
-            convex_vertex_nr = self.segments.index(nextConvexPoint[0])
+        while True:
+            cv_index = None
+            for i, e in enumerate(self.segments):
+                if isinstance(e, ConvexPoint):
+                    cv_index = i
+                    break
+            if cv_index is None:
+                break
+
+            # Safety: every pass either removes segments (LIR / local miter)
+            # or rejects the offset, so the loop is bounded.
+            resolved_guard += 1
+            if resolved_guard > 2 * n_segments + 4:
+                self._reject_offset("walk_overflow")
+                return
+
+            # The pairwise walk has to start and end on a real edge. The
+            # segments right before/after a convex vertex can be further
+            # vertex placeholders (ConvexPoint/OffPoint without a Ps
+            # attribute) when several arcs collapse. Skip all of them. For an
+            # open contour the search must NOT wrap around the ends.
+            forward_start = self._next_edge_index(cv_index + 1, 1)
+            backward_start = self._next_edge_index(cv_index - 1, -1)
+            if (forward_start is None or backward_start is None or
+                    forward_start == backward_start):
+                # A vertex at/near the open end (or a degenerate contour) has
+                # no edge to be mitred against - not resolvable.
+                self._reject_offset("vertex_not_resolvable")
+                return
 
             try:
-                forward, backward = self.PairWiseInterferenceDetection(
-                    convex_vertex_nr + 1, convex_vertex_nr - 1)
+                result = self.PairWiseInterferenceDetection(
+                    forward_start, backward_start)
             except Exception:
-                self.offset_status = "exception"
+                self._reject_offset("exception")
                 logger.exception("Not able to finish cutter compensation "
                                  "without error - Skipping it")
                 return
 
+            forward = backward = None
+            if isinstance(result, tuple) and len(result) == 2:
+                forward, backward = result
+
             if forward is None:
-                # The pairwise walk did not reach a partial/partial status
-                # within its safety limit (counter overflow).
-                self.offset_status = "walk_overflow"
-                return
+                # The cyclic pairwise walk did not resolve this vertex.
+                if self.closed:
+                    # For a closed contour the cyclic walk is the defined
+                    # algorithm; keep its previous handling (counter overflow
+                    # / no partial-partial found).
+                    self._reject_offset("walk_overflow")
+                    return
+                # Open contour: the walk reached a free end. Resolve the
+                # vertex locally: miter the raw offsets of the two
+                # neighbouring edges and remove every placeholder in between.
+                if not self._resolve_vertex_locally(cv_index, forward_start,
+                                                    backward_start):
+                    self._reject_offset("vertex_not_resolvable")
+                    return
+                continue
 
             if (backward == 0 and
                     forward == (len(self.segments) - 1) and
@@ -148,8 +194,7 @@ class offShapeClass(Shape):
                              (fw_rawoff_seg, bw_rawoff_seg))
 
                 logger.warning("No intersection found?!")
-                self.offset_status = "no_intersection"
-                self.segments = Geos()
+                self._reject_offset("no_intersection")
                 return
 
             if isinstance(iPoint, list):
@@ -165,11 +210,6 @@ class offShapeClass(Shape):
 
             # Remove the LIR from the PS Curce
             self.remove_LIR(forward, backward, iPoint)
-            nextConvexPoint = [
-                e for e in self.segments if isinstance(e, ConvexPoint)]
-            # logger.debug(nextConvexPoint)
-            # nextConvexPoint=[]
-            # logger.debug(nextConvexPoint)
 
         for seg in self.segments:
             self.rawoff += [self.make_rawoff_seg(seg)]
@@ -197,6 +237,22 @@ class offShapeClass(Shape):
         # caller connects the loops with rapid moves.
         self.split_into_loops()
 
+        # Geometric self check: a raw offset arc of a collapsed vertex (which
+        # would gouge) or any other dropout must never be returned as a valid
+        # toolpath - reject the contour instead.
+        #
+        # It is applied to OPEN contours only. The cyclic GIR handling of
+        # closed contours is deliberately left unchanged (out of scope here);
+        # all closed contours keep their previous behaviour.
+        if self.rawoff and not self.closed:
+            ok, reason = self._validate_offset()
+            if not ok:
+                logger.warning("Cutter compensation: the calculated offset is "
+                               "not a valid toolpath (%s) - the shape will "
+                               "NOT be milled" % reason)
+                self._reject_offset("invalid_geometry")
+                return
+
         # Final classification: a non-empty raw offset is a valid result.
         # An empty result keeps whatever cause was recorded above; a truly
         # unknown empty result is never silently treated as "vanished".
@@ -204,6 +260,203 @@ class offShapeClass(Shape):
             self.offset_status = "ok"
         elif self.offset_status == "pending":
             self.offset_status = "unknown"
+
+    def _reject_offset(self, status):
+        """
+        Reject the offset: no valid toolpath could be calculated. Nothing is
+        milled (the caller sees an empty rawoff) and a controlled status is
+        kept for the caller and the log - an invalid toolpath is never
+        returned as a valid result.
+        @param status: the reason ("vertex_not_resolvable", "no_intersection",
+                "exception", "walk_overflow", "invalid_geometry")
+        """
+        self.offset_status = status
+        self.segments = Geos()
+        self.rawoff = []
+        self.loops = []
+
+    def _next_edge_index(self, start, step):
+        """
+        The index of the first real edge (a segment with a Ps attribute)
+        starting at `start` and searching in direction `step`. Vertex
+        placeholders (ConvexPoint/OffPoint) are skipped.
+
+        A closed contour wraps around once; an open contour does NOT wrap, so
+        None is returned when an end is reached.
+        @return: the index or None
+        """
+        n = len(self.segments)
+        if n == 0:
+            return None
+        i = start
+        for _ in range(n):
+            if self.closed:
+                i %= n
+            elif i < 0 or i >= n:
+                return None
+            if hasattr(self.segments[i], 'Ps'):
+                return i
+            i += step
+        return None
+
+    def _resolve_vertex_locally(self, cv_index, forward, backward):
+        """
+        Local miter for a convex vertex whose cyclic pairwise walk did not
+        resolve it (for an open contour the walk stops at a free end). The raw
+        offsets of the two neighbouring edges are trimmed at their
+        intersection and every placeholder between them is removed - the same
+        operation remove_LIR() does, but without the cyclic walk.
+        @return: True on success, False if the two offsets do not intersect
+                (the offset can then not be calculated safely)
+        """
+        fw_rawoff = self.make_rawoff_seg(self.segments[forward])
+        bw_rawoff = self.make_rawoff_seg(self.segments[backward])
+        iPoint = fw_rawoff.find_inter_point(bw_rawoff, typ="TIP")
+        if iPoint is None:
+            return False
+        if isinstance(iPoint, list):
+            if not iPoint:
+                return False
+            vertex = self.segments[cv_index]
+            vp = Point(vertex.x, vertex.y)
+            iPoint = min(iPoint, key=lambda q: vp.distance(Point(q.x, q.y)))
+        self.remove_LIR(forward, backward, iPoint)
+        return True
+
+    def _dist_point_geo(self, p, geo):
+        """
+        The shortest distance between a point and a geometry (line segment or
+        arc). Exact for the geometry types used here.
+        """
+        if isinstance(geo, ArcGeo):
+            if geo.PointAng_withinArc(p):
+                return abs(p.distance(geo.O) - geo.r)
+            return min(p.distance(geo.Ps), p.distance(geo.Pe))
+        if isinstance(geo, LineGeo):
+            return geo.distance_l_p(p)
+        return min(p.distance(geo.Ps), p.distance(geo.Pe))
+
+    def _min_distance_to_contour(self, p):
+        best = 1e18
+        for geo in self.geos:
+            d = self._dist_point_geo(p, geo)
+            if d < best:
+                best = d
+        return best
+
+    def _nearest_source(self, p):
+        """
+        The source geometry nearest to `p` and the distance to it.
+        @return: (distance, geo)
+        """
+        best_d, best_geo = 1e18, None
+        for geo in self.geos:
+            d = self._dist_point_geo(p, geo)
+            if d < best_d:
+                best_d, best_geo = d, geo
+        return best_d, best_geo
+
+    def _point_on_correct_side(self, p, geo, target):
+        """
+        Whether an offset point lies on the side of the source geometry that
+        the offset direction (offtype) requires.
+
+        The offset geometry is built with the source normal scaled by the
+        offset sign (see make_rawoff_seg), so a valid offset point must lie on
+        that side. The test is deliberately conservative: near the endpoints
+        of a geometry (a round join / miter) and whenever the closest point is
+        ambiguous it returns True (no rejection). Only a point which is
+        CLEARLY on the opposite side of an interior part of a geometry is
+        rejected, so legitimate joins and tangential touches cause no false
+        alarm. The margin is half the tool radius.
+        @return: True (keep) or False (definitely on the wrong side)
+        """
+        offset_used = -1.0 if self.offtype == "out" else 1.0
+        margin = 0.5 * target
+        if isinstance(geo, LineGeo):
+            dd = geo.Pe - geo.Ps
+            length2 = dd.dotProd(dd)
+            if length2 <= 0.0:
+                return True
+            t = (p - geo.Ps).dotProd(dd)
+            if t <= 0.05 * length2 or t >= 0.95 * length2:
+                return True
+            n = geo.Ps.get_normal_vector(geo.Pe)
+            return (p - geo.Ps).dotProd(n) * offset_used > -margin
+        if isinstance(geo, ArcGeo):
+            if not geo.PointAng_withinArc(p):
+                return True
+            q = geo.O.get_arc_point(
+                atan2(p.y - geo.O.y, p.x - geo.O.x), geo.r)
+            if q.distance(geo.Ps) < 0.05 * target or \
+                    q.distance(geo.Pe) < 0.05 * target:
+                return True
+            n = geo.O.unit_vector(q, r=1)
+            if geo.ext < 0:
+                n = n * -1.0
+            return (p - q).dotProd(n) * offset_used > -margin
+        return True
+
+    def _sample_offset_point(self, geo, t):
+        if isinstance(geo, ArcGeo):
+            return geo.O.get_arc_point(geo.s_ang + geo.ext * t, geo.r)
+        if isinstance(geo, LineGeo):
+            return Point(geo.Ps.x + (geo.Pe.x - geo.Ps.x) * t,
+                         geo.Ps.y + (geo.Pe.y - geo.Ps.y) * t)
+        return geo.Ps
+
+    def _validate_offset(self, segments_per_geo=8):
+        """
+        Geometric self check of the calculated offset (the ACTUAL toolpath,
+        i.e. the loops, not the intermediate raw offset). Every point of every
+        loop must keep the tool distance to the source contour: a miter or
+        round join point lies on the offset curves, while the raw offset arc
+        of a collapsed convex vertex (radius = offset around the source arc
+        center with radius r < offset) is closer to the source and is NOT a
+        valid toolpath.
+        @return: (ok, reason)
+        """
+        if not self.rawoff and not self.loops:
+            return True, ""
+        target = abs(self.offset)
+        # A gouge between the toolpath and the source contour is a region where
+        # the distance drops below the tool radius; its extent scales with
+        # sqrt(tool radius * deviation). With a tolerance of 1 % of the tool
+        # radius such a region is at least ~0.28 * radius long, so a sampling
+        # spacing of 0.1 * radius guarantees that a deviation above the
+        # tolerance is hit by at least one sample (the previous fixed 9
+        # samples per geometry missed a real ~0.93 mm long gouge on a
+        # 10.9 mm long segment).
+        tol = max(1e-4, target * 1e-2)
+        min_spacing = 0.1 * target
+        for loop in self.loops:
+            # Continuity within the loop (the chains are cut at the gaps, but
+            # a wrong join would produce a jump across the material).
+            for k in range(len(loop) - 1):
+                if loop[k].Pe.distance(loop[k + 1].Ps) > eps * 10:
+                    return False, "the toolpath is not continuous"
+            # Non-adjacent self intersections (a valid offset does not cross
+            # itself).
+            if self._find_crossings(loop):
+                return False, "the toolpath intersects itself"
+            # Tool distance to the source contour and the correct side (the
+            # offset must not lie on the opposite side of the contour).
+            for geo in loop:
+                n = segments_per_geo
+                length = getattr(geo, "length", 0.0) or 0.0
+                if length > 0.0 and min_spacing > 0.0:
+                    n = max(n, min(int(length / min_spacing) + 1, 500))
+                for k in range(n + 1):
+                    p = self._sample_offset_point(geo, k / float(n))
+                    d, src_geo = self._nearest_source(p)
+                    if abs(d - target) > tol:
+                        return False, ("offset point is %.4f mm from the "
+                                       "contour (expected %.4f mm)"
+                                       % (d, target))
+                    if not self._point_on_correct_side(p, src_geo, target):
+                        return False, ("offset point lies on the wrong side "
+                                       "of the contour")
+        return True, ""
 
     def __repr__(self):
         """
@@ -370,7 +623,15 @@ class offShapeClass(Shape):
 
             # Add the linear segment which is a line connecting 2 vertices
             else:
-                self.segments += [ConvexPoint(geo1.Pe.x, geo1.Pe.y), geo2]
+                # A convex vertex (the linear segment of the paper). Its raw
+                # offset is the round join around the vertex; it needs the
+                # normals of the two incident edges (like the reflex point and
+                # the collapsed arc above), otherwise make_rawoff_seg would
+                # fail. The LIR removal mitres it later where required.
+                convexPe = ConvexPoint(geo1.Pe.x, geo1.Pe.y)
+                convexPe.start_normal = geo1.end_normal
+                convexPe.end_normal = geo2.start_normal
+                self.segments += [convexPe, geo2]
             
     def make_rawoff_seg(self, seg):
         """
@@ -586,6 +847,11 @@ class offShapeClass(Shape):
             self.counter += 1
 
             if forward >= len(self.segments):
+                if not self.closed:
+                    # An open contour is not cyclic: the walk must not wrap
+                    # around. Reaching the open end means no interference was
+                    # found - the caller keeps the raw offset of the vertex.
+                    return None, None
                 forward = 0
 
             segment1 = self.segments[forward]
@@ -596,11 +862,17 @@ class offShapeClass(Shape):
             if isinstance(segment1, ConvexPoint):
                 forward += 1
                 if forward >= len(self.segments):
+                    if not self.closed:
+                        return None, None
                     forward = 0
                 segment1 = self.segments[forward]
                 logger.debug("Forward ConvexPoint")
             if isinstance(segment2, ConvexPoint):
                 backward -= 1
+                if backward < 0:
+                    if not self.closed:
+                        return None, None
+                    backward = len(self.segments) - 1
                 segment2 = self.segments[backward]
 
             [L1_status, L2_status] = self.Interfering_relation(
@@ -622,12 +894,16 @@ class offShapeClass(Shape):
                         self.interferingshapes = []
                     forward += 1
                     if forward >= len(self.segments):
+                        if not self.closed:
+                            return None, None
                         forward = 0
                     segment1 = self.segments[forward]
 
                     if isinstance(segment1, ConvexPoint):
                         forward += 1
                         if forward >= len(self.segments):
+                            if not self.closed:
+                                return None, None
                             forward = 0
                         segment1 = self.segments[forward]
                         logger.debug("Forward ConvexPoint")
@@ -653,10 +929,18 @@ class offShapeClass(Shape):
                     backward -= 1
                     logger.debug("Reverse Replace: forward: %s, backward: %s"
                                  % (forward, backward))
+                    if backward < 0:
+                        if not self.closed:
+                            return None, None
+                        backward = len(self.segments) - 1
                     segment2 = self.segments[backward]
 
                     if isinstance(segment2, ConvexPoint):
                         backward -= 1
+                        if backward < 0:
+                            if not self.closed:
+                                return None, None
+                            backward = len(self.segments) - 1
                         segment2 = self.segments[backward]
                         logger.debug("Backward ConvexPoint")
 
@@ -674,9 +958,13 @@ class offShapeClass(Shape):
             if L1_status == "full" and (L2_status == "partial" or
                                         L2_status == "full"):
                 forward += 1
+                if forward >= len(self.segments) and not self.closed:
+                    return None, None
             elif L2_status == "full" and (L1_status == "partial" or
                                           L1_status == "partial"):
                 backward -= 1
+                if backward < 0 and not self.closed:
+                    return None, None
 
             # If The begin end point is the end end point we are done.
             if L1_status is None and L2_status is None:

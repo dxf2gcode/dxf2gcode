@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 ############################################################################
 #
 #   Copyright (C) 2008-2015
-#    Christian Kohlöffel
+#    Christian KohlÃ¶ffel
 #    Vinzenz Schulz
 #    Jean-Paul Schouwstra
 #
@@ -41,6 +41,16 @@ from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.core.holegeo import HoleGeo
 from dxf2gcode.core.breakgeo import BreakGeo
 from dxf2gcode.core.pocketmove import PocketMove
+from dxf2gcode.core.leadmove import (ERROR, LEAD_DEFAULT, LEAD_OFF,
+                                    LEAD_RADIUS, LEAD_STARTMOVE, LEAD_STRAIGHT,
+                                    OVERCUT_DEFAULT, SPACE_NOMINAL,
+                                    SPACE_TOOL_CENTER,
+                                    build_exit_geometries,
+                                    get_lead_in_mode, get_lead_out_mode,
+                                    get_overcut_enabled, lead_move_enabled,
+                                    resolve_overcut)
+
+
 
 import dxf2gcode.globals.constants as c
 from dxf2gcode.Qt import QtCore
@@ -104,6 +114,73 @@ class Shape(object):
         # The initial value is taken from the layer/tool the shape is attached
         # to (see LayerContent.overrideDefaults() and the shape window).
         self.milling_offset = 0.0
+
+        # The overcut is a setting of the shape: OVERCUT_DEFAULT follows the
+        # default of the parent layer / of the configuration file, OVERCUT_OFF
+        # switches it off and OVERCUT_ON activates it. It is only used by
+        # closed contours (an open contour ignores it silently). A mixed
+        # selection (open and closed contours in the same layer) can therefore
+        # switch the overcut on for the closed contours only.
+        self.overcut_enabled = OVERCUT_DEFAULT
+        self.overcut_enabled_overridden = False
+
+        # The methods of the lead in and of the lead out are settings of the
+        # shape too (like the milling depth): LEAD_DEFAULT follows the default
+        # of the parent layer / of the configuration file, otherwise the shape
+        # has its own method. So every contour can have its own lead in and
+        # lead out.
+        self.lead_in_mode = LEAD_DEFAULT
+        self.lead_out_mode = LEAD_DEFAULT
+        self.lead_in_mode_overridden = False
+        self.lead_out_mode_overridden = False
+
+    def _get_lead_mode(self, attribute):
+        """
+        The method of the lead in / lead out which is really used for this
+        shape: the own value wins, LEAD_DEFAULT follows the parent layer
+        (which resolves the standard of the configuration file).
+        @param attribute: 'lead_in_mode' or 'lead_out_mode'
+        @return: the method
+        """
+        mode = getattr(self, attribute, LEAD_DEFAULT)
+        if mode is not None and mode != LEAD_DEFAULT:
+            return mode
+        layer = getattr(self, 'parentLayer', None)
+        getter = getattr(layer, 'get_' + attribute, None)
+        if getter is not None:
+            return getter()
+        return LEAD_OFF
+
+    def get_lead_in_mode(self):
+        """
+        The method of the lead in which is really used for this shape.
+        @return: the method
+        """
+        return self._get_lead_mode('lead_in_mode')
+
+    def get_lead_out_mode(self):
+        """
+        The method of the lead out which is really used for this shape.
+        @return: the method
+        """
+        return self._get_lead_mode('lead_out_mode')
+
+    def get_overcut_enabled(self):
+        """
+        Whether the overcut is active for this shape.
+
+        The own value wins; OVERCUT_DEFAULT follows the parent layer (which
+        resolves the standard of the configuration file).
+        @return: True if the overcut is active
+        """
+        if getattr(self, 'overcut_enabled', OVERCUT_DEFAULT) != \
+                OVERCUT_DEFAULT:
+            return resolve_overcut(self.overcut_enabled, False)
+        layer = getattr(self, 'parentLayer', None)
+        getter = getattr(layer, 'get_overcut_enabled', None)
+        if getter is not None:
+            return getter()
+        return resolve_overcut(OVERCUT_DEFAULT, False)
 
     def __repr__(self):
         """
@@ -393,6 +470,181 @@ class Shape(object):
                     return True
         return False
 
+    def write_lead_out_and_overcut(self, PostPro, geos, machine_comp):
+        """
+        The lead out and the overcut of the shape. Both of them are only
+        written in the last pass.
+
+        The overcut continues the cut along the existing contour beyond the
+        closing point and is written first, the lead out starts at the end of
+        the overcut and is written after it. Both of them can be used at the
+        same time.
+
+        @param PostPro: the post processor
+        @param geos: the geometry of the last pass
+        @param machine_comp: True if the machine compensates the tool radius
+        @return: the G-Code, an empty string if nothing has to be written or
+                None if an error occurred (the shape is not exported)
+        """
+        layer = self.parentLayer
+        lead_out_mode = get_lead_out_mode(self)
+        overcut_enabled = get_overcut_enabled(
+            self, g.config.vars.Lead_In_Out['overcut_enabled'])
+        if not lead_move_enabled():
+            # The lathe is not supported by the lead out and the overcut.
+            return ""
+        if lead_out_mode == LEAD_OFF and not overcut_enabled:
+            return ""
+
+        if not len(geos):
+            return ""
+
+        tool_rad = layer.getToolRadius()
+        # The lead out has to curve to the side of the active cutter
+        # compensation: the machine offsets the programmed path to that side,
+        # so the arc has to curve to the same side to get the wanted tool
+        # center path radius (the workpiece radius minus the tool radius).
+        # The compensation side changes with the direction of the contour (the
+        # open contours are milled in alternating directions), so it has to be
+        # taken from the pass which is exported now - not from the start
+        # move, which was calculated for the first pass.
+        if self.cut_cor == 41:
+            side = 1
+        elif self.cut_cor == 42:
+            side = -1
+        else:
+            # The internal compensation: the offset direction does not change
+            # with the direction of the contour.
+            side = getattr(self.stmove, 'lead_side', 1)
+            # The free side (away from the material) is a physical property.
+            # The open contours are milled in alternating directions and the
+            # last pass can be the mirrored one: relative to its reversed
+            # travel direction the lead out has to curve to the other side.
+            # (With the machine compensation this is already handled by the
+            # switched cut_cor above.)
+            last_pass_is_mirrored = getattr(self.stmove,
+                                             '_last_pass_is_mirrored', None)
+            if last_pass_is_mirrored is not None and last_pass_is_mirrored():
+                side = -side
+        # The machine compensates the tool radius: the exported path is the
+        # nominal contour and the lead out is programmed in the nominal plane
+        # (the machine offsets it). Without a machine compensation the
+        # exported path is the tool center path, so the lead out has to be
+        # calculated in the tool center plane.
+        space = SPACE_NOMINAL if machine_comp else SPACE_TOOL_CENTER
+
+        exit_geos, status, message = build_exit_geometries(
+            geos, side, space, tool_rad, lead_out_mode,
+            getattr(layer, 'lead_radius', 0.0), overcut_enabled,
+            getattr(layer, 'overcut_length', 0.0), closed=self.closed,
+            lead_length=getattr(layer, 'lead_length', 0.0))
+        if status == ERROR:
+            PostPro.add_export_error(
+                self.tr("Shape %i: %s The shape is NOT milled!")
+                % (self.nr, message))
+            return None
+
+        exstr = ""
+        for geo in exit_geos:
+            exstr += self.Write_GCode_for_geo(geo, PostPro)
+        return exstr
+
+    def write_drag_knife_ramp_in(self, PostPro, ramp_length, z_start, z_end,
+                                drag_depth, f_g1_plane, f_g1_depth):
+        """
+        The ramp in of the drag knife: over the given length (measured along
+        the tip path) the knife is plunged gradually from z_start to z_end.
+
+        The ramp ends before the first drag hop: there the knife is lifted to
+        the drag depth instead of being plunged.
+
+        @param PostPro: the post processor
+        @param ramp_length: the length of the ramp in
+        @param z_start: the Z at the beginning of the ramp
+        @param z_end: the Z at the end of the ramp (the mill depth)
+        @param drag_depth: the Z of a drag hop
+        @return: the G-Code
+        """
+        exstr = ""
+        ramp_remaining = ramp_length
+        ramp_finished = False
+        drag = False
+
+        for geo in Geos(self.stmove.geos[1:]).abs_iter():
+            is_drag = isinstance(geo, ArcGeo) and geo.drag
+            if not ramp_finished and ramp_remaining > 0 and not is_drag:
+                ramp_exstr, ramp_remaining = self.ramp_in_geometry(
+                    PostPro, geo, ramp_remaining, ramp_length, z_start, z_end)
+                exstr += ramp_exstr
+                if ramp_remaining > 0:
+                    # The whole geometry was used for the ramp.
+                    continue
+                # The ramp is finished, the depth feed rate is used again.
+                ramp_finished = True
+                exstr += PostPro.chg_feed_rate(f_g1_plane)
+                continue
+            if is_drag:
+                # The ramp in ends here, the knife is lifted instead.
+                ramp_finished = True
+                exstr += PostPro.chg_feed_rate(f_g1_depth)
+                exstr += PostPro.lin_pol_z(drag_depth)
+                exstr += PostPro.chg_feed_rate(f_g1_plane)
+                drag = True
+            elif drag:
+                exstr += PostPro.chg_feed_rate(f_g1_depth)
+                exstr += PostPro.lin_pol_z(z_end)
+                exstr += PostPro.chg_feed_rate(f_g1_plane)
+                drag = False
+            exstr += self.Write_GCode_for_geo(geo, PostPro)
+
+        return exstr
+
+    def ramp_in_geometry(self, PostPro, geo, length, ramp_length, z_start,
+                         z_end):
+        """
+        The part of a geometry which is covered by the ramp in. The Z is
+        decreased gradually while the tip advances.
+        @param PostPro: the post processor
+        @param geo: the geometry
+        @param length: the length of the ramp in part of the geometry
+        @param ramp_length: the total length of the ramp in
+        @param z_start: the Z at the beginning of the ramp
+        @param z_end: the Z at the end of the ramp
+        @return: (gcode, remaining length of the ramp in)
+        """
+        total = geo.length
+        if total <= 0:
+            return "", length
+
+        used = min(total, length)
+        steps = max(2, int(round(used)))
+
+        points = []
+        if isinstance(geo, LineGeo):
+            factor = used / total
+            end = geo.Ps + (geo.Pe - geo.Ps) * factor
+            for i in range(steps + 1):
+                points.append(geo.Ps + (end - geo.Ps) * (float(i) / steps))
+        elif isinstance(geo, ArcGeo):
+            factor = used / total
+            end_angle = geo.s_ang + geo.ext * factor
+            for i in range(steps + 1):
+                angle = geo.s_ang + (end_angle - geo.s_ang) * (float(i) / steps)
+                points.append(geo.O.get_arc_point(angle, geo.r))
+        else:
+            return "", length
+
+        exstr = ""
+        previous = points[0]
+        covered = 0.0
+        for point in points[1:]:
+            covered += previous.distance(point)
+            z = z_start + (z_end - z_start) * (covered / ramp_length)
+            exstr += PostPro.lin_pol_z(z)
+            exstr += PostPro.lin_pol_xy(previous, point)
+            previous = point
+        return exstr, length - used
+
     def Write_GCode_for_geo(self, geo, PostPro):
         # Used to remove zero length geos. If not, arcs can become a full
         # circle
@@ -446,25 +698,60 @@ class Shape(object):
         @param PostPro: this is the Postprocessor class including the methods
         to export
         """
+        # The start move calculation may have failed (e.g. an invalid lead in
+        # radius or an overcut which is not possible): the shape is not
+        # exported at all and the user gets a hint. This has to be checked
+        # before the drag knife is handled, because the drag knife has no
+        # lead in but it can have an overcut.
+        start_move_error = getattr(self.stmove, 'start_move_error', "")
+        if start_move_error:
+            PostPro.add_export_error(
+                self.tr("Shape %i: %s") % (self.nr, start_move_error))
+            return ""
+
         if g.config.machine_type == 'drag_knife':
             return self.Write_GCode_Drag_Knife(PostPro)
 
         if isinstance(self.geos[0], HoleGeo):
             self.Drill            
 
+        # The overcut continues the cut along the contour beyond the closing
+        # point and is written first, the lead out starts at the end of the
+        # overcut and is written after it. The overcut is only possible for
+        # closed contours: for an open contour it is silently ignored (it is
+        # not an error).
+        layer = self.parentLayer
+
         prv_cut_cor = self.cut_cor
-        if ((self.cut_cor != 40 or self.Pocket) and
-                not g.config.vars.Cutter_Compensation["done_by_machine"] and 
-                not self.Drill):
-            # Software compensation (G41/G42) or a pocket: the exported
-            # geometry is the pre-computed toolpath held in stmove (the
-            # compensated contour and/or the pocket fill), not the raw shape
-            # contour. Without this a G40 pocket would export only the
-            # contour and silently drop the whole pocket toolpath.
+        # The cutter compensation is done by dxf2gcode itself: the exported
+        # geometry is the pre-computed toolpath held in stmove (the
+        # compensated contour and/or the pocket fill), not the raw shape
+        # contour.
+        software_comp = ((self.cut_cor != 40 or self.Pocket) and
+                         not g.config.vars.Cutter_Compensation["done_by_machine"] and
+                         not self.Drill)
+        if software_comp:
             self.cut_cor = 40
-            new_geos = Geos(self.stmove.geos[1:])
+            # The lead in is exported separately (it is written after the
+            # plunge), so it is not part of the toolpath here.
+            new_geos = Geos(self.stmove.geos[1 + len(self.stmove.lead_in_geos):])
         else:
             new_geos = self.geos
+
+        if (self.cut_cor in (41, 42) and
+                get_lead_in_mode(self) == LEAD_OFF):
+            # Without a movement in the XY plane the machine can not build the
+            # tool radius compensation: the plunge would be done at the
+            # nominal contour position and the offset would be built up with
+            # a lateral step in the milling depth.
+            PostPro.add_export_error(
+                self.tr("Shape %i: the lead in mode 'off' is not possible "
+                        "with G41/G42: the machine can only build the tool "
+                        "radius compensation with a movement in the XY plane "
+                        "- the shape is NOT milled! Use the lead in mode "
+                        "'startmove', 'straight' or 'radius'.") % self.nr)
+            self.cut_cor = prv_cut_cor
+            return ""
 
         # If there is nothing to export
         if len(new_geos) == 0:
@@ -582,36 +869,66 @@ class Shape(object):
 
         # This will be performed for "normal shapes only"
         if not(self.Drill):
-            
+
+            # The lead in is split into two parts:
+            #  * the G40 part (up to lead_in_nominal_index): the tool center
+            #    path which dxf2gcode calculates itself, cut without cutter
+            #    compensation (G40),
+            #  * the nominal part (from lead_in_nominal_index): the geometry
+            #    which the machine compensates (G41/G42 is active while it is
+            #    cut).
+            # The straight lead in has no nominal part; the circle / start move
+            # has the G40 approach line followed by the nominal line + arc.
+            index = getattr(self.stmove, 'lead_in_nominal_index',
+                            len(self.stmove.lead_in_geos))
+            g40_geos = self.stmove.lead_in_geos[:index]
+            nominal_geos = self.stmove.lead_in_geos[index:]
+
             # This will position the cutter on the first geometry with or without cutter comp. G1 move.
             exstr += self.stmove.geos.abs_el(0).Write_GCode(PostPro)
 
             # Add string to be added before the shape will be cut.
             exstr += PostPro.write_pre_shape_cut()
-            # Cutter radius compensation when G41 or G42 is on, AND cutter
-            # compensation option is set to be done outside the piece
-            if (self.cut_cor != 40 and PostPro.vars.General["cc_outside_the_piece"]):
-                exstr += PostPro.set_cut_cor(self.cut_cor)
-    
+            # The G40 lead in (the tool center path the dxf2gcode offset itself)
+            # is cut before the plunge (in the free space above the workpiece)
+            # if the cutter compensation is done outside the piece.
+            if (self.cut_cor != 40 and
+                    PostPro.vars.General["cc_outside_the_piece"]):
                 exstr += PostPro.chg_feed_rate(f_g1_plane)
-                exstr += self.stmove.geos.abs_el(1).Write_GCode(PostPro)
-                exstr += self.stmove.geos.abs_el(2).Write_GCode(PostPro)
-            
-            exstr += PostPro.rap_pos_z(workpiece_top_Z + abs(safe_margin))  
+                for geo in g40_geos:
+                    exstr += geo.Write_GCode(PostPro)
+
+            exstr += PostPro.rap_pos_z(workpiece_top_Z + abs(safe_margin))
             exstr += PostPro.chg_feed_rate(f_g1_depth)
             exstr += PostPro.lin_pol_z(mom_depth)
             exstr += PostPro.chg_feed_rate(f_g1_plane)
-            
 
-            # Cutter radius compensation when G41 or G42 is on, AND cutter
-            # compensation option is set to be done inside the piece
-            if (self.cut_cor != 40 and not PostPro.vars.General["cc_outside_the_piece"]):
+
+            # The G40 lead in is cut after the plunge if the compensation is
+            # done inside the piece.
+            if (self.cut_cor != 40 and
+                    not PostPro.vars.General["cc_outside_the_piece"]):
+                for geo in g40_geos:
+                    exstr += geo.Write_GCode(PostPro)
+            elif software_comp:
+                # The lead in of the internal cutter compensation is part of
+                # the toolpath: it is cut after the plunge.
+                for geo in self.stmove.lead_in_geos:
+                    exstr += self.Write_GCode_for_geo(geo, PostPro)
+
+            # Activate the machine cutter compensation after the G40 lead in:
+            # the G40 part was cut without compensation, so the machine
+            # compensates the nominal lead in and the nominal contour.
+            if self.cut_cor != 40:
                 exstr += PostPro.set_cut_cor(self.cut_cor)
-    
-                exstr += self.stmove.geos.abs_el(1).Write_GCode(PostPro)
-                exstr += self.stmove.geos.abs_el(2).Write_GCode(PostPro)
-            
-            for geo in pass_geos(1).abs_iter():
+
+            # The nominal lead in (circle / start move) is compensated by the
+            # machine, so it is written after G41/G42.
+            for geo in nominal_geos:
+                exstr += geo.Write_GCode(PostPro)
+
+            first_pass_geos = pass_geos(1)
+            for geo in first_pass_geos.abs_iter():
                 if isinstance(geo, PocketMove):
                     geo.setZMove(f_g1_depth, f_g1_plane, workpiece_top_Z + abs(safe_margin), mom_depth, safe_retract_depth)
                     exstr += geo.Write_GCode(PostPro)
@@ -642,7 +959,8 @@ class Shape(object):
 
         # Numbers of loops
         snr = 0
-        
+        last_pass_geos = first_pass_geos if not self.Drill else Geos([])
+
         #logger.debug(size(depth))
         #logger.debug(depth)
         #logger.debug(max_slice)
@@ -659,6 +977,8 @@ class Shape(object):
             # (no need to return to start point)
             cur_geos = pass_geos(snr + 1,
                                  mom_depth == depth and self.Pocket == True)
+            if not self.Drill:
+                last_pass_geos = cur_geos
 
             # Erneutes Eintauchen
             # This will be performed for "normal shapes only"
@@ -700,6 +1020,21 @@ class Shape(object):
                 exstr += PostPro.lin_ret_drill(workpiece_top_Z + abs(safe_margin))
                 exstr += PostPro.lin_pol_drill(mom_depth)
         
+
+        # The lead out and the overcut are written in the last pass only: in a
+        # intermediate pass they would remove material which is not part of
+        # the wanted geometry (and they could release the workpiece before it
+        # is finished).
+        machine_comp = (prv_cut_cor in (41, 42) and
+                        g.config.vars.Cutter_Compensation["done_by_machine"])
+        lead_out_exstr = self.write_lead_out_and_overcut(PostPro,
+                                                          last_pass_geos,
+                                                          machine_comp)
+        if lead_out_exstr is None:
+            # An error occurred: the shape is not exported at all.
+            self.cut_cor = prv_cut_cor
+            return ""
+        exstr += lead_out_exstr
 
         # Do the tool retraction for a "normal" shape and Drill
         exstr += PostPro.chg_feed_rate(f_g1_depth)
@@ -763,40 +1098,49 @@ class Shape(object):
             workpiece_top_Z + abs(safe_margin))  # Compute the safe margin from the initial mill depth
         exstr += PostPro.chg_feed_rate(f_g1_depth)
 
-        # Write the geometries for the first cut
-        if isinstance(self.stmove.geos.abs_el(1), ArcGeo):
-            if self.stmove.geos.abs_el(1).drag:
-                exstr += PostPro.lin_pol_z(drag_depth)
-                drag = True
+        ramp_length = g.config.vars.Drag_Knife_Options['ramp_in_length']
+        if ramp_length > 0:
+            # The knife is plunged gradually over the ramp in length. The ramp
+            # ends before the first drag hop, because there the knife is
+            # lifted instead of plunged.
+            exstr += self.write_drag_knife_ramp_in(
+                PostPro, ramp_length, workpiece_top_Z + abs(safe_margin),
+                mom_depth, drag_depth, f_g1_plane, f_g1_depth)
+        else:
+            # Write the geometries for the first cut
+            if isinstance(self.stmove.geos.abs_el(1), ArcGeo):
+                if self.stmove.geos.abs_el(1).drag:
+                    exstr += PostPro.lin_pol_z(drag_depth)
+                    drag = True
+                else:
+                    exstr += PostPro.lin_pol_z(mom_depth)
+                    drag = False
             else:
                 exstr += PostPro.lin_pol_z(mom_depth)
                 drag = False
-        else:
-            exstr += PostPro.lin_pol_z(mom_depth)
-            drag = False
-        exstr += PostPro.chg_feed_rate(f_g1_plane)
+            exstr += PostPro.chg_feed_rate(f_g1_plane)
 
-        exstr += self.stmove.geos.abs_el(1).Write_GCode(PostPro)
+            exstr += self.stmove.geos.abs_el(1).Write_GCode(PostPro)
 
-        for geo in Geos(self.stmove.geos[2:]).abs_iter():
-            if isinstance(geo, ArcGeo):
-                if geo.drag:
-                    exstr += PostPro.chg_feed_rate(f_g1_depth)
-                    exstr += PostPro.lin_pol_z(drag_depth)
-                    exstr += PostPro.chg_feed_rate(f_g1_plane)
-                    drag = True
+            for geo in Geos(self.stmove.geos[2:]).abs_iter():
+                if isinstance(geo, ArcGeo):
+                    if geo.drag:
+                        exstr += PostPro.chg_feed_rate(f_g1_depth)
+                        exstr += PostPro.lin_pol_z(drag_depth)
+                        exstr += PostPro.chg_feed_rate(f_g1_plane)
+                        drag = True
+                    elif drag:
+                        exstr += PostPro.chg_feed_rate(f_g1_depth)
+                        exstr += PostPro.lin_pol_z(mom_depth)
+                        exstr += PostPro.chg_feed_rate(f_g1_plane)
+                        drag = False
                 elif drag:
                     exstr += PostPro.chg_feed_rate(f_g1_depth)
                     exstr += PostPro.lin_pol_z(mom_depth)
                     exstr += PostPro.chg_feed_rate(f_g1_plane)
                     drag = False
-            elif drag:
-                exstr += PostPro.chg_feed_rate(f_g1_depth)
-                exstr += PostPro.lin_pol_z(mom_depth)
-                exstr += PostPro.chg_feed_rate(f_g1_plane)
-                drag = False
 
-            exstr += self.Write_GCode_for_geo(geo, PostPro)
+                exstr += self.Write_GCode_for_geo(geo, PostPro)
 
         # Do the tool retraction
         exstr += PostPro.chg_feed_rate(f_g1_depth)
@@ -810,8 +1154,15 @@ class Shape(object):
 
     def join_colinear_lines(self):
         """
-        This function is called to search for colinear connected lines an joins 
+        This function is called to search for colinear connected lines an joins
         them if there are any
+
+        The first and the last geometry of a closed polyline are not joined
+        (they are connected at the closing point of the contour): the joined
+        geometry would start at the start point of the last geometry, so the
+        start point of the polyline would move to the end of the contour. The
+        start point of a shape is the position of the lead in (and of the lead
+        out, the contour is closed), so it must stay where the user set it.
         """
         # Do only if more then 2 geometies
         if len(self.geos) < 2:
@@ -839,18 +1190,22 @@ class Shape(object):
                 # Note that this can make new_geos absolutely empty!
                 new_geos.pop()
 
-        # For closed polylines check if the first and last items are colinear
-        if self.closed and (len (new_geos) > 1):
-            geo1 = new_geos[-1]
-            geo2 = new_geos[0]
-            if isinstance(geo1, LineGeo) and isinstance(geo2, LineGeo):
-                joined_geos = geo1.join_colinear_line(geo2)
-
-                # If they are joined replace first item by joined and remove
-                # last one
-                if len(joined_geos) == 1:
-                    new_geos[0] = joined_geos[0]
-                    new_geos.pop()
+        # For closed polylines the first and the last item may be colinear
+        # too (they are connected at the closing point of the contour). They
+        # are NOT joined here: the joined geometry would start at the start
+        # point of the last geometry, so the start point of the closed
+        # polyline would move to the end of the contour. The start point of a
+        # shape is the position of the lead in (and of the lead out, the
+        # contour is closed), so it must stay where the user set it.
+        #
+        # This is not an issue for the offset algorithm: the colinear vertex
+        # is neither a convex nor a reflex point, it is simply skipped
+        # (see make_segment_types).
+        #
+        # The case occurs with the "split line segments" option, where the
+        # contour is cut in the middle of a line: the first and the last
+        # geometry of the contour are then the two halves of that line and
+        # therefore colinear.
 
         self.geos = new_geos
 

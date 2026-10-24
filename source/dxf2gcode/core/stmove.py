@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 ############################################################################
 #
 #   Copyright (C) 2008-2015
-#    Christian Kohlöffel
+#    Christian KohlÃ¶ffel
 #    Vinzenz Schulz
 #    Jean-Paul Schouwstra
 #
@@ -27,7 +27,7 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from math import sin, cos, pi, sqrt
+from math import sin, cos, pi, sqrt, radians
 from copy import deepcopy
 import traceback
 
@@ -45,6 +45,15 @@ from dxf2gcode.core.shape import Shape
 from dxf2gcode.core.pocketmill import PocketMill
 from dxf2gcode.core.pocketmove import PocketMove
 from dxf2gcode.core.shapeoffset import *
+from dxf2gcode.core.leadmove import (ERROR, LEAD_OFF, LEAD_RADIUS,
+                                   LEAD_STARTMOVE, LEAD_STRAIGHT,
+                                   SPACE_NOMINAL, SPACE_TOOL_CENTER, WARNING,
+                                   build_exit_geometries, build_lead_in,
+                                   build_overcut,
+                                   get_overcut_enabled,
+                                   get_lead_in_mode, get_lead_out_mode,
+                                   lead_move_enabled, machine_g40_approach,
+                                   reverse_chain, resolve_radius)
 
 from dxf2gcode.Qt import QtCore
 
@@ -86,6 +95,158 @@ class StMove(object):
         geo.make_abs_geo()
         self.geos.append(geo)
 
+    def _last_pass_is_mirrored(self):
+        """
+        True if the last depth pass of an open contour is the mirrored one.
+
+        The open contours are milled in alternating directions: the first pass
+        is the original direction, the second one is mirrored, the third one
+        is the original again and so on. The cutter compensation is switched
+        with every pass.
+
+        @return: True if the last pass is the mirrored one
+        """
+        if self.shape.closed:
+            return False
+        try:
+            number_of_passes = len(self.shape.get_pass_depths())
+        except Exception:
+            return False
+        return number_of_passes % 2 == 0
+
+    def set_break_chain(self, chain):
+        """
+        The chain of the last pass with the break (tab) hops.
+
+        The tabs are not cut: the export hops over them. The preview of the
+        exit geometry has to show the same, so the preview is built from this
+        chain (the tabs are the gaps in the preview).
+
+        @param chain: the chain with the break hops or None if the tabs can
+                not be determined
+        """
+        self.break_chain = chain
+        self.rebuild_exit_preview()
+
+    def rebuild_exit_preview(self):
+        """
+        Recalculate the preview of the exit geometry.
+        """
+        chain = self.break_chain if self.break_chain else self.exit_chain
+        if not chain:
+            self.exit_geos = Geos([])
+            return
+        self._build_exit_preview(list(chain), self.lead_space)
+
+    def _build_exit_preview(self, chain, space):
+        """
+        The preview of the lead out and the overcut: the geometry which is
+        written at the end of the last pass.
+
+        It is only used for the preview in the canvas - the export calculates
+        the same geometry again with the geometry of the pass which is
+        exported (see Shape.write_lead_out_and_overcut).
+
+        Known limitations of the preview:
+        * The drag knife has no preview: its overcut is inserted into the
+          contour before the tip offset is applied, so the tip path of the
+          overcut can not be derived from the toolpath here.
+
+        @param chain: the chain of the toolpath of the last pass
+        @param space: SPACE_NOMINAL (the machine compensates) or
+                      SPACE_TOOL_CENTER (dxf2gcode compensates)
+        """
+        self.exit_geos = Geos([])
+        layer = self.shape.parentLayer
+        lead_out_mode = get_lead_out_mode(self.shape)
+        overcut_enabled = get_overcut_enabled(
+            self.shape, g.config.vars.Lead_In_Out['overcut_enabled'])
+        self.exit_error = ""
+        if not lead_move_enabled():
+            return
+        if lead_out_mode == LEAD_OFF and not overcut_enabled:
+            return
+        chain = list(chain)
+        if not chain:
+            return
+        side = self.lead_side
+        if self._last_pass_is_mirrored():
+            # The last pass is the mirrored one: the exit geometry is mirrored
+            # as well. The free side (away from the material) is a physical
+            # property, so relative to the reversed travel direction the lead
+            # out has to curve to the other side. This holds for the machine
+            # and for the internal cutter compensation.
+            chain = reverse_chain(chain)
+            side = -side
+        exit_geos, status, message = build_exit_geometries(
+            chain, side, space, layer.getToolRadius(), lead_out_mode,
+            getattr(layer, 'lead_radius', 0.0), overcut_enabled,
+            getattr(layer, 'overcut_length', 0.0), closed=self.shape.closed,
+            lead_length=getattr(layer, 'lead_length', 0.0))
+        if status == ERROR:
+            # An invalid geometry is reported by the export, the preview
+            # stays empty and the error is shown in the canvas.
+            self.exit_error = message
+            logging.warning(self.tr("Shape %i: %s") % (self.shape.nr,
+                                                        message))
+            return
+        self.exit_geos = Geos(exit_geos)
+
+    def _build_lead_in(self, start, angle, side, space):
+        """
+        Build the lead in of the given plane and append it to the start move.
+
+        The lead in is only built if it is enabled (the mode of the layer is
+        not 'off'). The radius is the common radius at the workpiece, it is
+        converted into the radius of the given plane. The length is the
+        common length of the straight part.
+
+        @param start: the point where the lead in ends (the contour start of
+                      the given plane)
+        @param angle: the travel direction at the start point (rad)
+        @param side: +1 = the lead in curves to the left of the travel
+        @param space: SPACE_NOMINAL (the machine compensates the nominal lead
+                      in) or SPACE_TOOL_CENTER (the lead in is already the
+                      offset tool center path)
+        @return: True if the lead in could be built (or is not needed)
+        """
+        layer = self.shape.parentLayer
+        lead_in_mode = get_lead_in_mode(self.shape)
+        if lead_in_mode not in (LEAD_STRAIGHT, LEAD_RADIUS, LEAD_STARTMOVE):
+            return True
+        if not lead_move_enabled():
+            # The lathe is not supported by the lead in (the X axis is the
+            # diameter there).
+            return True
+
+        lead_radius = getattr(layer, 'lead_radius', 0.0)
+        lead_length = getattr(layer, 'lead_length', 0.0)
+        tool_rad = layer.getToolRadius()
+        geos, status, message = build_lead_in(start, angle, side,
+                                              lead_radius, tool_rad,
+                                              space, lead_in_mode,
+                                              length=lead_length)
+        if status == ERROR:
+            self.start_move_error = message
+            return False
+        if status == WARNING:
+            logging.warning(self.tr("Shape %i: %s") % (self.shape.nr, message))
+        if not geos:
+            # The start move is only generated with the machine compensation.
+            return True
+
+        # The dive point of the lead in is reached first, then the lead in
+        # itself is cut.
+        self.append(RapidPos(geos[0].Ps))
+        for geo in geos:
+            self.append(geo)
+        self.lead_in_geos = Geos(geos)
+        # By default the whole lead in is the tool center path which is cut
+        # with G40 (the machine compensation lead in overrides this with its
+        # nominal part, see make_start_moves).
+        self.lead_in_nominal_index = len(self.lead_in_geos)
+        return True
+
     def updateShape(self):
         """
         Update start move after shape is changed.
@@ -97,12 +258,44 @@ class StMove(object):
         # Index where the pocket mill geometries start (set by
         # make_start_moves); everything before belongs to the G41/G42
         # compensation contour or the start moves. Used by the canvas to
-        # render both with different line widths.
+        # render them with different line widths.
         self.pocket_geos_start = 0
+        # The geometry of the lead in (see core/leadmove.py). It is part of
+        # self.geos (so that the canvas shows it), but it is exported
+        # separately: with the machine compensation it is written before the
+        # plunge, with the internal compensation it is part of the toolpath.
+        self.lead_in_geos = Geos([])
+        # The index in lead_in_geos where the nominal part of the lead in
+        # begins (the machine compensation circle / start move writes the G40
+        # part before G41/G42 and the nominal part after it). 0 (or the length)
+        # means: the whole lead in is the tool center path.
+        self.lead_in_nominal_index = 0
+        # The side the lead in and the lead out curve to: +1 = left of the
+        # travel direction, -1 = right of it. It is the free side of the
+        # contour.
+        self.lead_side = 1
+        # The plane of the lead in / lead out: the machine compensation works
+        # in the nominal plane, the internal compensation in the tool center
+        # plane.
+        self.lead_space = SPACE_TOOL_CENTER
+        # The preview of the lead out and the overcut (the geometry which is
+        # written at the end of the last pass). It is only used for the
+        # preview in the canvas.
+        self.exit_geos = Geos([])
+        # The chain of the toolpath of the last pass: it is the base of the
+        # preview of the exit geometry.
+        self.exit_chain = []
+        # The chain with the break (tab) hops. It is set by the canvas, which
+        # knows the break layers (they are part of the layer contents).
+        self.break_chain = None
+        # An error message of the exit geometry (the lead out / the overcut):
+        # the shape is not exported if it is set.
+        self.exit_error = ""
+        # An error message of the lead in calculation: the shape is not
+        # exported if it is set.
+        self.start_move_error = ""
         logging.debug("Updating the Start Move / Offset Geometry")
         self.make_start_moves()
-        
-
 
     def make_start_moves(self):
         """
@@ -125,9 +318,6 @@ class StMove(object):
             # All swivel knife geometries belong to the compensated toolpath
             self.pocket_geos_start = len(self.geos)
             return
-
-        # Get the start rad. and the length of the line segment at begin.
-        start_rad = self.shape.parentLayer.start_radius
 
         # Get tool radius based on tool diameter.
         tool_rad = self.shape.parentLayer.getToolRadius()
@@ -226,9 +416,20 @@ class StMove(object):
                 # G40 = no cutter compensation: the contour itself is the tool
                 # center path (no radius offset). The pocket fill is appended
                 # afterwards by the pocket block below.
-                self.append(RapidPos(start))
+                side = 1 if bool(self.shape.cw) else -1
+                self.lead_side = side
+                if not self._build_lead_in(start, angle, side,
+                                           SPACE_TOOL_CENTER):
+                    self.pocket_geos_start = len(self.geos)
+                    return
+                if not len(self.lead_in_geos):
+                    self.append(RapidPos(start))
                 self.geos += Geos(deepcopy(geo)
                                   for geo in self.shape.geos.abs_iter())
+                # The preview of the lead out and the overcut.
+                self.lead_space = SPACE_TOOL_CENTER
+                self.exit_chain = list(self.shape.geos)
+                self._build_exit_preview(self.exit_chain, SPACE_TOOL_CENTER)
             else:
                 offshape = offShapeClass(parent = self.shape, offset = comp_offset, offtype = offtype)
 
@@ -282,7 +483,22 @@ class StMove(object):
                     else:
                         start, angle = offshape.rawoff[0].get_start_end_points(True, True)
 
-                    self.append(RapidPos(start))
+                    # The lead in of the internal compensation is calculated in
+                    # the tool center plane and appended in front of the
+                    # compensated contour. It is calculated here (and not
+                    # added to the contour before the offset), so that the
+                    # offset computation is not influenced by it.
+                    # The side the lead in curves to: it is the side the tool
+                    # center path is offset to (the free side).
+                    side = 1 if ((offtype == "out") ==
+                                 bool(self.shape.cw)) else -1
+                    self.lead_side = side
+                    if not self._build_lead_in(start, angle, side,
+                                               SPACE_TOOL_CENTER):
+                        self.pocket_geos_start = len(self.geos)
+                        return
+                    if not len(self.lead_in_geos):
+                        self.append(RapidPos(start))
 
                     # P2: Mill each loop as its own path; the loops are connected
                     # with rapid moves (retract / move / plunge) like the pocket
@@ -295,6 +511,16 @@ class StMove(object):
                             self.append(PocketMove(prev_end, loop[0].Ps))
                         self.geos += loop
                         prev_end = loop[-1].Pe
+
+                    # The preview of the lead out and the overcut (the
+                    # internal compensation works in the tool center plane).
+                    # It has to be built after the loops were appended: the
+                    # chain of the toolpath is needed for it.
+                    self.lead_space = SPACE_TOOL_CENTER
+                    self.exit_chain = list(
+                        self.geos[1 + len(self.lead_in_geos):])
+                    self._build_exit_preview(self.exit_chain,
+                                             SPACE_TOOL_CENTER)
 
                     if (self.shape.Pocket and not forced_inward and
                             self.shape.cut_cor in (41, 42)):
@@ -332,52 +558,86 @@ class StMove(object):
             # No cutter compensation: the shape contour itself is the tool
             # center path. (Pockets with G40 are handled by the software
             # compensation branch above so they are exported correctly.)
-            self.append(RapidPos(start))
+            # The lead in is calculated in the tool center plane, the free
+            # side of the contour is the left side of a CW contour.
+            side = 1 if bool(self.shape.cw) else -1
+            self.lead_side = side
+            if not self._build_lead_in(start, angle, side, SPACE_TOOL_CENTER):
+                self.pocket_geos_start = len(self.geos)
+                return
+            if not len(self.lead_in_geos):
+                self.append(RapidPos(start))
 
-        # Cutting Compensation Left
-        elif self.shape.cut_cor == 41:
-            # Center of the Starting Radius.
-            Oein = start.get_arc_point(angle + pi/2, start_rad + tool_rad)
-            # Start Point of the Radius
-            Ps_ein = Oein.get_arc_point(angle + pi, start_rad + tool_rad)
-            # Start Point of the straight line segment at begin.
-            Pg_ein = Ps_ein.get_arc_point(angle + pi/2, start_rad)
+            # The preview of the lead out and the overcut. Without a cutter
+            # compensation the contour itself is the tool center path.
+            self.lead_space = SPACE_TOOL_CENTER
+            self.exit_chain = list(self.shape.geos)
+            self._build_exit_preview(self.exit_chain, SPACE_TOOL_CENTER)
 
-            # Get the dive point for the starting contour and append it.
-            start_ein = Pg_ein.get_arc_point(angle, tool_rad)
-            self.append(RapidPos(start_ein))
+        # Cutting Compensation Left / Right
+        elif self.shape.cut_cor == 41 or self.shape.cut_cor == 42:
+            side = 1 if self.shape.cut_cor == 41 else -1
+            self.lead_side = side
+            lead_in_mode = get_lead_in_mode(self.shape)
+            if lead_in_mode in (LEAD_RADIUS, LEAD_STARTMOVE):
+                # The circle and the start move are programmed in the nominal
+                # plane: G41/G42 is activated at the end of the plunge (see
+                # shape.Write_GCode) and the machine then builds the tool
+                # radius offset of the nominal lead in. Before G41/G42 is
+                # switched on (G40) dxf2gcode itself has to place the tool
+                # center beside the nominal lead in line: the G40 approach line
+                # (see leadmove.machine_g40_approach).
+                if not self._build_lead_in(start, angle, side,
+                                           SPACE_NOMINAL):
+                    self.pocket_geos_start = len(self.geos)
+                    return
+                nominal = Geos(list(self.lead_in_geos))
+                tool_radius = self.shape.parentLayer.getToolRadius()
+                lead_length = getattr(self.shape.parentLayer, 'lead_length',
+                                      0.0)
+                approach = machine_g40_approach(nominal, side, tool_radius,
+                                                lead_length)
+                if approach is not None and nominal:
+                    # The G40 approach line is the tool center path which is
+                    # cut without compensation; the nominal lead in (the line
+                    # and the arc) is written after G41/G42.
+                    self.lead_in_geos = Geos([approach] + list(nominal))
+                    self.lead_in_nominal_index = 1
+                    self.geos = Geos([RapidPos(approach.Ps)] +
+                                     list(self.lead_in_geos))
+                else:
+                    # No G40 approach line could be built: the nominal lead in
+                    # is written after G41/G42 without a G40 move.
+                    self.lead_in_nominal_index = 0
+                if not len(self.lead_in_geos):
+                    self.append(RapidPos(start))
+                self.lead_space = SPACE_NOMINAL
+            else:
+                # The straight lead in is programmed in the tool center
+                # plane: the contour start offset to the compensation side by
+                # the tool radius. It is cut with G40 (without cutter
+                # compensation), so the tool is already at the correct
+                # (offset) position when the machine compensation G41/G42 is
+                # activated at the end of the lead in (see shape.Write_GCode).
+                # The nominal contour itself is still compensated by the
+                # machine.
+                tool_radius = self.shape.parentLayer.getToolRadius()
+                normal = Point(x=-sin(angle) * side, y=cos(angle) * side)
+                offset_start = start + normal * tool_radius
+                if not self._build_lead_in(offset_start, angle, side,
+                                           SPACE_TOOL_CENTER):
+                    self.pocket_geos_start = len(self.geos)
+                    return
+                if not len(self.lead_in_geos):
+                    self.append(RapidPos(offset_start))
+                self.lead_space = SPACE_TOOL_CENTER
 
-            # generate the Start Line and append it including the compensation.
-            start_line = LineGeo(start_ein, Ps_ein)
-            self.append(start_line)
+            # The contour is programmed nominal (the machine compensation is
+            # active there); the lead out is therefore still previewed in the
+            # nominal plane.
+            self.exit_chain = list(self.shape.geos)
+            self._build_exit_preview(self.exit_chain, SPACE_NOMINAL)
 
-            # generate the start rad. and append it.
-            start_rad = ArcGeo(Ps=Ps_ein, Pe=start, O=Oein,
-                               r=start_rad + tool_rad, direction=1)
-            self.append(start_rad)
-
-        # Cutting Compensation Right
-        elif self.shape.cut_cor == 42:
-            # Center of the Starting Radius.
-            Oein = start.get_arc_point(angle - pi/2, start_rad + tool_rad)
-            # Start Point of the Radius
-            Ps_ein = Oein.get_arc_point(angle + pi, start_rad + tool_rad)
-            # Start Point of the straight line segment at begin.
-            Pg_ein = Ps_ein.get_arc_point(angle - pi/2, start_rad)
-
-            # Get the dive point for the starting contour and append it.
-            start_ein = Pg_ein.get_arc_point(angle, tool_rad)
-            self.append(RapidPos(start_ein))
-
-            # generate the Start Line and append it including the compensation.
-            start_line = LineGeo(start_ein, Ps_ein)
-            self.append(start_line)
-
-            # generate the start rad. and append it.
-            start_rad = ArcGeo(Ps=Ps_ein, Pe=start, O=Oein,
-                               r=start_rad + tool_rad, direction=0)
-            self.append(start_rad)
-            
         # Remember where the pocket mill geometries start. Everything before
         # belongs to the G41/G42 compensation contour (or the start moves).
         # If the shape is no pocket this equals the total geo count.
@@ -416,11 +676,39 @@ class StMove(object):
         offset = self.shape.parentLayer.getToolRadius()
         drag_angle = self.shape.drag_angle
 
-        startnorm = offset*Point(1, 0)  # TODO make knife direction a config setting
+        # The direction the knife points to when the cut starts. The default
+        # (0 degree = positive X axis) is the behaviour of the program before
+        # the start orientation became configurable.
+        start_angle = radians(g.config.vars.Drag_Knife_Options[
+            'drag_start_angle'])
+        startnorm = offset * Point(cos(start_angle), sin(start_angle))
         prvend, prvnorm = Point(), Point()
         first = True
 
-        for geo in self.shape.geos.abs_iter():
+        # The overcut continues the cut along the existing contour beyond the
+        # closing point. It is added to the contour BEFORE the contour is
+        # shifted by the tip offset, so the tip path follows the contour over
+        # the closing point as well.
+        contour_geos = list(self.shape.geos.abs_iter())
+        overcut_geos = []
+        if (get_overcut_enabled(self.shape,
+                                  g.config.vars.Lead_In_Out['overcut_enabled']) and
+                lead_move_enabled()):
+            overcut_length = getattr(self.shape.parentLayer, 'overcut_length',
+                                     0.0)
+            if overcut_length > 0.0 and self.shape.closed:
+                # The overcut is only possible for closed contours: an open
+                # contour is silently ignored (it is not an error).
+                geos, status, message = build_overcut(contour_geos,
+                                                       overcut_length)
+                if status == ERROR:
+                    self.start_move_error = message
+                else:
+                    overcut_geos = geos
+        if overcut_geos:
+            contour_geos = contour_geos + list(overcut_geos)
+
+        for geo in contour_geos:
             if isinstance(geo, LineGeo):
                 geo_b = deepcopy(geo)
                 if first:

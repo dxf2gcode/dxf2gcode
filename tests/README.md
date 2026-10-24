@@ -107,6 +107,14 @@ The default discovery pattern `test*.py` does **not** match the module names
 | `dxf2gcode_pocket_comp_mode_test.py` | regression | `pocket_compensation_mode` behaviour + GUI gating |
 | `dxf2gcode_pocket_edge_clearance_test.py` | regression | edge clearance relative to the offset contour |
 | `dxf2gcode_config_pocketing_test.py` | unit/regression | config versioning and migration |
+| `dxf2gcode_leadmove_test.py` | unit | geometry of the lead in / lead out / overcut |
+| `dxf2gcode_leadmove_function_test.py` | unit/integration | lead in / lead out / overcut: errors, depth passes, configuration |
+| `dxf2gcode_leadmove_golden_test.py` | regression | G-Code of the lead in / lead out / overcut (reference files in `tests/golden`) |
+| `dxf2gcode_leadmove_project_test.py` | unit | persistence of the layer values and overrides in the project file (`.d2g`) |
+| `dxf2gcode_leadmove_common_test.py` | unit/integration | common radius / length of the lead in and the lead out: methods, GUI dropdowns, tool table validation, config migration |
+| `dxf2gcode_leadmove_startpoint_test.py` | unit/integration | the lead in / lead out are at the start point set by the user, also with the option "split line segments" |
+| `dxf2gcode_leadmove_modes_test.py` | unit/integration | the four methods of the lead in / lead out: generated geometry elements and the resulting G-Code movements |
+| `dxf2gcode_overcut_test.py` | unit/integration | the overcut: the length per tool, the activation per shape, the standard of the configuration file, the migration |
 | `dxf2gcode_scalebar_test.py` | unit/integration | scale bar: units, zoom, viewport position, config option |
 
 Modules that mutate global configuration state reset it again in

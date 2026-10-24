@@ -60,6 +60,7 @@ from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
 from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
 from dxf2gcode.core.stmove import StMove  # noqa: E402
+from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode_stmove_gcode_test import make_postpro, norm  # noqa: E402
 
 RECT_W, RECT_H = 40.0, 30.0
@@ -103,6 +104,8 @@ def build(mode, cut_cor, pct, reversed_dir=False, geos=None):
     layer.tool_diameter = TOOL_DIA
     layer.axis3_retract = 9.91
     layer.axis3_safe_margin = 3.05
+    # The test checks the compensated pocket toolpath, not the lead in.
+    layer.lead_in_mode = LEAD_OFF
     s.parentLayer = layer
     s.calc_bounding_box()
     g.config.vars.Cutter_Compensation["done_by_machine"] = False

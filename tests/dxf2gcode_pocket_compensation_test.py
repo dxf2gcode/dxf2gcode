@@ -61,6 +61,7 @@ from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
 from dxf2gcode.core.stmove import StMove  # noqa: E402
+from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode_pocketmill_zigzag_test import _load_shapes  # noqa: E402
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
     make_postpro, make_shape, build_stmove, square_geos, norm)
@@ -181,6 +182,8 @@ def _pocket(cut_cor, pct=HISTORIC, tool=2.0, cw=True):
     layer.tool_diameter = tool
     layer.axis3_retract = 9.91
     layer.axis3_safe_margin = 3.05
+    # The test checks the compensated pocket toolpath, not the lead in.
+    layer.lead_in_mode = LEAD_OFF
     s.parentLayer = layer
     s.calc_bounding_box()
     g.config.vars.Pocketing["pocket_edge_clearance"] = pct

@@ -61,6 +61,7 @@ from dxf2gcode.core.linegeo import LineGeo
 from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.core.point import Point
 from dxf2gcode.core.stmove import StMove
+from dxf2gcode.core.leadmove import LEAD_OFF
 from dxf2gcode.core.pocketmove import PocketMove
 from dxf2gcode.core.layercontent import LayerContent
 
@@ -216,6 +217,8 @@ class TestStMoveGCode(unittest.TestCase):
         # 3 squares linked by 2 narrow corridors -> 3 loops after GIR
         g.config.vars.Cutter_Compensation["done_by_machine"] = False
         sh = corridor_shape(nr=0)
+        # The test checks the offset loops and their connectors, not the lead in.
+        sh.parentLayer.lead_in_mode = LEAD_OFF
         build_stmove(sh)
 
         # the offset must have produced more than one loop
@@ -237,6 +240,8 @@ class TestStMoveGCode(unittest.TestCase):
         """A StMove loop-to-loop connector must not cut across the gap with G1."""
         g.config.vars.Cutter_Compensation["done_by_machine"] = False
         sh = corridor_shape(nr=5)
+        # The test checks the offset loops and their connectors, not the lead in.
+        sh.parentLayer.lead_in_mode = LEAD_OFF
         build_stmove(sh)
         connectors = [geo for geo in sh.stmove.geos if isinstance(geo, PocketMove)]
         self.assertTrue(connectors, "expected rapid connectors between loops")

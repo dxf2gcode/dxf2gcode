@@ -175,6 +175,12 @@ class _Harness(object):
         self.th.ui.toolDiameterLabel = QLabel(self.th)
         self.th.ui.toolSpeedLabel = QLabel(self.th)
         self.th.ui.startRadiusLabel = QLabel(self.th)
+        self.th.ui.leadRadiusLabel = QLabel(self.th)
+        self.th.ui.leadLengthLabel = QLabel(self.th)
+        self.th.ui.overcutLengthLabel = QLabel(self.th)
+        self.th.ui.leadInComboBox = QComboBox(self.th)
+        self.th.ui.leadOutComboBox = QComboBox(self.th)
+        self.th.ui.overcutComboBox = QComboBox(self.th)
         self.line_edits = {}
         for name in ("zRetractionArealLineEdit", "zSafetyMarginLineEdit",
                      "zInfeedDepthLineEdit", "g1FeedXYLineEdit",
@@ -189,7 +195,7 @@ class _Harness(object):
         self.th.display_tool_layers = []
         self.th.display_tool_shapes = []
         self.th.tool_nr = None
-        for name in ("tool_diameter", "speed", "start_radius",
+        for name in ("tool_diameter", "speed", "lead_radius", "lead_length",
                      "axis3_retract", "axis3_safe_margin",
                      "axis3_slice_depth", "axis3_start_mill_depth",
                      "axis3_mill_depth", "milling_offset", "f_g1_plane",
@@ -366,6 +372,53 @@ class TestParameterDisplay(unittest.TestCase):
         widget = self.harness.line_edits["zFinalMillDepthLineEdit"]
         self.assertEqual(self.harness.text("zFinalMillDepthLineEdit"), "-7.5")
         self.assertNotEqual(self._text_color(widget), self._gray_name())
+
+    def test_nothing_selected_shows_no_values(self):
+        # Unified behaviour: without a selection (and after startup) no values
+        # at all are shown - for the tool and for the shape fields.
+        self.harness.select([self.a])          # first show some values ...
+        self.harness.select([])                # ... then clear the selection
+        for widget in self.harness.th._mill_parameter_widgets():
+            self.assertEqual(widget.text(), "",
+                             "field %s is not empty" % widget.objectName())
+        self.assertFalse(self.harness.th.ui.millSettingsFrame.isEnabled())
+
+    def test_tool_values_are_always_shown_de_emphasized(self):
+        # The tool values can only be changed through the tool selection, so
+        # they are always grey (they are the tool default by definition).
+        self.harness.select([self.a])
+        gray = self._gray_name()
+        for name in ("toolDiameterLabel", "toolSpeedLabel", "leadRadiusLabel",
+                     "leadLengthLabel", "overcutLengthLabel"):
+            widget = getattr(self.harness.th.ui, name)
+            self.assertNotEqual(widget.text(), "")
+            self.assertEqual(self._text_color(widget), gray)
+
+    def test_refresh_without_selection_shows_no_values(self):
+        # A refresh (e.g. after a configuration change) must not bring the
+        # values of a previously selected shape back when nothing is selected.
+        self.harness.select([self.a])
+        self.harness.select([])
+        self.harness.th.updateToolParameters()
+        for widget in self.harness.th._mill_parameter_widgets():
+            self.assertEqual(widget.text(), "")
+
+    def test_tool_update_without_selection_shows_no_values(self):
+        # The tool dropdown is also set up at startup (with no selection); it
+        # must not fill the tool values then.
+        self.harness.th.toolUpdate()
+        for name in ("toolDiameterLabel", "toolSpeedLabel", "leadRadiusLabel",
+                     "leadLengthLabel", "overcutLengthLabel"):
+            self.assertEqual(getattr(self.harness.th.ui, name).text(), "")
+
+    def test_canvas_deselection_clears_the_fields(self):
+        # Deselecting the last shape on the canvas must clear all fields (not
+        # keep showing the values of the deselected shape).
+        self.harness.canvasSelect(self.a)
+        self.assertNotEqual(self.harness.text("millingOffsetLineEdit"), "")
+        self.harness.canvasSelect(self.a)      # deselect again
+        for widget in self.harness.th._mill_parameter_widgets():
+            self.assertEqual(widget.text(), "")
 
     def test_switching_the_selection_updates_the_display(self):
         self.harness.select([self.a])

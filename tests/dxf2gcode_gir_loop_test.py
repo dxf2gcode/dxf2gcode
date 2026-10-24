@@ -33,6 +33,7 @@ from dxf2gcode.core.shapeoffset import offShapeClass, OffPoint
 from dxf2gcode.core.linegeo import LineGeo
 from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.core.point import Point
+from dxf2gcode.core.leadmove import LEAD_OFF
 
 DXF_1997 = r"D:\GIT\dxf2gcode-sourcecode\dxf\1997.DXF"
 
@@ -103,6 +104,8 @@ class TestLoopWindingExport(unittest.TestCase):
         g.config.vars.Cutter_Compensation["done_by_machine"] = False
         pp = make_postpro()
         sh = corridor_shape(nr=7)
+        # The test checks the offset loops reaching the G-Code, not the lead in.
+        sh.parentLayer.lead_in_mode = LEAD_OFF
         build_stmove(sh)
         code = sh.Write_GCode(pp)
         # every loop must contribute linear cutting moves
@@ -304,6 +307,91 @@ class TestOffPointWalkUnit(unittest.TestCase):
         self.assertFalse([r for r in cap.records if r[0] == "ERROR"])
         self.assertTrue([r for r in cap.records
                          if r[0] == "DEBUG" and "cannot start" in r[1]])
+
+
+DXF_TEST = os.path.join(os.path.dirname(_TEST_DIR), "dxf", "test.dxf")
+
+
+def _load_test_dxf_shapes():
+    from dxf2gcode.dxfimport.importer import ReadDXF
+    from copy import copy
+
+    dxf = ReadDXF(filename=DXF_TEST)
+    ent_geos = dxf.entities.geo
+    shapes = []
+    for cont in dxf.entities.cont:
+        tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]))
+        for k in range(len(cont.order)):
+            eg = ent_geos[cont.order[k][0]]
+            if cont.order[k][1]:
+                eg.geo.reverse()
+                for geo in eg.geo:
+                    geo = copy(geo); geo.reverse(); tmp.append(geo)
+                eg.geo.reverse()
+            else:
+                for geo in eg.geo:
+                    tmp.append(copy(geo))
+        tmp.AnalyseAndOptimize()
+        shapes.append(tmp)
+    return shapes
+
+
+@unittest.skipUnless(os.path.exists(DXF_TEST), "test.dxf not available")
+class TestOpenContourConsecutiveConvexPoints(unittest.TestCase):
+    """An open contour that collapses into consecutive convex vertices (small
+    arcs with a radius smaller than the cutter) must be compensated without a
+    crash.
+
+    Regression: the convex-vertex loop unpacked the result of
+    PairWiseInterferenceDetection unconditionally. When several arcs collapse,
+    the segment after a convex vertex is another vertex placeholder without a
+    Ps attribute; the walk returned None (documented for the GIR seeding) and
+    the unpacking raised 'TypeError: cannot unpack non-iterable NoneType
+    object', so the whole shape was dropped. The walk must start on an edge,
+    and an open contour must not wrap around (otherwise the forward and
+    backward walks meet at the 'back' of the contour).
+    """
+
+    def _offsets(self):
+        logger = logging.getLogger("core.shapeoffset")
+        old = logger.level
+        logger.setLevel(logging.DEBUG)
+        cap = _LogCapture()
+        logger.addHandler(cap)
+        try:
+            offsets = []
+            for s in _load_test_dxf_shapes():
+                offsets.append(offShapeClass(parent=s, offset=5.0,
+                                             offtype="out"))
+        finally:
+            logger.removeHandler(cap)
+            logger.setLevel(old)
+        return offsets, cap.records
+
+    def test_no_exception_and_no_traceback(self):
+        offsets, recs = self._offsets()
+        statuses = [o.offset_status for o in offsets]
+        self.assertNotIn("exception", statuses)
+        self.assertNotIn("pending", statuses)
+        # No traceback must be logged anymore.
+        self.assertFalse([r for r in recs if r[2]],
+                         "no traceback expected for the collapsed arcs")
+
+    def test_no_invalid_toolpath_is_accepted(self):
+        # Every compensated ("ok") contour of the file must pass the geometric
+        # self check; a contour which can not be compensated safely is
+        # rejected in a controlled way instead of being milled along an
+        # invalid (gouging) path.
+        offsets, _ = self._offsets()
+        self.assertGreater(len(offsets), 0)
+        for off in offsets:
+            if off.offset_status == "ok":
+                ok, reason = off._validate_offset()
+                self.assertTrue(ok, "invalid toolpath accepted: %s" % reason)
+            else:
+                # A rejection must not return any geometry.
+                self.assertEqual(len(off.rawoff), 0)
+                self.assertEqual(len(off.loops), 0)
 
 
 if __name__ == "__main__":

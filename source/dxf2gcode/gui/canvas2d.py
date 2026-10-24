@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 ############################################################################
 #
 #   Copyright (C) 2011-2015
-#    Christian Kohlöffel
+#    Christian KohlÃ¶ffel
 #    Jean-Paul Schouwstra
 #
 #   This file is part of DXF2GCODE.
@@ -39,6 +39,7 @@ from dxf2gcode.core.point import Point
 from dxf2gcode.core.shape import Shape
 from dxf2gcode.core.boundingbox import BoundingBox
 from dxf2gcode.core.stmove import StMove
+from dxf2gcode.core.breakgeo import BreakGeo
 #TODO: check if can be removed:
 #from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.gui.wpzero import WpZero
@@ -50,7 +51,7 @@ from dxf2gcode.gui.scalebar import (ScaleBar, drawing_unit, scale_bar_enabled)
 import dxf2gcode.globals.globals as g
 
 import dxf2gcode.globals.constants as c
-from dxf2gcode.Qt.QtWidgets import QGraphicsItem, QGraphicsView, QRubberBand, QGraphicsScene, QGraphicsLineItem
+from dxf2gcode.Qt.QtWidgets import QGraphicsItem, QGraphicsView, QRubberBand, QGraphicsScene, QGraphicsLineItem, QMessageBox
 from dxf2gcode.Qt.QtGui import QPainterPath, QPen, QColor, QPainterPathStroker
 from dxf2gcode.Qt import QtCore
 
@@ -119,6 +120,23 @@ class MyGraphicsView(CanvasBase):
         delta = event.angleDelta().y()
         scale = (1000 + delta) / 1000.0
         self.scale(scale, scale)
+        self._update_marker_margins()
+
+    def _update_marker_margins(self):
+        """
+        The warning marker of a shape is drawn with a constant size in pixels:
+        the margin which is needed around it in the bounding rect of the shape
+        depends on the zoom level. The geometry of the items is invalidated, so
+        that the new margin is used.
+        """
+        scene = self.scene()
+        if scene is None:
+            return
+        for item in scene.items():
+            try:
+                item.prepareGeometryChange()
+            except Exception:
+                pass
 
     def mousePressEvent(self, event):
         """
@@ -239,6 +257,7 @@ class MyGraphicsView(CanvasBase):
         height = scene.BB.Pe.y - scene.BB.Ps.y
         scext = QtCore.QRectF(scene.BB.Ps.x, -scene.BB.Pe.y, width * 1.05, height * 1.05)
         self.fitInView(scext, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        self._update_marker_margins()
         logger.debug(self.tr("Autoscaling to extend: %s") % scext)
 
     def scaleBarPixelsPerUnit(self):
@@ -346,6 +365,14 @@ class MyGraphicsScene(QGraphicsScene):
 
         self.BB = BoundingBox()
 
+        # The error messages of the shapes (an invalid lead in / lead out /
+        # overcut geometry). They are collected while the shapes are repainted
+        # and shown in a single message box afterwards: changing a setting of a
+        # layer repaints every shape of the layer one after the other, and the
+        # same error must not pop up once per shape.
+        self._pending_error_messages = []
+        self._error_message_scheduled = False
+
     def tr(self, string_to_translate):
         """
         Translate a string using the QCoreApplication translation framework
@@ -381,6 +408,48 @@ class MyGraphicsScene(QGraphicsScene):
             shape.stmove.hide()
             shape.starrow.hide()
             shape.enarrow.hide()
+
+        # The error message (if any) is collected and shown once after the
+        # whole batch of repaints (see queue_error_message).
+        self.queue_error_message(shape.stmove._warning())
+
+    def queue_error_message(self, message):
+        """
+        Collect the error message of one shape and show all the collected
+        messages in a single message box.
+
+        Repainting a layer with several shapes whose geometry can not be
+        calculated (e.g. an overcut on open contours) calls repaint_shape once
+        per shape. Showing the message box inside repaint_shape would pop up
+        the same error once per shape. The messages are therefore gathered here
+        and the box is shown once, after the current event has been processed.
+
+        @param message: the error message or an empty string
+        """
+        message = message or ""
+        if not message:
+            return
+        if message not in self._pending_error_messages:
+            self._pending_error_messages.append(message)
+        if not self._error_message_scheduled:
+            self._error_message_scheduled = True
+            # singleShot(0) runs after the current event (the whole batch of
+            # repaint_shape calls) has been processed.
+            QtCore.QTimer.singleShot(0, self._show_pending_error_messages)
+
+    def _show_pending_error_messages(self):
+        """
+        Show the error messages collected by queue_error_message in one message
+        box and reset the collection.
+        """
+        self._error_message_scheduled = False
+        messages = self._pending_error_messages
+        self._pending_error_messages = []
+        if not messages:
+            return
+        QMessageBox.critical(
+            g.window, g.window.tr("Ungültige Werkzeugweg-Einstellungen"),
+            "\n".join(messages))
 
     def paint_shape(self, shape):
         """
@@ -419,14 +488,22 @@ class MyGraphicsScene(QGraphicsScene):
         @param shape: The shape for which the Arrow shall be created.
         """
 
-        length = 20
+        # The arrows are 1.5 times the default size, so that they are easier to
+        # see, and their outline is one pixel thicker.
+        length = 30
         start, start_ang = shape.get_start_end_points_physical(True, True, PPocket=True)
         
+        # The lead in and the start arrow use an own outline colour (orange),
+        # so that they can be told apart from the offset contour (which stays
+        # blue). The fill of the arrow is kept as it was.
         arrow = Arrow(startp=start,
                       length=length,
                       angle=start_ang,
                       color=QColor(50, 200, 255),
-                      pencolor=QColor(50, 100, 255))
+                      pencolor=QColor(255, 140, 0))
+        arrow.arrowSize = 12.0
+        arrow.pen.setWidth(2)
+        arrow.pen.setStyle(QtCore.Qt.PenStyle.DashLine)
         return arrow
 
     def createenarrow(self, shape):
@@ -435,15 +512,24 @@ class MyGraphicsScene(QGraphicsScene):
         shape is selected.
         @param shape: The shape for which the Arrow shall be created.
         """
-        length = 20
+        # The arrows are 1.5 times the default size, so that they are easier to
+        # see, and their outline is one pixel thicker.
+        length = 30
         end, end_ang = shape.get_start_end_points_physical(False, True, PPocket=shape.Pocket)
             
+        # The lead out and the end arrow use the same outline colour as the
+        # lead out preview (magenta), so that they can be told apart from the
+        # offset contour (which stays blue). The fill of the arrow is kept as
+        # it was.
         arrow = Arrow(startp=end,
                       length=length,
                       angle=end_ang,
                       color=QColor(0, 245, 100),
-                      pencolor=QColor(0, 180, 50),
+                      pencolor=QColor(200, 60, 200),
                       startarrow=False)
+        arrow.arrowSize = 12.0
+        arrow.pen.setWidth(2)
+        arrow.pen.setStyle(QtCore.Qt.PenStyle.DashLine)
         return arrow
 
     def createstmove(self, shape):
@@ -699,10 +785,29 @@ class ShapeGUI(QGraphicsItem, Shape):
 
 class StMoveGUI(QGraphicsItem, StMove):
 
+    # The radius of the warning marker in pixels (the diameter is 20 pixels).
+    # The marker is always drawn with this size, it does not scale with the
+    # zoom level of the canvas.
+    WARNING_MARKER_RADIUS = 10.0
+
     # G41/G42 compensation contour and start moves (thicker solid line)
     PEN_COMP_LINE = QPen(QColor(50, 100, 255), 2, QtCore.Qt.PenStyle.SolidLine,
                          QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
     PEN_COMP_LINE.setCosmetic(True)
+    # Lead in (the movements at the start of the first pass). It is drawn with
+    # an own colour so that it can be told apart from the offset contour
+    # (which stays blue) and from the lead out. Like the lead out it is drawn
+    # dashed (both are only a preview of the lead moves).
+    PEN_LEAD_IN_LINE = QPen(QColor(255, 140, 0), 2, QtCore.Qt.PenStyle.DashLine,
+                            QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
+    PEN_LEAD_IN_LINE.setCosmetic(True)
+    # The tool at the entry point of the lead in: the same colour as the lead
+    # in moves, but only one pixel wide and dashed. The circle itself is drawn
+    # in scene units (it scales with the zoom) so that the relation between the
+    # tool, the lead in moves and the geometry is visible.
+    PEN_LEAD_IN_TOOL = QPen(QColor(255, 140, 0), 1, QtCore.Qt.PenStyle.DashLine,
+                            QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
+    PEN_LEAD_IN_TOOL.setCosmetic(True)
     # Pocket milling zig-zag lines (thinner solid line)
     PEN_POCKET_LINE = QPen(QColor(120, 170, 255), 1, QtCore.Qt.PenStyle.SolidLine,
                            QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
@@ -711,6 +816,14 @@ class StMoveGUI(QGraphicsItem, StMove):
     PEN_RAPID_MOVE = QPen(QColor(30, 60, 120), 1, QtCore.Qt.PenStyle.DotLine,
                           QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
     PEN_RAPID_MOVE.setCosmetic(True)
+    # Lead out / overcut (the movements at the end of the last pass)
+    PEN_EXIT_LINE = QPen(QColor(200, 60, 200), 2, QtCore.Qt.PenStyle.DashLine,
+                         QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
+    PEN_EXIT_LINE.setCosmetic(True)
+    # Warning marker: the geometry of this shape can not be calculated
+    PEN_WARNING = QPen(QColor(220, 0, 0), 2, QtCore.Qt.PenStyle.SolidLine,
+                        QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
+    PEN_WARNING.setCosmetic(True)
 
     def __init__(self, shape):
         QGraphicsItem.__init__(self)
@@ -724,7 +837,13 @@ class StMoveGUI(QGraphicsItem, StMove):
         self._comp_path = QPainterPath()    # G41/G42 compensation contour
         self._pocket_path = QPainterPath()  # pocket milling zig-zag
         self._rapid_paths = []
-        
+        # The preview of the lead in (the movements at the start of the first
+        # pass). It is drawn with an own colour (the offset contour stays blue).
+        self._lead_in_path = QPainterPath()
+        # The preview of the lead out and the overcut (the movements which are
+        # written at the end of the last pass).
+        self._exit_path = QPainterPath()
+
         self._rebuild_paths_from_geos()
 
     def contains_point(self, point):
@@ -733,12 +852,50 @@ class StMoveGUI(QGraphicsItem, StMove):
         """
         return float(0x7fffffff)
 
+    def _break_chain(self):
+        """
+        The chain of the last pass with the break (tab) hops.
+
+        The tabs are not cut: the export hops over them. The preview of the
+        exit geometry has to show the same, so the tabs are calculated here
+        with the same class the export uses (postpro/breaks.py). The break
+        layers are part of the layer contents, so this is only possible in
+        the GUI context.
+
+        @return: the chain with the break hops or None if the tabs can not be
+                determined
+        """
+        chain = getattr(self, 'exit_chain', None)
+        if not chain:
+            return None
+        shape = getattr(self, 'shape', None)
+        if shape is not None and getattr(shape, 'break_pass', -1) == 0:
+            # The breaks are never processed: there are no tabs.
+            return None
+        layers = getattr(getattr(g, "window", None), "layerContents", None)
+        if layers is None:
+            return None
+        try:
+            from dxf2gcode.core.shape import Geos
+            from dxf2gcode.postpro.breaks import Breaks
+            return Breaks(layers).getNewGeos(Geos(list(chain)))
+        except Exception:
+            return None
+
     def _rebuild_paths_from_geos(self):
         """Rebuild _comp_path, _pocket_path and _rapid_paths from current geos."""
         self._comp_path = QPainterPath()
         self._pocket_path = QPainterPath()
         self._rapid_paths = []
-        
+        self._lead_in_path = QPainterPath()
+        self._exit_path = QPainterPath()
+
+        # The user has to know why the geometry of this shape is not complete.
+        # The message is set before the paths are built: if the geometry could
+        # not be calculated at all, there is no path to draw, but the warning
+        # still has to be shown.
+        self.setToolTip(self._warning())
+
         try:
             first_geo = self.geos.abs_el(0)
             start = first_geo.get_start_end_points(True)
@@ -750,9 +907,16 @@ class StMoveGUI(QGraphicsItem, StMove):
         # StMove.make_start_moves); everything before belongs to the
         # G41/G42 compensation contour / start moves.
         pocket_start = getattr(self, 'pocket_geos_start', None)
-        
+
+        # The lead in is drawn separately (with an own colour): it is part of
+        # self.geos right after the rapid to the dive point (index 0).
+        lead_in_count = len(getattr(self, 'lead_in_geos', None) or [])
+        lead_in_start = 1 if lead_in_count else 0
+        lead_in_end = lead_in_start + lead_in_count
+
         comp_pos = None    # current end position of _comp_path
         pocket_pos = None  # current end position of _pocket_path
+        lead_in_pos = None  # current end position of _lead_in_path
         force_break = False  # set after a PocketMove (retract/plunge)
         
         n = len(self.geos)
@@ -797,8 +961,9 @@ class StMoveGUI(QGraphicsItem, StMove):
                     force_break = True
                 prev_pe = Point(pe.x, pe.y)
                 continue
-            
+
             # Draw connection gap from previous geo end to current geo start
+
             dx_gap = abs(ps.x - prev_pe.x)
             dy_gap = abs(ps.y - prev_pe.y)
             if dx_gap > 1e-6 or dy_gap > 1e-6:
@@ -808,14 +973,18 @@ class StMoveGUI(QGraphicsItem, StMove):
                 self._rapid_paths.append(gap_rp)
             
             in_pocket = (pocket_start is not None and i >= pocket_start)
-            
+            is_lead_in = lead_in_start <= i < lead_in_end
+
             if is_rapid:
                 rp = QPainterPath()
                 rp.moveTo(ps.x, -ps.y)
                 rp.lineTo(pe.x, -pe.y)
                 self._rapid_paths.append(rp)
             else:
-                if in_pocket:
+                if is_lead_in:
+                    target = self._lead_in_path
+                    pos = lead_in_pos
+                elif in_pocket:
                     target = self._pocket_path
                     pos = pocket_pos
                 else:
@@ -836,13 +1005,47 @@ class StMoveGUI(QGraphicsItem, StMove):
                     pass
                 force_break = False
                 
-                if in_pocket:
+                if is_lead_in:
+                    lead_in_pos = Point(pe.x, pe.y)
+                elif in_pocket:
                     pocket_pos = Point(pe.x, pe.y)
                 else:
                     comp_pos = Point(pe.x, pe.y)
             
             prev_pe = Point(pe.x, pe.y)
-    
+
+        # The preview of the lead out and the overcut: it is not part of the
+        # toolpath of the shape, it is drawn separately (and it is only a
+        # preview - the export calculates the same geometry again).
+        # The tabs (break hops) are not cut: they are shown as a gap, like the
+        # export hops over them.
+        self.set_break_chain(self._break_chain())
+        exit_geos = getattr(self, 'exit_geos', None)
+        if exit_geos:
+            position = None
+            exit_path = self._exit_path
+            for geo in exit_geos:
+                if isinstance(geo, BreakGeo):
+                    # The tab is not cut: the preview shows a gap here.
+                    position = None
+                    continue
+                try:
+                    ps = geo.get_start_end_points(True)
+                    pe = geo.get_start_end_points(False)
+                except Exception:
+                    continue
+                if position is None:
+                    exit_path.moveTo(ps.x, -ps.y)
+                else:
+                    exit_path.lineTo(ps.x, -ps.y)
+                try:
+                    geo.make_path(
+                        None,
+                        lambda caller, s, e: exit_path.lineTo(e.x, -e.y))
+                except Exception:
+                    pass
+                position = pe
+
     def setSelected(self, flag=True, blockSignals=True):
         """
         Override inherited function to turn off selection of Arrows.
@@ -869,36 +1072,216 @@ class StMoveGUI(QGraphicsItem, StMove):
         else:
             self.hide()
 
+    def show_error_message(self):
+        """
+        Show the error message of the start move (the lead in) or of the exit
+        geometry (the lead out / the overcut) in a message box.
+
+        The error is also marked in the canvas (see _warning).
+
+        @return: nothing
+        """
+        message = self._warning()
+        if not message:
+            return
+        QMessageBox.critical(
+            g.window, g.window.tr("Ungültige Werkzeugweg-Einstellungen"),
+            message)
+
+    def _warning(self):
+        """
+        The error message of the start move (the lead in) or of the exit
+        geometry (the lead out / the overcut): the geometry of this shape can
+        not be calculated, so it is marked in the canvas.
+        @return: the message or an empty string
+        """
+        messages = []
+        for message in (getattr(self, "start_move_error", ""),
+                        getattr(self, "exit_error", "")):
+            if message and message not in messages:
+                messages.append(message)
+        return "\n".join(messages)
+
+    def _warning_point(self):
+        """
+        The point where the warning marker is drawn: the start of the toolpath
+        (the rapid to the dive point is not part of the drawn geometry, so the
+        marker would be clipped).
+        @return: a Point or None
+        """
+        for geo in self.geos.abs_iter():
+            geo_type_name = type(geo).__name__
+            if 'Rapid' in geo_type_name or 'PocketMove' in geo_type_name:
+                # The rapid to the dive point is not part of the drawn
+                # geometry, the marker would be clipped.
+                continue
+            try:
+                return geo.get_start_end_points(True)
+            except Exception:
+                continue
+        # The toolpath could not be calculated at all (e.g. the radius of the
+        # lead in is too small): the marker is drawn at the start of the
+        # contour, so that the user can see which shape is not milled.
+        try:
+            start, _ = self.shape.get_start_end_points(True, True)
+            return start
+        except Exception:
+            return None
+
+    def _draw_warning(self, painter):
+        """
+        Draw a warning marker at the start of the toolpath: the geometry of
+        this shape is not complete (the offsets are missing), the user has to
+        know why.
+
+        The marker is always drawn with the same size in pixels, it does not
+        scale with the zoom level: the diameter of the circle is 20 pixels
+        and the cross has the same extent as the circle.
+
+        @param painter: the painter of the item
+        """
+        start = self._warning_point()
+        if start is None:
+            return
+        # The radius of the warning marker in pixels (the diameter is 20
+        # pixels). The marker is drawn with this size at every zoom level.
+        radius = self.WARNING_MARKER_RADIUS
+        painter.save()
+        # Draw the marker in device (pixel) coordinates, so that it keeps its
+        # size at every zoom level.
+        transform = painter.transform()
+        painter.resetTransform()
+        position = transform.map(QtCore.QPointF(start.x, -start.y))
+        painter.setPen(self.PEN_WARNING)
+        painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+        painter.drawEllipse(position, radius, radius)
+        painter.drawLine(QtCore.QPointF(position.x() - radius,
+                                        position.y() - radius),
+                         QtCore.QPointF(position.x() + radius,
+                                        position.y() + radius))
+        painter.drawLine(QtCore.QPointF(position.x() - radius,
+                                        position.y() + radius),
+                         QtCore.QPointF(position.x() + radius,
+                                        position.y() - radius))
+        painter.restore()
+
+    def _tool_radius(self):
+        """
+        The radius of the tool (in scene units) used for this shape.
+
+        @return: the tool radius or 0.0 when it can not be determined
+        """
+        layer = getattr(self.shape, "parentLayer", None)
+        if layer is None:
+            return 0.0
+        try:
+            return layer.getToolRadius()
+        except Exception:
+            return 0.0
+
     def paint(self, painter, option, widget=None):
         """
         Method triggered on every paint event (including zoom/drag).
         Draw G41/G42 compensation lines (thick solid), pocket milling
-        lines (thin solid) and rapid moves (dotted).
+        lines (thin solid), rapid moves (dotted) and the preview of the
+        lead out / overcut (dashed).
         """
         if (self._comp_path.isEmpty() and self._pocket_path.isEmpty()
-                and not self._rapid_paths):
+                and not self._rapid_paths and self._exit_path.isEmpty()
+                and self._lead_in_path.isEmpty()
+                and not self._warning()):
+            # Nothing to draw. If the geometry is not complete, the warning
+            # marker is drawn anyway (the user has to know why).
             return
-        
+
         painter.setPen(self.PEN_COMP_LINE)
         painter.drawPath(self._comp_path)
-        
+
         painter.setPen(self.PEN_POCKET_LINE)
         painter.drawPath(self._pocket_path)
-        
+
+        # Draw the preview of the lead in
+        if not self._lead_in_path.isEmpty():
+            painter.setPen(self.PEN_LEAD_IN_LINE)
+            painter.drawPath(self._lead_in_path)
+            # Draw the tool at the entry (start) point of the lead in so that
+            # the relation between the lead in moves and the geometry becomes
+            # visible. The tool is drawn in the lead in colour, one pixel wide
+            # and dashed; the circle is in scene units, so it scales with the
+            # zoom like the geometry.
+            tool_radius = self._tool_radius()
+            if tool_radius > 0.0:
+                element = self._lead_in_path.elementAt(0)
+                painter.setPen(self.PEN_LEAD_IN_TOOL)
+                painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+                painter.drawEllipse(QtCore.QPointF(element.x, element.y),
+                                    tool_radius, tool_radius)
+
+        # Draw the preview of the lead out and the overcut
+        if not self._exit_path.isEmpty():
+            painter.setPen(self.PEN_EXIT_LINE)
+            painter.drawPath(self._exit_path)
+
+        # Draw the warning marker: the geometry of this shape is not complete
+        if self._warning():
+            self._draw_warning(painter)
+
         # Draw rapid/positioning paths as dotted lines
         for rp in self._rapid_paths:
             painter.setPen(self.PEN_RAPID_MOVE)
             painter.drawPath(rp)
 
+    def _warning_marker_radius(self):
+        """
+        The radius of the warning marker in scene units.
+
+        The marker itself is drawn with a constant size in pixels (it does not
+        scale with the zoom level of the canvas), so the margin which is needed
+        around the marker in the bounding rect depends on the zoom level.
+
+        @return: the radius of the marker in scene units
+        """
+        radius = self.WARNING_MARKER_RADIUS  # in pixels
+        scale = 1.0
+        try:
+            scene = self.scene()
+            if scene is not None:
+                for view in scene.views():
+                    scale = abs(view.transform().m11())
+                    break
+        except Exception:
+            scale = 1.0
+        if not scale:
+            scale = 1.0
+        return radius / scale
+
     def boundingRect(self):
         """
         Required method for painting. Returns combined bounding box of
-        compensation path, pocket path and all rapid move paths.
+        compensation path, pocket path, all rapid move paths, the preview of
+        the lead out / overcut and the warning marker.
         """
         br = self._comp_path.boundingRect()
         br = br.united(self._pocket_path.boundingRect())
         for rp in self._rapid_paths:
             br = br.united(rp.boundingRect())
+        br = br.united(self._lead_in_path.boundingRect())
+        br = br.united(self._exit_path.boundingRect())
+        # The tool circle at the entry point of the lead in.
+        if not self._lead_in_path.isEmpty():
+            radius = self._tool_radius()
+            if radius > 0.0:
+                element = self._lead_in_path.elementAt(0)
+                tool = QtCore.QRectF(element.x - radius, element.y - radius,
+                                     2 * radius, 2 * radius)
+                br = br.united(tool)
+        if self._warning():
+            start = self._warning_point()
+            if start is not None:
+                radius = self._warning_marker_radius()
+                marker = QtCore.QRectF(start.x - radius, -start.y - radius,
+                                       2 * radius, 2 * radius)
+                br = br.united(marker)
         return br
 
     def updateGeometry(self):
