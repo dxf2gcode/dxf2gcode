@@ -581,36 +581,44 @@ class StMove(object):
             lead_in_mode = get_lead_in_mode(self.shape)
             if lead_in_mode in (LEAD_RADIUS, LEAD_STARTMOVE):
                 # The circle and the start move are programmed in the nominal
-                # plane: G41/G42 is activated at the end of the plunge (see
+                # plane: G41/G42 is activated after the plunge (see
                 # shape.Write_GCode) and the machine then builds the tool
-                # radius offset of the nominal lead in. Before G41/G42 is
-                # switched on (G40) dxf2gcode itself has to place the tool
-                # center beside the nominal lead in line: the G40 approach line
-                # (see leadmove.machine_g40_approach).
+                # radius offset of the nominal lead in. The machine is
+                # positioned directly at the compensated start of the nominal
+                # lead in line; no separate G40 approach line is inserted.
                 if not self._build_lead_in(start, angle, side,
                                            SPACE_NOMINAL):
                     self.pocket_geos_start = len(self.geos)
                     return
+                # For lathe or other modes where lead move is disabled,
+                # _build_lead_in returns True but does not populate lead_in_geos.
+                if not self.lead_in_geos:
+                    self.append(RapidPos(start))
+                    self.pocket_geos_start = len(self.geos)
+                    return
                 nominal = Geos(list(self.lead_in_geos))
                 tool_radius = self.shape.parentLayer.getToolRadius()
-                lead_length = getattr(self.shape.parentLayer, 'lead_length',
-                                      0.0)
-                approach = machine_g40_approach(nominal, side, tool_radius,
-                                                lead_length)
-                if approach is not None and nominal:
-                    # The G40 approach line is the tool center path which is
-                    # cut without compensation; the nominal lead in (the line
-                    # and the arc) is written after G41/G42.
-                    self.lead_in_geos = Geos([approach] + list(nominal))
-                    self.lead_in_nominal_index = 1
-                    self.geos = Geos([RapidPos(approach.Ps)] +
-                                     list(self.lead_in_geos))
+                # Calculate compensated start position of the first nominal segment
+                first = nominal[0]
+                line_length = first.Ps.distance(first.Pe)
+                if line_length > eps:
+                    direction = Point((first.Pe.x - first.Ps.x) / line_length,
+                                      (first.Pe.y - first.Ps.y) / line_length)
+                    # Offset direction: left for G41 (side>0), right for G42 (side<0)
+                    if side > 0:
+                        offset_dir = Point(-direction.y, direction.x)
+                    else:
+                        offset_dir = Point(direction.y, -direction.x)
+                    compensated_start = first.Ps + offset_dir * tool_radius
                 else:
-                    # No G40 approach line could be built: the nominal lead in
-                    # is written after G41/G42 without a G40 move.
-                    self.lead_in_nominal_index = 0
-                if not len(self.lead_in_geos):
-                    self.append(RapidPos(start))
+                    compensated_start = first.Ps
+                # All lead-in geometries are nominal (compensated by machine)
+                self.lead_in_nominal_index = 0
+                self.geos = Geos([RapidPos(compensated_start)] +
+                                 list(self.lead_in_geos))
+                # The contour is programmed nominal; the lead out is previewed
+                # in the same nominal plane so that lead in and lead out have
+                # the same radius at the workpiece.
                 self.lead_space = SPACE_NOMINAL
             else:
                 # The straight lead in is programmed in the tool center

@@ -1046,6 +1046,26 @@ class StMoveGUI(QGraphicsItem, StMove):
                     pass
                 position = pe
 
+    def _lead_in_dive_point(self):
+        """
+        Return the actual dive point (tool center position at plunge) for the
+        lead-in preview tool circle.
+
+        For machine compensation (G41/G42) the first geometry is a RapidPos at
+        the compensated start. For software compensation it's also a RapidPos
+        at the tool-center start. In both cases self.geos[0] is the correct
+        dive point when a lead-in exists.
+        """
+        try:
+            if not self.lead_in_geos:
+                return None
+            first = self.geos.abs_el(0)
+            if hasattr(first, 'x') and hasattr(first, 'y'):
+                return Point(first.x, first.y)
+        except Exception:
+            pass
+        return None
+
     def setSelected(self, flag=True, blockSignals=True):
         """
         Override inherited function to turn off selection of Arrows.
@@ -1204,18 +1224,19 @@ class StMoveGUI(QGraphicsItem, StMove):
         if not self._lead_in_path.isEmpty():
             painter.setPen(self.PEN_LEAD_IN_LINE)
             painter.drawPath(self._lead_in_path)
-            # Draw the tool at the entry (start) point of the lead in so that
-            # the relation between the lead in moves and the geometry becomes
-            # visible. The tool is drawn in the lead in colour, one pixel wide
-            # and dashed; the circle is in scene units, so it scales with the
-            # zoom like the geometry.
+            # Draw the tool at the actual dive point (tool center position
+            # at plunge) so that the relation between the lead in moves and
+            # the geometry becomes visible. The tool is drawn in the lead in
+            # colour, one pixel wide and dashed; the circle is in scene units,
+            # so it scales with the zoom like the geometry.
             tool_radius = self._tool_radius()
             if tool_radius > 0.0:
-                element = self._lead_in_path.elementAt(0)
-                painter.setPen(self.PEN_LEAD_IN_TOOL)
-                painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
-                painter.drawEllipse(QtCore.QPointF(element.x, element.y),
-                                    tool_radius, tool_radius)
+                dive = self._lead_in_dive_point()
+                if dive is not None:
+                    painter.setPen(self.PEN_LEAD_IN_TOOL)
+                    painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+                    painter.drawEllipse(QtCore.QPointF(dive.x, -dive.y),
+                                        tool_radius, tool_radius)
 
         # Draw the preview of the lead out and the overcut
         if not self._exit_path.isEmpty():
@@ -1267,14 +1288,15 @@ class StMoveGUI(QGraphicsItem, StMove):
             br = br.united(rp.boundingRect())
         br = br.united(self._lead_in_path.boundingRect())
         br = br.united(self._exit_path.boundingRect())
-        # The tool circle at the entry point of the lead in.
+        # The tool circle at the actual dive point of the lead in.
         if not self._lead_in_path.isEmpty():
             radius = self._tool_radius()
             if radius > 0.0:
-                element = self._lead_in_path.elementAt(0)
-                tool = QtCore.QRectF(element.x - radius, element.y - radius,
-                                     2 * radius, 2 * radius)
-                br = br.united(tool)
+                dive = self._lead_in_dive_point()
+                if dive is not None:
+                    tool = QtCore.QRectF(dive.x - radius, -dive.y - radius,
+                                         2 * radius, 2 * radius)
+                    br = br.united(tool)
         if self._warning():
             start = self._warning_point()
             if start is not None:
