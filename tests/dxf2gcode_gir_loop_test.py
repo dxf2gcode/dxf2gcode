@@ -54,6 +54,16 @@ def make_off(shape, offset=1.0, offtype="in"):
     return offShapeClass(parent=shape, offset=offset, offtype=offtype)
 
 
+def u_shape():
+    """A narrow U contour whose 0.5 mm inward offset has a real GIR."""
+    points = [(0, 0), (12, 0), (12, 12), (11, 12),
+              (11, 1), (1, 1), (1, 12), (0, 12)]
+    geos = [LineGeo(Point(*points[k]),
+                    Point(*points[(k + 1) % len(points)]))
+            for k in range(len(points))]
+    return make_shape(geos, cut_cor=42, cw=True, tool_diameter=3.0)
+
+
 # ---------------------------------------------------------------------------
 class TestLoopWinding(unittest.TestCase):
 
@@ -95,6 +105,24 @@ class TestLoopWinding(unittest.TestCase):
             # correct winding (not discarded as gouging island)
             self.assertTrue(off._loop_area_sign_ok(loop, ref_sign))
             self.assertTrue(off._loop_big_enough(loop))
+
+    def test_u_contour_collects_and_removes_a_real_gir(self):
+        class RecordingOffset(offShapeClass):
+            def remove_global_interferences(self):
+                self.raw_crossings = len(self._find_crossings(self.rawoff))
+                super(RecordingOffset, self).remove_global_interferences()
+
+            def _remove_girs(self, girs):
+                self.collected_girs = len(girs)
+                super(RecordingOffset, self)._remove_girs(girs)
+
+        off = RecordingOffset(parent=u_shape(), offset=0.5, offtype="in")
+        self.assertGreaterEqual(off.raw_crossings, 1)
+        self.assertGreaterEqual(off.collected_girs, 1)
+        self.assertEqual(off.offset_status, "ok")
+        self.assertTrue(off.loops)
+        for loop in off.loops:
+            self.assertEqual(off._find_crossings(loop), [])
 
 
 class TestLoopWindingExport(unittest.TestCase):

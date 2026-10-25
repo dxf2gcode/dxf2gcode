@@ -354,6 +354,11 @@ class TestTreeGui(LeadMoveTestBase):
         self.harness = _Harness([self.layer])
         self.harness.select([self.shape])
         self.th = self.harness.th
+        self.th._fill_lead_mode_combo(self.th.ui.leadInComboBox,
+                                      lead_in=True)
+        self.th._fill_lead_mode_combo(self.th.ui.leadOutComboBox,
+                                      lead_in=False)
+        self.harness.select([self.shape])
 
     def tearDown(self):
         LeadMoveTestBase.tearDown(self)
@@ -363,7 +368,7 @@ class TestTreeGui(LeadMoveTestBase):
         self.assertGreaterEqual(index, 0, mode)
         return index
 
-def test_the_combo_boxes_offer_all_the_methods(self):
+    def test_the_combo_boxes_offer_all_the_methods(self):
         # The configuration default is not an entry of the comboboxes: the
         # method which is really used is shown. The 'radius' method is not
         # selectable for the lead in (it is merged into the 'startmove'), it
@@ -375,7 +380,7 @@ def test_the_combo_boxes_offer_all_the_methods(self):
         lead_out_data = [self.th.ui.leadOutComboBox.itemData(i)
                          for i in range(self.th.ui.leadOutComboBox.count())]
         self.assertEqual(lead_out_data, [LEAD_OFF, LEAD_STRAIGHT,
-                                          LEAD_RADIUS, LEAD_STARTMOVE])
+                                          LEAD_STARTMOVE, LEAD_RADIUS])
 
     def test_the_configuration_default_is_used(self):
         # The layer uses the configuration default: the global default is
@@ -396,6 +401,8 @@ def test_the_combo_boxes_offer_all_the_methods(self):
         # The lead in is set to a circle, the lead out keeps its value. The
         # 'radius' method of the lead in is not selectable any more: it is
         # mapped to the 'startmove'.
+        g.config.vars.Lead_In_Out['lead_in_mode'] = LEAD_OFF
+        g.config.vars.Lead_In_Out['lead_out_mode'] = LEAD_OFF
         self.shape.lead_out_mode = LEAD_STRAIGHT
         self.harness.select([self.shape])
         index = self._index_of(self.th.ui.leadInComboBox,
@@ -454,11 +461,10 @@ def test_the_combo_boxes_offer_all_the_methods(self):
         g.config.vars.Lead_In_Out['lead_in_mode'] = LEAD_STARTMOVE
         other_shape = _make_shape(1)
         self.harness.select([self.shape])
-        index = self._index_of(self.th.ui.leadInComboBox,
-                               LEAD_STARTMOVE)
+        index = self._index_of(self.th.ui.leadInComboBox, LEAD_STRAIGHT)
         self.th.ui.leadInComboBox.setCurrentIndex(index)
         self.th.leadInUpdate(index)
-        self.assertEqual(self.shape.lead_in_mode, LEAD_STARTMOVE)
+        self.assertEqual(self.shape.lead_in_mode, LEAD_STRAIGHT)
         # The other shape is not touched.
         self.assertEqual(other_shape.lead_in_mode, LEAD_DEFAULT)
         self.assertEqual(other_shape.get_lead_in_mode(), LEAD_STARTMOVE)
