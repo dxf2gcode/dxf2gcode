@@ -33,6 +33,72 @@ from dxf2gcode.globals.helperfunctions import a2u
 import dxf2gcode.globals.globals as g
 
 
+def _chord(geo):
+    """
+    The distance between the start and the end point of a geometry element.
+    @param geo: a LineGeo or ArcGeo
+    @return: the chord length
+    """
+    return geo.get_start_end_points(True).distance(
+        geo.get_start_end_points(False))
+
+
+def _drop_end_element(geos, index, max_chord):
+    """
+    Drop a negligible end element if its neighbour is much longer.
+    @param geos: the geometry list (modified in place)
+    @param index: 0 for the first element, -1 for the last element
+    @param max_chord: the largest chord which counts as negligible
+    @return: True if an element was dropped
+    """
+    if len(geos) < 2:
+        return False
+    geo = geos[index]
+    neighbour = geos[-2] if index == -1 else geos[1]
+    chord = _chord(geo)
+    neighbour_chord = _chord(neighbour)
+    if chord <= max_chord and neighbour_chord > 10.0 * chord:
+        del geos[index]
+        return True
+    return False
+
+
+def drop_degenerate_end_geos(geos, cpoints, tol):
+    """
+    Drop a degenerate end element of an open spline.
+
+    A repeated control point at the end of an open spline creates a zero
+    tangent there. The biarc conversion then fits a very small element at
+    that end (for the spline 9 of test.dxf: r=0.106863 mm and a chord of
+    0.007369 mm). That element is not a feature of the spline; it makes the
+    cutter compensation collapse because its radius is smaller than the tool
+    radius. It is dropped when
+
+      * the spline is open,
+      * the control points at that end are duplicated (within tol),
+      * the element is geometrically negligible (chord <= 10 * tol) and
+      * the neighbouring element is much longer (> 10 * chord).
+
+    A real short element (without a duplicated end control point) and a
+    closed spline are not touched. The end point moves by at most 10 * tol
+    (0.01 mm with the default tolerance), which is below the fitting
+    tolerance of the drawing.
+    @param geos: the converted geometry (modified in place)
+    @param cpoints: the control points of the spline
+    @param tol: the fitting tolerance of the spline conversion
+    """
+    if len(geos) < 2 or len(cpoints) < 3:
+        return
+    if cpoints[0].within_tol(cpoints[-1], tol):
+        # A closed spline: its two ends belong together, do not open it.
+        return
+    max_chord = 10.0 * tol
+    if cpoints[-1].within_tol(cpoints[-2], tol):
+        _drop_end_element(geos, -1, max_chord)
+    if len(geos) >= 2 and cpoints[0].within_tol(cpoints[1], tol):
+        _drop_end_element(geos, 0, max_chord)
+
+
 class GeoentSpline:
     def __init__(self, Nr=0, caller=None):
         self.Typ = 'Spline'
@@ -64,6 +130,11 @@ class GeoentSpline:
                                        Weights=self.Weights, CPoints=self.CPoints, tol=tol, check=check)
 
         self.geo = Spline2ArcsClass.Curve
+
+        # A repeated control point at the end of an open spline makes the
+        # biarc conversion generate a degenerate micro element there. Drop it
+        # before the geometry is used (see drop_degenerate_end_geos).
+        drop_degenerate_end_geos(self.geo, self.CPoints, tol)
 
         for geo in self.geo:
             self.length += geo.length

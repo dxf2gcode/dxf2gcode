@@ -214,6 +214,13 @@ class offShapeClass(Shape):
         for seg in self.segments:
             self.rawoff += [self.make_rawoff_seg(seg)]
 
+        # Snapshot of the raw offset before the interference removal. The
+        # collapse guard after split_into_loops() uses it to detect a broken
+        # GIR walk which would otherwise silently return a nearly empty
+        # toolpath with the status "ok".
+        raw_count = len(self.rawoff)
+        raw_len = sum(geo.length for geo in self.rawoff)
+
 
         self.geos_postprocessing(eps*5)
 
@@ -236,6 +243,27 @@ class offShapeClass(Shape):
         # broken connections. Each loop is milled as its own path and the
         # caller connects the loops with rapid moves.
         self.split_into_loops()
+
+        # Safety net: a GIR (or a broken walk) must never reduce a full
+        # contour to a single element. That is a numerical/algorithmic
+        # collapse, not a valid toolpath, and it must not be reported as
+        # "ok" (otherwise the user gets a nearly empty toolpath without any
+        # error). A real global interference removes a sub-region of the
+        # offset, not the whole curve.
+        if raw_count >= 3:
+            loop_count = sum(len(loop) for loop in self.loops)
+            loop_len = sum(geo.length for loop in self.loops
+                           for geo in loop)
+            if loop_count <= 1 or (raw_len > 0 and
+                                   loop_len < 0.01 * raw_len):
+                self.offset_status = "incomplete"
+                logger.error(
+                    "Cutter compensation: the offset collapsed to %i "
+                    "element(s) (%i raw elements) - the shape will NOT be "
+                    "milled", loop_count, raw_count)
+                self.rawoff = Geos()
+                self.loops = []
+                return
 
         # Geometric self check: a raw offset arc of a collapsed vertex (which
         # would gouge) or any other dropout must never be returned as a valid
@@ -1107,6 +1135,26 @@ class offShapeClass(Shape):
                 # several intersections: deterministic, geometry based
                 # choice - the one nearest to the seed point
                 X_end = min(X_end, key=lambda P: P.distance(X_seed))
+
+            # The raw offset of a closed contour is closed: its first and
+            # last element share the connection point. The pairwise walk
+            # stops there because adjacent elements have distance 0 - that is
+            # NOT a self-intersection. Only this shared connection is
+            # skipped; a real crossing of the same two elements at another
+            # point (then the seed is at that crossing) is still processed.
+            n_raw = len(self.rawoff)
+            is_connection = (
+                (f_e == n_raw - 1 and b_e == 0) or
+                (f_e == 0 and b_e == n_raw - 1))
+            if self.closed and is_connection:
+                connection = self.rawoff[0].Ps
+                if (X_end.distance(connection) <= eps * 10 and
+                        X_seed.distance(connection) > eps * 10):
+                    skipped += 1
+                    logger.debug(
+                        "GIR: contact is the cyclic connection of the closed "
+                        "raw offset - skipped")
+                    continue
 
             # sanity: the two cyclic intervals must be well defined. The
             # observed special cases (walk ends on the same element it
