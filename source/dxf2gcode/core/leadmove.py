@@ -63,41 +63,40 @@ overwritten per layer. There are only two of them:
   * the radius at the workpiece (R_w): it is used by all the methods which
     contain an arc.
   * the length of the straight part (L): it is used by all the methods which
-    contain a straight line. It is measured along the contour direction: for
-    the methods which consist of a straight line only ('straight') it is the
-    length of that line, for the start move ('startmove') it is the part of
-    the diagonal line which is parallel to the contour (the other part is the
-    radius of the tool center path, so the line is longer than L).
+    contain a straight line. For the lead in it is the length of the straight
+    part of the lead in for the software compensation and for the machine
+    compensation G41/G42 (the machine compensates the same programmed length).
+    For G40 (no cutter compensation) the historical length of the tool center
+    radius is kept, so that the G40 path does not change.
 
 The method (which is selected independently for the lead in and for the lead
 out) decides which of them is really used:
 
   * 'off'      : no geometry at all, neither the radius nor the length is
                  used.
-  * 'straight' : a straight line of the length L.
-  * 'radius'   : a quarter arc of the radius R_w. The arc is preceded by the
-                 straight line which builds up the cutter compensation. That
-                 straight line is NOT an additional lead in segment: it is the
-                 movement which the machine needs to build up the tool radius
-                 compensation. With G41/G42 the compensation can only be built
-                 up with a movement in the XY plane (otherwise the machine
-                 would build the offset with a lateral step while the arc is
-                 milled, at the depth of the contour - the classic way to
-                 crash a machine); with the internal compensation it is the
+  * 'straight' : a straight line of the length L (in both planes).
+  * 'radius'   : a quarter arc of the radius R_w (R_m in the tool center
+                 plane). The arc is preceded by the straight line which builds
+                 up the cutter compensation. That straight line is NOT an
+                 additional lead in segment: with G41/G42 it is the movement
+                 the machine needs to build up the tool radius compensation
+                 (the compensation can only be built up with a movement in the
+                 XY plane); with the software compensation it is the radial
                  transition from the dive point to the start of the arc. Its
-                 length is derived from the tool radius (the minimal safe
-                 build up), not from the common length.
+                 length is the configured L for the lead in (both
+                 compensation methods), so that the straight lead in is
+                 configurable; the G40 case keeps the historical tool center
+                 radius.
                  The 'radius' method is only selectable for the lead out (where
                  the build up movement is not needed). For the lead in it is
                  the same as the 'startmove' method with the internal cutter
                  compensation (and with G40), so both are merged into the
                  'startmove' method.
-  * 'startmove': the start move of the program: a straight line and a quarter
-                 arc of the radius R_w. The straight line is the same movement
-                 as the build up of the 'radius' method, but its length is
-                 the common length L, so that the approach can be configured.
-                 It is only generated with G41/G42 - with the internal cutter
-                 compensation and for the drag knife there is no lead in.
+  * 'startmove': a straight line of the length L and a quarter arc of the
+                 radius R_w (R_m in the tool center plane). With G41/G42 the
+                 machine offsets the programmed nominal path; with the software
+                 compensation the tool center path is programmed directly. The
+                 lead in is not generated for the drag knife.
 
 The lead out does not need a build up: the cutter compensation is already
 active at the end of the contour, so the 'radius' method of the lead out is
@@ -269,12 +268,30 @@ def mode_needs_radius(mode):
 
 def mode_needs_length(mode):
     """
-    Whether the method needs the length of the straight part.
+    Whether the method needs the length of the straight part for the lead out.
     @param mode: the method (LEAD_OFF, LEAD_STRAIGHT, LEAD_RADIUS or
                  LEAD_STARTMOVE)
     @return: True if the method contains a straight line
     """
     return mode in (LEAD_STRAIGHT, LEAD_STARTMOVE)
+
+
+def lead_in_needs_length(mode, compensated=True):
+    """
+    Whether the lead in needs the length of the straight part.
+
+    With a cutter compensation (software or machine) the 'radius' lead in also
+    has a straight part of the configured length (definition B), so the length
+    is needed. With G40 (no cutter compensation) the 'radius' lead in uses the
+    historical tool center radius and does not use the length.
+    @param mode: the method of the lead in
+    @param compensated: True if the contour is cut with a cutter compensation
+                        (G41/G42 or the software compensation), False for G40
+    @return: True if the lead in contains a straight line of the length
+    """
+    if mode in (LEAD_STRAIGHT, LEAD_STARTMOVE):
+        return True
+    return mode == LEAD_RADIUS and bool(compensated)
 
 
 def resolve_mode(mode, default_mode):
@@ -321,7 +338,8 @@ def get_lead_out_mode(layer):
 
 
 def validate_lead_move(tool_diameter, lead_radius, lead_length,
-                       lead_in_mode=LEAD_OFF, lead_out_mode=LEAD_OFF):
+                       lead_in_mode=LEAD_OFF, lead_out_mode=LEAD_OFF,
+                       lead_in_compensated=True):
     """
     The central validation of the lead in / lead out parameters.
 
@@ -334,11 +352,21 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
     checked: an unused radius must not prevent the selection of a straight
     movement.
 
+    The length is needed by the lead in for 'straight' and 'startmove' always,
+    and for 'radius' when a cutter compensation is active (definition B: the
+    radius lead in of the software and the machine compensation has a straight
+    part of the configured length). With G40 the radius lead in uses the
+    historical tool center radius, so ``lead_in_compensated`` is False there.
+    The lead out never needs the length for 'radius'.
+
     @param tool_diameter: the diameter of the tool
     @param lead_radius: the common radius at the workpiece
     @param lead_length: the common length of the straight part
     @param lead_in_mode: the method of the lead in
     @param lead_out_mode: the method of the lead out
+    @param lead_in_compensated: True if the lead in of the contour is cut with
+            a cutter compensation (G41/G42 or the software compensation);
+            False for G40
     @return: (ok, errors, warnings)
         ok: True if the parameters are valid
         errors: a list of (field, message) tuples, the field being the name
@@ -391,7 +419,8 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
                             "difficult to machine.")
                 % lead_radius))
 
-    if any(mode_needs_length(mode) for mode in modes):
+    if (lead_in_needs_length(lead_in_mode, lead_in_compensated) or
+            mode_needs_length(lead_out_mode)):
         try:
             lead_length = float(lead_length)
         except (TypeError, ValueError):
@@ -561,31 +590,32 @@ def build_start_move(end_point, angle, side, workpiece_radius, tool_radius,
 
 
 def build_lead_in(end_point, angle, side, workpiece_radius, tool_radius,
-                  space, mode, length=0.0):
+                  space, mode, length=0.0, use_lead_length=False):
     """
     Build the geometry of a lead in.
 
     The lead in ends at the given point with the given travel direction. With
-    LEAD_RADIUS a quarter arc is generated which is tangent to the contour at
-    the end point. The arc is preceded by the straight line which builds up
-    the cutter compensation - this straight line is NOT an additional lead in
-    segment, it is the movement which the machine needs to build up the tool
-    radius compensation: with G41/G42 the compensation can only be built up
-    with a movement in the XY plane, and with the internal compensation it is
-    the transition from the dive point to the start of the arc. Its length is
-    derived from the tool radius (the minimal safe build up).
+    LEAD_RADIUS/LEAD_STARTMOVE a quarter arc is generated which is tangent to
+    the contour at the end point. The arc is preceded by a straight line which
+    approaches it radially (it is tangent to the arc at its start).
+
+    The length of that straight part is the configured length L
+    (`lead_length`) for the software compensation and for the machine
+    compensation G41/G42 (see `use_lead_length`): the machine compensation
+    programs the nominal line with the length L and the machine offsets it;
+    the software compensation programs the tool center path directly with the
+    same straight length. The historical tool center radius (R_w - r_tool) is
+    kept for G40 (no cutter compensation), so that the G40 path does not
+    change.
 
     With the machine compensation the lead in is programmed in the nominal
     plane (G41/G42 is active while it is cut): the quarter arc is nominal and
-    the straight line approaches it radially (tangentially), so the machine
-    offsets the whole lead in by the tool radius. With the internal
-    compensation the programmed path is already the tool center path.
+    the machine offsets it by the tool radius. With the internal compensation
+    the programmed path is already the tool center path.
 
     With LEAD_STRAIGHT the contour is simply extended backwards along its
     tangent, so the tool enters the material tangentially (the length of the
-    straight line is the common length). With LEAD_STARTMOVE the start move of
-    the program is generated: a straight line of the given length and a
-    quarter arc.
+    straight line is the common length, in both planes).
 
     @param end_point: the point where the lead in ends (the contour start)
     @param angle: the travel direction at the end point (rad)
@@ -597,6 +627,9 @@ def build_lead_in(end_point, angle, side, workpiece_radius, tool_radius,
             offset tool center path)
     @param mode: LEAD_RADIUS, LEAD_STRAIGHT or LEAD_STARTMOVE
     @param length: the length of the straight part of the lead in
+    @param use_lead_length: use `length` for the straight part of the tool
+            center path (software compensation); False keeps the historical
+            tool center radius (G40)
     @return: (geos, status, message)
     """
     if mode == LEAD_STRAIGHT:
@@ -633,25 +666,20 @@ def build_lead_in(end_point, angle, side, workpiece_radius, tool_radius,
                                               space)
     if status == ERROR:
         return [], ERROR, message
-    if space == SPACE_NOMINAL:
-        # The machine compensates the programmed (nominal) path: the quarter
-        # arc is nominal and is preceded by the radial straight line which
-        # builds up the cutter compensation (the machine needs a movement in
-        # the XY plane to build the offset while the tool is still in the free
-        # space). The length of that line is derived from the tool radius (the
-        # minimal safe build up), not from the common length - as it is in the
-        # tool center plane.
-        if radius - tool_radius <= eps:
-            # The tool center path radius would be zero: the machine
-            # compensation of the nominal arc collapses to a point.
-            return [], ERROR, _nominal_collapse_message(workpiece_radius,
-                                                         tool_radius)
-        build_up_length = radius - tool_radius
+    # The nominal plane returned above (build_start_move); here the radius is
+    # the radius of the tool center path R_m = R_w - r_tool.
+    if use_lead_length:
+        # Definition B: the configured lead length is the straight part of the
+        # lead in for the software compensation too (the machine compensation
+        # programs the same straight length in the nominal plane).
+        if length <= 0:
+            return [], ERROR, QtCore.QCoreApplication.translate(
+                "LeadMove", "The length of the lead in has to be greater "
+                            "than zero.")
+        build_up_length = length
     else:
-        # The programmed path is already the tool center path (the offset is
-        # applied by dxf2gcode): the straight line is the radial transition
-        # from the dive point to the start of the arc, its length is the tool
-        # center radius.
+        # G40 (no cutter compensation): keep the historical tool center radius
+        # as the build up length so that the G40 path does not change.
         build_up_length = radius
 
     if radius <= 0:

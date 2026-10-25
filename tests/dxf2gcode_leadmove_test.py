@@ -347,9 +347,34 @@ class TestValidateLeadMove(unittest.TestCase):
         self.assertTrue(ok)
         self.assertEqual(errors, [])
 
-    def test_unused_length_does_not_prevent_a_radius_movement(self):
+    def test_the_lead_out_radius_does_not_need_the_length(self):
+        # Only the lead out contains an arc: the radius lead out is the arc
+        # only (there the cutter compensation is already active), so the
+        # length is not used and must not be required.
         ok, errors, warnings = validate_lead_move(10.0, 20.0, 0.0,
-                                                   LEAD_RADIUS, LEAD_RADIUS)
+                                                   LEAD_OFF, LEAD_RADIUS)
+        self.assertTrue(ok)
+        self.assertEqual(errors, [])
+
+    def test_the_compensated_radius_lead_in_needs_the_length(self):
+        # Definition B: with a cutter compensation (software or machine) the
+        # radius lead in has a straight part of the configured length.
+        ok, errors, warnings = validate_lead_move(10.0, 20.0, 0.0,
+                                                   LEAD_RADIUS, LEAD_OFF)
+        self.assertFalse(ok)
+        self.assertEqual(errors[0][0], 'lead_length')
+
+        ok, errors, warnings = validate_lead_move(10.0, 20.0, 5.0,
+                                                   LEAD_RADIUS, LEAD_OFF)
+        self.assertTrue(ok)
+        self.assertEqual(errors, [])
+
+    def test_the_g40_radius_lead_in_does_not_need_the_length(self):
+        # G40 uses the historical tool center radius for the radius lead in:
+        # the length is not used, so it must not be required.
+        ok, errors, warnings = validate_lead_move(10.0, 20.0, 0.0,
+                                                   LEAD_RADIUS, LEAD_RADIUS,
+                                                   lead_in_compensated=False)
         self.assertTrue(ok)
         self.assertEqual(errors, [])
 

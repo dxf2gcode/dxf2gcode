@@ -192,7 +192,8 @@ class StMove(object):
             return
         self.exit_geos = Geos(exit_geos)
 
-    def _build_lead_in(self, start, angle, side, space):
+    def _build_lead_in(self, start, angle, side, space,
+                       use_lead_length=False):
         """
         Build the lead in of the given plane and append it to the start move.
 
@@ -208,6 +209,9 @@ class StMove(object):
         @param space: SPACE_NOMINAL (the machine compensates the nominal lead
                       in) or SPACE_TOOL_CENTER (the lead in is already the
                       offset tool center path)
+        @param use_lead_length: True = the configured lead length is the
+                      straight part of the lead in (software compensation);
+                      False keeps the historical tool center radius (G40)
         @return: True if the lead in could be built (or is not needed)
         """
         layer = self.shape.parentLayer
@@ -225,7 +229,8 @@ class StMove(object):
         geos, status, message = build_lead_in(start, angle, side,
                                               lead_radius, tool_rad,
                                               space, lead_in_mode,
-                                              length=lead_length)
+                                              length=lead_length,
+                                              use_lead_length=use_lead_length)
         if status == ERROR:
             self.start_move_error = message
             return False
@@ -494,7 +499,8 @@ class StMove(object):
                                  bool(self.shape.cw)) else -1
                     self.lead_side = side
                     if not self._build_lead_in(start, angle, side,
-                                               SPACE_TOOL_CENTER):
+                                               SPACE_TOOL_CENTER,
+                                               use_lead_length=True):
                         self.pocket_geos_start = len(self.geos)
                         return
                     if not len(self.lead_in_geos):
@@ -616,10 +622,6 @@ class StMove(object):
                 self.lead_in_nominal_index = 0
                 self.geos = Geos([RapidPos(compensated_start)] +
                                  list(self.lead_in_geos))
-                # The contour is programmed nominal; the lead out is previewed
-                # in the same nominal plane so that lead in and lead out have
-                # the same radius at the workpiece.
-                self.lead_space = SPACE_NOMINAL
             else:
                 # The straight lead in is programmed in the tool center
                 # plane: the contour start offset to the compensation side by
@@ -638,11 +640,14 @@ class StMove(object):
                     return
                 if not len(self.lead_in_geos):
                     self.append(RapidPos(offset_start))
-                self.lead_space = SPACE_TOOL_CENTER
 
-            # The contour is programmed nominal (the machine compensation is
-            # active there); the lead out is therefore still previewed in the
-            # nominal plane.
+            # The coordinate space of the lead out preview does not depend on
+            # the lead in mode: with the machine compensation G41/G42 the
+            # contour and the lead out are programmed nominal (the machine
+            # offsets them), so the lead out is also previewed in the nominal
+            # plane - even if the lead in itself was programmed in the tool
+            # center plane (LEAD_STRAIGHT).
+            self.lead_space = SPACE_NOMINAL
             self.exit_chain = list(self.shape.geos)
             self._build_exit_preview(self.exit_chain, SPACE_NOMINAL)
 

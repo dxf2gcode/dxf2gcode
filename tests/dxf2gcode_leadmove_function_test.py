@@ -12,6 +12,7 @@ Run from the repository root:
 """
 from __future__ import absolute_import
 
+import math
 import os
 import shutil
 import sys
@@ -597,29 +598,30 @@ class TestMoveOrder(LeadMoveTestBase):
         return moves
 
     def test_the_plunge_is_done_before_the_nominal_lead_in(self):
-        # The circle and the start move are nominal: the G40 approach line
-        # (the tool center path) is cut first, then the tool is plunged at its
-        # end (G40) and the machine compensation is switched on afterwards, so
-        # that the machine offsets the nominal lead in (line + arc) and the
-        # nominal contour by the tool radius.
+        # The lead in is nominal: the tool is positioned at the compensated
+        # start, plunged (G40) and then the machine compensation is switched
+        # on, so that the machine offsets the nominal lead in (line + arc) and
+        # the nominal contour by the tool radius. There is no separate G40
+        # approach line.
         shape, layer = build_shape(closed=True, cut_cor=41)
         gcode = export_gcode(shape, layer)
         moves = self._moves(gcode)
         commands = [move[0] for move in moves]
-        self.assertEqual(commands[0], "G0")     # rapid to the dive point
+        self.assertEqual(commands[0], "G0")     # rapid to compensated start
         self.assertIn("G41", commands)          # the compensation is switched on
-        g40_line = next(index for index, move in enumerate(moves)
-                        if move[0] == "G1" and move[1] is not None)
         plunge = [index for index, move in enumerate(moves)
                   if move[0] == "G1" and move[3] == -2.0]
         self.assertTrue(plunge)
         g41_index = commands.index("G41")
+        # No linear XY move before the compensation is activated.
+        for index, move in enumerate(moves[:g41_index]):
+            self.assertFalse(move[0] == "G1" and move[1] is not None,
+                             "G40 approach move before G41: %s" % (move,))
         nominal_line = next(index for index, move in enumerate(moves)
                             if move[0] == "G1" and move[1] is not None and
                             index > g41_index)
         nominal_arc = commands.index("G3", nominal_line)
-        # G40 approach line -> plunge (G40) -> G41 -> nominal line -> arc.
-        self.assertLess(g40_line, plunge[0])
+        # plunge (G40) -> G41 -> nominal line -> arc.
         self.assertLess(plunge[0], g41_index)
         self.assertLess(g41_index, nominal_line)
         self.assertLess(nominal_line, nominal_arc)
@@ -873,9 +875,16 @@ class TestCanvasLeadColors(LeadMoveTestBase):
                                 lead_out_mode=LEAD_OFF, lead_radius=20.0))
         gui = StMoveGUI(shape)
         self.assertFalse(gui._lead_in_path.isEmpty())
-        # The tool (a circle of the tool radius) is drawn at the entry point
-        # (the start of the lead in moves).
-        element = gui._lead_in_path.elementAt(0)
+        # The tool (a circle of the tool radius) is drawn at the actual dive
+        # point: the compensated rapid position, not the nominal start of the
+        # lead in path.
+        dive = gui._lead_in_dive_point()
+        self.assertIsNotNone(dive)
+        rapid = shape.stmove.geos[0]
+        self.assertAlmostEqual(dive.x, rapid.x)
+        self.assertAlmostEqual(dive.y, rapid.y)
+        nominal_start = gui._lead_in_path.elementAt(0)
+        self.assertNotAlmostEqual(dive.x, nominal_start.x)
         radius = gui._tool_radius()
         self.assertAlmostEqual(radius, layer.getToolRadius())
         self.assertGreater(radius, 0.0)
@@ -887,8 +896,8 @@ class TestCanvasLeadColors(LeadMoveTestBase):
                          QtCore.Qt.PenStyle.DashLine)
         # The bounding rect contains the whole tool circle.
         br = gui.boundingRect()
-        self.assertLessEqual(br.left(), element.x - radius + 1e-6)
-        self.assertLessEqual(br.top(), element.y - radius + 1e-6)
+        self.assertLessEqual(br.left(), dive.x - radius + 1e-6)
+        self.assertLessEqual(br.top(), -dive.y - radius + 1e-6)
         # Painting must not fail.
         image = QImage(400, 400, QImage.Format.Format_ARGB32)
         painter = QPainter(image)
@@ -899,7 +908,9 @@ class TestCanvasLeadColors(LeadMoveTestBase):
 
     def test_the_machine_comp_circle_lead_in_preview(self):
         # The canvas shows the whole lead in of the machine compensated circle:
-        # the G40 approach line (tool center path) and the nominal line + arc.
+        # the nominal line of the common length and the nominal arc. There is
+        # no separate G40 approach line; the tool circle is drawn at the
+        # compensated rapid position.
         from dxf2gcode.gui.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=41, done_by_machine=True,
@@ -908,16 +919,20 @@ class TestCanvasLeadColors(LeadMoveTestBase):
                                 lead_length=5.0, tool_diameter=10.0))
         gui = StMoveGUI(shape)
         geos = list(shape.stmove.lead_in_geos)
-        self.assertEqual(len(geos), 3)
-        approach = geos[0]
-        # The preview starts at the G40 dive point (the canvas flips Y).
+        self.assertEqual(len(geos), 2)
+        nominal_line = geos[0]
+        # The preview starts at the nominal line start (the canvas flips Y).
         element = gui._lead_in_path.elementAt(0)
-        self.assertAlmostEqual(element.x, approach.Ps.x)
-        self.assertAlmostEqual(element.y, -approach.Ps.y)
-        # The tool circle is drawn at the dive point with the tool radius.
+        self.assertAlmostEqual(element.x, nominal_line.Ps.x)
+        self.assertAlmostEqual(element.y, -nominal_line.Ps.y)
+        # The tool circle is drawn at the compensated rapid position.
+        dive = gui._lead_in_dive_point()
+        self.assertIsNotNone(dive)
+        self.assertAlmostEqual(dive.x, shape.stmove.geos[0].x)
+        self.assertAlmostEqual(dive.y, shape.stmove.geos[0].y)
         self.assertAlmostEqual(gui._tool_radius(), layer.getToolRadius())
-        # The preview really contains the G40 line and the nominal arc.
-        self.assertGreaterEqual(gui._lead_in_path.elementCount(), 4)
+        # The preview contains the nominal line and the nominal arc.
+        self.assertGreaterEqual(gui._lead_in_path.elementCount(), 2)
 
 
 class TestCanvasPreviewBreaks(LeadMoveTestBase):
@@ -1166,6 +1181,87 @@ class TestPreviewMatchesExport(LeadMoveTestBase):
         gcode, errors = export_with_errors(shape)
         self.assertEqual(gcode, "")
         self.assertTrue(errors)
+
+
+class TestExitPreviewUsesTheContourSpace(LeadMoveTestBase):
+    """
+    The lead out preview is rebuilt by the canvas (StMoveGUI) and has to use
+    the same coordinate space as the export. With the machine compensation
+    G41/G42 the contour and the lead out are programmed nominal - independent
+    of the lead in mode (the lead in may be in the tool center plane, e.g.
+    LEAD_STRAIGHT). The internal compensation and G40 use the tool center.
+    """
+
+    TOOL_DIAMETER = 3.05
+    WORKPIECE_RADIUS = 3.04
+
+    def _build(self, machine, cut_cor, lead_in_mode):
+        from dxf2gcode.gui.canvas2d import StMoveGUI
+        shape, layer = build_shape(
+            closed=True, cut_cor=cut_cor, done_by_machine=machine,
+            tool_diameter=self.TOOL_DIAMETER,
+            layer_settings=dict(lead_in_mode=lead_in_mode,
+                                lead_out_mode=LEAD_RADIUS,
+                                lead_radius=self.WORKPIECE_RADIUS))
+        gui = StMoveGUI(shape)
+        self.assertTrue(gui.exit_geos, "the rebuilt preview is empty")
+        return shape, layer, gui
+
+    def _assert_preview_radius(self, shape, gui, expected):
+        # The canvas rebuilds the preview from self.lead_space; this is the
+        # geometry the user really sees (not the initial stmove.exit_geos).
+        self.assertAlmostEqual(gui.exit_geos[-1].r, expected)
+        # The initial build and the rebuilt preview must agree.
+        self.assertAlmostEqual(shape.stmove.exit_geos[-1].r,
+                               expected)
+
+    def test_g41_straight_lead_in_previews_the_nominal_lead_out(self):
+        shape, layer, gui = self._build(True, 41, LEAD_STRAIGHT)
+        self._assert_preview_radius(shape, gui, self.WORKPIECE_RADIUS)
+
+    def test_g42_straight_lead_in_previews_the_nominal_lead_out(self):
+        shape, layer, gui = self._build(True, 42, LEAD_STRAIGHT)
+        self._assert_preview_radius(shape, gui, self.WORKPIECE_RADIUS)
+
+    def test_radius_and_startmove_preview_the_nominal_lead_out(self):
+        for cut_cor in (41, 42):
+            for mode in (LEAD_RADIUS, LEAD_STARTMOVE):
+                shape, layer, gui = self._build(True, cut_cor, mode)
+                self._assert_preview_radius(shape, gui,
+                                            self.WORKPIECE_RADIUS)
+
+    def test_internal_compensation_previews_the_tool_center_lead_out(self):
+        tool_radius = self.TOOL_DIAMETER / 2.0
+        shape, layer, gui = self._build(False, 41, LEAD_STRAIGHT)
+        self._assert_preview_radius(shape, gui,
+                                    self.WORKPIECE_RADIUS - tool_radius)
+
+    def test_g40_previews_the_tool_center_lead_out(self):
+        tool_radius = self.TOOL_DIAMETER / 2.0
+        shape, layer, gui = self._build(True, 40, LEAD_STRAIGHT)
+        self._assert_preview_radius(shape, gui,
+                                    self.WORKPIECE_RADIUS - tool_radius)
+
+    def test_the_rebuilt_preview_matches_the_exported_arc(self):
+        # The lead out of the last pass in the G-Code: the arc radius from
+        # the I/J offsets has to be the same as the rebuilt preview shows.
+        shape, layer, gui = self._build(True, 41, LEAD_STRAIGHT)
+        gcode = export_gcode(shape, layer)
+        radii = []
+        for line in gcode.splitlines():
+            fields = line.split()
+            if not fields or fields[0] not in ("G2", "G3"):
+                continue
+            values = {}
+            arguments = fields[1:]
+            for index in range(0, len(arguments) - 1, 2):
+                values[arguments[index]] = float(arguments[index + 1])
+            if "I" in values or "J" in values:
+                radii.append(math.hypot(values.get("I", 0.0),
+                                        values.get("J", 0.0)))
+        self.assertTrue(radii, "the export contains no arc")
+        self.assertAlmostEqual(radii[-1], self.WORKPIECE_RADIUS)
+        self.assertAlmostEqual(gui.exit_geos[-1].r, radii[-1])
 
 
 class TestFoundProblems(LeadMoveTestBase):
