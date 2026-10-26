@@ -1585,7 +1585,8 @@ if __name__ == "__main__":
         from dxf2gcode.gui.canvas2d import ShapeGUI as Shape
     window = MainWindow(app)
     g.window = window
-    Log.add_window_logger(window.ui.messageBox)
+    if not options.quiet:
+        Log.add_window_logger(window.ui.messageBox)
 
     g.quiet = options.quiet
 

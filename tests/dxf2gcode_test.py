@@ -26,6 +26,7 @@
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from pathlib import PurePath
@@ -38,8 +39,8 @@ sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 class TestDXF2Gcode(unittest.TestCase):
     """Test the DXF2GCODE command-line workflow."""
 
-    def test_dxf_files_can_be_opened(self):
-        """Open every bundled DXF example and verify that it is not empty."""
+    def test_dxf_fixture_files_are_nonempty(self):
+        """Verify every bundled DXF fixture exists and is not empty."""
         input_directory = Path(__file__).resolve().parent.parent / 'dxf'
         self.assertTrue(input_directory.is_dir(), 'DXF input directory not found')
         dxf_files = sorted(
@@ -53,6 +54,44 @@ class TestDXF2Gcode(unittest.TestCase):
             with self.subTest(dxf_file=dxf_file.name):
                 with dxf_file.open('rb') as file_:
                     self.assertTrue(file_.read(1), 'DXF file is empty')
+
+    def test_quiet_cli_exports_real_dxf_without_gui_shutdown_errors(self):
+        repo_dir = Path(__file__).resolve().parent.parent
+        with tempfile.TemporaryDirectory(prefix='d2g_cli_export_') as temp_dir:
+            profile_dir = Path(temp_dir) / '.config' / 'dxf2gcode.codex_test'
+            profile_dir.mkdir(parents=True)
+            output_base = Path(temp_dir) / 'converted'
+            environment = os.environ.copy()
+            environment['HOME'] = temp_dir
+            environment['USERPROFILE'] = temp_dir
+            environment['QT_QPA_PLATFORM'] = 'offscreen'
+            command = [
+                sys.executable,
+                str(repo_dir / 'source' / 'dxf2gcode.py'),
+                '--cfg', 'codex_test',
+                '--quiet',
+                '--export', str(output_base),
+                str(repo_dir / 'dxf' / 'test.dxf'),
+            ]
+
+            result = subprocess.run(
+                command, cwd=temp_dir, env=environment,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                timeout=120)
+
+            output_file = Path(str(output_base) + '.ngc')
+            self.assertEqual(
+                result.returncode, 0,
+                result.stdout.decode('utf-8', errors='replace') +
+                result.stderr.decode('utf-8', errors='replace'))
+            self.assertTrue(output_file.is_file())
+            gcode = output_file.read_text(encoding='utf-8', errors='replace')
+            self.assertIn('G21', gcode)
+            self.assertIn('G0 X', gcode)
+            self.assertIn('G1 X', gcode)
+            self.assertIn('M2', gcode)
+            self.assertNotIn(b'Exception ignored in atexit callback',
+                             result.stderr)
 
 
 def make_test_function(description, dxf2gcode, in_file, out_file):
