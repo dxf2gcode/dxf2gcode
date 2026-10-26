@@ -20,6 +20,8 @@ FAST_MODULES = (
     "dxf2gcode_spline_end_test",
     "dxf2gcode_stmove_gcode_test",
     "dxf2gcode_leadmove_project_test",
+    "dxf2gcode_workflow_test",
+    "dxf2gcode_mainwindow_workflow_test",
     "dxf2gcode_test",
 )
 
