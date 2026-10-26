@@ -35,7 +35,7 @@ from dxf2gcode.core.arcgeo import ArcGeo
 from dxf2gcode.core.point import Point
 from dxf2gcode.core.leadmove import LEAD_OFF
 
-DXF_1997 = r"D:\GIT\dxf2gcode-sourcecode\dxf\1997.DXF"
+DXF_1997 = os.path.join(os.path.dirname(_TEST_DIR), "dxf", "1997.DXF")
 
 
 def ccw_square(size=10.0):

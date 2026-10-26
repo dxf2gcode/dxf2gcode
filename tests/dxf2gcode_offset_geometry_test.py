@@ -323,6 +323,19 @@ class TestClosedOffsetUnchanged(unittest.TestCase):
         # the open-end path), so the outcome is the pre-fix one.
         self.assertEqual(len(off.rawoff), 11)
 
+    def test_closed_square_offset_keeps_distance_and_closure(self):
+        shape = _mk_shape(_square(40.0), closed=True)
+        off = offShapeClass(parent=shape, offset=5.0, offtype="out")
+
+        self.assertEqual(off.offset_status, "ok")
+        self.assertEqual(len(off.loops), 1)
+        lo, hi = _offset_distance_range(off)
+        self.assertGreaterEqual(lo, 4.95)
+        self.assertLessEqual(hi, 5.05)
+        loop = off.loops[0]
+        self.assertLess(loop[-1].Pe.distance(loop[0].Ps), 1e-6)
+        self.assertEqual(_nonadjacent_intersections(loop), 0)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

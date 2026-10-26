@@ -1,0 +1,4 @@
+# Runtime dependencies needed to import the application and run the test suite.
+configobj>=5.0.6
+PyQt5>=5.9
+PyOpenGL>=3.1

@@ -49,7 +49,7 @@ import dxf2gcode.globals.globals as g  # noqa: E402
 from dxf2gcode.core.pocketmill import BBArray  # noqa: E402
 from dxf2gcode.core.point import Point  # noqa: E402
 
-DXF_1997 = r"D:\GIT\dxf2gcode-sourcecode\dxf\1997.DXF"
+DXF_1997 = os.path.join(os.path.dirname(_TEST_DIR), "dxf", "1997.DXF")
 
 
 class TestFindClosestEndFallback(unittest.TestCase):

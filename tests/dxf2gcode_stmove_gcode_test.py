@@ -17,6 +17,7 @@ import re
 import tempfile
 import logging
 import unittest
+from unittest.mock import patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -150,6 +151,7 @@ class TestPostProcessorMovements(unittest.TestCase):
 
     def setUp(self):
         self.pp = make_postpro()
+        self.pp.postpro_file_used = "test.cfg"
 
     def test_rapid_xy_is_G0(self):
         out = self.pp.rap_pos_xy(Point(1.0, 2.0))
@@ -176,6 +178,185 @@ class TestPostProcessorMovements(unittest.TestCase):
                     direction=-1)
         out = cw.Write_GCode(self.pp)
         self.assertIn("G2 X -5.000 Y 0.000 I -5.000 J 0.000", norm(out))
+
+    def test_clockwise_arc_can_be_exported_as_counterclockwise(self):
+        self.pp.vars.General.export_ccw_arcs_only = True
+        cw = ArcGeo(Ps=Point(5, 0), Pe=Point(-5, 0), O=Point(0, 0), r=5.0,
+                    direction=-1)
+
+        out = cw.Write_GCode(self.pp)
+
+        self.assertTrue(lines_with("G3", out))
+        self.assertFalse(lines_with("G2", out))
+
+    def test_arc_above_maximum_radius_is_exported_as_a_line(self):
+        self.pp.vars.General.max_arc_radius = 4.0
+        arc = ArcGeo(Ps=Point(5, 0), Pe=Point(-5, 0), O=Point(0, 0), r=5.0,
+                     direction=1)
+
+        out = arc.Write_GCode(self.pp)
+
+        self.assertTrue(lines_with("G1", out))
+        self.assertFalse(lines_with("G2", out))
+        self.assertFalse(lines_with("G3", out))
+
+    def test_arc_can_be_tessellated_to_linear_moves(self):
+        self.pp.vars.General.export_arcs_as_lines = True
+        arc = ArcGeo(Ps=Point(5, 0), Pe=Point(-5, 0), O=Point(0, 0), r=5.0,
+                     direction=1)
+
+        out = arc.Write_GCode(self.pp)
+
+        self.assertGreaterEqual(len(lines_with("G1", out)), 2)
+        self.assertFalse(lines_with("G2", out))
+        self.assertFalse(lines_with("G3", out))
+
+    def test_incremental_xy_export_emits_deltas_after_the_first_move(self):
+        self.pp.abs_export = False
+        self.pp.lPe = Point(0, 0)
+        self.pp.lin_pol_xy(Point(0, 0), Point(3, 4))
+
+        out = self.pp.lin_pol_xy(Point(3, 4), Point(7, 9))
+
+        self.assertIn("G1 X 4.000 Y 5.000", norm(out))
+
+    def test_postprocessor_decimal_precision_controls_xy_format(self):
+        self.pp.vars.Number_Format.post_decimals = 2
+
+        out = self.pp.lin_pol_xy(Point(0, 0), Point(2, 3))
+
+        self.assertIn("G1 X 2.00 Y 3.00", norm(out))
+
+    def test_line_number_settings_are_applied_to_each_output_line(self):
+        self.pp.vars.Line_Numbers.use_line_nrs = True
+        self.pp.vars.Line_Numbers.line_nrs_begin = 10
+        self.pp.vars.Line_Numbers.line_nrs_step = 5
+
+        out = self.pp.make_line_numbers("G1 X1\nG0 X2")
+
+        self.assertEqual(out, "N10 G1 X1\nN15 G0 X2")
+
+    def test_windows_line_ending_option_is_applied(self):
+        self.pp.vars.Number_Format.win_line_endings = True
+
+        out = self.pp.make_windows_line_endings("G1 X1\nG0 X2\n")
+
+        self.assertEqual(out, "G1 X1\r\nG0 X2\r\n")
+
+    def test_program_header_uses_the_drawing_units(self):
+        old_metric = g.config.metric
+        try:
+            for metric, unit_code in (
+                    (1, self.pp.vars.General.code_begin_units_mm),
+                    (0, self.pp.vars.General.code_begin_units_in)):
+                g.config.metric = metric
+                out = self.pp.write_gcode_be("fixture.dxf")
+                self.assertIn(unit_code, out)
+        finally:
+            g.config.metric = old_metric
+            g.config.update_tool_values()
+
+    def test_program_header_selects_absolute_or_incremental_mode(self):
+        self.pp.abs_export = True
+        absolute = self.pp.write_gcode_be("fixture.dxf")
+        self.pp.abs_export = False
+        incremental = self.pp.write_gcode_be("fixture.dxf")
+
+        self.assertIn(self.pp.vars.General.code_begin_prog_abs, absolute)
+        self.assertIn(self.pp.vars.General.code_begin_prog_inc, incremental)
+
+    def test_non_gcode_header_omits_gcode_metadata_but_keeps_configured_start(self):
+        self.pp.vars.General.output_type = "text"
+
+        header = self.pp.write_gcode_be("fixture.dxf")
+
+        self.assertNotIn("Created from file", header)
+        self.assertIn(self.pp.vars.General.code_begin_units_mm, header)
+        self.assertIn(self.pp.vars.General.code_begin, header)
+
+    def test_gcode_header_sanitizes_parentheses_in_source_filename(self):
+        header = self.pp.write_gcode_be("part (copy).dxf")
+
+        self.assertIn("(Created from file: part _copy_.dxf)", header)
+
+    def test_number_format_supports_sign_padding_separator_and_trim(self):
+        number_format = self.pp.vars.Number_Format
+        number_format.pre_decimals = 3
+        number_format.post_decimals = 2
+        number_format.decimal_separator = ","
+        number_format.pre_decimal_zero_padding = True
+        number_format.post_decimal_zero_padding = True
+        number_format.signed_values = True
+
+        self.assertEqual(self.pp.fnprint(2.5), "+02,50")
+
+        number_format.post_decimal_zero_padding = False
+        self.assertEqual(self.pp.fnprint(2.5), "+02,5")
+
+        number_format.signed_values = False
+        self.assertEqual(self.pp.fnprint(2.5), "002,5")
+
+    def test_feed_change_is_emitted_only_when_feed_changes(self):
+        first = self.pp.chg_feed_rate(650)
+        unchanged = self.pp.chg_feed_rate(650)
+        changed = self.pp.chg_feed_rate(700)
+
+        self.assertIn("F650", norm(first))
+        self.assertEqual(unchanged, "")
+        self.assertIn("F700", norm(changed))
+
+    def test_export_errors_are_deduplicated(self):
+        message = "Contour 4 has no valid lead-in."
+        self.pp.add_export_error(message)
+        self.pp.add_export_error(message)
+
+        self.assertEqual(self.pp.export_errors, [message])
+
+    def test_empty_export_writes_header_retract_final_position_and_footer(self):
+        class EmptyLayerContents(object):
+            def break_layer_iter(self):
+                return iter(())
+
+            def non_break_layer_iter(self):
+                return iter(())
+
+        old_stdout = g.config.vars.General["write_to_stdout"]
+        g.config.vars.General["write_to_stdout"] = False
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                filename = os.path.join(directory, "empty.ngc")
+                self.pp.exportShapes("fixture.dxf", filename,
+                                     EmptyLayerContents())
+                with open(filename, "r") as output_file:
+                    output = output_file.read()
+        finally:
+            g.config.vars.General["write_to_stdout"] = old_stdout
+
+        self.assertIn("(Created from file: fixture.dxf)", output)
+        self.assertIn("G0 Z", output)
+        self.assertIn("G0 X", output)
+        self.assertIn("M2 (Program end)", output)
+
+    def test_stdout_export_prints_the_completed_program(self):
+        class EmptyLayerContents(object):
+            def break_layer_iter(self):
+                return iter(())
+
+            def non_break_layer_iter(self):
+                return iter(())
+
+        old_stdout = g.config.vars.General["write_to_stdout"]
+        g.config.vars.General["write_to_stdout"] = True
+        try:
+            with patch("builtins.print") as print_mock:
+                self.pp.exportShapes("fixture.dxf", "unused.ngc",
+                                     EmptyLayerContents())
+        finally:
+            g.config.vars.General["write_to_stdout"] = old_stdout
+
+        output = print_mock.call_args[0][0]
+        self.assertIn("(Created from file: fixture.dxf)", output)
+        self.assertIn("M2 (Program end)", output)
 
     def test_line_write_gcode_is_G1(self):
         out = LineGeo(Point(0, 0), Point(2, 3)).Write_GCode(self.pp)

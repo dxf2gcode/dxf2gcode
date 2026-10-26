@@ -31,8 +31,8 @@ any working directory.
 ## Prerequisites
 
 * Python 3 (tested with 3.11).
-* The application dependencies: `PySide6`, `configobj` and `validate`
-  (see `source/setup.py` / `source/requires.txt`).
+* The application dependencies: `PyQt5`, `PyOpenGL` and `configobj`
+  (install them with `python -m pip install -r requirements-test.txt`).
 * The GUI tests run headless; they set `QT_QPA_PLATFORM=offscreen`
   themselves, so no display is required.
 
@@ -52,18 +52,45 @@ affected tests changes.
 
 ## Running the suite
 
-Run the complete suite from the **repository root**:
+Run the focused core checks from the **repository root** before submitting a
+change:
+
+```
+python tests/run_tests.py fast
+```
+
+This group exercises DXF entity import and transforms, offsets, spline and
+ellipse regressions, postprocessor settings, project persistence, and a real
+quiet CLI conversion from `dxf/test.dxf` to a temporary `.ngc` file. The CLI
+test gives the subprocess its own temporary configuration profile.
+
+Run every test before a release or a broad change:
+
+```
+python tests/run_tests.py full
+```
+
+Both commands print each test and return a nonzero exit status when a test
+fails. Add `-h` to see runner options.
+
+For isolated environments, install tox once and use its provider-neutral
+environments:
+
+```
+python -m pip install tox
+tox -e fast
+tox -e full
+```
+
+CI systems can invoke `tox -e fast` for pushes and pull requests, then
+`tox -e full` for release checks. Dependency versions and environment
+variables are shared in `tox.ini` and `requirements-test.txt`.
+
+The original unittest discovery command remains available from the repository
+root:
 
 ```
 python -m unittest discover -s tests -t tests -p "dxf2gcode_*test.py"
-```
-
-Add `-v` for the verbose per-test output.
-
-The same command works from any directory if the paths are given absolute:
-
-```
-python -m unittest discover -s <repo>/tests -t <repo>/tests -p "dxf2gcode_*test.py"
 ```
 
 ### Single modules
@@ -91,12 +118,20 @@ The default discovery pattern `test*.py` does **not** match the module names
 
 | Module | Type | Focus |
 | --- | --- | --- |
-| `dxf2gcode_test.py` | integration | opens every bundled DXF |
+| `dxf2gcode_test.py` | smoke / integration | checks fixture presence and runs a real quiet DXF-to-G-code CLI export |
+| `dxf2gcode_import_contract_test.py` | integration | entity conversion, contour references, nested block contents and transforms |
+| `dxf2gcode_postpro_config_test.py` | unit/regression | postprocessor defaults, supported versions, save/reload and invalid-file recovery |
 | `dxf2gcode_canvas_mixed_test.py` | integration | 2D canvas / mixed selection |
+| `dxf2gcode_canvas_warning_marker_test.py` | integration | canvas warning markers for invalid toolpaths |
 | `dxf2gcode_pocket_multiselect_test.py` | integration | multi-select pocket activation |
 | `dxf2gcode_tree_group_state_test.py` | integration | tree group state |
 | `dxf2gcode_tree_multiselect_test.py` | integration | tree multi-select |
+| `dxf2gcode_parameter_state_test.py` | integration | GUI parameter state and persistence |
+| `dxf2gcode_overcut_gui_test.py` | integration | GUI overcut controls and state |
 | `dxf2gcode_stmove_gcode_test.py` | unit | StMove building, G-code export (support module for many tests) |
+| `dxf2gcode_ellipse_offset_test.py` | regression | complete closed ellipse offsets and a real GIR corridor case |
+| `dxf2gcode_offset_geometry_test.py` | unit/regression | offset distance, continuity, closure and intersection invariants |
+| `dxf2gcode_spline_end_test.py` | regression | short spline end segments and offset behavior |
 | `dxf2gcode_pocketmill_zigzag_test.py` | unit | pocket zig-zag start/points (also provides the DXF loader helper) |
 | `dxf2gcode_gir_loop_test.py` | unit/regression | GIR / LIR loop splitting of the offset |
 | `dxf2gcode_offset_status_test.py` | unit | `offset_status` classification |
@@ -119,6 +154,25 @@ The default discovery pattern `test*.py` does **not** match the module names
 
 Modules that mutate global configuration state reset it again in
 `tearDownModule` so the suite passes independently of the module order.
+
+The suite's test count is not a code-coverage measurement. `coverage.py` is
+optional and is not a runtime dependency. When it is installed, coverage can
+be collected with:
+
+```
+python -m coverage run --source=source/dxf2gcode tests/run_tests.py full
+python -m coverage report -m
+```
+
+For a quick coverage check on the core group, replace `full` with `fast`.
+Review coverage by module and critical behavior; no overall minimum is set.
+Use the report to find meaningful untested paths, then add regression tests
+for those behaviors rather than aiming to execute every line.
+
+The golden G-code files in `tests/golden/` are output regression fixtures used
+by the lead-move tests. The DXF drawings in `dxf/` also serve as fixtures for
+the importer, ellipse-offset and CLI export regressions; keep assertions tied
+to geometric or emitted G-code behavior when updating them.
 
 ## Diagnostics and profiling
 
