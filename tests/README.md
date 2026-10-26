@@ -156,18 +156,24 @@ Modules that mutate global configuration state reset it again in
 `tearDownModule` so the suite passes independently of the module order.
 
 The suite's test count is not a code-coverage measurement. `coverage.py` is
-optional and is not a runtime dependency. When it is installed, coverage can
-be collected with:
+optional and is not a runtime dependency. To collect branch coverage for the
+application package, including the GUI and CLI subprocess workflows, install
+`coverage.py` 7.10 or newer in the Python environment used to run the suite,
+then set `D2G_SOURCE_ROOT` to the absolute repository root and run:
 
 ```
-python -m coverage run --source=source/dxf2gcode tests/run_tests.py full
-python -m coverage report -m
+python -m coverage erase --rcfile tests/coverage.ini
+python -m coverage run --rcfile tests/coverage.ini tests/run_tests.py full
+python -m coverage combine --rcfile tests/coverage.ini
+python -m coverage report --rcfile tests/coverage.ini -m
 ```
 
-For a quick coverage check on the core group, replace `full` with `fast`.
-Review coverage by module and critical behavior; no overall minimum is set.
-Use the report to find meaningful untested paths, then add regression tests
-for those behaviors rather than aiming to execute every line.
+The configuration follows Python subprocesses and writes its data to the
+ignored `.coverage` file in the repository root. For a quick check on the core
+group, replace `full` with `fast`. Review coverage by module and critical
+behavior; no overall minimum is set. Use the report to find meaningful
+untested paths, then add regression tests for those behaviors rather than
+aiming to execute every line.
 
 The golden G-code files in `tests/golden/` are output regression fixtures used
 by the lead-move tests. The DXF drawings in `dxf/` also serve as fixtures for
