@@ -24,8 +24,8 @@ sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_status_test_")
@@ -51,12 +51,12 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.core.shapeoffset as so
-import dxf2gcode.core.stmove as stmove
-from dxf2gcode.core.shapeoffset import offShapeClass
-from dxf2gcode.core.shape import Shape, Geos
-from dxf2gcode.core.linegeo import LineGeo
-from dxf2gcode.core.point import Point
+import dxf2gcode.domain.toolpath.shapeoffset as so
+import dxf2gcode.domain.toolpath.stmove as stmove
+from dxf2gcode.domain.toolpath.shapeoffset import offShapeClass
+from dxf2gcode.domain.project.shape import Shape, Geos
+from dxf2gcode.domain.geometry.linegeo import LineGeo
+from dxf2gcode.domain.geometry.point import Point
 
 
 def _square(size=10.0, nr=0):

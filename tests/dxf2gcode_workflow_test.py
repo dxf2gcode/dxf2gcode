@@ -14,16 +14,16 @@ _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _REPO_DIR = os.path.dirname(_TEST_DIR)
 sys.path[:0] = [_TEST_DIR, os.path.join(_REPO_DIR, "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.entitycontent import EntityContent  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent, Layers  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.shape import Shape  # noqa: E402
-from dxf2gcode.core.shapeoffset import offShapeClass  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.dxfimport.importer import ReadDXF  # noqa: E402
-from dxf2gcode.postpro.postprocessor import MyPostProcessor  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import QApplication  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.project.entitycontent import EntityContent  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent, Layers  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape  # noqa: E402
+from dxf2gcode.domain.toolpath.shapeoffset import offShapeClass  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.dxf.parser import ReadDXF  # noqa: E402
+from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
 
 import dxf2gcode_import_contract_test as import_contract  # noqa: E402
 import dxf2gcode_parameter_state_test as parameter_state  # noqa: E402

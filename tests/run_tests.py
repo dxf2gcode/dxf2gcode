@@ -18,6 +18,8 @@ FAST_MODULES = (
     "dxf2gcode_offset_geometry_test",
     "dxf2gcode_ellipse_offset_test",
     "dxf2gcode_spline_end_test",
+    "dxf2gcode_tsp_optimization_test",
+    "dxf2gcode_toolpath_depths_test",
     "dxf2gcode_stmove_gcode_test",
     "dxf2gcode_leadmove_project_test",
     "dxf2gcode_workflow_test",

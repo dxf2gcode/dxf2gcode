@@ -10,15 +10,19 @@ pyinpfad = os.path.join(PYTHONPATH, "Scripts\\pyinstaller.exe")
 
 pyt = os.path.join(PYTHONPATH, "python.exe")
 filepfad = os.path.realpath(os.path.dirname(sys.argv[0]))
-exemakepfad = filepfad
-file_ = "dxf2gcode.py"
-icon = "%s\\images\\DXF2GCODE-001.ico" % filepfad
+entry_point = os.path.join(filepfad, "dxf2gcode.py")
+icon = os.path.join(
+    filepfad, "dxf2gcode", "presentation", "qt", "resources", "images",
+    "DXF2GCODE-001.ico")
+translations = os.path.join(filepfad, "i18n")
 
-options = "--noconsole --icon=%s" % icon
-print(options)
-
-cmd = "%s %s %s\\%s" % (pyinpfad, options, filepfad, file_)
-
+cmd = [
+    pyinpfad,
+    "--noconsole",
+    "--icon=%s" % icon,
+    "--add-data=%s;i18n" % translations,
+    entry_point,
+]
 print(" ".join(cmd))
 subprocess.check_call(cmd)
 

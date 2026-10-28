@@ -37,15 +37,16 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.leadmove import (LEAD_OFF, LEAD_RADIUS,  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import (LEAD_OFF, LEAD_RADIUS,  # noqa: E402
                                      LEAD_STARTMOVE, LEAD_STRAIGHT)
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.globals.config import MyConfig  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import QApplication  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
 
 from dxf2gcode_leadmove_golden_test import (GoldenTestBase, build_shape,
                                            export_gcode)
@@ -443,7 +444,7 @@ class TestModeFromTheGui(LeadInModeTestBase):
     """The method selected in the GUI is really used for the geometry."""
 
     def test_the_selected_method_is_used(self):
-        from dxf2gcode.core.stmove import StMove
+        from dxf2gcode.domain.toolpath.stmove import StMove
         for mode, expected in ((LEAD_OFF, 0), (LEAD_STRAIGHT, 1),
                                (LEAD_RADIUS, 2), (LEAD_STARTMOVE, 2)):
             shape, layer = self.shape_with(mode)
@@ -556,7 +557,7 @@ class TestMachineCompCircleLeadIn(LeadInModeTestBase):
         config.vars.General.cc_outside_the_piece = outside
         postpro.vars = config.vars
         postpro.initialize_export_vars()
-        return shape.Write_GCode(postpro)
+        return serialize_gcode(shape, postpro)
 
     def _check_gcode_order(self, gcode):
         # The rapid, the plunge (G40), G41/G42 and then the nominal line and

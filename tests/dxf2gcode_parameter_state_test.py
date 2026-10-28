@@ -26,8 +26,8 @@ sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_param_state_test_")
@@ -49,17 +49,17 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.gui import shapeparameterstate as sps  # noqa: E402
-from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent, Layers  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.presentation.qt import shapeparameterstate as sps  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent, Layers  # noqa: E402
 
 import dxf2gcode_stmove_gcode_test as stmove_test  # noqa: E402
 
-from dxf2gcode.Qt.QtWidgets import (  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (  # noqa: E402
     QApplication, QWidget, QLineEdit, QLabel, QComboBox, QTreeView)
-from dxf2gcode.Qt import QtCore  # noqa: E402
-from dxf2gcode.gui.treehandling import TreeHandler  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat import QtCore  # noqa: E402
+from dxf2gcode.presentation.qt.treehandling import TreeHandler  # noqa: E402
 
 _APP = None  # keep the QApplication alive
 
@@ -201,13 +201,13 @@ class _Harness(object):
                      "axis3_mill_depth", "milling_offset", "f_g1_plane",
                      "f_g1_depth"):
             setattr(self.th, name, None)
-        from dxf2gcode.Qt.QtGui import QStandardItemModel
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QStandardItemModel
         self.th.layer_item_model = None
         self.th.entity_item_model = QStandardItemModel(self.th)
         self.view = QTreeView()
         self.th.ui.layersShapesTreeView = self.view
         self.th.ui.entitiesTreeView = QTreeView()
-        from dxf2gcode.Qt.QtGui import QStandardItemModel
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QStandardItemModel
         self.th.ui.entitiesTreeView.setModel(QStandardItemModel(self.th))
         self.th.ui.millSettingsFrame = QWidget(self.th)
         self.th.layers_list = list(layers)
@@ -281,12 +281,12 @@ class TestParameterDisplay(unittest.TestCase):
 
     @staticmethod
     def _text_color(widget):
-        from dxf2gcode.Qt.QtGui import QPalette
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QPalette
         return widget.palette().color(QPalette.ColorRole.WindowText).name()
 
     @staticmethod
     def _gray_name():
-        from dxf2gcode.Qt.QtGui import QColor
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QColor
         return QColor(QtCore.Qt.GlobalColor.gray).name()
 
     def setUp(self):

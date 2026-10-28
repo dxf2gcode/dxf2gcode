@@ -17,16 +17,16 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.breakgeo import BreakGeo  # noqa: E402
-from dxf2gcode.core.leadmove import (  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.geometry.breakgeo import BreakGeo  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import (  # noqa: E402
     ERROR, LEAD_OFF, LEAD_RADIUS, LEAD_STARTMOVE, LEAD_STRAIGHT, OK,
     SPACE_NOMINAL, SPACE_TOOL_CENTER, WARNING, build_exit_geometries,
     build_lead_in, build_lead_out, build_overcut, chain_cut_length,
     chain_direction, resolve_radius,
     validate_lead_move)
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
 
 from math import pi, sqrt
 

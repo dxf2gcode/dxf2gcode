@@ -36,8 +36,8 @@ sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_clear_test_")
@@ -56,14 +56,14 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.pocketmill import PocketMill  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
-from dxf2gcode.core.pocketmove import PocketMove  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.toolpath.pocketmill import PocketMill  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
+from dxf2gcode.domain.toolpath.pocketmove import PocketMove  # noqa: E402
 from dxf2gcode_pocketmill_zigzag_test import _load_shapes  # noqa: E402
 
 DXF_POCKETING1 = os.path.join(

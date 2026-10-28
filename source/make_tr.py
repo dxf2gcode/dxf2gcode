@@ -17,7 +17,7 @@ import os
 import subprocess
 import sys
 import getopt
-from dxf2gcode.Qt import PYQT_VERSION
+from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent

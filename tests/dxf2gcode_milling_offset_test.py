@@ -31,11 +31,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import sys
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_milling_offset_test_")
@@ -57,24 +58,24 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
 
-from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent, Layers, Shapes  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
-from dxf2gcode.core.project import Project  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent, Layers, Shapes  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
+from dxf2gcode.domain.project.project import Project  # noqa: E402
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
     make_postpro, make_shape, build_stmove, square_geos, norm)
 import dxf2gcode_pocket_edge_clearance_test as pocket  # noqa: E402
 
-from dxf2gcode.Qt.QtWidgets import (  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (  # noqa: E402
     QApplication, QWidget, QLineEdit, QTreeView)
-from dxf2gcode.Qt import QtCore  # noqa: E402
-from dxf2gcode.gui.treehandling import TreeHandler  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat import QtCore  # noqa: E402
+from dxf2gcode.presentation.qt.treehandling import TreeHandler  # noqa: E402
 
 _APP = None  # keep the QApplication alive (otherwise widgets are deleted)
 
@@ -203,8 +204,8 @@ class TestMillingOffsetGeometry(unittest.TestCase):
         del shape_b.milling_offset
         build_stmove(shape_a)
         build_stmove(shape_b)
-        self.assertEqual(norm(shape_a.Write_GCode(make_postpro())),
-                         norm(shape_b.Write_GCode(make_postpro())))
+        self.assertEqual(norm(serialize_gcode(shape_a, make_postpro())),
+                         norm(serialize_gcode(shape_b, make_postpro())))
 
     def test_offset_cannot_cancel_the_cutter_compensation(self):
         # a negative offset larger than the tool radius would be meaningless;
@@ -344,8 +345,8 @@ class TestMillingOffsetPocketFill(unittest.TestCase):
     def test_zero_offset_is_exactly_the_historical_behaviour(self):
         with_offset, _ = self._build(41, 0.0)
         without_attr, _ = self._build(41, None)
-        self.assertEqual(norm(with_offset.Write_GCode(make_postpro())),
-                         norm(without_attr.Write_GCode(make_postpro())))
+        self.assertEqual(norm(serialize_gcode(with_offset, make_postpro())),
+                         norm(serialize_gcode(without_attr, make_postpro())))
         m0 = self._measure(41, 0.0)
         self.assertIsNone(m0["ref_bbox"])            # no shifted contour
         self.assertAlmostEqual(m0["fill_dist"], self.CLEARANCE, delta=0.10)
@@ -356,8 +357,8 @@ class TestMillingOffsetPocketFill(unittest.TestCase):
                 with_off, _ = self._build(cut_cor, 0.0, mode=mode)
                 without, _ = self._build(cut_cor, None, mode=mode)
                 self.assertEqual(
-                    norm(with_off.Write_GCode(make_postpro())),
-                    norm(without.Write_GCode(make_postpro())),
+                    norm(serialize_gcode(with_off, make_postpro())),
+                    norm(serialize_gcode(without, make_postpro())),
                     "%s cc=%d" % (mode, cut_cor))
 
     # -- outside contour (G41): the pocket grows ---------------------------
@@ -442,8 +443,8 @@ class TestMillingOffsetPocketFill(unittest.TestCase):
         m1 = self._measure(41, 0.6, machine=True)
         self.assertIsNone(m1["ref_bbox"])
         self.assertEqual(m0["fill_bbox"], m1["fill_bbox"])
-        self.assertEqual(norm(m0["shape"].Write_GCode(make_postpro())),
-                         norm(m1["shape"].Write_GCode(make_postpro())))
+        self.assertEqual(norm(serialize_gcode(m0["shape"], make_postpro())),
+                         norm(serialize_gcode(m1["shape"], make_postpro())))
 
     def test_offset_cancelling_the_compensation_skips_the_shape(self):
         shape, st = self._build(41, -self.TOOL_RAD)

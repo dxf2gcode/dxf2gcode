@@ -32,11 +32,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import sys
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_mode_test_")
@@ -55,13 +56,13 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode_pocketmill_zigzag_test import _load_shapes  # noqa: E402
 from dxf2gcode_stmove_gcode_test import make_postpro, norm  # noqa: E402
 
@@ -194,7 +195,7 @@ def _build(mode, cut_cor, tool=2.0):
 
 
 def _gcode(s):
-    return norm(s.Write_GCode(make_postpro()))
+    return norm(serialize_gcode(s, make_postpro()))
 
 
 def _g1_xy(code):
@@ -340,20 +341,20 @@ class TestCompensationMenuGating(unittest.TestCase):
     """The GUI must not offer a compensation choice that has no effect."""
 
     def setUp(self):
-        from dxf2gcode.Qt import QtWidgets
+        from dxf2gcode.presentation.qt.qt_compat import QtWidgets
         global _APP
         _APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
         self._app = _APP
 
     def _menu_for(self, shapes, mode):
-        from dxf2gcode.gui import canvas as canvasmod
+        from dxf2gcode.presentation.qt import canvas as canvasmod
         g.config.vars.Pocketing["pocket_compensation_mode"] = mode
         # avoid the modal menu popup
         canvasmod.MyDropDownMenu.exec = lambda self, pos: None
         return canvasmod.MyDropDownMenu(_StubScene(shapes), None, Point(0, 0))
 
     def test_selectable_helper(self):
-        from dxf2gcode.gui.canvas import pocket_compensation_selectable
+        from dxf2gcode.presentation.qt.canvas import pocket_compensation_selectable
         g.config.vars.Pocketing["pocket_compensation_mode"] = "always_inward"
         self.assertFalse(pocket_compensation_selectable([_StubShape(True)]))
         self.assertTrue(pocket_compensation_selectable([_StubShape(False)]))
@@ -379,7 +380,7 @@ class TestDragKnifeMenuGating(unittest.TestCase):
     of a shape must not offer it."""
 
     def setUp(self):
-        from dxf2gcode.Qt import QtWidgets
+        from dxf2gcode.presentation.qt.qt_compat import QtWidgets
         global _APP
         _APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
         self._app = _APP
@@ -396,7 +397,7 @@ class TestDragKnifeMenuGating(unittest.TestCase):
         g.config.machine_type = self._machine_type
 
     def _menu(self, shapes):
-        from dxf2gcode.gui import canvas as canvasmod
+        from dxf2gcode.presentation.qt import canvas as canvasmod
         # avoid the modal menu popup
         canvasmod.MyDropDownMenu.exec = lambda self, pos: None
         return canvasmod.MyDropDownMenu(_StubScene(shapes), None, Point(0, 0))

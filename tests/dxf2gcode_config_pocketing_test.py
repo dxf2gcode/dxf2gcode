@@ -23,8 +23,8 @@ import sys
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.globals.config import (  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import (  # noqa: E402
     MyConfig, CONFIG_SPEC, CONFIG_VERSION, SUPPORTED_CONFIGS)
 from configobj import ConfigObj  # noqa: E402
 from validate import Validator  # noqa: E402
@@ -97,7 +97,7 @@ class TestPocketClearanceConfig(ConfigTestBase):
 
     def test_config_widget_exists_for_option(self):
         # the option must be reachable in the existing configuration window
-        from dxf2gcode.Qt import QtWidgets
+        from dxf2gcode.presentation.qt.qt_compat import QtWidgets
         global _APP
         _APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
         cfg = self._load()

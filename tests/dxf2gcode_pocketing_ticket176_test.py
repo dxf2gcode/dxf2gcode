@@ -33,8 +33,8 @@ sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_ticket176_test_")
@@ -53,15 +53,15 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.pocketmove import PocketMove  # noqa: E402
-from dxf2gcode.core.pocketmill import PocketMill, BBArray  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.toolpath.pocketmove import PocketMove  # noqa: E402
+from dxf2gcode.domain.toolpath.pocketmill import PocketMill, BBArray  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 
 # Reuse the existing test helpers instead of duplicating them.
 from dxf2gcode_stmove_gcode_test import square_geos, corridor_shape  # noqa: E402
@@ -142,7 +142,7 @@ def circle_geos(radius):
 
 
 def make_circle_shape(radius, nr=0):
-    from dxf2gcode.core.shape import Shape, Geos
+    from dxf2gcode.domain.project.shape import Shape, Geos
     s = Shape(nr=nr, closed=True, geos=Geos(circle_geos(radius)))
     s.AnalyseAndOptimize()
     return s
@@ -330,7 +330,7 @@ class TestValidPocketsStillWork(unittest.TestCase):
     """Existing (previously working) pocketing cases must keep working."""
 
     def test_square_pocket_rectangle_branch(self):
-        from dxf2gcode.core.shape import Shape, Geos
+        from dxf2gcode.domain.project.shape import Shape, Geos
         s = Shape(nr=0, closed=True, geos=Geos(square_geos(20.0)))
         s.AnalyseAndOptimize()
         st = pocket_stmove(s, tool_diameter=2.0, cut_cor=42)

@@ -122,10 +122,13 @@ The default discovery pattern `test*.py` does **not** match the module names
 | `dxf2gcode_import_contract_test.py` | integration | entity conversion, contour references, nested block contents and transforms |
 | `dxf2gcode_postpro_config_test.py` | unit/regression | postprocessor defaults, supported versions, save/reload and invalid-file recovery |
 | `dxf2gcode_canvas_mixed_test.py` | integration | 2D canvas / mixed selection |
+| `dxf2gcode_canvas3d_test.py` | unit | 3D canvas transforms, view state and generated geometry |
 | `dxf2gcode_canvas_warning_marker_test.py` | integration | canvas warning markers for invalid toolpaths |
 | `dxf2gcode_pocket_multiselect_test.py` | integration | multi-select pocket activation |
 | `dxf2gcode_tree_group_state_test.py` | integration | tree group state |
-| `dxf2gcode_tree_multiselect_test.py` | integration | tree multi-select |
+| `dxf2gcode_tree_multiselect_test.py` | integration | tree multi-select, export order and enable-state synchronization |
+| `dxf2gcode_treeview_test.py` | integration | tree keyboard, selection and drag-and-drop behavior |
+| `dxf2gcode_tsp_optimization_test.py` | unit | route distance, constraints, genetic optimizer and initializers |
 | `dxf2gcode_parameter_state_test.py` | integration | GUI parameter state and persistence |
 | `dxf2gcode_overcut_gui_test.py` | integration | GUI overcut controls and state |
 | `dxf2gcode_stmove_gcode_test.py` | unit | StMove building, G-code export (support module for many tests) |

@@ -32,8 +32,8 @@ sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 def _init_config():
     import tempfile
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_offset_geom_")
@@ -42,13 +42,13 @@ def _init_config():
 
 _init_config()
 
-from dxf2gcode.Qt.QtWidgets import QApplication, QWidget  # noqa: E402
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.core.shapeoffset import offShapeClass  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication, QWidget  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
+from dxf2gcode.domain.toolpath.shapeoffset import offShapeClass  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
 
 _APP = None
 

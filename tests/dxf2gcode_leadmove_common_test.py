@@ -23,13 +23,13 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.leadmove import (LEAD_DEFAULT, LEAD_OFF, LEAD_RADIUS,  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import (LEAD_DEFAULT, LEAD_OFF, LEAD_RADIUS,  # noqa: E402
                                      LEAD_STARTMOVE, LEAD_STRAIGHT,
                                      validate_lead_move)
-from dxf2gcode.globals.config import MyConfig  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import QApplication  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
 
 from dxf2gcode_leadmove_golden_test import build_shape, export_gcode  # noqa: E402
 from dxf2gcode_leadmove_function_test import (  # noqa: E402
@@ -305,7 +305,7 @@ class TestToolTableValidation(LeadMoveTestBase):
     def setUp(self):
         LeadMoveTestBase.setUp(self)
         _app()
-        from dxf2gcode.gui.configwindow import CfgTableToolParameters
+        from dxf2gcode.presentation.qt.configwindow import CfgTableToolParameters
         self.table = CfgTableToolParameters("tools")
         self.table.setSpec({'string_list': ['', 'diameter', 'speed',
                                             'lead_radius', 'lead_length',
@@ -473,7 +473,7 @@ class TestTreeGui(LeadMoveTestBase):
         # Two contours in one layer: the lead in of one contour can be
         # changed without touching the other contour.
         from dxf2gcode_parameter_state_test import _Harness, _make_shape
-        from dxf2gcode.core.layercontent import LayerContent
+        from dxf2gcode.domain.project.layercontent import LayerContent
         g.config.vars.Lead_In_Out['lead_in_mode'] = LEAD_OFF
         first = _make_shape(0)
         second = _make_shape(1)

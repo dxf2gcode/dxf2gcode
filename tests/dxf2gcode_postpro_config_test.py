@@ -14,11 +14,11 @@ _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _REPO_DIR = os.path.dirname(_TEST_DIR)
 sys.path[:0] = [_TEST_DIR, os.path.join(_REPO_DIR, "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-import dxf2gcode.globals.constants as c  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+import dxf2gcode.domain.constants as c  # noqa: E402
 from configobj import ConfigObj  # noqa: E402
 from validate import Validator  # noqa: E402
-from dxf2gcode.postpro.postprocessorconfig import (  # noqa: E402
+from dxf2gcode.adapters.postprocessor.postprocessorconfig import (  # noqa: E402
     CONFIG_VERSION, POSTPRO_SPEC, MyPostProConfig)
 
 

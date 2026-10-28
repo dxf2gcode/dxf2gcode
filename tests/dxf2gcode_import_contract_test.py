@@ -14,18 +14,18 @@ _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _REPO_DIR = os.path.dirname(_TEST_DIR)
 sys.path[:0] = [_TEST_DIR, os.path.join(_REPO_DIR, "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.entitycontent import EntityContent  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.dxfimport.importer import ReadDXF  # noqa: E402
-from dxf2gcode.dxfimport.importer import (  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.project.entitycontent import EntityContent  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.adapters.dxf.parser import ReadDXF  # noqa: E402
+from dxf2gcode.adapters.dxf.parser import (  # noqa: E402
     dxflinepairClass, dxflinepairsClass)
-from dxf2gcode.dxfimport.geoent_circle import GeoentCircle  # noqa: E402
-from dxf2gcode.dxfimport.geoent_point import GeoentPoint  # noqa: E402
+from dxf2gcode.adapters.dxf.geoent_circle import GeoentCircle  # noqa: E402
+from dxf2gcode.adapters.dxf.geoent_point import GeoentPoint  # noqa: E402
 
 if g.config is None:
-    from dxf2gcode.globals.config import MyConfig  # noqa: E402
+    from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
     g.folder = tempfile.mkdtemp(prefix="d2g_import_contract_")
     g.config = MyConfig()
 

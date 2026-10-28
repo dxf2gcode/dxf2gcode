@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Golden tests of the G-Code of the lead in, the lead out and the overcut.
 
@@ -32,21 +32,22 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
 _GOLDEN_DIR = os.path.join(_TEST_DIR, "golden")
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.globals.config import MyConfig  # noqa: E402
-from dxf2gcode.postpro.breaks import Breaks  # noqa: E402
-from dxf2gcode.postpro.postprocessor import MyPostProcessor  # noqa: E402
-from dxf2gcode.postpro.postprocessorconfig import MyPostProConfig  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import QApplication  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
+from dxf2gcode.adapters.postprocessor.breaks import Breaks  # noqa: E402
+from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor  # noqa: E402
+from dxf2gcode.adapters.postprocessor.postprocessorconfig import MyPostProConfig  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
 
 import shutil
 import tempfile
@@ -138,7 +139,7 @@ def export_gcode(shape, layer):
     postpro_config.load_config()
     postpro.vars = postpro_config.vars
     postpro.initialize_export_vars()
-    return shape.Write_GCode(postpro)
+    return serialize_gcode(shape, postpro)
 
 
 class GoldenTestBase(unittest.TestCase):

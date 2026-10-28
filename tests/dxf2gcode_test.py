@@ -70,6 +70,7 @@ class TestDXF2Gcode(unittest.TestCase):
                 str(repo_dir / 'source' / 'dxf2gcode.py'),
                 '--cfg', 'codex_test',
                 '--quiet',
+                '--optimize',
                 '--export', str(output_base),
                 str(repo_dir / 'dxf' / 'test.dxf'),
             ]
@@ -92,6 +93,55 @@ class TestDXF2Gcode(unittest.TestCase):
             self.assertIn('M2', gcode)
             self.assertNotIn(b'Exception ignored in atexit callback',
                              result.stderr)
+
+    def test_quiet_cli_exports_d2g_project_without_mainwindow(self):
+        repo_dir = Path(__file__).resolve().parent.parent
+        with tempfile.TemporaryDirectory(prefix='d2g_cli_project_') as temp_dir:
+            profile_dir = Path(temp_dir) / '.config' / 'dxf2gcode.codex_test'
+            profile_dir.mkdir(parents=True)
+            project_path = Path(temp_dir) / 'test.d2g'
+            source_dxf = (repo_dir / 'dxf' / 'test.dxf').as_posix()
+            project_path.write_text(
+                '# +~+~+~ DXF2GCODE project file V1.3 ~+~+~+\n'
+                'd2g.file = {!r}\n'
+                'd2g.point_tol = 0.001\n'
+                'd2g.fitting_tol = 0.001\n'
+                'd2g.scale = 1.0\n'
+                'd2g.rot = 0.0\n'
+                'd2g.wpzero_x = 0.0\n'
+                'd2g.wpzero_y = 0.0\n'
+                'd2g.mirrorx = False\n'
+                'd2g.mirrory = False\n'
+                'd2g.split_lines = False\n'
+                'd2g.aut_cut_com = False\n'
+                'd2g.machine_type = "milling"\n'
+                'd2g.layers = []\n'.format(source_dxf),
+                encoding='utf-8')
+            output_base = Path(temp_dir) / 'project-export'
+            environment = os.environ.copy()
+            environment['HOME'] = temp_dir
+            environment['USERPROFILE'] = temp_dir
+            environment['QT_QPA_PLATFORM'] = 'offscreen'
+            command = [
+                sys.executable,
+                str(repo_dir / 'source' / 'dxf2gcode.py'),
+                '--cfg', 'codex_test', '--quiet',
+                '--export', str(output_base), str(project_path),
+            ]
+            result = subprocess.run(
+                command, cwd=temp_dir, env=environment,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                timeout=120)
+
+            output_file = Path(str(output_base) + '.ngc')
+            self.assertEqual(
+                result.returncode, 0,
+                result.stdout.decode('utf-8', errors='replace') +
+                result.stderr.decode('utf-8', errors='replace'))
+            self.assertTrue(output_file.is_file())
+            gcode = output_file.read_text(encoding='utf-8', errors='replace')
+            self.assertIn('G1 X', gcode)
+            self.assertIn('M2', gcode)
 
 
 def make_test_function(description, dxf2gcode, in_file, out_file):

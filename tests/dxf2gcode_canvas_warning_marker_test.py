@@ -23,12 +23,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_RADIUS  # noqa: E402
-from dxf2gcode.globals.config import MyConfig  # noqa: E402
-from dxf2gcode.Qt.QtCore import QPointF, QRectF  # noqa: E402
-from dxf2gcode.Qt.QtGui import QImage, QPainter  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import (QApplication, QGraphicsScene,  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_RADIUS  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtCore import QPointF, QRectF  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QImage, QPainter  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (QApplication, QGraphicsScene,  # noqa: E402
                                     QGraphicsView)
 
 from dxf2gcode_leadmove_golden_test import build_shape  # noqa: E402
@@ -67,7 +67,7 @@ class TestWarningMarker(unittest.TestCase):
         @param zoom: the zoom level of the view
         @return: the rendered image
         """
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=41,
             layer_settings=dict(lead_in_mode=LEAD_RADIUS, lead_radius=1.0))
@@ -154,11 +154,11 @@ class TestErrorMessageAggregation(unittest.TestCase):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def _new_scene(self):
-        from dxf2gcode.gui.canvas2d import MyGraphicsScene
+        from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene
         return MyGraphicsScene()
 
     def test_duplicate_messages_are_collected_and_shown_once(self):
-        from dxf2gcode.gui import canvas2d
+        from dxf2gcode.presentation.qt import canvas2d
         scene = self._new_scene()
         calls = []
         old_critical = canvas2d.QMessageBox.critical
@@ -186,7 +186,7 @@ class TestErrorMessageAggregation(unittest.TestCase):
             scene._pending_error_messages = []
 
     def test_repaint_shape_collects_instead_of_showing_the_message(self):
-        from dxf2gcode.gui import canvas2d
+        from dxf2gcode.presentation.qt import canvas2d
         scene = self._new_scene()
         calls = []
         old_critical = canvas2d.QMessageBox.critical

@@ -36,12 +36,11 @@ class TestMainWindowWorkflow(unittest.TestCase):
 
 def _run_mainwindow_workflow():
     """Worker entry point; run separately so a Qt crash cannot kill unittest."""
-    import importlib.util
     from types import SimpleNamespace
 
     sys.path.insert(0, os.path.join(_REPO_DIR, "source"))
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     temp_dir = os.environ["D2G_WORKFLOW_TEMP"]
     g.folder = os.path.join(temp_dir, "config")
@@ -50,15 +49,12 @@ def _run_mainwindow_workflow():
     g.config.mode3d = False
     g.quiet = True
 
-    from dxf2gcode.Qt.QtWidgets import QApplication
-    from dxf2gcode.Qt import QtCore
-    from dxf2gcode_ui5 import Ui_MainWindow
-    from dxf2gcode.gui.canvas2d import MyGraphicsScene, ShapeGUI
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication
+    from dxf2gcode.presentation.qt.qt_compat import QtCore
+    from dxf2gcode.presentation.qt.generated.dxf2gcode_ui5 import Ui_MainWindow
+    from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene, ShapeGUI
 
-    script = os.path.join(_REPO_DIR, "source", "dxf2gcode.py")
-    spec = importlib.util.spec_from_file_location("dxf2gcode_app", script)
-    app_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(app_module)
+    from dxf2gcode.presentation.qt import application as app_module
     g.folder = os.path.join(temp_dir, "config")
     app_module.Ui_MainWindow = Ui_MainWindow
     app_module.MyGraphicsScene = MyGraphicsScene

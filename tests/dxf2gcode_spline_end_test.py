@@ -28,16 +28,16 @@ sys.path[:0] = [_TEST_DIR, os.path.join(_REPO_DIR, "source")]
 
 from dxf2gcode_stmove_gcode_test import make_postpro  # noqa: F401,E402
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.shape import Geos, Shape  # noqa: E402
-from dxf2gcode.core.shapeoffset import offShapeClass  # noqa: E402
-from dxf2gcode.dxfimport.geoent_spline import (  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.project.shape import Geos, Shape  # noqa: E402
+from dxf2gcode.domain.toolpath.shapeoffset import offShapeClass  # noqa: E402
+from dxf2gcode.adapters.dxf.geoent_spline import (  # noqa: E402
     drop_degenerate_end_geos)
-from dxf2gcode.dxfimport.importer import ReadDXF  # noqa: E402
-from dxf2gcode.dxfimport.spline_convert import Spline2Arcs  # noqa: E402
+from dxf2gcode.adapters.dxf.parser import ReadDXF  # noqa: E402
+from dxf2gcode.adapters.dxf.spline_convert import Spline2Arcs  # noqa: E402
 
 DXF = os.path.join(_REPO_DIR, "dxf", "test.dxf")
 SPLINE_NR = 9          # open spline with the repeated end control point

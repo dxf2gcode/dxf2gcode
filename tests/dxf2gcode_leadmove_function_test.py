@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Tests of the lead in / lead out / overcut functions of dxf2gcode.
 
@@ -23,21 +23,22 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.globals.config import MyConfig  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_DEFAULT, LEAD_OFF, LEAD_RADIUS, \
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_DEFAULT, LEAD_OFF, LEAD_RADIUS, \
     LEAD_STARTMOVE, LEAD_STRAIGHT, OVERCUT_DEFAULT  # noqa: E402
 
-from dxf2gcode.Qt.QtWidgets import QApplication  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
 
 from dxf2gcode_leadmove_golden_test import (  # noqa: E402
     _LayerContentsStub, build_shape, export_gcode)
 
-from dxf2gcode.postpro.breaks import Breaks  # noqa: E402
-from dxf2gcode.postpro.postprocessor import MyPostProcessor  # noqa: E402
-from dxf2gcode.postpro.postprocessorconfig import MyPostProConfig  # noqa: E402
+from dxf2gcode.adapters.postprocessor.breaks import Breaks  # noqa: E402
+from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor  # noqa: E402
+from dxf2gcode.adapters.postprocessor.postprocessorconfig import MyPostProConfig  # noqa: E402
 
 _APP = None
 
@@ -59,7 +60,7 @@ def export_with_errors(shape):
     postpro_config.load_config()
     postpro.vars = postpro_config.vars
     postpro.initialize_export_vars()
-    gcode = shape.Write_GCode(postpro)
+    gcode = serialize_gcode(shape, postpro)
     return gcode, postpro.export_errors
 
 
@@ -157,11 +158,11 @@ class TestErrorHandling(LeadMoveTestBase):
     def test_lead_out_starts_at_the_last_cut_point(self):
         # A break at the end of the contour is only a Z hop: the lead out
         # has to start at the last point which is really cut.
-        from dxf2gcode.core.breakgeo import BreakGeo
-        from dxf2gcode.core.linegeo import LineGeo
-        from dxf2gcode.core.point import Point
-        from dxf2gcode.core.shape import Shape, Geos
-        from dxf2gcode.core.stmove import StMove
+        from dxf2gcode.domain.geometry.breakgeo import BreakGeo
+        from dxf2gcode.domain.geometry.linegeo import LineGeo
+        from dxf2gcode.domain.geometry.point import Point
+        from dxf2gcode.domain.project.shape import Shape, Geos
+        from dxf2gcode.domain.toolpath.stmove import StMove
 
         geos = Geos([LineGeo(Point(0, 0), Point(100, 0)),
                      LineGeo(Point(100, 0), Point(100, 100)),
@@ -199,10 +200,10 @@ class TestErrorHandling(LeadMoveTestBase):
         # A straight lead out which would run along the contour is written as
         # it is: there is no error (the user chose the straight lead out on
         # purpose).
-        from dxf2gcode.core.linegeo import LineGeo
-        from dxf2gcode.core.point import Point
-        from dxf2gcode.core.shape import Shape, Geos
-        from dxf2gcode.core.stmove import StMove
+        from dxf2gcode.domain.geometry.linegeo import LineGeo
+        from dxf2gcode.domain.geometry.point import Point
+        from dxf2gcode.domain.project.shape import Shape, Geos
+        from dxf2gcode.domain.toolpath.stmove import StMove
 
         geos = Geos([LineGeo(Point(0, 0), Point(100, 0)),
                      LineGeo(Point(100, 0), Point(100, 100)),
@@ -278,7 +279,7 @@ class TestPasses(LeadMoveTestBase):
     def test_the_lathe_path_is_not_touched(self):
         # The lead in / lead out / overcut are not available for the lathe:
         # the X axis of a lathe is the diameter.
-        from dxf2gcode.core.leadmove import lead_move_enabled
+        from dxf2gcode.domain.toolpath.leadmove import lead_move_enabled
         self.assertTrue(lead_move_enabled('milling'))
         self.assertTrue(lead_move_enabled('drag_knife'))
         self.assertFalse(lead_move_enabled('lathe'))
@@ -517,7 +518,7 @@ class TestConfigurationChange(LeadMoveTestBase):
 
     def setUp(self):
         LeadMoveTestBase.setUp(self)
-        from dxf2gcode.gui.treehandling import update_lead_move_values
+        from dxf2gcode.presentation.qt.treehandling import update_lead_move_values
         self.update = update_lead_move_values
 
     def test_the_global_values_are_applied_to_the_layer(self):
@@ -750,8 +751,8 @@ class TestCanvasPreview(LeadMoveTestBase):
         self.assertIsNone(self._preview_end(shape))
 
     def test_the_canvas_path_is_created(self):
-        from dxf2gcode.gui.canvas2d import StMoveGUI
-        from dxf2gcode.Qt.QtGui import QImage, QPainter
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QImage, QPainter
         shape, layer = build_shape(
             closed=True, cut_cor=41,
             layer_settings=dict(lead_out_mode=LEAD_RADIUS,
@@ -779,7 +780,7 @@ class TestCanvasPreview(LeadMoveTestBase):
         self.assertIsNone(self._preview_end(shape))
 
     def test_a_change_of_the_layer_settings_rebuilds_the_preview(self):
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=41,
             layer_settings=dict(lead_out_mode=LEAD_RADIUS,
@@ -798,7 +799,7 @@ class TestCanvasPreview(LeadMoveTestBase):
     def test_the_preview_does_not_change_the_geometry(self):
         # The preview is an additional geometry: the shape and the start move
         # are not modified.
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=41,
             layer_settings=dict(lead_out_mode=LEAD_RADIUS,
@@ -816,7 +817,7 @@ class TestCanvasLeadColors(LeadMoveTestBase):
     contour (which stays blue)."""
 
     def test_lead_in_and_offset_contour_use_different_colors(self):
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         # The internal compensation draws the offset contour.
         shape, layer = build_shape(
             closed=True, cut_cor=41, done_by_machine=False,
@@ -836,15 +837,15 @@ class TestCanvasLeadColors(LeadMoveTestBase):
         self.assertNotEqual(gui.PEN_LEAD_IN_LINE.color(),
                             gui.PEN_EXIT_LINE.color())
         # Both lead moves are drawn dashed.
-        from dxf2gcode.Qt import QtCore
+        from dxf2gcode.presentation.qt.qt_compat import QtCore
         self.assertEqual(gui.PEN_LEAD_IN_LINE.style(),
                          QtCore.Qt.PenStyle.DashLine)
         self.assertEqual(gui.PEN_EXIT_LINE.style(),
                          QtCore.Qt.PenStyle.DashLine)
 
     def test_the_start_arrow_uses_the_lead_in_color(self):
-        from dxf2gcode.gui.canvas2d import StMoveGUI, MyGraphicsScene
-        from dxf2gcode.Qt import QtCore
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI, MyGraphicsScene
+        from dxf2gcode.presentation.qt.qt_compat import QtCore
         shape, layer = build_shape(
             closed=True, cut_cor=41, done_by_machine=False,
             layer_settings=dict(lead_in_mode=LEAD_RADIUS,
@@ -866,9 +867,9 @@ class TestCanvasLeadColors(LeadMoveTestBase):
             self.assertEqual(arrow.pen.style(), QtCore.Qt.PenStyle.DashLine)
 
     def test_the_tool_is_shown_at_the_lead_in_entry_point(self):
-        from dxf2gcode.gui.canvas2d import StMoveGUI
-        from dxf2gcode.Qt import QtCore
-        from dxf2gcode.Qt.QtGui import QImage, QPainter
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.qt_compat import QtCore
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QImage, QPainter
         shape, layer = build_shape(
             closed=True, cut_cor=41, done_by_machine=True,
             layer_settings=dict(lead_in_mode=LEAD_STARTMOVE,
@@ -911,7 +912,7 @@ class TestCanvasLeadColors(LeadMoveTestBase):
         # the nominal line of the common length and the nominal arc. There is
         # no separate G40 approach line; the tool circle is drawn at the
         # compensated rapid position.
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=41, done_by_machine=True,
             layer_settings=dict(lead_in_mode=LEAD_RADIUS,
@@ -949,11 +950,11 @@ class TestCanvasPreviewBreaks(LeadMoveTestBase):
 
     def _tab_layer(self):
         """A break layer with a small tab in the first segment."""
-        from dxf2gcode.core.layercontent import LayerContent, Layers
-        from dxf2gcode.core.shape import Shape, Geos
-        from dxf2gcode.core.linegeo import LineGeo
-        from dxf2gcode.core.point import Point
-        from dxf2gcode.core.layercontent import Shapes
+        from dxf2gcode.domain.project.layercontent import LayerContent, Layers
+        from dxf2gcode.domain.project.shape import Shape, Geos
+        from dxf2gcode.domain.geometry.linegeo import LineGeo
+        from dxf2gcode.domain.geometry.point import Point
+        from dxf2gcode.domain.project.layercontent import Shapes
         separator = g.config.vars.Layer_Options['id_float_separator']
         layer = LayerContent(nr=2, name="BREAKS" + separator + "1", shapes=[])
         tab = Shape(nr=1, closed=True,
@@ -981,8 +982,8 @@ class TestCanvasPreviewBreaks(LeadMoveTestBase):
         return count
 
     def test_the_overcut_preview_shows_a_gap_at_the_tab(self):
-        from dxf2gcode.core.breakgeo import BreakGeo
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.domain.geometry.breakgeo import BreakGeo
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
 
         class _WindowStub(object):
             def __init__(self, layers):
@@ -1003,8 +1004,8 @@ class TestCanvasPreviewBreaks(LeadMoveTestBase):
         self.assertEqual(self._sub_paths(gui._exit_path), 2)
 
     def test_without_breaks_the_preview_is_continuous(self):
-        from dxf2gcode.core.layercontent import Layers
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.domain.project.layercontent import Layers
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
 
         class _WindowStub(object):
             def __init__(self, layers):
@@ -1018,9 +1019,9 @@ class TestCanvasPreviewBreaks(LeadMoveTestBase):
         self.assertEqual(self._sub_paths(gui._exit_path), 1)
 
     def test_the_export_hops_over_the_tab(self):
-        from dxf2gcode.postpro.breaks import Breaks
-        from dxf2gcode.postpro.postprocessor import MyPostProcessor
-        from dxf2gcode.postpro.postprocessorconfig import MyPostProConfig
+        from dxf2gcode.adapters.postprocessor.breaks import Breaks
+        from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor
+        from dxf2gcode.adapters.postprocessor.postprocessorconfig import MyPostProConfig
 
         class _WindowStub(object):
             def __init__(self, layers):
@@ -1036,7 +1037,7 @@ class TestCanvasPreviewBreaks(LeadMoveTestBase):
         config.load_config()
         postpro.vars = config.vars
         postpro.initialize_export_vars()
-        gcode = shape.Write_GCode(postpro)
+        gcode = serialize_gcode(shape, postpro)
         # The tab is not cut: the tool hops over it (in the contour and in
         # the overcut).
         self.assertIn("G1 Z  -1.000", gcode)
@@ -1082,8 +1083,8 @@ class TestPreviewMatchesExport(LeadMoveTestBase):
                 for entry in entries[start:] if entry[0] == "xy"]
 
     def _check(self, **kwargs):
-        from dxf2gcode.core.arcgeo import ArcGeo
-        from dxf2gcode.core.linegeo import LineGeo
+        from dxf2gcode.domain.geometry.arcgeo import ArcGeo
+        from dxf2gcode.domain.geometry.linegeo import LineGeo
         shape, layer = build_shape(**kwargs)
         gcode = export_gcode(shape, layer)
         moves = self._last_moves(gcode)
@@ -1196,7 +1197,7 @@ class TestExitPreviewUsesTheContourSpace(LeadMoveTestBase):
     WORKPIECE_RADIUS = 3.04
 
     def _build(self, machine, cut_cor, lead_in_mode):
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=cut_cor, done_by_machine=machine,
             tool_diameter=self.TOOL_DIAMETER,
@@ -1271,7 +1272,7 @@ class TestFoundProblems(LeadMoveTestBase):
         # Without a cutter compensation the contour itself is the tool center
         # path: the lead out has to be calculated in the tool center plane
         # (the same as the export).
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=40,
             layer_settings=dict(lead_out_mode=LEAD_RADIUS,
@@ -1292,7 +1293,7 @@ class TestFoundProblems(LeadMoveTestBase):
         # The overcut is only possible for closed contours: on an open contour
         # it is silently ignored - neither the canvas nor the export produces
         # an overcut and there is no error message.
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=False, cut_cor=41,
             layer_settings=dict(overcut_enabled=True, overcut_length=20.0))
@@ -1308,7 +1309,7 @@ class TestFoundProblems(LeadMoveTestBase):
         # out leaves the contour at its end, the overcut continues the cut
         # along the contour beyond the closing point. The preview has to show
         # the same geometry as the export.
-        from dxf2gcode.gui.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=41,
             layer_settings=dict(lead_out_mode=LEAD_RADIUS,
@@ -1324,8 +1325,8 @@ class TestFoundProblems(LeadMoveTestBase):
     def test_an_invalid_geometry_is_marked_in_the_canvas(self):
         # A radius which is smaller than the tool radius can not be milled:
         # the user has to see it in the canvas (the shape is not exported).
-        from dxf2gcode.gui.canvas2d import StMoveGUI
-        from dxf2gcode.Qt.QtGui import QImage, QPainter
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QImage, QPainter
         shape, layer = build_shape(
             closed=True, cut_cor=41,
             layer_settings=dict(lead_out_mode=LEAD_RADIUS,

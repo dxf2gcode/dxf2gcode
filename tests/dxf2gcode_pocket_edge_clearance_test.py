@@ -30,11 +30,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import sys
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_edge_test_")
@@ -53,14 +54,14 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode_stmove_gcode_test import make_postpro, norm  # noqa: E402
 
 RECT_W, RECT_H = 40.0, 30.0
@@ -307,7 +308,7 @@ class TestAlwaysInwardUnchanged(unittest.TestCase):
         codes = {}
         for cc in (40, 41, 42):
             s, st = build("always_inward", cc, 20.0)
-            codes[cc] = norm(s.Write_GCode(make_postpro()))
+            codes[cc] = norm(serialize_gcode(s, make_postpro()))
         self.assertTrue(codes[40])
         self.assertEqual(codes[41], codes[40])
         self.assertEqual(codes[42], codes[40])

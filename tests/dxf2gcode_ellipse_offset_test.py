@@ -21,18 +21,19 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 _REPO_DIR = os.path.dirname(_TEST_DIR)
 sys.path[:0] = [_TEST_DIR, os.path.join(_REPO_DIR, "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
     corridor_shape, make_postpro)
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_RADIUS, LEAD_STRAIGHT  # noqa: E402
-from dxf2gcode.core.shape import Geos, Shape  # noqa: E402
-from dxf2gcode.core.shapeoffset import OffArcGeo, offShapeClass  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.dxfimport.importer import ReadDXF  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_RADIUS, LEAD_STRAIGHT  # noqa: E402
+from dxf2gcode.domain.project.shape import Geos, Shape  # noqa: E402
+from dxf2gcode.domain.toolpath.shapeoffset import OffArcGeo, offShapeClass  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.dxf.parser import ReadDXF  # noqa: E402
 
 DXF = os.path.join(_REPO_DIR, "dxf", "test.dxf")
 ELLIPSE_NR = 2          # closed full ellipse (GeoentEllipse)
@@ -150,7 +151,7 @@ class TestFullEllipseOffset(unittest.TestCase):
                            if isinstance(geo, OffArcGeo)]
             self.assertGreaterEqual(len(offset_geos), MIN_ELEMENTS,
                                     cut_cor)
-            gcode = shape.Write_GCode(make_postpro())
+            gcode = serialize_gcode(shape, make_postpro())
             arcs = sum(1 for line in gcode.splitlines()
                        if line.split()[:1] in (["G2"], ["G3"]))
             self.assertGreaterEqual(arcs, 100, cut_cor)

@@ -8,9 +8,9 @@ import os
 import subprocess
 import sys
 import tempfile
-from dxf2gcode.Qt import PYQT_VERSION
+from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
 
-import dxf2gcode.globals.constants as c
+import dxf2gcode.domain.constants as c
 
 
 def which(program):
@@ -71,17 +71,23 @@ else:
 
 FILEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 
-UIFILE = "dxf2gcode.ui"
-PYFILEver = f"dxf2gcode_ui{PYQT_VERSION}.py"
+UIFILE = os.path.join("dxf2gcode", "presentation", "qt", "resources",
+                      "dxf2gcode.ui")
+PYFILEver = os.path.join("dxf2gcode", "presentation", "qt", "generated",
+                         f"dxf2gcode_ui{PYQT_VERSION}.py")
 
-RCFILE = "dxf2gcode_images.qrc"
+RCFILE_NAME = "dxf2gcode_images.qrc"
+RCFILE = os.path.join("dxf2gcode", "presentation", "qt", "resources",
+                      RCFILE_NAME)
 RCFILEver = f"dxf2gcode_images{PYQT_VERSION}.qrc"
 
-RCPYFILEver = f"dxf2gcode_images{PYQT_VERSION}_rc.py"
+RCPYFILEver = os.path.join(
+    "dxf2gcode", "presentation", "qt", "generated",
+    f"dxf2gcode_images{PYQT_VERSION}_rc.py")
 
 ui_data = ""
-with open(os.path.join(FILEPATH,UIFILE), "r", encoding="utf-8") as myfile:
-    ui_data = myfile.read().replace(RCFILE, RCFILEver)
+with open(os.path.join(FILEPATH, UIFILE), "r", encoding="utf-8") as myfile:
+    ui_data = myfile.read().replace(RCFILE_NAME, RCFILEver)
 
 fd, tmp_ui_filename = tempfile.mkstemp()
 try:
@@ -99,13 +105,19 @@ try:
     print(" ".join(cmd1))
     subprocess.check_call(cmd1)
 
+    ui_output = os.path.join(FILEPATH, PYFILEver)
+    resource_module = f"dxf2gcode_images{PYQT_VERSION}_rc"
+    with open(ui_output, "r", encoding="utf-8") as generated:
+        ui_source = generated.read()
+    ui_source = ui_source.replace(
+        f"import {resource_module}", f"from . import {resource_module}")
+    with open(ui_output, "w", encoding="utf-8") as generated:
+        generated.write(ui_source)
+
     print(" ".join(cmd2))
     subprocess.check_call(cmd2)
 
     if PYQT_VERSION == 6:
-        with open(os.path.join(FILEPATH,PYFILEver), "a", encoding="utf-8") as myfile:
-            myfile.write('import dxf2gcode_images6_rc\n')
-
         with open(os.path.join(FILEPATH, RCPYFILEver), "r", encoding="utf-8") as myfile:
             data = myfile.read().replace("from PySide6 import QtCore","from PyQt6 import QtCore")
 

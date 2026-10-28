@@ -21,17 +21,23 @@
 #
 ############################################################################
 
-import distutils.command.install_scripts
 import glob
+import os
 import platform
 import shutil
+from pathlib import Path
 
-from setuptools import setup
+from setuptools import find_packages, setup
+from setuptools.command.install_scripts import install_scripts as base_install_scripts
 
 
-class install_scripts(distutils.command.install_scripts.install_scripts):
+PROJECT_DIR = Path(__file__).resolve().parent
+os.chdir(PROJECT_DIR)
+
+
+class install_scripts(base_install_scripts):
     def run(self):
-        distutils.command.install_scripts.install_scripts.run(self)
+        super().run()
         for script in self.get_outputs():
             if script.endswith(".py"):
                 shutil.move(script, script[:-3])
@@ -45,13 +51,12 @@ if platform.system() == 'Darwin':
 setup(
     name='dxf2gcode',
 
-    version='20250213',
+    version='20261028',
 
-    description='2D drawings to CNC machine compatible G-Code converter..',
+    description='2D drawings to CNC machine compatible G-Code converter.',
 
-    long_description=('DXF2GCODE is a tool for converting 2D (dxf, pdf, ps)'
-                       ' drawings to CNC machine compatible GCode.'
-                       ' Release Candidate based on development branch'),
+    long_description=(PROJECT_DIR / 'README.txt').read_text(encoding='utf-8'),
+    long_description_content_type='text/plain',
 
     url='https://sourceforge.net/p/dxf2gcode/wiki/Home/',
 
@@ -61,33 +66,27 @@ setup(
 
     license='GPLv3',
 
-    packages=[
-        'dxf2gcode',
-        'dxf2gcode.core',
-        'dxf2gcode.dxfimport',
-        'dxf2gcode.globals',
-        'dxf2gcode.gui',
-        'dxf2gcode.postpro'
-    ],
+    packages=find_packages(include=["dxf2gcode", "dxf2gcode.*"]),
 
-    py_modules=[
-        "dxf2gcode_images5_rc",
-        "dxf2gcode_ui5"
-    ],
+
 
     install_requires=[
-        'configobj',
-        'PyQt5',
-        'PyOpenGL'
+        'configobj>=5.0.6',
+        'PyQt5>=5.9',
+        'PyOpenGL>=3.1'
     ],
+
+    extras_require={
+        'qt6': ['PyQt6'],
+    },
 
     include_package_data=True,
 
     data_files=[
         ('share/metainfo', ['dxf2gcode.appdata.xml']),
         ('share/applications', ['dxf2gcode.desktop']),
-        ('share/dxf2gcode/i18n', glob.glob('i18n/*.qm')),
-        ('share/icons/hicolor/scalable/apps/', ['images/dxf2gcode.svg'])
+        ('share/dxf2gcode/i18n', sorted(glob.glob('i18n/*.qm'))),
+        ('share/icons/hicolor/scalable/apps/', ['dxf2gcode/presentation/qt/resources/images/dxf2gcode.svg'])
     ],
 
     cmdclass={"install_scripts": install_scripts},
@@ -98,7 +97,7 @@ setup(
     app=['dxf2gcode.py'],
     options={
         'py2app': {
-            'iconfile': 'images/dxf2gcode.icns',
+            'iconfile': 'dxf2gcode/presentation/qt/resources/images/dxf2gcode.icns',
             'plist': {
                 'CFBundleName': "dxf2gcode",
                 'CFBundleDisplayName': "dxf2gcode",

@@ -24,13 +24,13 @@ import sys
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.globals.config import (  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import (  # noqa: E402
     MyConfig, CONFIG_SPEC, CONFIG_VERSION)
-from dxf2gcode.Qt import QtCore  # noqa: E402
-from dxf2gcode.Qt.QtGui import QImage, QPainter  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import QApplication, QGraphicsScene  # noqa: E402
-from dxf2gcode.gui.scalebar import (  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat import QtCore  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QImage, QPainter  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication, QGraphicsScene  # noqa: E402
+from dxf2gcode.presentation.qt.scalebar import (  # noqa: E402
     CM, IN, MM, ScaleBar, ScaleBarState, convert_length, drawing_unit,
     format_length, format_number, nice_lengths, scale_bar_enabled,
     select_scale_length)
@@ -273,7 +273,7 @@ class TestCanvasIntegration(unittest.TestCase):
         self.cfg.var_dict["General"]["show_scale_bar"] = True
         self.cfg.update_config()
 
-        from dxf2gcode.gui.canvas2d import MyGraphicsView
+        from dxf2gcode.presentation.qt.canvas2d import MyGraphicsView
         self.view = MyGraphicsView()
         self.view.resize(800, 600)
         self.scene = QGraphicsScene()
@@ -433,7 +433,7 @@ class TestScaleBarOption(unittest.TestCase):
 
     def test_the_config_window_stores_the_option(self):
         _app()
-        from dxf2gcode.gui.configwindow import ConfigWindow
+        from dxf2gcode.presentation.qt.configwindow import ConfigWindow
         cfg = self._load()
         window = ConfigWindow(cfg.makeConfigWidgets(), cfg.var_dict,
                               cfg.var_dict.configspec)

@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Tests of the persistence of the lead in / lead out / overcut values of the
 layers in the project file (.d2g).
@@ -20,14 +20,14 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.project import Project  # noqa: E402
-from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.globals.config import MyConfig  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import QApplication  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.project.project import Project  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
 
 _APP = None
 
@@ -230,7 +230,7 @@ class TestGlobalValuesAndOverrides(ProjectRoundtripBase):
 
     def setUp(self):
         ProjectRoundtripBase.setUp(self)
-        from dxf2gcode.gui.treehandling import update_lead_move_values
+        from dxf2gcode.presentation.qt.treehandling import update_lead_move_values
         self.update = update_lead_move_values
 
     def test_the_overrides_survive_a_config_change(self):

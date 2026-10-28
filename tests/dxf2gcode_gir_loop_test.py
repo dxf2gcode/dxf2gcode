@@ -23,17 +23,18 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import sys
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402  (config is initialised there)
     make_postpro, make_shape, build_stmove, lines_with, norm,
     square_geos, corridor_shape)
 
-from dxf2gcode.core.shape import Shape, Geos
-from dxf2gcode.core.shapeoffset import offShapeClass, OffPoint
-from dxf2gcode.core.linegeo import LineGeo
-from dxf2gcode.core.arcgeo import ArcGeo
-from dxf2gcode.core.point import Point
-from dxf2gcode.core.leadmove import LEAD_OFF
+from dxf2gcode.domain.project.shape import Shape, Geos
+from dxf2gcode.domain.toolpath.shapeoffset import offShapeClass, OffPoint
+from dxf2gcode.domain.geometry.linegeo import LineGeo
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo
+from dxf2gcode.domain.geometry.point import Point
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF
 
 DXF_1997 = os.path.join(os.path.dirname(_TEST_DIR), "dxf", "1997.DXF")
 
@@ -128,21 +129,21 @@ class TestLoopWinding(unittest.TestCase):
 class TestLoopWindingExport(unittest.TestCase):
 
     def test_all_corridor_loops_reach_the_gcode(self):
-        import dxf2gcode.globals.globals as g
+        import dxf2gcode.bootstrap.runtime_state as g
         g.config.vars.Cutter_Compensation["done_by_machine"] = False
         pp = make_postpro()
         sh = corridor_shape(nr=7)
         # The test checks the offset loops reaching the G-Code, not the lead in.
         sh.parentLayer.lead_in_mode = LEAD_OFF
         build_stmove(sh)
-        code = sh.Write_GCode(pp)
+        code = serialize_gcode(sh, pp)
         # every loop must contribute linear cutting moves
         self.assertGreaterEqual(len(lines_with("G1", code)), 3)
 
     @unittest.skipUnless(os.path.exists(DXF_1997),
                          "1997.DXF not available")
     def test_nines_out_loops_are_valid_and_closed(self):
-        from dxf2gcode.dxfimport.importer import ReadDXF
+        from dxf2gcode.adapters.dxf.parser import ReadDXF
         from copy import copy
 
         dxf = ReadDXF(filename=DXF_1997)
@@ -187,7 +188,7 @@ class TestShortSegmentFilter(unittest.TestCase):
         self.sh = make_shape(square_geos(10.0))
 
     def _kept(self, geo):
-        return self.sh.Write_GCode_for_geo(geo, self.pp) != ""
+        return serialize_shape_geometry(self.sh, geo, self.pp) != ""
 
     def test_normal_line_kept(self):
         self.assertTrue(self._kept(LineGeo(Point(0, 0), Point(10, 0))))
@@ -234,7 +235,7 @@ class _LogCapture(logging.Handler):
 
 
 def _load_1997_shapes():
-    from dxf2gcode.dxfimport.importer import ReadDXF
+    from dxf2gcode.adapters.dxf.parser import ReadDXF
     from copy import copy
 
     dxf = ReadDXF(filename=DXF_1997)
@@ -341,7 +342,7 @@ DXF_TEST = os.path.join(os.path.dirname(_TEST_DIR), "dxf", "test.dxf")
 
 
 def _load_test_dxf_shapes():
-    from dxf2gcode.dxfimport.importer import ReadDXF
+    from dxf2gcode.adapters.dxf.parser import ReadDXF
     from copy import copy
 
     dxf = ReadDXF(filename=DXF_TEST)

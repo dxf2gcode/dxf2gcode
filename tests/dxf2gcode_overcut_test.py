@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Tests of the overcut.
 
@@ -29,12 +29,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.leadmove import (OVERCUT_DEFAULT, OVERCUT_OFF,  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import (OVERCUT_DEFAULT, OVERCUT_OFF,  # noqa: E402
                                      OVERCUT_ON, resolve_overcut)
-from dxf2gcode.globals.config import MyConfig  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import QApplication  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
 
 from dxf2gcode_leadmove_golden_test import (GoldenTestBase, build_shape,  # noqa: E402
                                            export_gcode)
@@ -55,7 +55,7 @@ class OvercutTestBase(GoldenTestBase):
     def setUp(self):
         GoldenTestBase.setUp(self)
         _app()
-        from dxf2gcode.gui.treehandling import update_lead_move_values
+        from dxf2gcode.presentation.qt.treehandling import update_lead_move_values
         self.update = update_lead_move_values
 
     def tearDown(self):

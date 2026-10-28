@@ -29,11 +29,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import sys
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_breaks_test_")
@@ -57,24 +58,24 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
 
-from dxf2gcode.postpro.breaks import Breaks  # noqa: E402
-from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent, Layers  # noqa: E402
-from dxf2gcode.core.project import Project  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
+from dxf2gcode.adapters.postprocessor.breaks import Breaks  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent, Layers  # noqa: E402
+from dxf2gcode.domain.project.project import Project  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
     make_postpro, make_shape, build_stmove, square_geos, norm)
 
-from dxf2gcode.Qt.QtWidgets import (  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (  # noqa: E402
     QApplication, QComboBox, QLabel, QTreeView, QWidget, QGridLayout, QLineEdit)
-from dxf2gcode.Qt import QtCore  # noqa: E402
-from dxf2gcode.gui.treehandling import TreeHandler  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat import QtCore  # noqa: E402
+from dxf2gcode.presentation.qt.treehandling import TreeHandler  # noqa: E402
 
 _APP = None  # keep the QApplication alive (otherwise all widgets are deleted)
 
@@ -127,7 +128,7 @@ def export_shape(break_pass=-1, depths=(0.0, -8.0, -1.0), cut_cor=40,
     if break_layers:
         layers = [sh.parentLayer] + list(break_layers)
         pp.breaks = Breaks(Layers(layers))
-    code = sh.Write_GCode(pp)
+    code = serialize_gcode(sh, pp)
     return sh, code
 
 
@@ -211,7 +212,7 @@ class TestBreakPassGCode(unittest.TestCase):
                          "last pass must lift the cutter to the tab top")
 
     def test_get_pass_depths_mirrors_write_gcode(self):
-        from dxf2gcode.core.shape import Shape as _S
+        from dxf2gcode.domain.project.shape import Shape as _S
         sh = make_shape(square_geos())
         sh.axis3_start_mill_depth = 0.0
         sh.axis3_mill_depth = -8.0
@@ -345,7 +346,7 @@ class TestBreakPassGCode(unittest.TestCase):
         before = geo_snapshot(sh.geos)
         pp = make_postpro()
         pp.breaks = Breaks(Layers([sh.parentLayer, layer]))
-        sh.Write_GCode(pp)
+        serialize_gcode(sh, pp)
         self.assertEqual(geo_snapshot(sh.geos), before)
 
     def test_no_breaks_gcode_identical(self):
@@ -414,10 +415,10 @@ class TestBreakPassGCode(unittest.TestCase):
 
         # the original geometry must be restored after the export
         before = geo_snapshot(sh.geos)
-        from dxf2gcode.postpro.breaks import Breaks as _B
+        from dxf2gcode.adapters.postprocessor.breaks import Breaks as _B
         pp = make_postpro()
         pp.breaks = _B(Layers([sh.parentLayer, layer]))
-        sh.Write_GCode(pp)
+        serialize_gcode(sh, pp)
         self.assertEqual(geo_snapshot(sh.geos), before)
 
     def test_arcs_are_split_at_tabs(self):
@@ -634,9 +635,9 @@ class TestBreakPassGUILayout(unittest.TestCase):
 
     def _ui5_add_items(self):
         base = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(base, "dxf2gcode_ui5.py")
+        path = os.path.join(base, "dxf2gcode", "presentation", "qt", "generated", "dxf2gcode_ui5.py")
         if not os.path.isfile(path):  # source tree variant
-            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode_ui5.py")
+            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode", "presentation", "qt", "generated", "dxf2gcode_ui5.py")
         with open(path, "r", encoding="utf-8") as f:
             tree = ast.parse(f.read())
         rows = {}
@@ -660,9 +661,9 @@ class TestBreakPassGUILayout(unittest.TestCase):
 
     def test_combobox_is_child_of_mill_settings_frame(self):
         base = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(base, "dxf2gcode_ui5.py")
+        path = os.path.join(base, "dxf2gcode", "presentation", "qt", "generated", "dxf2gcode_ui5.py")
         if not os.path.isfile(path):
-            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode_ui5.py")
+            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode", "presentation", "qt", "generated", "dxf2gcode_ui5.py")
         with open(path, "r", encoding="utf-8") as f:
             content = f.read()
         # The breaks-pass combobox lives in the "Shape parameters" group box,

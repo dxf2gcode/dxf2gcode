@@ -28,8 +28,8 @@ sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_ms_test_")
@@ -48,14 +48,16 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.Qt.QtWidgets import QApplication, QTreeView, QWidget  # noqa: E402
-from dxf2gcode.Qt import QtCore  # noqa: E402
-from dxf2gcode.gui.treehandling import TreeHandler  # noqa: E402
-from dxf2gcode.core.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.point import Point  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (  # noqa: E402
+    QApplication, QTreeView, QWidget)
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QStandardItemModel  # noqa: E402
+from dxf2gcode.presentation.qt.qt_compat import QtCore  # noqa: E402
+from dxf2gcode.presentation.qt.treehandling import TreeHandler  # noqa: E402
+from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.point import Point  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
 
 _CHECKED = QtCore.Qt.CheckState.Checked
 _UNCHECKED = QtCore.Qt.CheckState.Unchecked
@@ -307,6 +309,69 @@ class TestOptimalPathLayerAggregation(unittest.TestCase):
         # second layer's shapes stay unchanged (off)
         self.assertEqual([s.send_to_TSP for s in other_shapes], [False, False])
         self.assertEqual(model.item(1, 3).checkState(), _UNCHECKED)
+
+
+class TestExportOrderAndTreeSync(unittest.TestCase):
+    """Export order and live enable-state changes follow the Qt tree."""
+
+    def setUp(self):
+        self.h = MultiSelectHarness(3)
+        self.layer = self.h.layer
+
+    def test_export_order_skips_disabled_shapes_unless_requested(self):
+        self.h.shapes[1].setDisable(True)
+
+        self.h.th.updateExportOrder()
+        self.assertEqual(self.layer.exp_order, [0, 2])
+        self.assertEqual(self.layer.exp_order_complete, [0, 2])
+
+        self.h.th.updateExportOrder(includeDisableds=True)
+        self.assertEqual(self.layer.exp_order, [0, 1, 2])
+        self.assertEqual(self.layer.exp_order_complete, [0, 1, 2])
+
+    def test_export_order_uses_the_visual_shape_row_order(self):
+        parent = self.h.model.item(0, 0)
+        moved = parent.takeRow(2)
+        parent.insertRow(0, moved)
+
+        self.h.th.updateExportOrder()
+
+        self.assertEqual(self.layer.exp_order, [2, 0, 1])
+        self.assertEqual(self.layer.exp_order_complete, [2, 0, 1])
+
+    def test_tree_order_applies_the_optimizer_order(self):
+        previous_order_mode = g.config.vars.Route_Optimisation[
+            "TSP_shape_order"]
+        try:
+            g.config.vars.Route_Optimisation[
+                "TSP_shape_order"] = "CONSTRAIN_ORDER_ONLY"
+            self.layer.exp_order = [2, 0, 1]
+            self.h.th.updateTreeViewOrder()
+
+            row_order = []
+            layer_item = self.h.model.item(0, 0)
+            for row in range(layer_item.rowCount()):
+                row_order.append(int(layer_item.child(row, 2).text()))
+            self.assertEqual(row_order, [2, 0, 1])
+        finally:
+            g.config.vars.Route_Optimisation[
+                "TSP_shape_order"] = previous_order_mode
+
+    def test_canvas_disable_change_updates_shape_and_parent_checkbox(self):
+        shape = self.h.shapes[0]
+        item_index = self.h.th.findLayerItemIndexFromShape(shape)
+        self.h.th.updateBreaksPassWidget = lambda: None
+        self.h.th.entity_item_model = QStandardItemModel()
+        self.h.th.ui.entitiesTreeView = QTreeView()
+        self.h.th.ui.entitiesTreeView.setModel(self.h.th.entity_item_model)
+
+        self.h.th.updateShapeEnabling(shape, False)
+
+        self.assertTrue(shape.isDisabled())
+        self.assertEqual(
+            item_index.data(QtCore.Qt.ItemDataRole.CheckStateRole), _UNCHECKED)
+        self.assertEqual(self.h.layer_col0().checkState(),
+                         QtCore.Qt.CheckState.PartiallyChecked)
 
 
 if __name__ == "__main__":

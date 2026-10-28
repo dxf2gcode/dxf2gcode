@@ -33,11 +33,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import sys
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
+from toolpath_test_support import serialize_gcode, serialize_shape_geometry
 
 
 def _init_config():
-    import dxf2gcode.globals.globals as g
-    from dxf2gcode.globals.config import MyConfig
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.adapters.config.runtime_config import MyConfig
 
     if getattr(g, "config", None) is None:
         g.folder = tempfile.mkdtemp(prefix="d2g_comp_test_")
@@ -56,12 +57,12 @@ def _init_config():
 
 _init_config()
 
-import dxf2gcode.globals.globals as g  # noqa: E402
-from dxf2gcode.core.linegeo import LineGeo  # noqa: E402
-from dxf2gcode.core.arcgeo import ArcGeo  # noqa: E402
-from dxf2gcode.core.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.core.stmove import StMove  # noqa: E402
-from dxf2gcode.core.leadmove import LEAD_OFF  # noqa: E402
+import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
+from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
+from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
+from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode_pocketmill_zigzag_test import _load_shapes  # noqa: E402
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
     make_postpro, make_shape, build_stmove, square_geos, norm)
@@ -209,7 +210,7 @@ class TestPocketCompensationModes(unittest.TestCase):
             # a fresh post processor per mode: the post processor keeps a
             # stateful feed rate, so reusing it would only hide the identity
             # check behind a deduplicated feed word
-            results[cc] = norm(s.Write_GCode(make_postpro()))
+            results[cc] = norm(serialize_gcode(s, make_postpro()))
         base = results[40]
         self.assertTrue(base)
         self.assertEqual(results[41], base,
@@ -265,7 +266,7 @@ class TestPocketCompensationModes(unittest.TestCase):
         tool_rad = 1.0
         for cc in (41, 42):
             s, st = _pocket(cc)
-            code = s.Write_GCode(self.pp)
+            code = serialize_gcode(s, self.pp)
             # software compensation -> geometry is baked in, no G41/G42 output
             self.assertNotIn("G41", code)
             self.assertNotIn("G42", code)
@@ -285,7 +286,7 @@ class TestNonPocketCompensationUnchanged(unittest.TestCase):
         g.config.vars.Cutter_Compensation["done_by_machine"] = False
         sh = make_shape(square_geos(10.0), cut_cor=40, cw=True)
         build_stmove(sh)
-        code = norm(sh.Write_GCode(make_postpro()))
+        code = norm(serialize_gcode(sh, make_postpro()))
         self.assertIn("G1 X 10.000 Y 0.000", code)
         self.assertIn("G1 X 10.000 Y 10.000", code)
 
