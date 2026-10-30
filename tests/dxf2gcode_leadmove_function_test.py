@@ -812,6 +812,59 @@ class TestCanvasPreview(LeadMoveTestBase):
         self.assertTrue(gui._exit_path.boundingRect().width() > 0)
 
 
+class TestCanvasFullCirclePreview(LeadMoveTestBase):
+    """Full circles have equal endpoints but must remain visible."""
+
+    def _preview(self, geos):
+        from types import SimpleNamespace
+        from dxf2gcode.domain.project.shape import Shape, Geos
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
+
+        shape = Shape(nr=0, closed=True, geos=Geos([]))
+        model = SimpleNamespace(
+            shape=shape, geos=Geos(geos), pocket_geos_start=0,
+            lead_in_geos=[], exit_geos=[], exit_chain=[],
+            set_break_chain=lambda chain: None)
+        return StMoveGUI(shape, model)
+
+    def test_full_circle_is_drawn_in_both_directions(self):
+        from dxf2gcode.domain.geometry.arcgeo import ArcGeo
+        from dxf2gcode.domain.geometry.point import Point
+
+        for direction in (-1, 1):
+            with self.subTest(direction=direction):
+                circle = ArcGeo(Ps=Point(5, 0), Pe=Point(5, 0),
+                                O=Point(0, 0), r=5, direction=direction)
+                item = self._preview([circle])
+                path = item._pocket_path
+                self.assertGreater(path.elementCount(), 100)
+                self.assertAlmostEqual(path.boundingRect().width(), 10, delta=0.01)
+                self.assertAlmostEqual(path.boundingRect().height(), 10, delta=0.01)
+
+    def test_rapid_between_circle_loops_does_not_draw_a_diagonal(self):
+        from dxf2gcode.domain.geometry.arcgeo import ArcGeo
+        from dxf2gcode.domain.geometry.point import Point
+        from dxf2gcode.domain.toolpath.pocketmove import PocketMove
+
+        first = Point(5, 0)
+        second = Point(25, 0)
+        item = self._preview([
+            ArcGeo(Ps=first, Pe=first, O=Point(0, 0), r=5),
+            PocketMove(first, second),
+            PocketMove(second, second),
+            ArcGeo(Ps=second, Pe=second, O=Point(20, 0), r=5),
+        ])
+        path = item._pocket_path
+        self.assertGreater(path.elementCount(), 200)
+        self.assertEqual(sum(path.elementAt(i).isMoveTo()
+                             for i in range(path.elementCount())), 2)
+        for i in range(1, path.elementCount()):
+            end = path.elementAt(i)
+            if end.isLineTo():
+                start = path.elementAt(i - 1)
+                self.assertLess(math.hypot(end.x - start.x, end.y - start.y), 1)
+
+
 class TestCanvasLeadColors(LeadMoveTestBase):
     """The lead in / lead out previews must be told apart from the offset
     contour (which stays blue)."""

@@ -40,11 +40,7 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 # Global Variables
 APPNAME = "DXF2GCODE"
-VERSION = "Py%s PyQt%s" % (platform.python_version(), QtCore.PYQT_VERSION_STR)
-
-DATE     =  "$Date$"
-REVISION =  "$Revision$"
-AUTHOR   = u"$Author$"
+RUNTIME_VERSION = "Py%s PyQt%s" % (platform.python_version(), QtCore.PYQT_VERSION_STR)
 
 CONFIG_EXTENSION = '.cfg'
 PY_EXTENSION = '.py'

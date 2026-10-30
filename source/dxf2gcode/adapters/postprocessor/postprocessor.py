@@ -33,6 +33,7 @@ import shutil
 import logging
 
 import dxf2gcode.bootstrap.runtime_state as g
+from dxf2gcode.bootstrap.version_metadata import get_version_info
 
 from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.adapters.postprocessor.postprocessorconfig import MyPostProConfig
@@ -496,7 +497,10 @@ class MyPostProcessor(object):
         exported.
         """
         if self.vars.General["output_type"] == 'g-code':
-            exstr = self.tr("(Generated with: %s)\n(Version: %s, Date: %s)\n") % (c.APPNAME, c.VERSION, c.DATE)
+            info = get_version_info()
+            version = "%s (%s)" % (info.version, c.RUNTIME_VERSION)
+            date = info.commit_date or info.build_date or "unavailable"
+            exstr = self.tr("(Generated with: %s)\n(Version: %s, Date: %s)\n") % (c.APPNAME, version, date)
             exstr += self.tr("(Created from file: %s)\n") % re.sub('[()]', '_', load_filename)
             exstr += self.tr("(Used Postprocessor: %s) \n") % (self.postpro_file_used)
             if self.vars.General["output_text"]:

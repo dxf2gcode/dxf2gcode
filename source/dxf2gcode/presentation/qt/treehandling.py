@@ -232,8 +232,12 @@ class TreeHandler(QWidget):
         self.ui.entitiesTreeView.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.ui.entitiesTreeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
-        self.ui.blocksCollapsePushButton.clicked.connect(self.expandToDepth0)
-        self.ui.blocksExpandPushButton.clicked.connect(self.ui.entitiesTreeView.expandAll)
+        for view, collapse_button, expand_button in (
+                (self.ui.layersShapesTreeView,
+                 self.ui.layersCollapsePushButton, self.ui.layersExpandPushButton),
+                (self.ui.entitiesTreeView,
+                 self.ui.blocksCollapsePushButton, self.ui.blocksExpandPushButton)):
+            self._connectExpansionButtons(view, collapse_button, expand_button)
 
         # Build the contextual menu (mouse right click)
         self.context_menu = QMenu(self)
@@ -407,11 +411,16 @@ class TreeHandler(QWidget):
 
             self.addCustomGCodeAfter(custom_gcode_name)
 
-    def expandToDepth0(self):
-        """
-        Slot used to expand the entities treeView up to depth 0
-        """
-        self.ui.entitiesTreeView.expandToDepth(0)
+    def _connectExpansionButtons(self, view, collapse_button, expand_button):
+        """Use the same complete-folding contract for both tree views."""
+        def update_buttons(can_collapse, can_expand):
+            collapse_button.setEnabled(can_collapse)
+            expand_button.setEnabled(can_expand)
+
+        view.expansionAvailabilityChanged.connect(update_buttons)
+        collapse_button.clicked.connect(view.collapseAll)
+        expand_button.clicked.connect(view.expandAll)
+        view.updateExpansionAvailability()
 
     def buildLayerTree(self, layers_list):
         """
@@ -477,7 +486,10 @@ class TreeHandler(QWidget):
 
         self.ui.layersShapesTreeView.setModel(self.layer_item_model)  # Affect our model to the GUI TreeView, in order to display it
 
-        self.ui.layersShapesTreeView.expandAll()
+        if g.config.vars.General['expand_layers_on_load']:
+            self.ui.layersShapesTreeView.expandAll()
+        else:
+            self.ui.layersShapesTreeView.collapseAll()
 
         self.ui.layersShapesTreeView.setDragDropMode(QTreeView.DragDropMode.InternalMove)
         # self.ui.layersShapesTreeView.setDefaultDropAction(QtCore.Qt.MoveAction)
@@ -825,11 +837,11 @@ class TreeHandler(QWidget):
             self.layer_item_model.blockSignals(True)  # Avoid signal loops (we dont want the treeView to emit itemChanged signal)
             if enable:
                 # Select the matching shape in the list
-                self.updateCheckboxOfItem(item, QtCore.Qt.Checked)
+                self.updateCheckboxOfItem(item, QtCore.Qt.CheckState.Checked)
 
             else:
                 # deselect the matching shape in the list
-                self.updateCheckboxOfItem(item, QtCore.Qt.Unchecked)
+                self.updateCheckboxOfItem(item, QtCore.Qt.CheckState.Unchecked)
 
             self.layer_item_model.blockSignals(False)
             self.ui.layersShapesTreeView.update(item_index)  # update the treeList drawing
@@ -849,11 +861,11 @@ class TreeHandler(QWidget):
             self.entity_item_model.blockSignals(True)  # Avoid signal loops (we dont want the treeView to emit itemChanged signal)
             if enable:
                 # Select the matching shape in the list
-                self.updateCheckboxOfItem(item, QtCore.Qt.Checked)
+                self.updateCheckboxOfItem(item, QtCore.Qt.CheckState.Checked)
 
             else:
                 # deselect the matching shape in the list
-                self.updateCheckboxOfItem(item, QtCore.Qt.Unchecked)
+                self.updateCheckboxOfItem(item, QtCore.Qt.CheckState.Unchecked)
 
             self.entity_item_model.blockSignals(False)
             self.ui.entitiesTreeView.update(item_index)  # update the treeList drawing
@@ -2402,7 +2414,7 @@ class TreeHandler(QWidget):
                 model_index = model_index.sibling(model_index.row(), 0)
                 element = model_index.model().itemFromIndex(model_index)
                 if element.isEnabled():
-                    element.setCheckState(QtCore.Qt.Unchecked)
+                    element.setCheckState(QtCore.Qt.CheckState.Unchecked)
 
     def enableSelectedItems(self):
         selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
@@ -2412,7 +2424,7 @@ class TreeHandler(QWidget):
                 model_index = model_index.sibling(model_index.row(), 0)
                 element = model_index.model().itemFromIndex(model_index)
                 if element.isEnabled():
-                    element.setCheckState(QtCore.Qt.Checked)
+                    element.setCheckState(QtCore.Qt.CheckState.Checked)
 
     def doNotOptimizeRouteForSelectedItems(self):
         selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
@@ -2422,7 +2434,7 @@ class TreeHandler(QWidget):
                 model_index = model_index.sibling(model_index.row(), PATH_OPTIMISATION_COL)
                 element = model_index.model().itemFromIndex(model_index)
                 if element.isEnabled():
-                    element.setCheckState(QtCore.Qt.Unchecked)
+                    element.setCheckState(QtCore.Qt.CheckState.Unchecked)
 
     def optimizeRouteForSelectedItems(self):
         selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
@@ -2432,7 +2444,7 @@ class TreeHandler(QWidget):
                 model_index = model_index.sibling(model_index.row(), PATH_OPTIMISATION_COL)
                 element = model_index.model().itemFromIndex(model_index)
                 if element.isEnabled():
-                    element.setCheckState(QtCore.Qt.Checked)
+                    element.setCheckState(QtCore.Qt.CheckState.Checked)
 
     def actionOnKeyPress(self, event):
         """
@@ -2444,7 +2456,7 @@ class TreeHandler(QWidget):
         """
 
         # Enable/disable checkbox
-        if event.key() == QtCore.Qt.Key_Space:
+        if event.key() == QtCore.Qt.Key.Key_Space:
             for layer in self.layers_list:
                 for shape in layer.shapes:
                     if shape.isSelected():
@@ -2454,10 +2466,10 @@ class TreeHandler(QWidget):
                         sub_item = sub_item_index.model().itemFromIndex(sub_item_index)
                         if sub_item.isEnabled():
                             # Toggle checkbox
-                            sub_item.setCheckState(QtCore.Qt.Unchecked if sub_item.checkState() == QtCore.Qt.Checked else QtCore.Qt.Checked)
+                            sub_item.setCheckState(QtCore.Qt.CheckState.Unchecked if sub_item.checkState() == QtCore.Qt.CheckState.Checked else QtCore.Qt.CheckState.Checked)
 
         # Optimize path checkbox
-        elif event.key() == QtCore.Qt.Key_O:
+        elif event.key() == QtCore.Qt.Key.Key_O:
             # Collect the affected checkboxes first, then apply ONE uniform
             # target state to all of them: inverting each item individually
             # would leave a mixed multi-selection mixed and would disable an
@@ -2684,7 +2696,7 @@ class TreeHandler(QWidget):
         if isValid(item.data(CUSTOM_GCODE_OBJECT)):
             # Checkbox concerns a custom gcode object
             real_item = toPyObject(item.data(CUSTOM_GCODE_OBJECT))
-            self.setShapeDisabled(real_item, not check == QtCore.Qt.Checked)
+            self.setShapeDisabled(real_item, not check == QtCore.Qt.CheckState.Checked)
             self.traverseParentsAndUpdateEnableDisable(self.layer_item_model, item.index())  # Update parents checkboxes
 
         self.enableDisableTreeRow(item, check)

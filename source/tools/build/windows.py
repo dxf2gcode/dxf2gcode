@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Build the Windows installer with cx_Freeze.
 
-Run ``python build_windows.py bdist_msi`` from any working directory. Build inputs and
-build output are anchored to this file's directory, so this script does not
-remove or reuse the repository-root PyInstaller build/dist folders.
+Run ``python tools/build/windows.py bdist_msi`` from source/.
+Inputs and output paths are anchored to source/, independent of the working directory.
 """
 
 import os
@@ -14,7 +13,8 @@ from pathlib import Path
 from cx_Freeze import Executable, setup
 
 
-PROJECT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_DIR))
 # Keep cx_Freeze's distribution metadata separate from the Python wheel
 # project. Otherwise setuptools replaces the dotted MSI version with the
 # date-based Python package version from pyproject.toml.
@@ -23,6 +23,7 @@ WINDOWS_BUILD_DIR.mkdir(parents=True, exist_ok=True)
 os.chdir(WINDOWS_BUILD_DIR)
 
 from dxf2gcode import __version__
+from dxf2gcode.bootstrap.version_metadata import METADATA_FILE, write_build_metadata
 
 VERSION = __version__
 VERSION_DOTTED = "%s.%s.%s" % (
@@ -35,7 +36,7 @@ def include_opengl():
     if spec is None or not spec.submodule_search_locations:
         raise RuntimeError(
             "PyOpenGL is not installed in the Python environment used to "
-            "run build_windows.py.")
+            "run tools/build/windows.py.")
 
     package_dir = Path(next(iter(spec.submodule_search_locations))).resolve()
     site_packages = package_dir.parent
@@ -48,12 +49,16 @@ def include_opengl():
 translation_files = sorted((PROJECT_DIR / "i18n").glob("*.qm"))
 if not translation_files:
     raise RuntimeError(
-        "No compiled translations were found. Run 'python make_tr.py' first.")
+        "No compiled translations were found. Run "
+        "'python tools/build/translations.py --no-pylupdate' first.")
 
 include_files = [
     (str(PROJECT_DIR / "COPYING"), "COPYING"),
     (str(PROJECT_DIR / "README.txt"), "README.txt"),
 ]
+metadata_path = WINDOWS_BUILD_DIR / METADATA_FILE
+write_build_metadata(metadata_path, PROJECT_DIR / "dxf2gcode")
+include_files.append((str(metadata_path), "lib/dxf2gcode/" + METADATA_FILE))
 include_files.extend(
     (str(path), "i18n/%s" % path.name) for path in translation_files)
 

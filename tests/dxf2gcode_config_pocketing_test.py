@@ -93,7 +93,7 @@ class TestPocketClearanceConfig(ConfigTestBase):
         spec_text = "\n".join(CONFIG_SPEC)
         self.assertIn("[Pocketing]", spec_text)
         self.assertIn("pocket_edge_clearance", spec_text)
-        self.assertIn("pocket_compensation_mode", spec_text)
+        self.assertNotIn("pocket_compensation_mode", spec_text)
 
     def test_config_widget_exists_for_option(self):
         # the option must be reachable in the existing configuration window
@@ -104,41 +104,24 @@ class TestPocketClearanceConfig(ConfigTestBase):
         widgets = cfg.makeConfigWidgets()
         self.assertIn("Pocketing", widgets)
         self.assertIn("pocket_edge_clearance", widgets["Pocketing"])
-        self.assertIn("pocket_compensation_mode", widgets["Pocketing"])
+        self.assertNotIn("pocket_compensation_mode", widgets["Pocketing"])
 
-    def test_default_pocket_compensation_mode(self):
+    def test_new_config_has_no_pocket_direction_override(self):
         cfg = self._load()
-        self.assertEqual(
-            cfg.var_dict["Pocketing"]["pocket_compensation_mode"],
-            "always_inward")
+        self.assertNotIn("pocket_compensation_mode", cfg.var_dict["Pocketing"])
 
-    def test_config_without_mode_key_gets_default(self):
-        self._write_config(CONFIG_VERSION, drop_mode=True)
-        cfg = self._load()
-        self.assertEqual(cfg.version_mismatch, "")
-        self.assertEqual(
-            cfg.var_dict["Pocketing"]["pocket_compensation_mode"],
-            "always_inward")
-
-    def test_explicit_mode_is_preserved(self):
-        self._write_config(CONFIG_VERSION, mode="selected_direction")
-        cfg = self._load()
-        self.assertEqual(
-            cfg.var_dict["Pocketing"]["pocket_compensation_mode"],
-            "selected_direction")
-
-    def test_mode_survives_save_and_reload(self):
-        cfg = self._load()
-        cfg.var_dict["Pocketing"]["pocket_compensation_mode"] = "selected_direction"
-        cfg.save_varspace()
-        cfg2 = self._load()
-        self.assertEqual(
-            cfg2.var_dict["Pocketing"]["pocket_compensation_mode"],
-            "selected_direction")
-        # the pre-existing clearance option must still be there
-        self.assertAlmostEqual(
-            float(cfg2.var_dict["Pocketing"]["pocket_edge_clearance"]),
-            HISTORIC, places=4)
+    def test_old_modes_are_removed_without_losing_clearance(self):
+        for mode in ("always_inward", "selected_direction"):
+            with self.subTest(mode=mode):
+                self._write_config(CONFIG_VERSION, mode=mode, clearance=37.5)
+                cfg = self._load()
+                self.assertEqual(cfg.version_mismatch, "")
+                self.assertNotIn("pocket_compensation_mode", cfg.var_dict["Pocketing"])
+                self.assertAlmostEqual(cfg.var_dict["Pocketing"]["pocket_edge_clearance"], 37.5)
+                cfg.save_varspace()
+                again = self._load()
+                self.assertNotIn("pocket_compensation_mode", again.var_dict["Pocketing"])
+                self.assertAlmostEqual(again.var_dict["Pocketing"]["pocket_edge_clearance"], 37.5)
 
     def test_old_config_without_option_loads_with_default(self):
         # a config file that predates the option (no [Pocketing] section)

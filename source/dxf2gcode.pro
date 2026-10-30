@@ -4,11 +4,12 @@ TARGET = dxf2gcode
 
 SOURCES += \
     dxf2gcode.py \
-    make_py_uic.py \
-    make_tr.py \
-    make_exe.py \
+    tools/build/qt_assets.py \
+    tools/build/translations.py \
     dxf2gcode/__main__.py \
     dxf2gcode/_version.py \
+    dxf2gcode/bootstrap/version_metadata.py \
+    dxf2gcode/presentation/qt/versioninfo.py \
     dxf2gcode/__init__.py \
     dxf2gcode/adapters/__init__.py \
     dxf2gcode/adapters/config/configobj_store.py \
@@ -125,8 +126,8 @@ DISTFILES += \
     dxf2gcode.desktop \
     dxf2gcode.appdata.xml \
     MANIFEST.in \
-    build_windows.py \
-    build_support.py
+    tools/build/windows.py \
+    tools/build/setuptools_commands.py
 
 RESOURCES += dxf2gcode/presentation/qt/resources/dxf2gcode_images.qrc
 FORMS += dxf2gcode/presentation/qt/resources/dxf2gcode.ui

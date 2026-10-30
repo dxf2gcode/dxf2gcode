@@ -5,6 +5,14 @@
 - If a requirement is unclear, ask the user before implementing the
   ambiguous part instead of guessing the intended behavior.
 
+## Validation scope
+
+- Run Debian/SSH test workflows, full test suites, complete release/MSI builds,
+  and other lengthy validation only when explicitly requested or after the
+  user accepts a concrete proposal for that work.
+- Prefer focused, quick local checks for routine changes. Earlier one-off
+  approvals do not authorize later lengthy builds or Debian test runs.
+
 ## GUI translations
 
 - When adding or changing GUI text, update all maintained translation catalogs

@@ -40,8 +40,7 @@ from dxf2gcode.domain.project.shape import Shape
 from dxf2gcode.domain.geometry.boundingbox import BoundingBox
 from dxf2gcode.domain.toolpath.stmove import StMove
 from dxf2gcode.domain.geometry.breakgeo import BreakGeo
-#TODO: check if can be removed:
-#from dxf2gcode.domain.geometry.arcgeo import ArcGeo
+from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.presentation.qt.wpzero import WpZero
 from dxf2gcode.presentation.qt.arrow import Arrow
 from dxf2gcode.presentation.qt.routetext import RouteText
@@ -147,9 +146,9 @@ class MyGraphicsView(CanvasBase):
         @param event: Event Parameters passed to function
         """
 
-        if self.dragMode() == 1:
+        if self.dragMode() == QGraphicsView.DragMode.ScrollHandDrag:
             super(MyGraphicsView, self).mousePressEvent(event)
-        elif event.button() == QtCore.Qt.LeftButton:
+        elif event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.mppos = event.pos()
         else:
             pass
@@ -163,9 +162,7 @@ class MyGraphicsView(CanvasBase):
         """
         delta = 2
 
-        if self.dragMode() == 1:
-            # if (event.key() == QtCore.Qt.Key_Shift):
-            # self.setDragMode(QGraphicsView.NoDrag)
+        if self.dragMode() == QGraphicsView.DragMode.ScrollHandDrag:
             super(MyGraphicsView, self).mouseReleaseEvent(event)
 
         # Selection only enabled for left Button
@@ -1045,7 +1042,10 @@ class StMoveGUI(QGraphicsItem):
             eps = 1e-9
             dx = abs(pe.x - ps.x)
             dy = abs(pe.y - ps.y)
-            if dx < eps and dy < eps:
+            # Full circles return to their start point but have a nonzero
+            # length. Keep them; only skip genuinely stationary movements.
+            is_arc = isinstance(geo, ArcGeo) and geo.length > eps
+            if dx < eps and dy < eps and not is_arc:
                 if 'PocketMove' in geo_type_name:
                     # Zero-length rapid between separate loops (retract and
                     # plunge at the same point): start a new subpath for the

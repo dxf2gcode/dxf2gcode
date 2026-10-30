@@ -41,11 +41,12 @@ exclude = ["*.__pycache__"]
 include-package-data = true
 
 [tool.setuptools.cmdclass]
-build_py = "build_support.BuildPy"
-sdist = "build_support.SourceDistribution"
+build_py = "tools.build.setuptools_commands.BuildPy"
+sdist = "tools.build.setuptools_commands.SourceDistribution"
 
 [tool.setuptools.package-data]
 dxf2gcode = [
+    "_build_metadata.json",
     "presentation/qt/resources/*.ui",
     "presentation/qt/resources/*.qrc",
     "presentation/qt/resources/images/*.svg",

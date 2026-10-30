@@ -178,5 +178,129 @@ class TestTreeView(unittest.TestCase):
             "application/x-qstandarditemmodeldatalist")), b"")
 
 
+class TestTreeExpansionAvailability(unittest.TestCase):
+    """Only offer folding actions that change visible tree branches."""
+
+    def setUp(self):
+        global _APP
+        _APP = QApplication.instance() or QApplication([])
+        self.view = TreeView()
+        self.states = []
+        self.view.expansionAvailabilityChanged.connect(
+            lambda collapse, expand: self.states.append((collapse, expand)))
+        self.model = QStandardItemModel()
+        self.view.setModel(self.model)
+
+    def tearDown(self):
+        self.view.close()
+        self.view.deleteLater()
+        _APP.processEvents()
+
+    def assert_actions(self, collapse, expand):
+        self.assertEqual(self.states[-1], (collapse, expand))
+
+    def add_branches(self):
+        outer = QStandardItem("entity")
+        inner = QStandardItem("block")
+        inner.appendRow(QStandardItem("shape"))
+        outer.appendRow(inner)
+        other = QStandardItem("other layer")
+        other.appendRow(QStandardItem("other shape"))
+        self.model.appendRow(outer)
+        self.model.appendRow(other)
+        return outer, inner, other
+
+    def test_no_model_empty_model_and_leaves_disable_both_actions(self):
+        self.assert_actions(False, False)
+        self.model.appendRow(QStandardItem("leaf"))
+        self.assert_actions(False, False)
+        self.view.setModel(None)
+        self.assert_actions(False, False)
+
+    def test_manual_folding_and_bulk_actions_update_availability(self):
+        outer, inner, other = self.add_branches()
+        self.assert_actions(False, True)
+        self.view.expand(outer.index())
+        self.assert_actions(True, True)
+        self.view.expand(inner.index())
+        self.assert_actions(True, True)
+        self.view.expand(other.index())
+        self.assert_actions(True, False)
+        self.view.collapse(inner.index())
+        self.assert_actions(True, True)
+        self.view.expandAll()
+        self.assert_actions(True, False)
+        self.view.collapseAll()
+        self.assert_actions(False, True)
+
+    def test_hidden_expanded_descendants_do_not_enable_collapse(self):
+        outer, inner, other = self.add_branches()
+        self.view.expandAll()
+        self.view.collapse(other.index())
+        self.view.collapse(outer.index())
+        self.assertTrue(self.view.isExpanded(inner.index()))
+        self.assert_actions(False, True)
+        self.view.expand(outer.index())
+        self.assert_actions(True, True)
+        self.view.expand(other.index())
+        self.assert_actions(True, False)
+
+    def test_inserting_and_removing_branches_refreshes_actions(self):
+        outer, inner, other = self.add_branches()
+        self.view.expandAll()
+        branch = QStandardItem("new block")
+        branch.appendRow(QStandardItem("new shape"))
+        outer.appendRow(branch)
+        self.assert_actions(True, True)
+        outer.removeRow(branch.row())
+        self.assert_actions(True, False)
+        self.model.clear()
+        self.assert_actions(False, False)
+
+    def test_model_replacement_disconnects_old_model(self):
+        self.add_branches()
+        old_model = self.model
+        self.model = QStandardItemModel()
+        self.model.appendRow(QStandardItem("leaf"))
+        self.view.setModel(self.model)
+        self.assert_actions(False, False)
+        notifications = len(self.states)
+        old_model.clear()
+        self.assertEqual(len(self.states), notifications)
+        self.model.item(0).appendRow(QStandardItem("child"))
+        self.assert_actions(False, True)
+
+    def test_reordering_rows_keeps_actions_current(self):
+        self.add_branches()
+        self.view.expandAll()
+        moved = self.model.takeRow(0)
+        self.model.appendRow(moved)
+        self.assert_actions(True, True)
+        self.view.expandAll()
+        self.assert_actions(True, False)
+
+    def test_unblocking_signals_refreshes_after_silent_expansion(self):
+        self.add_branches()
+        self.view.blockSignals(True)
+        self.view.expandAll()
+        self.view.blockSignals(False)
+        self.assert_actions(True, False)
+        self.view.expandToDepth(0)
+        self.assert_actions(True, True)
+
+    def test_two_views_manage_their_states_independently(self):
+        self.add_branches()
+        other_view = TreeView()
+        other_states = []
+        other_view.expansionAvailabilityChanged.connect(
+            lambda collapse, expand: other_states.append((collapse, expand)))
+        other_view.setModel(self.model)
+        self.view.expandAll()
+        self.assert_actions(True, False)
+        self.assertEqual(other_states[-1], (False, True))
+        other_view.close()
+        other_view.deleteLater()
+
+
 if __name__ == "__main__":
     unittest.main()

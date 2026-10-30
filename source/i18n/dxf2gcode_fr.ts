@@ -240,11 +240,6 @@
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
-        <source>Cutter compensation while pocket milling:</source>
-        <translation type="unfinished">Compensation outil pendant le fraisage de poche :</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Drag Knife options</source>
         <translation type="unfinished">options de glissement du Couteau</translation>
     </message>
@@ -1123,9 +1118,9 @@ Pas assez de caractère(exception de {0},trouve {1} pour le Champ &quot;{2}&quot
         <translation>Filter: %s selectioné</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/application.py" line="880"/>
-        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=&apos;:images/dxf2gcode_logo.png&apos; border=&apos;1&apos; color=&apos;white&apos;&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Last change: %s&lt;br&gt;Changed by: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href=&apos;http://sourceforge.net/projects/dxf2gcode/&apos;&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href=&apos;https://www.ltspiceusers.ch/forums/english-section.67/&apos;&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href=&apos;http://sourceforge.net/p/dxf2gcode/tickets/&apos;&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href=&apos;http://www.gnu.org/licenses/&apos;&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;h2&gt;&lt;center&gt;Vous utilisez&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Dernière modification : %s&lt;br&gt;Modifié par : %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Où trouver de l'aide:&lt;/h2&gt;Pour plus d'informations et mises à jour, visitez s'il vous plaît &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;Pour toute question sur l'utilisation de dxf2gcode, veuillez utiliser le &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;Pour signaler des bugs ou demander des fonctionnalités, veuillez utiliser le &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;système de suivi des tickets&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Licence et copyright :&lt;/h2&gt;&lt;body&gt;Ce programme est écrit en Python et publié sous  &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <location filename="../dxf2gcode/presentation/qt/application.py" line="880" />
+        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;h2&gt;&lt;center&gt;Vous utilisez&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s&lt;/body&gt;&lt;h2&gt;Où trouver de l'aide:&lt;/h2&gt;Pour plus d'informations et mises à jour, visitez s'il vous plaît &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;Pour toute question sur l'utilisation de dxf2gcode, veuillez utiliser le &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;Pour signaler des bugs ou demander des fonctionnalités, veuillez utiliser le &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;système de suivi des tickets&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Licence et copyright :&lt;/h2&gt;&lt;body&gt;Ce programme est écrit en Python et publié sous  &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/application.py" line="882"/>
@@ -2419,10 +2414,6 @@ Vous devez détruire(ou éditer soigneusement) le fichier de configuration &quot
         <translation type="obsolete">Dégagement latéral de poche (distance entre l'arête de coupe et le contour, en % du diamètre d'outil) :</translation>
     </message>
     <message>
-        <source>Cutter compensation while pocket milling:</source>
-        <translation type="obsolete">Compensation outil pendant le fraisage de poche :</translation>
-    </message>
-    <message>
         <source>Additional offset (finishing allowance):</source>
         <translation type="obsolete">Décalage supplémentaire (surépaisseur de finition) :</translation>
     </message>
@@ -2509,6 +2500,18 @@ Vous devez détruire(ou éditer soigneusement) le fichier de configuration &quot
     <message>
         <source>Overcut: continue the cut along the contour beyond the closing point (closed contours only) - the length is defined per tool in the tools table</source>
         <translation type="obsolete">Surdépassement : poursuivre la coupe le long du contour au-delà du point de fermeture (contours fermés uniquement) - la longueur est définie par outil dans la table des outils</translation>
+    </message>
+    <message>
+        <source>Expand layers when loading a drawing</source>
+        <translation>Développer les calques lors du chargement d’un dessin</translation>
+    </message>
+    <message>
+        <source>Do not import IGNORE layers</source>
+        <translation>Ne pas importer les calques IGNORE</translation>
+    </message>
+    <message>
+        <source>Do not import layer 0</source>
+        <translation>Ne pas importer le calque 0</translation>
     </message>
 </context>
 <context>
@@ -3583,6 +3586,72 @@ La longueur doit être supérieure à la tolérance</translation>
         <location filename="../dxf2gcode/adapters/toolpath/shape_plan_builder.py" line="397"/>
         <source>Initial mill depth (%f0.2) is lower than end mill depth (%f0.2)</source>
         <translation>Profondeur d'usinage initiale (%f0.2) inférieure à la profondeur d'usinage finale (%f0.2)</translation>
+    </message>
+</context>
+<context>
+    <name>VersionInfo</name>
+    <message>
+        <source>Not available</source>
+        <translation>Indisponible</translation>
+    </message>
+    <message>
+        <source>No active branch</source>
+        <translation>Aucune branche active</translation>
+    </message>
+    <message>
+        <source>Local changes</source>
+        <translation>Modifications locales</translation>
+    </message>
+    <message>
+        <source>Clean source tree</source>
+        <translation>Arbre de travail propre</translation>
+    </message>
+    <message>
+        <source>Source checkout</source>
+        <translation>Copie de travail Git</translation>
+    </message>
+    <message>
+        <source>Package build</source>
+        <translation>Paquet construit</translation>
+    </message>
+    <message>
+        <source>Package version:</source>
+        <translation>Version du paquet :</translation>
+    </message>
+    <message>
+        <source>Source revision:</source>
+        <translation>Révision source :</translation>
+    </message>
+    <message>
+        <source>Source branch:</source>
+        <translation>Branche source :</translation>
+    </message>
+    <message>
+        <source>Commit date:</source>
+        <translation>Date du commit :</translation>
+    </message>
+    <message>
+        <source>Build date:</source>
+        <translation>Date de compilation :</translation>
+    </message>
+    <message>
+        <source>Source status:</source>
+        <translation>État des sources :</translation>
+    </message>
+    <message>
+        <source>Provenance:</source>
+        <translation>Provenance :</translation>
+    </message>
+    <message>
+        <source>Runtime:</source>
+        <translation>Environnement d’exécution :</translation>
+    </message>
+</context>
+<context>
+    <name>ImportFilters</name>
+    <message>
+        <source>Layers excluded from import: %s</source>
+        <translation>Calques exclus de l’importation : %s</translation>
     </message>
 </context>
 </TS>

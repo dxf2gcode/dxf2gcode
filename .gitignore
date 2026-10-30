@@ -9,6 +9,8 @@ __pycache__/
 .Python
 env/
 **/build/
+# Build helper sources are part of the project, not generated output.
+!source/tools/build/
 **/dist/
 develop-eggs/
 downloads/
@@ -74,6 +76,7 @@ target/
 *.pro.user
 
 # Generated files:
+source/dxf2gcode/_build_metadata.json
 dxf2gcode_images*_rc.py*
 dxf2gcode_ui*.py
 .vscode/launch.json
@@ -81,4 +84,3 @@ dxf2gcode_ui*.py
 source/i18n/dxf2gcode_fr.ts
 source/i18n/dxf2gcode_ru.ts
 source/i18n/dxf2gcode_de.ts
-.gitattributes

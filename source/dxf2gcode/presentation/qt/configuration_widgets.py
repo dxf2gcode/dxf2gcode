@@ -2,6 +2,7 @@
 
 from collections import OrderedDict
 
+from dxf2gcode.presentation.qt.qt_compat import QtCore
 from dxf2gcode.domain.toolpath.leadmove import lead_mode_labels
 from dxf2gcode.presentation.qt.configwindow import (
     CfgCheckBox,
@@ -49,6 +50,9 @@ def build_application_config_widgets(config):
             ("show_disabled_paths", CfgCheckBox(tr("Display disabled paths (default)"))),
             ("live_update_export_route", CfgCheckBox(tr("Live update export route (default)"))),
             ("show_scale_bar", CfgCheckBox(tr("Show a scale bar in the canvas"))),
+            ("expand_layers_on_load", CfgCheckBox(
+                QtCore.QCoreApplication.translate(
+                    "MyConfig", "Expand layers when loading a drawing"))),
             ("__subtitle2__", CfgSubtitle(tr("Milling"))),
             ("split_line_segments", CfgCheckBox(tr("Split line segments (default)"))),
             ("automatic_cutter_compensation", CfgCheckBox(tr("Automatic cutter compensation (default)"))),
@@ -95,7 +99,6 @@ def build_application_config_widgets(config):
             ("__section_title__", tr("Output settings")),
             ("__subtitle__", CfgSubtitle(tr("Pocket milling"))),
             ("pocket_edge_clearance", CfgDoubleSpinBox(tr("Pocket edge clearance (distance between cutting edge and contour, as % of tool diameter):"), " %", 0, 100, 2)),
-            ("pocket_compensation_mode", CfgComboBox(tr("Cutter compensation while pocket milling:"))),
         ])),
         ("Drag_Knife_Options", OrderedDict([
             ("__section_title__", tr("Output settings")),
@@ -127,6 +130,10 @@ def build_application_config_widgets(config):
             ("spline_check", CfgSpinBox(tr("DXF import spline check:"))),
             ("fitting_tolerance", CfgDoubleSpinBox(tr("DXF default import fit tolerance:"), "", None, None, 5)),
             ("insert_at_block_layer", CfgCheckBox(tr("insert elements which are part of a block to layer where the block is inserted"))),
+            ("exclude_ignore_layers", CfgCheckBox(QtCore.QCoreApplication.translate(
+                "MyConfig", "Do not import IGNORE layers"))),
+            ("exclude_layer_zero", CfgCheckBox(QtCore.QCoreApplication.translate(
+                "MyConfig", "Do not import layer 0"))),
         ])),
         ("Layer_Options", OrderedDict([
             ("__section_title__", tr("Automatic tool config")),

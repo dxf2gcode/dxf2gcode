@@ -6,12 +6,12 @@ They measure the real toolpath of ``dxf/pocketing1.dxf`` (not only the GUI)
 and verify that
 
 * the configured "Pocketing edge clearance" (as % of the tool diameter)
-  sets the distance between the cutting edge and the contour,
+  sets the distance between the cutting edge and the selected boundary,
 * the value is applied uniformly for the compensation directions
   G40/G41/G42,
 * inner (concave) and outer (convex) contour features are treated the same,
 * the default value reproduces the historical centre stand-off
-  (cutter radius / 0.7),
+  (cutter radius / 0.7), now relative to the selected boundary,
 * the boundary pass stays at exactly one cutter radius (no double
   counting of the tool radius).
 
@@ -113,9 +113,11 @@ def _dist_point_seg(px, py, x0, y0, x1, y1):
     return math.hypot(px - (x0 + t * dx), py - (y0 + t * dy))
 
 
-def _min_center_distance(geos):
-    """Minimum distance between any of ``geos`` and the shape contour."""
-    segs = _get_shape_segs()
+def _min_center_distance(geos, boundary=None):
+    """Distance to the selected boundary, or to the original contour."""
+    from types import SimpleNamespace
+    segs = (_get_shape_segs() if boundary is None else
+            _shape_segments(SimpleNamespace(geos=boundary)))
     best = float("inf")
     for geo in geos:
         if isinstance(geo, LineGeo):
@@ -172,7 +174,7 @@ def _measured_clearance(tool_dia, cut_cor, pct):
     fill = _fill_geos(st)
     if not fill:
         return None
-    return _min_center_distance(fill) - tool_dia / 2.0
+    return _min_center_distance(fill, _boundary_geos(st)) - tool_dia / 2.0
 
 
 # ---------------------------------------------------------------------------
@@ -198,7 +200,7 @@ class TestEdgeClearanceConfiguration(unittest.TestCase):
         finally:
             g.config.vars.Pocketing.__dict__["pocket_edge_clearance"] = saved
 
-    def test_default_reproduces_historical_g42_clearance(self):
+    def test_default_clearance_is_relative_to_selected_boundary(self):
         tool = 2.0
         measured = _measured_clearance(tool, 42, HISTORIC)
         target = HISTORIC / 100.0 * tool

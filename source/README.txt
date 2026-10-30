@@ -32,7 +32,7 @@ Install a release wheel or source archive in a virtual environment:
 
   python3 -m venv .venv
   . .venv/bin/activate
-  python -m pip install ./dxf2gcode-20261028-py3-none-any.whl
+  python -m pip install ./dxf2gcode-20261030.post2-py3-none-any.whl
   dxf2gcode
 
 pipx can also install the wheel in an isolated application environment.
@@ -57,9 +57,25 @@ equivalent commands without Make.
 
 On Windows, the separate cx_Freeze MSI builder is:
 
-  python build_windows.py bdist_msi
+  python tools/build/windows.py bdist_msi
+
+Build scripts are grouped in tools/build/. qt_assets.py generates the Qt
+modules, translations.py updates/compiles catalogs, and
+setuptools_commands.py bundles release assets. pyproject.toml, MANIFEST.in,
+Makefile and dxf2gcode.pro remain at the package root. These commands are
+relative to source/; the helpers also work when invoked by absolute path.
+With GNU Make, make windows prepares release assets and builds the MSI.
 
 Do not use the old st-setup.py install or setup.py install commands.
+
+Version information
+-------------------
+
+The About dialog shows the package version, commit, source branch, commit
+date, build date, local changes and runtime versions. Source checkouts read
+Git automatically; installed packages use embedded _build_metadata.json
+and require no Git or commit hooks. A commit does not increase the release
+version or build a new package. Missing provenance is displayed explicitly.
 
 Tests
 -----

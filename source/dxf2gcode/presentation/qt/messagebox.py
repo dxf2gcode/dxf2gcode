@@ -29,6 +29,7 @@ Special purpose canvas including all required plotting function etc.
 import os
 import dxf2gcode.domain.constants as c
 import dxf2gcode.bootstrap.runtime_state as g
+from dxf2gcode.bootstrap.version_metadata import get_version_info
 
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QTextBrowser
 from dxf2gcode.presentation.qt.qt_compat import QtCore
@@ -51,7 +52,8 @@ class MessageBox(QTextBrowser):
         self.setOpenExternalLinks(True)
 
         self.append(self.tr("You are using DXF2GCODE"))
-        self.append(self.tr("Version %s (%s)") % (c.VERSION, c.DATE))
+        self.append(self.tr("Version %s (%s)") %
+                    (get_version_info().version, c.RUNTIME_VERSION))
         self.append(self.tr("For more information and updates visit:"))
         self.append("<a href='http://sourceforge.net/projects/dxf2gcode/'>http://sourceforge.net/projects/dxf2gcode/</a>")
         self.append(self.tr("For Configuration files refer to folder:"))

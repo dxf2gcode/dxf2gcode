@@ -240,11 +240,6 @@
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
-        <source>Cutter compensation while pocket milling:</source>
-        <translation type="unfinished">Компенсация инструмента при карманном фрезеровании:</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Drag Knife options</source>
         <translation type="unfinished">Настройки флюгерного ножа</translation>
     </message>
@@ -1217,9 +1212,9 @@ Not enough chars (expected {0}, found {1}) for the field &quot;{2}&quot;
         <translation>Фильтр: выбран %s</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/application.py" line="880"/>
-        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=&apos;:images/dxf2gcode_logo.png&apos; border=&apos;1&apos; color=&apos;white&apos;&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Last change: %s&lt;br&gt;Changed by: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href=&apos;http://sourceforge.net/projects/dxf2gcode/&apos;&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href=&apos;https://www.ltspiceusers.ch/forums/english-section.67/&apos;&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href=&apos;http://sourceforge.net/p/dxf2gcode/tickets/&apos;&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href=&apos;http://www.gnu.org/licenses/&apos;&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;h2&gt;&lt;center&gt;Вы используете&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Версия:&lt;/h2&gt;&lt;body&gt;%s: %s&lt;br&gt;Последнее изменение: %s&lt;br&gt;Автор изменений: %s&lt;br&gt;&lt;/body&gt;&lt;h2&gt;Где получить помощь:&lt;/h2&gt;Для информации и обновлений, посетите &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;Для вопросов по использованию dxf2gcode используйте &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;Для сообщений об ошибках, или для идей по новым функциям используйте &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;систему отслеживания заявок&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Лицензия и авторское право:&lt;/h2&gt;&lt;body&gt;Эта программа написана на Питоне и распространяется на условиях &lt;a href='http://www.gnu.org/licenses/'&gt;общественной лицензии GNU GPLv3.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <location filename="../dxf2gcode/presentation/qt/application.py" line="880" />
+        <source>&lt;html&gt;&lt;h2&gt;&lt;center&gt;You are using&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;h2&gt;&lt;center&gt;Вы используете&lt;/center&gt;&lt;/h2&gt;&lt;body bgcolor=&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Версия:&lt;/h2&gt;&lt;body&gt;%s&lt;/body&gt;&lt;h2&gt;Где получить помощь:&lt;/h2&gt;Для информации и обновлений, посетите &lt;a href='http://sourceforge.net/projects/dxf2gcode/'&gt;http://sourceforge.net/projects/dxf2gcode/&lt;/a&gt;&lt;br&gt;Для вопросов по использованию dxf2gcode используйте &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;Для сообщений об ошибках, или для идей по новым функциям используйте &lt;a href='http://sourceforge.net/p/dxf2gcode/tickets/'&gt;систему отслеживания заявок&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Лицензия и авторское право:&lt;/h2&gt;&lt;body&gt;Эта программа написана на Питоне и распространяется на условиях &lt;a href='http://www.gnu.org/licenses/'&gt;общественной лицензии GNU GPLv3.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/application.py" line="882"/>
@@ -2655,10 +2650,6 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
         <translation type="obsolete">Боковой зазор кармана (расстояние между режущей кромкой и контуром, в % от диаметра инструмента):</translation>
     </message>
     <message>
-        <source>Cutter compensation while pocket milling:</source>
-        <translation type="obsolete">Компенсация инструмента при карманном фрезеровании:</translation>
-    </message>
-    <message>
         <source>Additional offset (finishing allowance):</source>
         <translation type="obsolete">Дополнительный отступ (припуск на чистовую обработку):</translation>
     </message>
@@ -2745,6 +2736,18 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     <message>
         <source>Overcut: continue the cut along the contour beyond the closing point (closed contours only) - the length is defined per tool in the tools table</source>
         <translation type="obsolete">Перерез: продолжить фрезерование по контуру за точкой замыкания (только для замкнутых контуров) - длина задаётся для каждого инструмента в таблице инструментов</translation>
+    </message>
+    <message>
+        <source>Expand layers when loading a drawing</source>
+        <translation>Разворачивать слои при загрузке чертежа</translation>
+    </message>
+    <message>
+        <source>Do not import IGNORE layers</source>
+        <translation>Не импортировать слои IGNORE</translation>
+    </message>
+    <message>
+        <source>Do not import layer 0</source>
+        <translation>Не импортировать слой 0</translation>
     </message>
 </context>
 <context>
@@ -3844,6 +3847,72 @@ Skipped Geometries</source>
         <location filename="../dxf2gcode/adapters/toolpath/shape_plan_builder.py" line="397"/>
         <source>Initial mill depth (%f0.2) is lower than end mill depth (%f0.2)</source>
         <translation>Начальная глубина фрезерования (%f0.2) меньше конечной глубины фрезерования (%f0.2)</translation>
+    </message>
+</context>
+<context>
+    <name>VersionInfo</name>
+    <message>
+        <source>Not available</source>
+        <translation>Недоступно</translation>
+    </message>
+    <message>
+        <source>No active branch</source>
+        <translation>Нет активной ветки</translation>
+    </message>
+    <message>
+        <source>Local changes</source>
+        <translation>Локальные изменения</translation>
+    </message>
+    <message>
+        <source>Clean source tree</source>
+        <translation>Нет локальных изменений</translation>
+    </message>
+    <message>
+        <source>Source checkout</source>
+        <translation>Рабочая копия Git</translation>
+    </message>
+    <message>
+        <source>Package build</source>
+        <translation>Собранный пакет</translation>
+    </message>
+    <message>
+        <source>Package version:</source>
+        <translation>Версия пакета:</translation>
+    </message>
+    <message>
+        <source>Source revision:</source>
+        <translation>Ревизия исходного кода:</translation>
+    </message>
+    <message>
+        <source>Source branch:</source>
+        <translation>Ветка исходного кода:</translation>
+    </message>
+    <message>
+        <source>Commit date:</source>
+        <translation>Дата коммита:</translation>
+    </message>
+    <message>
+        <source>Build date:</source>
+        <translation>Дата сборки:</translation>
+    </message>
+    <message>
+        <source>Source status:</source>
+        <translation>Состояние исходного кода:</translation>
+    </message>
+    <message>
+        <source>Provenance:</source>
+        <translation>Происхождение:</translation>
+    </message>
+    <message>
+        <source>Runtime:</source>
+        <translation>Среда выполнения:</translation>
+    </message>
+</context>
+<context>
+    <name>ImportFilters</name>
+    <message>
+        <source>Layers excluded from import: %s</source>
+        <translation>Слои, исключённые из импорта: %s</translation>
     </message>
 </context>
 </TS>

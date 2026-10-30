@@ -301,28 +301,13 @@ class TestClearanceValues(unittest.TestCase):
                                    msg="pct=%s offset %.4f" % (pct, d))
 
 
-class TestAlwaysInwardUnchanged(unittest.TestCase):
-    """Test D: the default mode keeps its behaviour."""
-
-    def test_all_directions_identical(self):
-        codes = {}
+class TestRetiredPocketOverride(unittest.TestCase):
+    def test_obsolete_mode_cannot_override_selected_direction(self):
         for cc in (40, 41, 42):
-            s, st = build("always_inward", cc, 20.0)
-            codes[cc] = norm(serialize_gcode(s, make_postpro()))
-        self.assertTrue(codes[40])
-        self.assertEqual(codes[41], codes[40])
-        self.assertEqual(codes[42], codes[40])
-
-    def test_clearance_relative_to_original_contour(self):
-        c = TOOL_DIA * 20.0 / 100.0
-        s0 = make_shape(rect_geos())
-        for cc in (40, 41, 42):
-            s, st = build("always_inward", cc, 20.0)
-            _, fill = split(st)
-            measured = edge_clearance(fill, s0.geos)
-            self.assertGreaterEqual(measured, c - 0.02,
-                                    "cc=%d measured %.4f" % (cc, measured))
-            self.assertLessEqual(measured, c + 0.5 * TOOL_RAD + 0.02)
+            old, _ = build("always_inward", cc, 20.0)
+            selected, _ = build("selected_direction", cc, 20.0)
+            self.assertEqual(norm(serialize_gcode(old, make_postpro())),
+                             norm(serialize_gcode(selected, make_postpro())))
 
 
 def tearDownModule():

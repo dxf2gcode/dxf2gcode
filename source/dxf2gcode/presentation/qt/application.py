@@ -59,6 +59,7 @@ from dxf2gcode.adapters.config.runtime_config import (MyConfig, active_config_pr
 from dxf2gcode.application.text_helpers import qstr_encode, str_decode, str_encode
 from dxf2gcode.bootstrap.logging import LoggerClass
 from dxf2gcode.presentation.qt.aboutdialog import AboutDialog
+from dxf2gcode.presentation.qt.versioninfo import version_details_html
 from dxf2gcode.presentation.qt.configwindow import ConfigWindow
 from dxf2gcode.presentation.qt.popupdialog import PopUpDialog
 from dxf2gcode.presentation.qt.treehandling import TreeHandler
@@ -74,6 +75,13 @@ from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
 logger = logging.getLogger()
 
 g.folder = c.DEFAULT_CONFIG_FOLDER
+
+
+def _log_import_filters(model):
+    if model.excluded_layers:
+        message = QtCore.QCoreApplication.translate(
+            "ImportFilters", "Layers excluded from import: %s")
+        logger.info(message, ", ".join(model.excluded_layers))
 
 
 def _log_import_diagnostics(diagnostics):
@@ -181,6 +189,7 @@ def _run_headless_dxf_export(filename, output_filename, postprocessor_name,
                   import_filename=filename if conversion_dir is not None
                   else None)
         _log_import_diagnostics(diagnostics)
+        _log_import_filters(_model)
         return 0
     except Exception as error:
         logger.error("Drawing export failed: %s", error)
@@ -225,6 +234,7 @@ def _run_headless_project_export(filename, output_filename,
         ).execute(filename, output_filename, optimize=optimize,
                   postprocessor_index=postprocessor_index)
         _log_import_diagnostics(diagnostics)
+        _log_import_filters(_model)
     except Exception as error:
         logger.error("Project export failed: %s", error)
         return 2
@@ -607,7 +617,7 @@ class MainWindow(QMainWindow):
         """
         Deletes the optimisation paths from the scene.
         """
-        self.setCursor(QtCore.Qt.WaitCursor)
+        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.app.processEvents()
 
         self.canvas_scene.delete_opt_paths()
@@ -864,9 +874,7 @@ class MainWindow(QMainWindow):
                           "<body bgcolor="
                           "<center><img src=':images/dxf2gcode_logo.png' border='1' color='white'></center></body>"
                           "<h2>Version:</h2>"
-                          "<body>%s: %s<br>"
-                          "Last change: %s<br>"
-                          "Changed by: %s<br></body>"
+                          "<body>%s</body>"
                           "<h2>Where to get help:</h2>"
                           "For more information and updates, "
                           "please visit "
@@ -878,7 +886,7 @@ class MainWindow(QMainWindow):
                           "<h2>License and copyright:</h2>"
                           "<body>This program is written in Python and is published under the "
                           "<a href='http://www.gnu.org/licenses/'>GNU GPLv3 license.</a><br>"
-                          "</body></html>") % (c.VERSION, c.REVISION, c.DATE, c.AUTHOR)
+                          "</body></html>") % version_details_html()
 
         AboutDialog(title=self.tr("About DXF2GCODE"), message=message)
 
@@ -1329,6 +1337,7 @@ class MainWindow(QMainWindow):
             shape_created=connect_shape_callbacks,
         ).execute()
         self.entityRoot = model.entity_root
+        _log_import_filters(model)
         self.layerContents = model.layers
         self.shapes = model.shapes
         self.newNumber = len(self.shapes)

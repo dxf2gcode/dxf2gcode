@@ -1,5 +1,11 @@
 # Plan: Kreis-/Startmove-Einfahrt bei Maschinenkompensation korrigieren
 
+> Archivierter älterer Entwurf. Die enthaltenen `core/`- und `gui/`-Pfade
+> entsprechen nicht mehr der aktuellen Paketstruktur. Dieser Text ist kein
+> aktueller Umsetzungsauftrag; maßgeblich sind der Werkzeugwegplan und das
+> TODO im übergeordneten `doc`-Verzeichnis. Der damalige fachliche Inhalt
+> bleibt als historische Referenz erhalten.
+
 ## Ziel
 Maschinenkompensation (`cut_cor in (41,42)`, `done_by_machine=True`), Einfahrt **Kreis**
 (`LEAD_RADIUS`) bzw. **Startmove** (`LEAD_STARTMOVE`):

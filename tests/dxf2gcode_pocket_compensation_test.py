@@ -5,12 +5,11 @@ Regression tests comparing pocket milling for G40, G41 and G42.
 Goal (ticket #176 follow-up): a pocket must be machined geometrically
 correctly regardless of the selected compensation direction. In particular
 
-* the boundary pass and the fill must both stay INSIDE the closed contour
-  (no unwanted overcut into the surrounding part),
-* the pre-computed geometry must be identical for G40/G41/G42 pockets and
-  exported consistently (software compensation emits no G41/G42),
+* the inward selection keeps the boundary pass and fill inside the contour,
+* G40/G41/G42 determine different pocket paths and are exported consistently
+  (software compensation emits no G41/G42),
 * the machine-side compensation must not be applied twice,
-* the cutting edge must reach the contour at 0 % edge clearance and keep the
+* the cutting edge must reach the selected boundary at 0 % edge clearance and keep the
   configured clearance otherwise.
 
 The tests evaluate the produced geometry and G-code, not just "no exception".
@@ -188,8 +187,6 @@ def _pocket(cut_cor, pct=HISTORIC, tool=2.0, cw=True):
     s.parentLayer = layer
     s.calc_bounding_box()
     g.config.vars.Pocketing["pocket_edge_clearance"] = pct
-    # these tests describe the default "always_inward" pocket behaviour
-    g.config.vars.Pocketing["pocket_compensation_mode"] = "always_inward"
     g.config.vars.Cutter_Compensation["done_by_machine"] = False
     st = StMove(s)
     s.stmove = st
@@ -203,7 +200,7 @@ class TestPocketCompensationModes(unittest.TestCase):
     def setUp(self):
         self.pp = make_postpro()
 
-    def test_pocket_geometry_identical_for_all_directions(self):
+    def test_pocket_geometry_follows_selected_direction(self):
         results = {}
         for cc in (40, 41, 42):
             s, st = _pocket(cc)
@@ -213,14 +210,12 @@ class TestPocketCompensationModes(unittest.TestCase):
             results[cc] = norm(serialize_gcode(s, make_postpro()))
         base = results[40]
         self.assertTrue(base)
-        self.assertEqual(results[41], base,
-                         "G41 pocket must equal the G40 pocket path")
-        self.assertEqual(results[42], base,
-                         "G42 pocket must equal the G40 pocket path")
+        self.assertNotEqual(results[41], base)
+        self.assertNotEqual(results[42], base)
 
     def test_no_toolpath_outside_the_contour(self):
         segs = _pocket_contour_segs()
-        for cc in (40, 41, 42):
+        for cc in (42,):
             s, st = _pocket(cc)
             boundary, fill = _split_geos(st)
             self.assertTrue(boundary, "no boundary pass for cut_cor %d" % cc)
@@ -235,7 +230,7 @@ class TestPocketCompensationModes(unittest.TestCase):
     def test_boundary_and_fill_are_consistent(self):
         segs = _pocket_contour_segs()
         tool_rad = 1.0
-        for cc in (40, 41, 42):
+        for cc in (42,):
             s, st = _pocket(cc)
             boundary, fill = _split_geos(st)
             bd = _min_dist_to_contour(segs, boundary)
@@ -249,16 +244,18 @@ class TestPocketCompensationModes(unittest.TestCase):
                                     "cut_cor %d fill closer than boundary" % cc)
 
     def test_clearance_zero_puts_edge_on_contour(self):
+        from types import SimpleNamespace
         segs = _pocket_contour_segs()
         tool_rad = 1.0
-        for cc in (40, 41, 42):
+        for cc in (42,):
             s, st = _pocket(cc, pct=0.0)
             boundary, fill = _split_geos(st)
             # boundary pass: edge exactly on the contour
             self.assertLessEqual(_min_dist_to_contour(segs, boundary),
                                  tool_rad + 0.02)
-            # fill: outermost row also reaches the contour
-            self.assertLessEqual(_min_dist_to_contour(segs, fill),
+            # The fill's clearance refers to the selected boundary pass.
+            selected = _flatten(SimpleNamespace(geos=boundary))
+            self.assertLessEqual(_min_dist_to_contour(selected, fill),
                                  tool_rad + 0.5 * tool_rad)
 
     def test_software_compensation_not_emitted_and_not_doubled(self):

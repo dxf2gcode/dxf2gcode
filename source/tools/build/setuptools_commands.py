@@ -6,13 +6,21 @@ wheel or source distribution needs no UI or translation compiler.
 
 from pathlib import Path
 from shutil import copy2
+import sys
 import tarfile
 
 from setuptools.command.build_py import build_py
 from setuptools.command.sdist import sdist
 
+# Setuptools can load this command by filename while an older application is
+# installed in the build environment. Resolve our provider from this source.
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 
-ROOT = Path(__file__).resolve().parent
+from dxf2gcode.bootstrap.version_metadata import (
+    METADATA_FILE, capture_build_info, write_build_metadata)
+
+
 GENERATED = ROOT / "dxf2gcode" / "presentation" / "qt" / "generated"
 CATALOGS = ROOT / "i18n"
 
@@ -27,7 +35,7 @@ def validate_assets():
                 missing.append(str(path.relative_to(ROOT)))
             elif "from PySide6" in path.read_text(encoding="utf-8"):
                 raise RuntimeError(
-                    "%s must be generated for PyQt6; run make_py_uic.py with "
+                    "%s must be generated for PyQt6; run tools/build/qt_assets.py with "
                     "DXF2GCODE_QT=6 before building." % path.name)
     sources = sorted(CATALOGS.glob("dxf2gcode_*.ts"))
     if not sources:
@@ -38,7 +46,8 @@ def validate_assets():
     if missing:
         raise RuntimeError(
             "Qt release assets are missing: %s. Prepare both Qt variants with "
-            "make_py_uic.py and compile translations with make_tr.py "
+            "tools/build/qt_assets.py and compile translations with "
+            "tools/build/translations.py "
             "--no-pylupdate before building a release. See README.md."
             % ", ".join(missing))
 
@@ -55,6 +64,7 @@ class BuildPy(build_py):
 
     def run(self):
         validate_assets()
+        info = capture_build_info(ROOT / "dxf2gcode")
         super().run()
         obsolete = (Path(self.build_lib) / "dxf2gcode" / "presentation" /
                     "qt" / "resources" / "dxf2gcode_images_rc.py")
@@ -64,9 +74,17 @@ class BuildPy(build_py):
         destination.mkdir(parents=True, exist_ok=True)
         for catalog in sorted(CATALOGS.glob("dxf2gcode_*.qm")):
             copy2(catalog, destination / catalog.name)
+        write_build_metadata(Path(self.build_lib) / "dxf2gcode" / METADATA_FILE,
+                             info=info)
 
 
 class SourceDistribution(sdist):
+    def make_release_tree(self, base_dir, files):
+        info = capture_build_info(ROOT / "dxf2gcode")
+        super().make_release_tree(base_dir, files)
+        write_build_metadata(Path(base_dir) / "dxf2gcode" / METADATA_FILE,
+                             info=info)
+
     def make_archive(self, base_name, format, root_dir=None, base_dir=None,
                      owner=None, group=None):
         if format != "gztar":

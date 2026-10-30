@@ -47,7 +47,7 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 logger = logging.getLogger("Core.Config")
 
-SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14]
+SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14, 9.15, 9.16]
 CONFIG_VERSION = SUPPORTED_CONFIGS[-1]
 """
 version tag - increment this each time you edit CONFIG_SPEC
@@ -173,6 +173,8 @@ CONFIG_SPEC = str('''
     live_update_export_route = boolean(default = False)
     # When enabled, a scale bar is drawn in the bottom right corner of the canvas. It shows the physical size of the imported geometry.
     show_scale_bar = boolean(default = False)
+
+    expand_layers_on_load = boolean(default = True)
     # Divide the lines in 2 parts, in order to start the cutting in the middle of a line (usefull for cutter compensation)
     split_line_segments = boolean(default = False)
     # Automatically enable cutter compensation for all the shapes (G41 & G42)
@@ -199,19 +201,6 @@ CONFIG_SPEC = str('''
     # The default reproduces the historical behaviour (center stand-off of
     # cutter radius / 0.7 for G42 pocketing).
     pocket_edge_clearance = float(min = 0, max = 100, default = 21.4286)
-
-    # How the cutter compensation is applied while pocket milling a closed
-    # contour:
-    # - always_inward     : the pocket is always cleared from the inside with
-    #                       an inward boundary pass; the G40/G41/G42 selection
-    #                       does not change the pocket geometry (default,
-    #                       keeps the previous behaviour).
-    # - selected_direction: the selected G40/G41/G42 direction determines the
-    #                       offset geometry of the boundary pass (G42/G41 give
-    #                       the right/left offset relative to the contour
-    #                       direction, G40 uses the contour without any cutter
-    #                       radius compensation).
-    pocket_compensation_mode = option('always_inward', 'selected_direction', default = 'always_inward')
 
 
     [Lead_In_Out]
@@ -312,6 +301,9 @@ CONFIG_SPEC = str('''
     fitting_tolerance = float(min = 0, max = 1, default = 0.001)
     # If checked, the elements (shape, ...) which are part of a block will be inserted on the layer that belongs to the block (even though the elements might be defined on a different layers)
     insert_at_block_layer = boolean(default = False)
+
+    exclude_ignore_layers = boolean(default = False)
+    exclude_layer_zero = boolean(default = False)
 
     # These settings are intented to be used in the DXF file:
     # - By using MILL: as a prefix to your layer name, you can define milling parameters by using one of the following identifiers.
@@ -572,6 +564,10 @@ class MyConfig(object):
                 # file exists, read & validate it
                 self.var_dict = self.file_store.read(
                     self.filename, configspec=CONFIG_SPEC)
+                # Older profiles remain readable; retire the pocket override.
+                # G40/G41/G42 now always controls pockets as well as contours.
+                self.var_dict.get('Pocketing', {}).pop(
+                    'pocket_compensation_mode', None)
                 # Migration of the lead in mode: the mode 'default' (which
                 # depended on the cutter compensation method) is now called
                 # 'startmove' (the G41/G42 start move of the program).

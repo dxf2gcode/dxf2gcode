@@ -1,4 +1,0 @@
-# .gitattributes
-# Map file extensions to git filters
-
-*constants.py filter=rcs-keywords

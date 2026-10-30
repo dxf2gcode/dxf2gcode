@@ -9,6 +9,7 @@ This check does not install packages or modify a user's configuration.
 
 import argparse
 import configparser
+import json
 from email.parser import Parser
 import os
 from pathlib import Path
@@ -21,6 +22,7 @@ def check_archive(wheel):
     with zipfile.ZipFile(wheel) as archive:
         names = set(archive.namelist())
         required = {
+            "dxf2gcode/_build_metadata.json",
             "dxf2gcode/__main__.py",
             "dxf2gcode/domain/toolpath/planner.py",
             "dxf2gcode/presentation/qt/generated/dxf2gcode_ui5.py",
@@ -40,6 +42,11 @@ def check_archive(wheel):
         metadata_path = next(name for name in names if name.endswith(".dist-info/METADATA"))
         metadata = Parser().parsestr(archive.read(metadata_path).decode("utf-8"))
         assert metadata["Name"] == "dxf2gcode"
+        provenance = json.loads(archive.read("dxf2gcode/_build_metadata.json"))
+        assert provenance["schema"] == 1
+        assert provenance["version"] == metadata["Version"]
+        assert provenance["build_date"]
+        assert provenance["origin"] == "build"
         assert not any("cx-freeze" in item.lower()
                        for item in metadata.get_all("Requires-Dist", []))
         entries_path = next(name for name in names
@@ -80,6 +87,10 @@ import sys
 import dxf2gcode
 distribution = metadata.distribution('dxf2gcode')
 assert distribution.version == sys.argv[1]
+from dxf2gcode.bootstrap.version_metadata import get_version_info
+provenance = get_version_info()
+assert provenance.version == distribution.version
+assert provenance.origin == 'build'
 assert Path(dxf2gcode.__file__).resolve() == Path(
     distribution.locate_file('dxf2gcode/__init__.py')).resolve()
 assert Path(sys.prefix) in Path(dxf2gcode.__file__).resolve().parents

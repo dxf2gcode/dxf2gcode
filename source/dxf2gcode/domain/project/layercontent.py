@@ -44,6 +44,11 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 logger = logging.getLogger("Core.LayerContent")
 
 
+def is_ignored_layer_name(name, separator):
+    """Keep the established, case-sensitive IGNORE prefix rule in one place."""
+    return name.startswith('IGNORE' + separator)
+
+
 class LayerContent(object):
     def tr(self, string_to_translate):
         """
@@ -98,7 +103,8 @@ class LayerContent(object):
                "\nshapes: %s" % self.shapes
 
     def should_ignore(self):
-        return self.name.startswith('IGNORE' + g.config.vars.Layer_Options['id_float_separator'])
+        return is_ignored_layer_name(
+            self.name, g.config.vars.Layer_Options['id_float_separator'])
 
     def isBreakLayer(self):
         return self.name.startswith('BREAKS' + g.config.vars.Layer_Options['id_float_separator'])

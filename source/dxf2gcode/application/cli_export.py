@@ -88,6 +88,7 @@ class _HeadlessProjectSession:
         self.entityRoot = None
         self.loaded = False
         self.diagnostics = ()
+        self.excluded_layers = ()
 
     def connectToolbarToConfig(self, block_signals=True):
         """The GUI-only toolbar binding has no headless equivalent."""
@@ -120,6 +121,7 @@ class _HeadlessProjectSession:
         self.layerContents = model.layers
         self.shapes = model.shapes
         self.entityRoot = model.entity_root
+        self.excluded_layers = model.excluded_layers
         self.newNumber = len(self.shapes)
         self.loaded = True
         return True
@@ -156,7 +158,7 @@ class ExportProject:
         if not source_filename:
             source_filename = project_filename
         model = DrawingModel(session.entityRoot, session.layerContents,
-                             session.shapes)
+                             session.shapes, session.excluded_layers)
         exporter = ExportDrawing(
             import_drawing=None, build_model=None,
             postprocessor=self._postprocessor, config=self._config,

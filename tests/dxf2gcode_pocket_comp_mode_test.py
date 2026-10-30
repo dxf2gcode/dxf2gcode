@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Tests for the configurable pocket compensation mode
-(``[Pocketing] pocket_compensation_mode``).
-
-Two modes are covered:
-
-* ``always_inward`` (default): the pocket always uses an inward boundary pass;
-  G40/G41/G42 must not change the pocket geometry and the compensation choice
-  must be disabled in the GUI while pocketing a closed shape.
-* ``selected_direction``: G42/G41 use the right/left offset relative to the
-  contour orientation and G40 uses the contour without cutter compensation.
+Tests for unrestricted pocket compensation. G40/G41/G42 always determine
+the boundary offset, including profiles carrying obsolete mode values.
 
 The tests evaluate the produced geometry and the G-code export.
 
@@ -205,55 +197,29 @@ def _g1_xy(code):
 
 # ---------------------------------------------------------------------------
 @unittest.skipUnless(os.path.exists(DXF_POCKETING1), "pocketing1.dxf not available")
-class TestAlwaysInwardMode(unittest.TestCase):
-    """Default mode: the G40/G41/G42 selection has no effect on a pocket."""
+class TestRetiredPocketMode(unittest.TestCase):
+    """An obsolete runtime override must not restrict the user's direction."""
 
-    def test_all_directions_produce_identical_path(self):
-        codes = {}
+    def test_old_mode_has_no_effect_on_selected_direction(self):
         for cc in (40, 41, 42):
-            s, st = _build("always_inward", cc)
-            codes[cc] = _gcode(s)
-        self.assertTrue(codes[40])
-        self.assertEqual(codes[41], codes[40])
-        self.assertEqual(codes[42], codes[40])
-
-    def test_boundary_is_inside_contour(self):
-        segs = _contour_segs()
-        for cc in (40, 41, 42):
-            s, st = _build("always_inward", cc)
-            boundary, fill = _split(st)
-            self.assertTrue(boundary, "no boundary pass for cut_cor %d" % cc)
-            self.assertEqual(_outside_points(segs, boundary), [],
-                             "cut_cor %d boundary outside" % cc)
-            # finishing pass sits one cutter radius inside
-            self.assertLess(abs(_min_dist(segs, boundary) - TOOL_RAD), 0.02)
+            self.assertEqual(_gcode(_build("always_inward", cc)[0]),
+                             _gcode(_build("selected_direction", cc)[0]))
 
     def test_g40_exports_the_complete_fill(self):
-        s, st = _build("always_inward", 40)
-        code = _gcode(s)
-        pts = _g1_xy(code)
-        # the fill must be present: many linear XY moves, including the
-        # central bridge row that a contour-only export would never reach
-        self.assertGreater(len(pts), 100)
-        bridge = [p for p in pts
-                  if abs(p[1] - BRIDGE_Y) < 0.05 and 35.0 < p[0] < 47.2]
-        self.assertTrue(bridge, "G40 pocket fill is missing / incomplete")
-        # software compensation: G40 only (no G41/G42 emitted)
+        code = _gcode(_build("always_inward", 40)[0])
+        points = _g1_xy(code)
+        self.assertGreater(len(points), 100)
+        self.assertTrue([point for point in points
+                         if abs(point[1] - BRIDGE_Y) < 0.05
+                         and 35.0 < point[0] < 47.2],
+                        "G40 pocket fill is missing the central bridge")
         self.assertNotIn("G41", code)
         self.assertNotIn("G42", code)
-
-    def test_fill_is_inside_contour(self):
-        segs = _contour_segs()
-        for cc in (40, 41, 42):
-            s, st = _build("always_inward", cc)
-            _, fill = _split(st)
-            self.assertEqual(_outside_points(segs, fill), [],
-                             "cut_cor %d fill outside" % cc)
 
 
 @unittest.skipUnless(os.path.exists(DXF_POCKETING1), "pocketing1.dxf not available")
 class TestSelectedDirectionMode(unittest.TestCase):
-    """Alternative mode: the G40/G41/G42 selection is honoured."""
+    """G40/G41/G42 controls pocket geometry without a mode switch."""
 
     def test_g42_is_the_inward_offset(self):
         segs = _contour_segs()
@@ -310,16 +276,6 @@ class TestSelectedDirectionMode(unittest.TestCase):
         self.assertNotEqual(code41, code42)
         self.assertNotEqual(code40, code42)
 
-    def test_selected_direction_g42_differs_from_default_mode(self):
-        # In "selected_direction" the G42 fill keeps its edge clearance
-        # relative to the inward offset contour, so it is inset further than
-        # the default "always_inward" fill (which references the original
-        # contour). The two modes must therefore differ for G42.
-        c_default = _gcode(_build("always_inward", 42)[0])
-        c_selected = _gcode(_build("selected_direction", 42)[0])
-        self.assertNotEqual(c_default, c_selected)
-
-
 # ---------------------------------------------------------------------------
 class _StubShape(object):
     def __init__(self, pocket, cut_cor=42):
@@ -337,8 +293,8 @@ class _StubScene(object):
         self.shapes = shapes
 
 
-class TestCompensationMenuGating(unittest.TestCase):
-    """The GUI must not offer a compensation choice that has no effect."""
+class TestCompensationMenuSelection(unittest.TestCase):
+    """Pocket milling must not disable the user's compensation selection."""
 
     def setUp(self):
         from dxf2gcode.presentation.qt.qt_compat import QtWidgets
@@ -353,18 +309,12 @@ class TestCompensationMenuGating(unittest.TestCase):
         canvasmod.MyDropDownMenu.exec = lambda self, pos: None
         return canvasmod.MyDropDownMenu(_StubScene(shapes), None, Point(0, 0))
 
-    def test_selectable_helper(self):
-        from dxf2gcode.presentation.qt.canvas import pocket_compensation_selectable
-        g.config.vars.Pocketing["pocket_compensation_mode"] = "always_inward"
-        self.assertFalse(pocket_compensation_selectable([_StubShape(True)]))
-        self.assertTrue(pocket_compensation_selectable([_StubShape(False)]))
-        # mode 2: always selectable
-        g.config.vars.Pocketing["pocket_compensation_mode"] = "selected_direction"
-        self.assertTrue(pocket_compensation_selectable([_StubShape(True)]))
-
-    def test_menu_disabled_for_pocket_in_default_mode(self):
+    def test_menu_enabled_for_pocket_with_older_profile_mode(self):
         menu = self._menu_for([_StubShape(True)], "always_inward")
-        self.assertFalse(menu.compMenuAction.isEnabled())
+        self.assertTrue(menu.compMenuAction.isEnabled())
+        self.assertTrue(menu.noCompAction.isEnabled())
+        self.assertTrue(menu.leCompAction.isEnabled())
+        self.assertTrue(menu.reCompAction.isEnabled())
 
     def test_menu_enabled_without_pocket_in_default_mode(self):
         menu = self._menu_for([_StubShape(False)], "always_inward")

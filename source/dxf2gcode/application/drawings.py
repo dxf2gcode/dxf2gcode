@@ -4,7 +4,8 @@ from copy import copy, deepcopy
 
 from dxf2gcode.domain.project.entitycontent import EntityContent
 from dxf2gcode.domain.geometry.holegeo import HoleGeo
-from dxf2gcode.domain.project.layercontent import LayerContent, Layers, Shapes
+from dxf2gcode.domain.project.layercontent import (
+    LayerContent, Layers, Shapes, is_ignored_layer_name)
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.point import Point
 
@@ -12,10 +13,11 @@ from dxf2gcode.domain.geometry.point import Point
 class DrawingModel:
     """Project model created from one imported drawing."""
 
-    def __init__(self, entity_root, layers, shapes):
+    def __init__(self, entity_root, layers, shapes, excluded_layers=()):
         self.entity_root = entity_root
         self.layers = layers
         self.shapes = shapes
+        self.excluded_layers = tuple(excluded_layers)
 
 
 class BuildDrawingModel:
@@ -31,6 +33,7 @@ class BuildDrawingModel:
         self.shape_created = shape_created
         self.layers = Layers([])
         self.shapes = Shapes([])
+        self._excluded_layer_numbers = set()
 
     def execute(self):
         root = EntityContent(
@@ -45,7 +48,20 @@ class BuildDrawingModel:
         for layer in self.layers:
             layer.overrideDefaults()
         self.layers.sort(key=lambda layer: layer.nr)
-        return DrawingModel(root, self.layers, self.shapes)
+        excluded_layers = tuple(self.drawing.layers[nr].name
+                                for nr in sorted(self._excluded_layer_numbers))
+        return DrawingModel(root, self.layers, self.shapes, excluded_layers)
+
+    def _exclude_layer(self, layer_number):
+        name = self.drawing.layers[layer_number].name
+        options = self.config.vars.Import_Parameters
+        excluded = (
+            (options['exclude_layer_zero'] and name == "0") or
+            (options['exclude_ignore_layers'] and is_ignored_layer_name(
+                name, self.config.vars.Layer_Options['id_float_separator'])))
+        if excluded:
+            self._excluded_layer_numbers.add(layer_number)
+        return excluded
 
     def _add_entity_shapes(self, parent, layer_number=-1):
         if parent.name == "Entities":
@@ -57,16 +73,36 @@ class BuildDrawingModel:
         for contour in entities.cont:
             first_geo = entities.geo[contour.order[0][0]]
             if first_geo.Typ == "Insert":
+                insert_layer = first_geo.Layer_Nr
+                # When filtering layer 0 with block-layer assignment enabled,
+                # a nested INSERT on 0 belongs to its enclosing insertion.
+                # Leave the original assignment untouched when filters are off.
+                if (self.config.vars.Import_Parameters['exclude_layer_zero'] and
+                        self.config.vars.Import_Parameters['insert_at_block_layer'] and
+                        layer_number != -1 and
+                        self.drawing.layers[insert_layer].name == "0"):
+                    insert_layer = layer_number
+                if self._exclude_layer(insert_layer):
+                    continue
                 block_number = self.drawing.Get_Block_Nr(first_geo.BlockName)
                 block = self.drawing.blocks.Entities[block_number]
                 child = EntityContent(
                     nr=0, name=first_geo.BlockName, parent=parent,
                     p0=first_geo.Point, pb=block.basep, sca=first_geo.Scale,
                     rot=first_geo.rot)
-                parent.append(child)
-                self._add_entity_shapes(child, first_geo.Layer_Nr)
+                self._add_entity_shapes(child, insert_layer)
+                if (child.children or not (
+                        self.config.vars.Import_Parameters['exclude_ignore_layers'] or
+                        self.config.vars.Import_Parameters['exclude_layer_zero'])):
+                    parent.append(child)
                 continue
 
+            layer_number_for_shape = (
+                layer_number if self.config.vars.Import_Parameters[
+                    "insert_at_block_layer"] and layer_number != -1
+                else first_geo.Layer_Nr)
+            if self._exclude_layer(layer_number_for_shape):
+                continue
             shape = self.shape_factory(len(self.shapes), contour.closed, parent)
             for geo_number, reverse in contour.order:
                 for imported_geo in entities.geo[geo_number].geo:
@@ -78,11 +114,10 @@ class BuildDrawingModel:
                 continue
 
             shape.AnalyseAndOptimize()
+            # Preview can consume a semantic plan without calling make_path,
+            # so imported model bounds must not depend on rendering the shape.
+            shape.calc_bounding_box()
             self.shapes.append(shape)
-            layer_number_for_shape = (
-                layer_number if self.config.vars.Import_Parameters[
-                    "insert_at_block_layer"] and layer_number != -1
-                else entities.geo[contour.order[0][0]].Layer_Nr)
             self._add_to_layer(shape, layer_number_for_shape)
             parent.append(shape)
             if self.shape_created is not None:

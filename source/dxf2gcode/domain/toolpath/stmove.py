@@ -386,25 +386,8 @@ class StMove(object):
                 self.pocket_geos_start = len(self.geos)
                 return
 
-            # How pocket milling is compensated is configurable:
-            #  * always_inward      : the pocket is always cleared from the
-            #                         inside (inward boundary pass); the
-            #                         G40/G41/G42 selection has no effect on
-            #                         the pocket (default, previous behaviour).
-            #  * selected_direction : the selected direction decides the
-            #                         boundary pass offset (G42/G41 = right/
-            #                         left offset relative to the contour
-            #                         direction; G40 = no cutter compensation,
-            #                         the contour itself is the toolpath).
-            pocket_mode = getattr(g.config.vars.Pocketing,
-                                  "pocket_compensation_mode",
-                                  "always_inward")
-            forced_inward = (self.shape.Pocket and
-                             pocket_mode == "always_inward")
-
-            if forced_inward:
-                offtype = "in"
-            elif self.shape.cut_cor == 41 and self.shape.cw is True:
+            # Pockets honour the selected compensation exactly like contours.
+            if self.shape.cut_cor == 41 and self.shape.cw is True:
                 offtype = "out"
             elif self.shape.cut_cor == 41 and self.shape.cw is False:
                 offtype = "in"
@@ -414,11 +397,9 @@ class StMove(object):
                 offtype = "in"
             else:
                 offtype = "out"
-                Warning("should not be here")
             logger.debug("Shape.cw %s; shape.cut_cor %i; Offset in direction: %s" %(self.shape.cw, self.shape.cut_cor,offtype))
 
-            if (self.shape.Pocket and not forced_inward and
-                    self.shape.cut_cor == 40):
+            if self.shape.Pocket and self.shape.cut_cor == 40:
                 # G40 = no cutter compensation: the contour itself is the tool
                 # center path (no radius offset). The pocket fill is appended
                 # afterwards by the pocket block below.
@@ -529,16 +510,16 @@ class StMove(object):
                     self._build_exit_preview(self.exit_chain,
                                              SPACE_TOOL_CENTER)
 
-                    if (self.shape.Pocket and not forced_inward and
+                    if (self.shape.Pocket and
                             self.shape.cut_cor in (41, 42)):
-                        # selected_direction: the pocket fill keeps its edge
+                        # The pocket fill keeps its edge
                         # clearance relative to THIS compensated offset
                         # contour, so record how far it sits from the original
                         # contour (offtype "out" -> offset outward, +radius).
                         # Only the cutter radius is recorded here; the
                         # additional offset (finishing allowance) is applied to
                         # the fill stand-off in pocketmill so that it works the
-                        # same way for every pocket mode.
+                        # same way for every compensation direction.
                         self.pocket_fill_offset = (
                             -toolwidth if offtype == "in" else toolwidth)
 

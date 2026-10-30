@@ -4,6 +4,26 @@ This directory contains the Python application, its packaging and translation
 tools, and the Qt resources. The repository root also contains the test suite,
 architecture notes, sample DXF files, and project-level tooling.
 
+Build helpers are grouped under `tools/build/`:
+
+```text
+source/
+├── pyproject.toml               Python package definition
+├── MANIFEST.in                  Source archive contents
+├── Makefile                     Common developer commands
+├── dxf2gcode.pro                Qt Creator and Linguist project
+├── tools/build/
+│   ├── windows.py               Windows EXE/MSI builder (cx_Freeze)
+│   ├── qt_assets.py             Qt UI and resource generation
+│   ├── translations.py          Translation updates and QM compilation
+│   └── setuptools_commands.py   Prepared asset packaging
+└── dxf2gcode/                   Application package
+```
+
+`tools/` is included in the source archive for building, and is excluded from
+the installed application wheel. `build/` and `dist/` are generated output.
+There are no forwarding scripts at the former helper locations.
+
 ## Package structure
 
 ```text
@@ -110,8 +130,8 @@ Run from this directory after installing the runtime dependencies and
 generating the Qt UI/resource modules:
 
 ```text
-python make_py_uic.py
-python make_tr.py
+python tools/build/qt_assets.py
+python tools/build/translations.py
 python dxf2gcode.py
 ```
 
@@ -131,19 +151,19 @@ application profiles use sibling folders such as `~/.config/dxf2gcode.laser`.
 `pyproject.toml` defines the Python package, dependencies and the
 `dxf2gcode` command. Build releases as wheels and source archives using
 `python -m build`. The old `st-setup.py` and `setup.py` scripts have been
-removed. The Windows MSI builder is separate in `build_windows.py`.
+removed. The Windows MSI builder is separate in `tools/build/windows.py`.
 
 To install a downloaded release on Linux:
 
 ```sh
 python3 -m venv .venv
 . .venv/bin/activate
-python -m pip install ./dxf2gcode-20261028-py3-none-any.whl
+python -m pip install ./dxf2gcode-20261030.post2-py3-none-any.whl
 dxf2gcode
 ```
 
 A release source archive (`.tar.gz`) can be supplied to the same pip command.
-Alternatively, `pipx install ./dxf2gcode-20261028-py3-none-any.whl` exposes the
+Alternatively, `pipx install ./dxf2gcode-20261030.post2-py3-none-any.whl` exposes the
 command through an isolated application environment. Runtime dependencies are
 installed by pip; the `qt6` extra adds PyQt6. The default installation retains
 PyQt5 support and uses PyQt6 when available, as selected by the existing
@@ -167,32 +187,35 @@ and Qt Linguist `lrelease` on PATH:
 
 ```sh
 python -m pip install build PyQt5 PyQt6 configobj PyOpenGL
-DXF2GCODE_QT=5 python make_py_uic.py
-DXF2GCODE_QT=6 python make_py_uic.py
-DXF2GCODE_QT=5 python make_tr.py --no-pylupdate
+DXF2GCODE_QT=5 python tools/build/qt_assets.py
+DXF2GCODE_QT=6 python tools/build/qt_assets.py
+DXF2GCODE_QT=5 python tools/build/translations.py --no-pylupdate
 python -m build
 ```
 
 With GNU Make, `make package PYTHON=python` runs the same preparation and
-build. On PowerShell set `$env:DXF2GCODE_QT = "5"` or `"6"` before the
+build. `make prepare` prepares the selected Qt binding; `make windows`
+prepares release assets and builds the Windows MSI. Invoke these targets
+from `source/`, or use `make -C source ...` from the repository root.
+On PowerShell set `$env:DXF2GCODE_QT = "5"` or `"6"` before the
 corresponding Python command. The generated release artifacts are:
 
-- `dist/dxf2gcode-20261028-py3-none-any.whl`
-- `dist/dxf2gcode-20261028.tar.gz`
+- `dist/dxf2gcode-20261030.post2-py3-none-any.whl`
+- `dist/dxf2gcode-20261030.post2.tar.gz`
 
 For development, a prepared checkout can be installed using
 `python -m pip install --editable .`. End users installing a prepared wheel
 or source archive do not need Qt development tools. The build validates the
 prepared assets and rejects incomplete releases.
 
-`build_support.py` bundles prepared assets; `MANIFEST.in` includes them in
+`tools/build/setuptools_commands.py` bundles prepared assets; `MANIFEST.in` includes them in
 the source archive. Setuptools may still generate a temporary `.egg-info`
 metadata directory while building; the installed wheel uses `.dist-info`
 and does not install an Egg or use EasyInstall.
 
 `dxf2gcode.pro` supplies the Qt Creator/Linguist file lists.
-`make_py_uic.py` generates Python modules from the `.ui` and `.qrc` files;
-`make_tr.py` updates and compiles translation catalogs. Generated files,
+`tools/build/qt_assets.py` generates Python modules from the `.ui` and `.qrc` files;
+`tools/build/translations.py` updates and compiles translation catalogs. Generated files,
 `build/` and `dist/` remain excluded from Git.
 
 After generating the UI/resource and translation files, build the MSI on
@@ -200,20 +223,42 @@ Windows from this directory with:
 
 ```text
 python -m pip install "cx-Freeze>=8"
-python build_windows.py bdist_msi
+python tools/build/windows.py bdist_msi
 ```
+
+The Python helper paths above are relative to `source/`. From the repository
+root, use `python source/tools/build/windows.py bdist_msi` instead. Each
+helper resolves its input/output paths from its own location, so it also
+works when called by absolute path from a different working directory.
 
 After installing the built wheel into a test environment, the repository's
 acceptance check verifies its contents, installed resources/translations,
 desktop files, command entry points and a headless DXF export:
 
 ```text
-python tests/verify_wheel.py source/dist/dxf2gcode-20261028-py3-none-any.whl --python PATH_TO_TEST_ENV_PYTHON --qt 5
+python tests/verify_wheel.py source/dist/dxf2gcode-20261030.post2-py3-none-any.whl --python PATH_TO_TEST_ENV_PYTHON --qt 5
 ```
 
 Run this command from the repository root. Repeat with `--qt 6` in an
 environment containing the `qt6` extra. The check starts the application from
 a temporary directory with isolated configuration paths.
+
+## Version and build provenance
+
+The About dialog displays the package version, source revision and branch,
+commit date, build date, local-change status and Python/Qt runtime versions.
+When running the source checkout, these values are read from that checkout;
+a normal commit or branch switch needs no hook or manual metadata update.
+The release version in `dxf2gcode/_version.py` is still updated deliberately.
+
+Wheels, release source archives and Windows builds carry
+`dxf2gcode/_build_metadata.json`. Installed applications read this resource
+without Git. The displayed branch is the build's source branch, not a branch
+on the end user's computer. Missing provenance is reported as unavailable.
+Source distributions preserve provenance when rebuilt as wheels. Set
+`SOURCE_DATE_EPOCH` to control the build timestamp for reproducible builds.
+Generated metadata stays out of the source checkout and Git. The former
+keyword filters and their setup instructions have been removed.
 
 ## Tests
 

@@ -87,5 +87,5 @@ verwendet werden.
 
 ## Weiterführende Dokumente
 
-- [Umsetzungsplan Werkzeugweg und G-Code](toolpath-refactoring-plan.md)
+- [Ziele, Aufgaben und Prüfergebnisse für Werkzeugweg, GUI und Versionsmetadaten](toolpath-refactoring-todo.md)
 - [Testübersicht](../tests/README.md)

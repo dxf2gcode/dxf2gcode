@@ -49,6 +49,11 @@ class TreeView(QTreeView):
     Implement a simple (ie not complex) drag & drop, get selection events
     """
 
+    expansionAvailabilityChanged = QtCore.pyqtSignal(bool, bool)
+    _expansion_model_signals = (
+        "rowsInserted", "rowsRemoved", "rowsMoved", "modelReset",
+        "layoutChanged")
+
     def __init__(self, parent = None):
         """
         Initialization of the TreeView class.
@@ -60,8 +65,62 @@ class TreeView(QTreeView):
         self.selectionChangedcallback = None
         self.keyPressEventcallback = None
         self.signals_blocked = False #Transmit events between classes
+        self._expansion_model = None
 
         self.pressed.connect(self.elementPressed)
+        self.expanded.connect(self.updateExpansionAvailability)
+        self.collapsed.connect(self.updateExpansionAvailability)
+
+    def setModel(self, model):
+        """Follow the current model, including replacement during file load."""
+        if self._expansion_model is not None:
+            for name in self._expansion_model_signals:
+                getattr(self._expansion_model, name).disconnect(
+                    self.updateExpansionAvailability)
+        QTreeView.setModel(self, model)
+        self._expansion_model = model
+        if model is not None:
+            for name in self._expansion_model_signals:
+                getattr(model, name).connect(self.updateExpansionAvailability)
+        self.updateExpansionAvailability()
+
+    def updateExpansionAvailability(self, *unused):
+        """Report whether folding can change any visible branch.
+
+        Descendants of a collapsed node cannot currently be collapsed any
+        further on screen, even if Qt remembers their expanded state.
+        """
+        can_collapse = can_expand = False
+        model = self.model()
+        if model is not None:
+            parents = [self.rootIndex()]
+            while parents:
+                parent = parents.pop()
+                for row in range(model.rowCount(parent)):
+                    index = model.index(row, 0, parent)
+                    if not model.hasChildren(index):
+                        continue
+                    if self.isExpanded(index):
+                        can_collapse = True
+                        parents.append(index)
+                    else:
+                        can_expand = True
+                    if can_collapse and can_expand:
+                        self.expansionAvailabilityChanged.emit(True, True)
+                        return
+        self.expansionAvailabilityChanged.emit(can_collapse, can_expand)
+
+    def expandAll(self):
+        QTreeView.expandAll(self)
+        self.updateExpansionAvailability()
+
+    def collapseAll(self):
+        QTreeView.collapseAll(self)
+        self.updateExpansionAvailability()
+
+    def expandToDepth(self, depth):
+        QTreeView.expandToDepth(self, depth)
+        self.updateExpansionAvailability()
 
     def setExportOrderUpdateCallback(self, callback):
         self.exportOrderUpdateCallback = callback
@@ -134,7 +193,7 @@ class TreeView(QTreeView):
         # Check if a element has been started to drag and if a index of the dragged element is given otherwise return
         if self.dragged_element and self.dragged_element_model_index:
             logger.debug("proposedAction = {0}".format(event.proposedAction()))
-            event.setDropAction(QtCore.Qt.IgnoreAction) #Ignore since completely reimplemented.
+            event.setDropAction(QtCore.Qt.DropAction.IgnoreAction) #Ignore since completely reimplemented.
             event.accept()
         else:
             event.ignore()
@@ -262,7 +321,7 @@ class TreeView(QTreeView):
 
         if self.dragged_element and self.dragged_element_model_index:
             logger.debug("action proposee = {0}".format(event.proposedAction()))
-            event.setDropAction(QtCore.Qt.IgnoreAction)
+            event.setDropAction(QtCore.Qt.DropAction.IgnoreAction)
             event.accept()
 
             drag_item = self.dragged_element_model_index.model().itemFromIndex(self.dragged_element_model_index)
@@ -409,6 +468,8 @@ class TreeView(QTreeView):
         """
         self.signals_blocked = block
         QTreeView.blockSignals(self, block)
+        if not block:
+            self.updateExpansionAvailability()
 
     def selectionChanged(self, selected, deselected):
         """
