@@ -312,6 +312,8 @@ class LayerContent(object):
         self.axis3_safe_margin *= scale
 
         for shape in self.shapes:
+            if getattr(shape, "tool_override", None) is not None:
+                shape.tool_override = shape.tool_override.scaled(scale)
             shape.axis3_start_mill_depth *= scale
             shape.axis3_slice_depth *= scale
             shape.axis3_mill_depth *= scale

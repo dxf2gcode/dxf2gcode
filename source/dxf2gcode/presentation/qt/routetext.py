@@ -42,7 +42,7 @@ class RouteText(QGraphicsItem):
         """
         QGraphicsItem.__init__(self)
 
-        self.setFlag(QGraphicsItem.ItemIsSelectable, False)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, False)
 
         self.text = text
         self.sc = 1.0

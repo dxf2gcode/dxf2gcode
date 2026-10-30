@@ -35,6 +35,7 @@ from copy import deepcopy
 from bisect import bisect_left, bisect_right, insort
 
 import dxf2gcode.bootstrap.runtime_state as g
+from dxf2gcode.domain.project.tool_settings import effective_tool
 
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
@@ -360,7 +361,7 @@ class PocketMill(object):
         self.stmove = stmove
         
         # Get tool radius based on tool diameter.
-        self.tool_rad = self.stmove.shape.parentLayer.getToolRadius()
+        self.tool_rad = effective_tool(self.stmove.shape).getToolRadius()
         
         self.bbarray = 0
         
@@ -725,7 +726,7 @@ class PocketMill(object):
                     self.tr("Shape %i: a circular pocket cannot be milled with cutter "
                             "diameter %.3f mm (usable radius %.3f mm) - pocket skipped.")
                     % (self.stmove.shape.nr,
-                       self.stmove.shape.parentLayer.tool_diameter, millRad))
+                       effective_tool(self.stmove.shape).tool_diameter, millRad))
                 return
 
             stepOverlay = (millRad - rotNum * self.tool_rad)/(self.tool_rad * 2 * rotNum)
@@ -828,7 +829,7 @@ class PocketMill(object):
                             "cutter diameter %.3f mm (tool too large for the pocket "
                             "area) - pocket skipped.")
                     % (self.stmove.shape.nr,
-                       self.stmove.shape.parentLayer.tool_diameter))
+                       effective_tool(self.stmove.shape).tool_diameter))
                 return
             
             #Off = 2*stepOverlay*self.tool_rad + n*(1+stepOverlay)*self.tool_rad + tool_rad
@@ -997,7 +998,7 @@ class PocketMill(object):
                             "%.3f mm (the tool is too large for the pocket area) - "
                             "pocket skipped.")
                     % (self.stmove.shape.nr,
-                       self.stmove.shape.parentLayer.tool_diameter))
+                       effective_tool(self.stmove.shape).tool_diameter))
                 return
 
             ### keep the cutter center clear of the contour so the cutting
@@ -1079,4 +1080,4 @@ class PocketMill(object):
                     self.tr("Shape %i: pocket cannot be milled with cutter diameter "
                             "%.3f mm - no reachable pocket area, pocket skipped.")
                     % (self.stmove.shape.nr,
-                       self.stmove.shape.parentLayer.tool_diameter))
+                       effective_tool(self.stmove.shape).tool_diameter))

@@ -8,6 +8,19 @@ Export sollen aus demselben geplanten Werkzeugweg abgeleitet werden. Das
 Refactoring soll schrittweise und mit unverändertem Verhalten für bestehende
 Projekte erfolgen.
 
+### Vorgemerkte spätere Erweiterung
+
+Pocket- oder Shape-Operationen können mehrere getrennte Bearbeitungskonturen
+erzeugen. Für diese sollen später eigene Startpunkte in der GUI sowie
+unabhängige Lead-in-, Lead-out- und Overcut-Einstellungen möglich sein.
+Architekturentscheidungen müssen daher Ursprungs-Shape, Operation,
+resultierende Teilkonturen und Tiefenpässe auseinanderhalten und eine spätere
+Zuordnung von Startpunkten und Einstellungen je Teilkontur ermöglichen.
+
+Diese Funktion ist zurückgestellt und wird im aktuellen Refactoring noch
+nicht umgesetzt. Die offenen Punkte stehen im Abschnitt
+[„Zurückgestellte Erweiterung“ der TODO-Liste](toolpath-refactoring-todo.md#zurückgestellte-erweiterung-mehrere-konturen-einer-operation).
+
 ## Ausgangslage
 
 - `core/stmove.py` erzeugt Anfahr- und Offsetgeometrie, baut Pocketmilling in
@@ -79,6 +92,36 @@ Shape + aufgelöste Einstellungen + Maschinenfähigkeiten
   berechneten Werkzeugmittelpunktweg und verwendet G40.
 - Falls beide Darstellungen gebraucht werden, hält der Plan programmierte
   Bahn und erwarteten Werkzeugmittelpunktweg auseinander.
+
+#### Vertrag für Planaktionen und Diagnosen
+
+Der kanonische Plan ist geordnet und unveränderlich. Er beschreibt die
+Bearbeitung unabhängig von G-Code-Text und Qt. Die semantischen Aktionen
+decken die folgenden Fälle ab. Bewegungsart und fachliche Rolle sind getrennt;
+beispielsweise ist eine Zustellung eine Z-Bewegung mit der Rolle `plunge`.
+
+| Aktion | Inhalt des Plans |
+| --- | --- |
+| `rapid_xy`, `rapid_z` | Zielposition für eine Eilfahrt |
+| `linear_z` mit Rolle `plunge`/`retract`, `feed` | Z-Ziel, Vorschub und Bezug zu Werkstückoberfläche bzw. Sicherheitsabstand |
+| `linear_xy`, `arc` | Start, Ende und bei Bögen Mittelpunkt sowie Drehrichtung/Öffnungswinkel |
+| `compensation_on`/`compensation_off` | G40/G41/G42-Zustand und nötiger Wechselpunkt |
+| XY-/Z-Bewegungen mit Rolle `tab` | Konturabschnitt und Z-Höhe, an denen der Tab aktiv ist |
+| `drill`, `drill_retract` | Bohrposition und geordnete Zustell-/Rückzugstiefen |
+| Bewegungen mit Rolle `drag_swivel`/`ramp` | Schwenk-/Drag-Aktion und zugehörige Tipweg-Geometrie |
+| `pre_cut`, `post_cut` | Semantische Schnittstellen für die bestehenden Profilaktionen vor/nach der Kontur |
+| `literal` | expliziter benutzerdefinierter G-Code; nur für CustomGCode, nicht für Geometrieplanung |
+
+Ein Planlauf liefert einen ToolpathPlanningResult: entweder einen
+vollständigen Plan oder Diagnosen ohne exportierbaren Plan. Diagnosen
+(ToolpathDiagnostic) tragen einen stabilen Code, Schweregrad,
+menschenlesbare Meldung und optional Shape-/Geometriebezug. Warnungen dürfen
+einen gültigen Plan begleiten. Planung zeigt keine Dialoge und serialisiert
+keine Diagnose in G-Code; GUI und CLI präsentieren sie selbst. Der Vertrag ist
+in domain/toolpath/plan.py definiert. Die reinen Strategien geben ihre Fehler
+und Warnungen darüber zurück; der Exportadapter übernimmt erst anschließend
+deren Übersetzung, Anzeige und Logging. Extraktionsmarker halten die
+Übersetzungsquellen für Qt Linguist auffindbar, ohne Qt im Fachkern zu laden.
 
 ### Maschinenart und Kompensation
 

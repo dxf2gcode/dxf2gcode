@@ -1,38 +1,47 @@
-"""Serialize immutable toolpath plans through the selected machine profile."""
+"""Serialize semantic toolpath actions through the selected machine profile."""
+
+from dxf2gcode.domain.geometry.point import Point
 
 
 class ToolpathGCodeExporter:
-    """Render either semantic moves or recorded toolpath operations."""
+    """Format prepared movements; no geometry or pass planning happens here."""
 
     def export(self, plan, postprocessor):
-        if plan.commands is not None:
-            output = ""
-            for command in plan.commands:
-                if command.method == "literal":
-                    output += command.args[0]
-                    continue
-                method = getattr(postprocessor, command.method)
-                output += method(*command.args, **dict(command.kwargs))
-            return output
-
-        from dxf2gcode.domain.geometry.point import Point
-
-        output = postprocessor.rap_pos_xy(Point(*plan.approach_xy))
-        output += postprocessor.write_pre_shape_cut()
-        safe_depth = plan.workpiece_top + abs(plan.safe_margin)
-        output += postprocessor.rap_pos_z(safe_depth)
-
-        for toolpath_pass in plan.passes:
-            output += postprocessor.chg_feed_rate(plan.feed_depth)
-            output += postprocessor.lin_pol_z(toolpath_pass.depth)
-            output += postprocessor.chg_feed_rate(plan.feed_xy)
-            for move in toolpath_pass.moves:
-                start = Point(*move.start_xy)
-                end = Point(*move.end_xy)
-                output += postprocessor.lin_pol_xy(start, end)
-
-        output += postprocessor.chg_feed_rate(plan.feed_depth)
-        output += postprocessor.lin_pol_z(safe_depth)
-        output += postprocessor.rap_pos_z(plan.retract_depth)
-        output += postprocessor.write_post_shape_cut()
-        return output
+        output = []
+        for action in plan.actions:
+            kind, args = action.kind, action.args
+            if kind == "literal":
+                text = args[0]
+            elif kind == "rapid_xy":
+                text = postprocessor.rap_pos_xy(Point(*args[0]))
+            elif kind == "rapid_z":
+                text = postprocessor.rap_pos_z(args[0])
+            elif kind == "linear_z":
+                text = postprocessor.lin_pol_z(args[0])
+            elif kind == "linear_xy":
+                text = postprocessor.lin_pol_xy(Point(*args[0]), Point(*args[1]))
+            elif kind == "arc":
+                direction, start, end, sa, ea, radius, center, ij, sweep = args
+                text = postprocessor.lin_pol_arc(
+                    direction, Point(*start), Point(*end), sa, ea, radius,
+                    Point(*center), Point(*ij), sweep)
+            elif kind == "feed":
+                text = postprocessor.chg_feed_rate(args[0])
+            elif kind == "compensation_on":
+                text = postprocessor.set_cut_cor(args[0])
+            elif kind == "compensation_off":
+                text = postprocessor.deactivate_cut_cor()
+            elif kind == "drill":
+                text = postprocessor.lin_pol_drill(args[0])
+            elif kind == "drill_retract":
+                text = postprocessor.lin_ret_drill(args[0])
+            elif kind == "pre_cut":
+                text = postprocessor.write_pre_shape_cut()
+            elif kind == "post_cut":
+                text = postprocessor.write_post_shape_cut()
+            elif kind == "hole_marker":
+                text = postprocessor.make_print_str("(Drilled hole)%nl")
+            else:
+                raise ValueError("unsupported toolpath action: %s" % kind)
+            output.append(text)
+        return "".join(output)

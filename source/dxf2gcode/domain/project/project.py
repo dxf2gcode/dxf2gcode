@@ -24,10 +24,12 @@
 
 import logging
 import hashlib
+from dataclasses import asdict
 
 from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 from dxf2gcode.domain.project.layercontent import Layers, Shapes
+from dxf2gcode.domain.project.tool_settings import ToolSettings
 from dxf2gcode.domain.toolpath.leadmove import LEAD_DEFAULT, OVERCUT_DEFAULT
 import dxf2gcode.bootstrap.runtime_state as g
 
@@ -131,6 +133,8 @@ class Project(object):
                                    'lead_out_mode_overridden': getattr(shape, 'lead_out_mode_overridden', False),
                                    'start_x': stpoint.x,
                                    'start_y': stpoint.y})
+                    if getattr(shape, "tool_override", None) is not None:
+                        shapes[-1]["tool_override"] = asdict(shape.tool_override)
             layers.append({'name': layer.name,
                            'tool_nr': layer.tool_nr,
                            'diameter': layer.tool_diameter,
@@ -293,6 +297,9 @@ d2g.layers = ''' + str(layers)
                         # Older project files do not contain the additional
                         # offset; fall back to the neutral value.
                         shape.milling_offset = parent_shape.get('milling_offset', 0.0)
+                        tool_override = parent_shape.get("tool_override")
+                        shape.tool_override = (ToolSettings(**tool_override)
+                                               if tool_override else None)
                         shape.f_g1_plane = parent_shape['f_g1_plane']
                         shape.f_g1_depth = parent_shape['f_g1_depth']
                         # Older project files do not contain break_pass;

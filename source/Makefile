@@ -21,6 +21,17 @@ OBJ_UI = dxf2gcode/presentation/qt/generated/dxf2gcode_images$(PYQT_VERSION)_rc.
 .PHONY: prepare
 prepare: $(OBJ_TS) $(OBJ_UI)
 
+# Release archives contain prepared assets for both supported Qt bindings.
+# Qt 6 rcc and Qt Linguist lrelease must be available on PATH.
+.PHONY: prepare-release package
+prepare-release:
+	DXF2GCODE_QT=5 $(PYTHON) ./make_py_uic.py
+	DXF2GCODE_QT=6 $(PYTHON) ./make_py_uic.py
+	DXF2GCODE_QT=5 $(PYTHON) ./make_tr.py --no-pylupdate
+
+package: prepare-release
+	$(PYTHON) -m build
+
 .NOTPARALLEL: $(OBJ_TS)
 $(OBJ_TS): $(SRC_TS)
 	$(PYTHON) ./make_tr.py --no-pylupdate

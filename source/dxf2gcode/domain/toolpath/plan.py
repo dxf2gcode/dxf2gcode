@@ -1,7 +1,7 @@
-"""Toolkit-independent semantic values for a basic milling plan."""
+"""Toolkit-independent semantic values for complete toolpath plans."""
 
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Optional, Tuple
 
 
 @dataclass(frozen=True)
@@ -36,13 +36,38 @@ class ToolpathPlan:
     retract_depth: float
     feed_depth: float
     feed_xy: float
-    commands: tuple = None
+    actions: tuple = ()
 
 
 @dataclass(frozen=True)
-class ToolpathCommand:
-    """A postprocessor-neutral operation captured from a complete toolpath."""
+class ToolpathDiagnostic:
+    """Toolkit-independent planning warning or error."""
 
-    method: str
+    code: str
+    severity: str
+    message: str
+    shape_number: Optional[int] = None
+    geometry_index: Optional[int] = None
+    source_message: str = ""
+    message_args: tuple = ()
+
+
+@dataclass(frozen=True)
+class ToolpathPlanningResult:
+    """A complete plan, or diagnostics explaining why none can be exported."""
+
+    plan: Optional[ToolpathPlan]
+    diagnostics: Tuple[ToolpathDiagnostic, ...] = ()
+
+    @property
+    def has_errors(self):
+        return any(item.severity == "error" for item in self.diagnostics)
+
+
+@dataclass(frozen=True)
+class ToolpathAction:
+    """A semantic movement or machine state transition, with value arguments."""
+
+    kind: str
     args: tuple = ()
-    kwargs: tuple = ()
+    role: str = "cut"

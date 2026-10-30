@@ -1,1 +1,1 @@
-"""Adapters between legacy geometry, semantic plans, and G-code output."""
+"""Boundary snapshots, reusable geometry services and G-code serialization."""

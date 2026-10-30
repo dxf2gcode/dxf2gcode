@@ -81,6 +81,7 @@ class Shape(object):
         self.Drill = False
         self.parentEntity = parentEntity
         self.parentLayer = None
+        self.tool_override = None
         self.geos = Geos(geos)
 
         self.cw = True

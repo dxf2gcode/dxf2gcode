@@ -20,6 +20,7 @@ parts/
 sdist/
 var/
 *.egg-info/
+PKG-INFO
 .installed.cfg
 *.egg
 

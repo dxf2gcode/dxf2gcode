@@ -20,6 +20,8 @@ FAST_MODULES = (
     "dxf2gcode_spline_end_test",
     "dxf2gcode_tsp_optimization_test",
     "dxf2gcode_toolpath_depths_test",
+    "dxf2gcode_toolpath_contract_test",
+    "dxf2gcode_shape_tool_test",
     "dxf2gcode_stmove_gcode_test",
     "dxf2gcode_leadmove_project_test",
     "dxf2gcode_workflow_test",

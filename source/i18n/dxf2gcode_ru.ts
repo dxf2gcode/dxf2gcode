@@ -3395,6 +3395,10 @@ Skipped Geometries</source>
 <context>
     <name>Shape</name>
     <message>
+        <source>Shape %i: Z infeed depth is null!</source>
+        <translation>Контур %i: глубина врезания равна нулю!</translation>
+    </message>
+    <message>
         <location filename="../dxf2gcode/domain/project/shape.py" line="257"/>
         <source>Shoelace method cannot (directly) be applied to this shape</source>
         <translation>Метод шнурка не может быть (напрямую) применён к этому контуру</translation>
@@ -3564,6 +3568,10 @@ Skipped Geometries</source>
 </context>
 <context>
     <name>TreeHandler</name>
+    <message>
+        <source>Different tools</source>
+        <translation>Разные инструменты</translation>
+    </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="545"/>
         <source>[en]</source>

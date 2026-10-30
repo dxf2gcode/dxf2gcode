@@ -51,7 +51,11 @@ def _run_mainwindow_workflow():
 
     from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication
     from dxf2gcode.presentation.qt.qt_compat import QtCore
-    from dxf2gcode.presentation.qt.generated.dxf2gcode_ui5 import Ui_MainWindow
+    from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
+    if PYQT_VERSION == 5:
+        from dxf2gcode.presentation.qt.generated.dxf2gcode_ui5 import Ui_MainWindow
+    else:
+        from dxf2gcode.presentation.qt.generated.dxf2gcode_ui6 import Ui_MainWindow
     from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene, ShapeGUI
 
     from dxf2gcode.presentation.qt import application as app_module
@@ -71,12 +75,25 @@ def _run_mainwindow_workflow():
         QtCore.QSettings.Scope.UserScope,
         "dxf2gcode-test", "mainwindow-workflow")
 
+    def assert_empty_machining_dropdowns():
+        for name in ("toolDiameterComboBox", "leadInComboBox",
+                     "leadOutComboBox", "overcutComboBox"):
+            combo = getattr(window.ui, name)
+            assert combo.count() > 0, name + " has lost its choices"
+            assert combo.currentIndex() == -1, name + " has an unexpected selection"
+            assert combo.currentText() == "", name + " is not empty"
+
+    assert_empty_machining_dropdowns()
+    window.TreeHandler.updateConfiguration()
+    assert_empty_machining_dropdowns()
+
     fixture = os.path.join(_REPO_DIR, "dxf", "test.dxf")
     window.filename = fixture
     assert window.load() is True
     assert len(window.shapes) > 0
     assert window.canvas.scene() is window.canvas_scene
     assert len(window.canvas_scene.items()) > len(window.shapes)
+    assert_empty_machining_dropdowns()
 
     shape = window.shapes[0]
     assert shape.stmove is not None
@@ -88,6 +105,9 @@ def _run_mainwindow_workflow():
         QtCore.QItemSelectionModel.SelectionFlag.Select |
         QtCore.QItemSelectionModel.SelectionFlag.Rows)
     assert shape.isSelected()
+    for name in ("toolDiameterComboBox", "leadInComboBox",
+                 "leadOutComboBox", "overcutComboBox"):
+        assert getattr(window.ui, name).currentIndex() >= 0, name
 
     previous_preview = shape.stmove
     new_offset = 0.25
@@ -112,6 +132,14 @@ def _run_mainwindow_workflow():
     assert "G21" in gcode
     assert "G1 X" in gcode
     assert "M2" in gcode
+
+    machining_values = (shape.lead_in_mode, shape.lead_out_mode,
+                        shape.overcut_enabled, shape.tool_override)
+    selection.clearSelection()
+    window.TreeHandler.updateToolParameters()
+    assert_empty_machining_dropdowns()
+    assert (shape.lead_in_mode, shape.lead_out_mode,
+            shape.overcut_enabled, shape.tool_override) == machining_values
 
     window.close()
     app.processEvents()

@@ -65,7 +65,8 @@ from dxf2gcode.presentation.qt.treehandling import TreeHandler
 from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor
 from dxf2gcode.adapters.postprocessor.postprocessorconfig import MyPostProConfig
 
-from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMenu, QActionGroup, QMessageBox
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMenu, QMessageBox
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QActionGroup
 from dxf2gcode.presentation.qt.qt_compat.QtGui import QSurfaceFormat
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
@@ -1567,13 +1568,8 @@ if __name__ == "__main__":
     if language and language not in locales:
         locales.append(language)
 
-    translation_dirs = [
-        os.path.join(os.getcwd(), "i18n"),
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..",
-                                     "..", "i18n")),
-        os.path.join(os.path.dirname(sys.executable), "i18n"),
-        "/usr/share/dxf2gcode/i18n",
-    ]
+    from dxf2gcode.presentation.qt.translations import translation_search_paths
+    translation_dirs = translation_search_paths()
     loaded_translation = False
     for translation_locale in locales:
         translation_name = "dxf2gcode_" + translation_locale

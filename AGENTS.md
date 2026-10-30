@@ -1,5 +1,17 @@
 # Repository instructions
 
+## Clarification
+
+- If a requirement is unclear, ask the user before implementing the
+  ambiguous part instead of guessing the intended behavior.
+
+## GUI translations
+
+- When adding or changing GUI text, update all maintained translation catalogs
+  in the same change: German, French and Russian under source/i18n.
+- Regenerate the corresponding QM files and verify the changed translations.
+  Generated files remain subject to the repository's ignore rules.
+
 ## Commit messages
 
 - Write commit messages in English, following the repository's Conventional

@@ -29,4 +29,4 @@ if PYQT_VERSION == 6:
 else:
     from PyQt5.QtGui import *
     from PyQt5.QtGui import QRegExpValidator as QRegularExpressionValidator
-    from PyQt5.QtWidgets import QAction
+    from PyQt5.QtWidgets import QAction, QActionGroup

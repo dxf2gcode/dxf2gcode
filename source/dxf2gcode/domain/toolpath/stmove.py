@@ -36,6 +36,7 @@ from inspect import getmembers
 from pprint import pprint
 
 import dxf2gcode.bootstrap.runtime_state as g
+from dxf2gcode.domain.project.tool_settings import effective_tool
 
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
@@ -157,7 +158,7 @@ class StMove(object):
                       SPACE_TOOL_CENTER (dxf2gcode compensates)
         """
         self.exit_geos = Geos([])
-        layer = self.shape.parentLayer
+        layer = effective_tool(self.shape)
         lead_out_mode = get_lead_out_mode(self.shape)
         overcut_enabled = get_overcut_enabled(
             self.shape, g.config.vars.Lead_In_Out['overcut_enabled'])
@@ -214,7 +215,7 @@ class StMove(object):
                       False keeps the historical tool center radius (G40)
         @return: True if the lead in could be built (or is not needed)
         """
-        layer = self.shape.parentLayer
+        layer = effective_tool(self.shape)
         lead_in_mode = get_lead_in_mode(self.shape)
         if lead_in_mode not in (LEAD_STRAIGHT, LEAD_RADIUS, LEAD_STARTMOVE):
             return True
@@ -325,7 +326,7 @@ class StMove(object):
             return
 
         # Get tool radius based on tool diameter.
-        tool_rad = self.shape.parentLayer.getToolRadius()
+        tool_rad = effective_tool(self.shape).getToolRadius()
 
         # Calculate the starting point with and without compensation.
         start = self.start
@@ -359,7 +360,7 @@ class StMove(object):
 
             logging.debug("We have custom offset by tool")
 
-            toolwidth = self.shape.parentLayer.getToolRadius()
+            toolwidth = effective_tool(self.shape).getToolRadius()
 
             # Additional offset (finishing allowance) of this individual shape:
             # it is added to the cutter radius so that a roughing pass can leave
@@ -381,7 +382,7 @@ class StMove(object):
                             "the cutter compensation (tool diameter %.3f mm) - "
                             "the shape will NOT be milled!")
                     % (self.shape.nr, extra_offset,
-                       self.shape.parentLayer.tool_diameter))
+                       effective_tool(self.shape).tool_diameter))
                 self.pocket_geos_start = len(self.geos)
                 return
 
@@ -445,7 +446,7 @@ class StMove(object):
                     # the user gets a meaningful hint. With an empty stmove,
                     # Write_GCode skips this shape.
                     status = getattr(offshape, "offset_status", None)
-                    tool_dia = self.shape.parentLayer.tool_diameter
+                    tool_dia = effective_tool(self.shape).tool_diameter
                     if status == "vanished":
                         # Reliable border case: nothing left to mill.
                         if self.shape.Pocket:
@@ -603,7 +604,7 @@ class StMove(object):
                     self.pocket_geos_start = len(self.geos)
                     return
                 nominal = Geos(list(self.lead_in_geos))
-                tool_radius = self.shape.parentLayer.getToolRadius()
+                tool_radius = effective_tool(self.shape).getToolRadius()
                 # Calculate compensated start position of the first nominal segment
                 first = nominal[0]
                 line_length = first.Ps.distance(first.Pe)
@@ -631,7 +632,7 @@ class StMove(object):
                 # activated at the end of the lead in (see shape.Write_GCode).
                 # The nominal contour itself is still compensated by the
                 # machine.
-                tool_radius = self.shape.parentLayer.getToolRadius()
+                tool_radius = effective_tool(self.shape).getToolRadius()
                 normal = Point(x=-sin(angle) * side, y=cos(angle) * side)
                 offset_start = start + normal * tool_radius
                 if not self._build_lead_in(offset_start, angle, side,
@@ -686,7 +687,7 @@ class StMove(object):
         @param offset: knife tip distance from tool centerline. The radius of the
         tool is used for this.
         """
-        offset = self.shape.parentLayer.getToolRadius()
+        offset = effective_tool(self.shape).getToolRadius()
         drag_angle = self.shape.drag_angle
 
         # The direction the knife points to when the cut starts. The default
@@ -707,7 +708,7 @@ class StMove(object):
         if (get_overcut_enabled(self.shape,
                                   g.config.vars.Lead_In_Out['overcut_enabled']) and
                 lead_move_enabled()):
-            overcut_length = getattr(self.shape.parentLayer, 'overcut_length',
+            overcut_length = getattr(effective_tool(self.shape), 'overcut_length',
                                      0.0)
             if overcut_length > 0.0 and self.shape.closed:
                 # The overcut is only possible for closed contours: an open

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the Windows installer with cx_Freeze.
 
-Run ``python setup.py bdist_msi`` from any working directory. Build inputs and
+Run ``python build_windows.py bdist_msi`` from any working directory. Build inputs and
 build output are anchored to this file's directory, so this script does not
 remove or reuse the repository-root PyInstaller build/dist folders.
 """
@@ -15,9 +15,16 @@ from cx_Freeze import Executable, setup
 
 
 PROJECT_DIR = Path(__file__).resolve().parent
-os.chdir(PROJECT_DIR)
+# Keep cx_Freeze's distribution metadata separate from the Python wheel
+# project. Otherwise setuptools replaces the dotted MSI version with the
+# date-based Python package version from pyproject.toml.
+WINDOWS_BUILD_DIR = PROJECT_DIR / "build" / "windows-config"
+WINDOWS_BUILD_DIR.mkdir(parents=True, exist_ok=True)
+os.chdir(WINDOWS_BUILD_DIR)
 
-VERSION = "20261028"
+from dxf2gcode import __version__
+
+VERSION = __version__
 VERSION_DOTTED = "%s.%s.%s" % (
     VERSION[:4], VERSION[4:6], VERSION[6:8])
 
@@ -28,7 +35,7 @@ def include_opengl():
     if spec is None or not spec.submodule_search_locations:
         raise RuntimeError(
             "PyOpenGL is not installed in the Python environment used to "
-            "run setup.py.")
+            "run build_windows.py.")
 
     package_dir = Path(next(iter(spec.submodule_search_locations))).resolve()
     site_packages = package_dir.parent
@@ -59,6 +66,8 @@ setup(
     version=VERSION_DOTTED,
     description="2D drawings to CNC machine compatible G-Code converter.",
     options={
+        "build": {"build_base": str(PROJECT_DIR / "build")},
+        "bdist_msi": {"dist_dir": str(PROJECT_DIR / "dist")},
         "build_exe": {
             # The launcher enters the GUI through runpy, so these imports are
             # not visible to cx_Freeze's static module scanner.

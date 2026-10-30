@@ -97,7 +97,8 @@ class HoleGeo(object):
 
     def make_path(self, caller, drawHorLine):
 
-        radius = caller.parentLayer.tool_diameter / 2
+        from dxf2gcode.domain.project.tool_settings import effective_tool
+        radius = effective_tool(caller).tool_diameter / 2
         self.calc_bounding_box(radius=radius)
 
         segments = 30
@@ -118,4 +119,5 @@ class HoleGeo(object):
         @param tol: The tolerance which is used for Hit testing.
         """
 
-        return abs(self.Ps.distance(xy) - caller.parentLayer.getToolRadius()) < tol
+        from dxf2gcode.domain.project.tool_settings import effective_tool
+        return abs(self.Ps.distance(xy) - effective_tool(caller).getToolRadius()) < tol

@@ -3189,6 +3189,10 @@ Die Länge muss größer der Toleranz sein.
 <context>
     <name>Shape</name>
     <message>
+        <source>Shape %i: Z infeed depth is null!</source>
+        <translation>Kontur %i: Die Zustelltiefe ist null!</translation>
+    </message>
+    <message>
         <location filename="../dxf2gcode/domain/project/shape.py" line="257"/>
         <source>Shoelace method cannot (directly) be applied to this shape</source>
         <translation>Die Schnürsenkelmethode kann nicht (direkt) auf dieses Shape angewendet werden</translation>
@@ -3363,6 +3367,10 @@ Die Länge muss größer der Toleranz sein.
 </context>
 <context>
     <name>TreeHandler</name>
+    <message>
+        <source>Different tools</source>
+        <translation>Verschiedene Werkzeuge</translation>
+    </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="545"/>
         <source>[en]</source>

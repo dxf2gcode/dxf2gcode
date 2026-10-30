@@ -2,6 +2,37 @@
 
 from dxf2gcode.domain.toolpath.leadmove import OVERCUT_DEFAULT
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
+from dxf2gcode.domain.project.tool_settings import ToolSettings, effective_tool
+
+
+class AssignTool:
+    """Assign a tool to selected shapes or explicitly selected whole layers."""
+
+    def execute(self, shapes, layers, number, profile):
+        tool = ToolSettings.from_profile(number, profile)
+        changed = []
+        whole_layers = tuple(layers)
+        for layer in whole_layers:
+            for name in ToolSettings.__dataclass_fields__:
+                if (name == "overcut_length" and
+                        getattr(layer, "overcut_length_overridden", False)):
+                    continue
+                setattr(layer, name, getattr(tool, name))
+            for shape in layer.shapes:
+                if isinstance(shape, CustomGCode):
+                    continue
+                shape.tool_override = None
+                shape.milling_offset = profile["milling_offset"]
+                changed.append(shape)
+        for shape in shapes:
+            if shape in changed or isinstance(shape, CustomGCode):
+                continue
+            if effective_tool(shape).tool_nr == tool.tool_nr:
+                continue
+            shape.tool_override = tool
+            shape.milling_offset = profile["milling_offset"]
+            changed.append(shape)
+        return tuple(changed)
 
 
 class SetShapeOvercut:

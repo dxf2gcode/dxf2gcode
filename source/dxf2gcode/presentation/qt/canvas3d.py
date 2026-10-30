@@ -495,14 +495,14 @@ class GLWidget(CanvasBase):
 
     def paint_shape(self, shape):
         shape.stmove = StMove(shape)
-        plan = self._simple_milling_plan(shape)
+        plan = self._shape_toolpath_plan(shape)
         shape.toolpath_plan = plan
         shape.drawObject = self.makeShape(shape, plan)  # 1 object
         shape.drawStMove = self.makeStMove(shape.stmove)  # 1 object
         shape.drawArrowsDirection = self.makeDirArrows(shape)  # 2 objects
 
     @staticmethod
-    def _simple_milling_plan(shape):
+    def _shape_toolpath_plan(shape):
         """Use the export planner for the preview when the GUI has a postprocessor."""
         window = getattr(g, "window", None)
         postprocessor = getattr(window, "MyPostProcessor", None)

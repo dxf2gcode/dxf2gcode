@@ -44,11 +44,12 @@ import logging
 
 import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.application.shapes import (
-    ApplyLayerOvercutDefaults, SetShapeBreakPass, SetShapeLeadMode,
+    ApplyLayerOvercutDefaults, AssignTool, SetShapeBreakPass, SetShapeLeadMode,
     SetShapeOvercut, UpdateLayerParameters, UpdateShapeParameters)
 
 from dxf2gcode.presentation.qt import shapeparameterstate as sps
 from dxf2gcode.domain.project.shape import Shape
+from dxf2gcode.domain.project.tool_settings import ToolSettings, effective_tool
 from dxf2gcode.domain.project.entitycontent import EntityContent
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 from dxf2gcode.domain.toolpath.leadmove import (LEAD_DEFAULT, LEAD_OFF, LEAD_RADIUS,
@@ -181,9 +182,8 @@ class TreeHandler(QWidget):
         for tool in g.config.vars.Tool_Parameters:
             self.ui.toolDiameterComboBox.addItem(tool)
 
-        # Select the first tool in the list and update the tools diameter, ... accordingly
-        self.ui.toolDiameterComboBox.setCurrentIndex(0)
-        self.toolUpdate()
+        # A tool is displayed only once a shape or layer is selected.
+        self.ui.toolDiameterComboBox.setCurrentIndex(-1)
 
         # The layer/shape which is currently displayed in the parameters box
         self.display_tool_layer = None
@@ -347,6 +347,14 @@ class TreeHandler(QWidget):
                     update_drawing = True
 
                 if real_layer is not None:
+                    for shape in real_layer.shapes:
+                        override = getattr(shape, "tool_override", None)
+                        if override is not None:
+                            number = override.tool_nr
+                            if str(number) not in g.config.vars.Tool_Parameters:
+                                number = default_tool
+                            shape.tool_override = ToolSettings.from_profile(
+                                number, g.config.vars.Tool_Parameters[str(number)])
                     # The lead in / lead out / overcut values of the layer are
                     # the global defaults, as long as they were not set by a
                     # layer name (those values must not be overwritten).
@@ -382,9 +390,8 @@ class TreeHandler(QWidget):
         if tool_index >= 0:
             self.ui.toolDiameterComboBox.setCurrentIndex(tool_index)
         else:
-            tool_index = self.ui.toolDiameterComboBox.findText(default_tool)
-            self.ui.toolDiameterComboBox.setCurrentIndex(tool_index)
-        self.toolUpdate()
+            self.ui.toolDiameterComboBox.setCurrentIndex(-1)
+        self.updateToolParameters()
 
 
     def displayContextMenu(self, position):
@@ -1004,6 +1011,7 @@ class TreeHandler(QWidget):
         combo.clear()
         for mode, label in self._lead_mode_items(lead_in=lead_in):
             combo.addItem(label, mode)
+        combo.setCurrentIndex(-1)
 
     def _lead_mode_items(self, lead_in=False):
         """
@@ -1114,6 +1122,7 @@ class TreeHandler(QWidget):
         combo.clear()
         for state, label in self._overcut_items():
             combo.addItem(label, state)
+        combo.setCurrentIndex(-1)
 
     def _overcut_items(self):
         """
@@ -1370,78 +1379,33 @@ class TreeHandler(QWidget):
         self._lead_mode_update('lead_out_mode', index)
 
     def toolUpdate(self):
-        """
-        Slot that updates the tool's diameter, speed, lead radius and lead
-        length when a new tool is selected
-        @param text: the name of the newly selected tool
-        """
+        """Apply a tool only to the selected shapes or explicit layer rows."""
         text = self.ui.toolDiameterComboBox.currentText()
-        if text:
-            new_diameter = g.config.vars.Tool_Parameters[str(text)]['diameter']
-            new_speed = g.config.vars.Tool_Parameters[str(text)]['speed']
-            new_lead_radius = g.config.vars.Tool_Parameters[str(text)]['lead_radius']
-            new_lead_length = g.config.vars.Tool_Parameters[str(text)]['lead_length']
-            new_overcut_length = g.config.vars.Tool_Parameters[str(text)]['overcut_length']
-            new_milling_offset = g.config.vars.Tool_Parameters[str(text)]['milling_offset']
-
-            self.ui.toolDiameterComboBox.setPalette(self.palette)
-            self.ui.toolDiameterLabel.setText(str(round(new_diameter, 3)))
-            self.ui.toolSpeedLabel.setText(str(round(new_speed, 1)))
-            self.ui.leadRadiusLabel.setText(str(round(new_lead_radius, 3)))
-            self.ui.leadLengthLabel.setText(str(round(new_lead_length, 3)))
-            self.ui.overcutLengthLabel.setText(
-                str(round(new_overcut_length, 3)))
-            # The tool values are changed only via the tool selection, so they
-            # are always shown de-emphasized (gray) here.
+        if not text:
+            return
+        number, valid = toInt(text)
+        if not valid:
+            return
+        _, shapes = self._selectedShapesAndLayers()
+        explicit_layers = []
+        for index in self.ui.layersShapesTreeView.selectedIndexes():
+            item = index.model().itemFromIndex(index.sibling(index.row(), 0))
+            layer = item.data(LAYER_OBJECT) if item is not None else None
+            if layer is not None and layer not in explicit_layers:
+                explicit_layers.append(layer)
+        profile = g.config.vars.Tool_Parameters[str(number)]
+        if not shapes and not explicit_layers:
             self._refresh_tool_values()
-
-            # Get the new value and convert it to int
-            val = toInt(text)
-            if val[1]:
-                selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
-
-                for model_index in selected_indexes_list:
-                    if isValid(model_index):
-                        model_index = model_index.sibling(model_index.row(), 0)  # get the first column of the selected row, since it's the only one that contains data
-                        element = model_index.model().itemFromIndex(model_index)
-                        real_item = None
-                        if isValid(element.data(SHAPE_OBJECT)):
-                            real_item = toPyObject(element.data(SHAPE_OBJECT)).shapeobj.parentLayer  # Shape has no such property => update the parent layer
-                        elif isValid(element.data(LAYER_OBJECT)):
-                            real_item = toPyObject(element.data(LAYER_OBJECT))
-                        if real_item is not None:
-                            if real_item.tool_nr != val[0]:
-                                layer_values = {
-                                    "tool_nr": val[0],
-                                    "tool_diameter": new_diameter,
-                                    "speed": new_speed,
-                                    "lead_radius": new_lead_radius,
-                                    "lead_length": new_lead_length,
-                                    "milling_offset": new_milling_offset,
-                                }
-                                if not getattr(real_item, 'overcut_length_overridden', False):
-                                    layer_values["overcut_length"] = new_overcut_length
-                                UpdateLayerParameters().execute(
-                                    [real_item], **layer_values)
-                                self.tool_nr = real_item.tool_nr
-                                self.tool_diameter = new_diameter
-                                self.speed = new_speed
-                                self.lead_radius = new_lead_radius
-                                self.lead_length = new_lead_length
-                                self.milling_offset = new_milling_offset
-                                for shape in real_item.shapes:
-                                    if isinstance(shape, Shape):
-                                        # The tool provides the default
-                                        # additional offset (finishing
-                                        # allowance) for its shapes; it can be
-                                        # changed individually per shape.
-                                        UpdateShapeParameters().execute(
-                                            [shape], "milling_offset",
-                                            new_milling_offset)
-                                        # Only repaint _real_ shapes (and not the custom GCode for example)
-                                        g.window.canvas_scene.repaint_shape(shape)
-                if g.window and g.window.canvas_scene:
-                    g.window.canvas_scene.update()
+            return
+        changed = AssignTool().execute(shapes, explicit_layers, number, profile)
+        window = getattr(g, "window", None)
+        scene = getattr(window, "canvas_scene", None)
+        if scene is not None:
+            for shape in changed:
+                shape.toolpath_plan = None
+                scene.repaint_shape(shape)
+            scene.update()
+        self.updateToolParameters()
 
     def toolParameterzRetractionArealUpdate(self):
         """
@@ -1833,6 +1797,11 @@ class TreeHandler(QWidget):
             self.ui.millingOffsetLineEdit.setPalette(self.palette)
 
         if number_of_selected_items == 0:
+            for combo in (self.ui.toolDiameterComboBox,
+                          self.ui.leadInComboBox, self.ui.leadOutComboBox,
+                          self.ui.overcutComboBox):
+                combo.setPlaceholderText("")
+                combo.setCurrentIndex(-1)
             # Nothing is selected: no values are shown at all. This makes the
             # behaviour of the tool and the shape fields consistent (also
             # directly after startup, before anything is loaded).
@@ -2030,7 +1999,7 @@ class TreeHandler(QWidget):
         """
         Tool default (from the Tools table) that applies to a shape/layer.
         """
-        layer = getattr(item, "parentLayer", None) or item
+        layer = effective_tool(item) or item
         tool_nr = str(getattr(layer, "tool_nr", 1))
         try:
             return float(g.config.vars.Tool_Parameters[tool_nr][key])
@@ -2201,8 +2170,6 @@ class TreeHandler(QWidget):
         selection.
         """
         tool_nr = self.ui.toolDiameterComboBox.currentText()
-        if not tool_nr and self.display_tool_layer is not None:
-            tool_nr = getattr(self.display_tool_layer, "tool_nr", None)
         if not self.ui.layersShapesTreeView.selectedIndexes():
             # Nothing is selected: the tool values are only meaningful for a
             # selected shape/layer, so no values are shown (this also keeps the
@@ -2224,7 +2191,10 @@ class TreeHandler(QWidget):
         palette = QPalette(self.palette)
         self._gray_palette(palette)
         for key, widget, digits in fields:
-            if params is not None:
+            combo = self.ui.toolDiameterComboBox
+            if combo.currentIndex() < 0 and combo.placeholderText():
+                widget.setText("\u2014")
+            elif params is not None:
                 try:
                     widget.setText(str(round(float(params[key]), digits)))
                 except Exception:
@@ -2269,20 +2239,22 @@ class TreeHandler(QWidget):
         self.display_tool_shape = (self.display_tool_shapes[0]
                                    if self.display_tool_shapes else None)
 
-        layer_item = self.display_tool_layer
+        tool_items = ([effective_tool(shape) for shape in shapes]
+                      if shapes else self.display_tool_layers)
+        layer_item = tool_items[0] if tool_items else None
         if layer_item is not None:
-            self.ui.toolDiameterComboBox.setCurrentIndex(
-                self.ui.toolDiameterComboBox.findText(str(layer_item.tool_nr)))
-            self.tool_nr = layer_item.tool_nr
-            tool_numbers = set(getattr(layer, "tool_nr", None)
-                               for layer in self.display_tool_layers)
+            tool_numbers = set(getattr(tool, "tool_nr", None)
+                               for tool in tool_items)
+            combo = self.ui.toolDiameterComboBox
             if len(tool_numbers) > 1:
-                # several different tools selected
-                palette = QPalette()
-                palette.setColor(QPalette.Button, QtCore.Qt.GlobalColor.gray)
-                self.ui.toolDiameterComboBox.setPalette(palette)
+                combo.setPlaceholderText(self.tr("Different tools"))
+                combo.setCurrentIndex(-1)
+                self.tool_nr = None
             else:
-                self.ui.toolDiameterComboBox.setPalette(self.palette)
+                combo.setPlaceholderText("")
+                combo.setCurrentIndex(combo.findText(str(layer_item.tool_nr)))
+                self.tool_nr = layer_item.tool_nr
+            combo.setPalette(self.palette)
 
         for attribute, widget, on_layer, default_getter, tooltip in \
                 self._mill_parameter_fields():

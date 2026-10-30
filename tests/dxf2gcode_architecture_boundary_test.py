@@ -38,6 +38,8 @@ class TestDomainImportBoundary(unittest.TestCase):
             "from dxf2gcode.domain.toolpath.depths import "
             "calculate_depth_passes; "
             "from dxf2gcode.domain.toolpath.plan import ToolpathPlan; "
+            "from dxf2gcode.domain.toolpath.planner import ToolpathPlanner; "
+            "from dxf2gcode.domain.toolpath.inputs import ToolpathRequest; "
             "assert 'dxf2gcode.presentation.qt.qt_compat' not in sys.modules; "
             "assert 'dxf2gcode.bootstrap.runtime_state' not in sys.modules"
         ).format(_SOURCE_DIR)

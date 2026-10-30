@@ -7,6 +7,8 @@ SOURCES += \
     make_py_uic.py \
     make_tr.py \
     make_exe.py \
+    dxf2gcode/__main__.py \
+    dxf2gcode/_version.py \
     dxf2gcode/__init__.py \
     dxf2gcode/adapters/__init__.py \
     dxf2gcode/adapters/config/configobj_store.py \
@@ -35,10 +37,8 @@ SOURCES += \
     dxf2gcode/adapters/project/legacy_d2g.py \
     dxf2gcode/adapters/project/legacy_repository.py \
     dxf2gcode/adapters/project/__init__.py \
+    dxf2gcode/adapters/toolpath/planning.py \
     dxf2gcode/adapters/toolpath/gcode_exporter.py \
-    dxf2gcode/adapters/toolpath/geometry_gcode.py \
-    dxf2gcode/adapters/toolpath/shape_plan_builder.py \
-    dxf2gcode/adapters/toolpath/simple_milling.py \
     dxf2gcode/adapters/toolpath/__init__.py \
     dxf2gcode/application/cli_export.py \
     dxf2gcode/application/context.py \
@@ -80,6 +80,15 @@ SOURCES += \
     dxf2gcode/domain/toolpath/customgcode.py \
     dxf2gcode/domain/toolpath/depths.py \
     dxf2gcode/domain/toolpath/leadmove.py \
+    dxf2gcode/domain/project/tool_settings.py \
+    dxf2gcode/domain/toolpath/diagnostics.py \
+    dxf2gcode/domain/toolpath/inputs.py \
+    dxf2gcode/domain/toolpath/movements.py \
+    dxf2gcode/domain/toolpath/planner.py \
+    dxf2gcode/domain/toolpath/strategies/__init__.py \
+    dxf2gcode/domain/toolpath/strategies/contour.py \
+    dxf2gcode/domain/toolpath/strategies/drag_knife.py \
+    dxf2gcode/domain/toolpath/strategies/simple_milling.py \
     dxf2gcode/domain/toolpath/plan.py \
     dxf2gcode/domain/toolpath/pocketmill.py \
     dxf2gcode/domain/toolpath/pocketmove.py \
@@ -100,6 +109,7 @@ SOURCES += \
     dxf2gcode/presentation/qt/routetext.py \
     dxf2gcode/presentation/qt/scalebar.py \
     dxf2gcode/presentation/qt/shapeparameterstate.py \
+    dxf2gcode/presentation/qt/translations.py \
     dxf2gcode/presentation/qt/treehandling.py \
     dxf2gcode/presentation/qt/treeview.py \
     dxf2gcode/presentation/qt/wpzero.py \
@@ -108,16 +118,15 @@ SOURCES += \
     dxf2gcode/presentation/qt/qt_compat/QtGui.py \
     dxf2gcode/presentation/qt/qt_compat/QtOpenGLWidgets.py \
     dxf2gcode/presentation/qt/qt_compat/QtWidgets.py \
-    dxf2gcode/presentation/qt/qt_compat/__init__.py \
-    dxf2gcode/presentation/qt/resources/dxf2gcode_images_rc.py
+    dxf2gcode/presentation/qt/qt_compat/__init__.py
 
 DISTFILES += \
     README.txt \
     dxf2gcode.desktop \
     dxf2gcode.appdata.xml \
     MANIFEST.in \
-    setup.py \
-    st-setup.py
+    build_windows.py \
+    build_support.py
 
 RESOURCES += dxf2gcode/presentation/qt/resources/dxf2gcode_images.qrc
 FORMS += dxf2gcode/presentation/qt/resources/dxf2gcode.ui
@@ -126,3 +135,5 @@ TRANSLATIONS += \
     i18n/dxf2gcode_de.ts \
     i18n/dxf2gcode_fr.ts \
     i18n/dxf2gcode_ru.ts
+
+DISTFILES += pyproject.toml

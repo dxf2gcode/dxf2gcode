@@ -49,6 +49,7 @@ from dxf2gcode.presentation.qt.canvas import CanvasBase, MyDropDownMenu
 from dxf2gcode.presentation.qt.scalebar import (ScaleBar, drawing_unit, scale_bar_enabled)
 
 import dxf2gcode.bootstrap.runtime_state as g
+from dxf2gcode.domain.project.tool_settings import effective_tool
 
 import dxf2gcode.domain.constants as c
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QGraphicsItem, QGraphicsView, QRubberBand, QGraphicsScene, QGraphicsLineItem, QMessageBox
@@ -482,7 +483,7 @@ class MyGraphicsScene(QGraphicsScene):
         """
         model = shape.model
         model.stmove = StMove(model)
-        plan = self._simple_milling_plan(model)
+        plan = self._shape_toolpath_plan(model)
         shape.path = QPainterPath()
         if plan is None:
             start, start_ang = model.get_start_end_points(True, True)
@@ -515,8 +516,8 @@ class MyGraphicsScene(QGraphicsScene):
             shape.enarrow.hide()
 
     @staticmethod
-    def _simple_milling_plan(shape):
-        """Use the export planner for the preview when the GUI has a postprocessor."""
+    def _shape_toolpath_plan(shape):
+        """Use the shared toolpath planner for the preview."""
         window = getattr(g, "window", None)
         postprocessor = getattr(window, "MyPostProcessor", None)
         if postprocessor is None:
@@ -1282,7 +1283,7 @@ class StMoveGUI(QGraphicsItem):
 
         @return: the tool radius or 0.0 when it can not be determined
         """
-        layer = getattr(self.model.shape, "parentLayer", None)
+        layer = effective_tool(self.model.shape)
         if layer is None:
             return 0.0
         try:

@@ -22,25 +22,44 @@ Run from this directory with:
 Dependencies
 ------------
 
-Use Python 3 with PyQt5 or PyQt6, PyOpenGL and configobj. For PDF or PostScript
+Use Python 3.9 or newer with PyQt5 or PyQt6, PyOpenGL and configobj. For PDF or PostScript
 input, install pdftops and pstoedit as well.
 
-Build and install
------------------
+Install the Python package
+--------------------------
 
-Generate the UI/resource and translation files before building:
+Install a release wheel or source archive in a virtual environment:
 
-  python make_py_uic.py
-  python make_tr.py
+  python3 -m venv .venv
+  . .venv/bin/activate
+  python -m pip install ./dxf2gcode-20261028-py3-none-any.whl
+  dxf2gcode
 
-For a Python package build, run:
+pipx can also install the wheel in an isolated application environment.
+Release archives contain UI/resource modules and German, French and Russian
+translations. Users do not need Qt compilers to install a release.
 
-  python st-setup.py build
-  python st-setup.py install
+Build a release from a repository checkout
+----------------------------------------
 
-On Windows, setup.py builds the cx_Freeze installer:
+Install the build frontend and both Qt bindings in a developer environment:
 
-  python setup.py bdist_msi
+  python -m pip install build PyQt5 PyQt6 configobj PyOpenGL
+
+Install Qt 6 rcc and Qt Linguist lrelease using the operating system's
+development tools and put them on PATH. From this directory, run:
+
+  make package PYTHON=python
+
+This prepares both Qt variants and translations, then runs python -m build
+to produce a wheel and source archive under dist/. See README.md for the
+equivalent commands without Make.
+
+On Windows, the separate cx_Freeze MSI builder is:
+
+  python build_windows.py bdist_msi
+
+Do not use the old st-setup.py install or setup.py install commands.
 
 Tests
 -----

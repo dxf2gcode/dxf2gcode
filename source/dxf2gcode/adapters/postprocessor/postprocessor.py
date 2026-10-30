@@ -108,6 +108,23 @@ class MyPostProcessor(object):
             self.export_errors.append(message)
         logger.error(message)
 
+    def add_planning_diagnostic(self, diagnostic):
+        """Present returned planning diagnostics through the export channel."""
+        if diagnostic not in self.planning_diagnostics:
+            self.planning_diagnostics.append(diagnostic)
+        message = diagnostic.message
+        if diagnostic.source_message:
+            source = QtCore.QCoreApplication.translate(
+                "Shape", diagnostic.source_message)
+            message = (source % diagnostic.message_args
+                       if diagnostic.message_args else source)
+        if message not in self.export_errors:
+            self.export_errors.append(message)
+        if diagnostic.severity == "error":
+            logger.error(message)
+        else:
+            logger.warning(message)
+
 
     def updatePostprocessorConfiguration(self, result):
         """
@@ -316,13 +333,13 @@ class MyPostProcessor(object):
             if len(LayerContent.exp_order_complete):
                 exstr += self.commentprint("*** LAYER: %s ***" % LayerContent.name)
 
-                # If tool has changed for this LayerContent, add it
-                if LayerContent.tool_nr != previous_tool:
-                    exstr += self.chg_tool(LayerContent.tool_nr, LayerContent.speed)
-                    previous_tool = LayerContent.tool_nr
-
                 for shape_nr in LayerContent.exp_order_complete:
                     shape = LayerContent.shapes[shape_nr]
+                    from dxf2gcode.domain.project.tool_settings import effective_tool
+                    tool = effective_tool(shape, LayerContent)
+                    if tool.tool_nr != previous_tool:
+                        exstr += self.chg_tool(tool.tool_nr, tool.speed)
+                        previous_tool = tool.tool_nr
                     logger.debug(self.tr("Beginning export of Shape Nr: %s") % shape.nr)
 
                     exstr += self.commentprint("* SHAPE Nr: %i *" % shape.nr)
@@ -373,13 +390,18 @@ class MyPostProcessor(object):
         if exporter is None:
             from dxf2gcode.adapters.toolpath.gcode_exporter import (
                 ToolpathGCodeExporter)
-            from dxf2gcode.adapters.toolpath.simple_milling import ToolpathPlanner
+            from dxf2gcode.adapters.toolpath.planning import (
+                ShapePlanningInputs, exit_geometry)
+            from dxf2gcode.domain.toolpath.planner import ToolpathPlanner
             from dxf2gcode.application.toolpath.exporting import ExportShape
             from dxf2gcode.application.toolpath.planning import PlanToolpath
 
             exporter = ExportShape(
-                plan_toolpath=PlanToolpath(ToolpathPlanner()),
+                plan_toolpath=PlanToolpath(
+                    ToolpathPlanner(exit_geometry),
+                    ShapePlanningInputs(lambda: g.config).request),
                 plan_exporter=ToolpathGCodeExporter(),
+                diagnostic_sink=self.add_planning_diagnostic,
             )
             self._shape_export_use_case = exporter
         return exporter
@@ -401,6 +423,7 @@ class MyPostProcessor(object):
         # Errors of the export (e.g. an invalid lead in radius). They are
         # collected and shown at the end of the export.
         self.export_errors = []
+        self.planning_diagnostics = []
 
         self.abs_export = self.vars.General["abs_export"]
 

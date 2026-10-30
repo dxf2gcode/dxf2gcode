@@ -15,6 +15,7 @@ import re
 import tempfile
 import logging
 import unittest
+from contextlib import ExitStack
 from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 import sys
@@ -72,6 +73,13 @@ def make_postpro():
     pp.breaks = br
     pp.initialize_export_vars()
     return pp
+
+def make_plan_service():
+    from dxf2gcode.adapters.toolpath.planning import ShapePlanningInputs, exit_geometry
+    from dxf2gcode.domain.toolpath.planner import ToolpathPlanner
+    from dxf2gcode.application.toolpath.planning import PlanToolpath
+    return PlanToolpath(ToolpathPlanner(exit_geometry),
+                        ShapePlanningInputs(lambda: g.config).request)
 
 def make_shape(geos, closed=True, nr=0, cut_cor=41, cw=True, drill=False, pocket=False, tool_diameter=2.0):
     s = Shape(nr=nr, closed=closed, geos=Geos(geos))
@@ -307,6 +315,110 @@ class TestStMoveGCode(unittest.TestCase):
     def setUp(self):
         self.pp = make_postpro()
 
+    def test_planning_never_calls_postprocessor_movements_and_preserves_shape(self):
+        from dxf2gcode.adapters.toolpath.planning import snapshot_geometry
+        shape = make_shape(square_geos(), closed=False, cut_cor=40)
+        shape.parentLayer.lead_in_mode = LEAD_OFF
+        shape.parentLayer.lead_out_mode = LEAD_OFF
+        shape.overcut_enabled = False
+        build_stmove(shape)
+
+        def snapshot():
+            return (shape.cut_cor, shape.cw,
+                    tuple(snapshot_geometry(geo) for geo in shape.geos.abs_iter()),
+                    tuple(snapshot_geometry(geo) for geo in shape.stmove.geos.abs_iter()))
+
+        before = snapshot()
+        methods = (
+            'rap_pos_xy', 'rap_pos_z', 'lin_pol_xy', 'lin_pol_z', 'lin_pol_arc',
+            'lin_pol_drill', 'lin_ret_drill', 'chg_feed_rate', 'set_cut_cor',
+            'deactivate_cut_cor', 'write_pre_shape_cut', 'write_post_shape_cut',
+            'make_print_str')
+        with ExitStack() as stack:
+            for method in methods:
+                stack.enter_context(patch.object(
+                    self.pp, method, side_effect=AssertionError(
+                        "planning called the postprocessor: " + method)))
+            first = make_plan_service().execute_result(shape, self.pp)
+            second = make_plan_service().execute_result(shape, self.pp)
+        self.assertEqual(first, second)
+        self.assertEqual(snapshot(), before)
+        self.assertTrue(first.plan.actions)
+
+    def test_invalid_lead_returns_diagnostics_without_export_side_effects(self):
+        shape = make_shape(square_geos(), cut_cor=41)
+        shape.parentLayer.lead_in_mode = LEAD_OFF
+        with patch.object(g.config, 'machine_type', 'milling'), patch.dict(
+                g.config.vars.Cutter_Compensation.__dict__, done_by_machine=True):
+            build_stmove(shape)
+            with patch.object(self.pp, 'add_export_error',
+                              side_effect=AssertionError("planning emitted an error")):
+                result = make_plan_service().execute_result(
+                    shape, self.pp)
+            self.assertIsNone(result.plan)
+            self.assertEqual(result.diagnostics[0].code,
+                             'compensation.missing_lead')
+            self.assertEqual(result.diagnostics[0].shape_number, shape.nr)
+            self.assertEqual(self.pp.export_errors, [])
+            self.assertEqual(self.pp.write_shape_gcode(shape), '')
+            self.assertEqual(self.pp.export_errors,
+                             [result.diagnostics[0].message])
+
+    def test_depth_warning_is_returned_without_a_dialog(self):
+        shape = make_shape(square_geos(), cut_cor=40)
+        shape.axis3_slice_depth = 0
+        shape.parentLayer.lead_in_mode = LEAD_OFF
+        shape.parentLayer.lead_out_mode = LEAD_OFF
+        shape.overcut_enabled = False
+        with patch.object(g.config, 'machine_type', 'milling'), patch(
+                'dxf2gcode.presentation.qt.qt_compat.QtWidgets.QMessageBox.warning',
+                side_effect=AssertionError("planning opened a dialog")):
+            build_stmove(shape)
+            result = make_plan_service().execute_result(shape, self.pp)
+        self.assertIsNotNone(result.plan)
+        self.assertFalse(result.has_errors)
+        self.assertEqual(result.diagnostics[0].code, 'depth.zero_slice')
+        self.assertEqual(self.pp.export_errors, [])
+
+    def test_invalid_start_geometry_returns_a_failed_result(self):
+        shape = make_shape(square_geos(), cut_cor=40)
+        build_stmove(shape)
+        shape.stmove.start_move_error = 'Invalid test lead'
+        result = make_plan_service().execute_result(shape, self.pp)
+        self.assertIsNone(result.plan)
+        self.assertTrue(result.has_errors)
+        self.assertEqual(result.diagnostics[0].code, 'lead.invalid_start')
+        self.assertEqual(self.pp.export_errors, [])
+
+    def test_invalid_exit_geometry_returns_a_failed_result(self):
+        shape = make_shape(square_geos(), cut_cor=40)
+        shape.parentLayer.lead_in_mode = LEAD_OFF
+        shape.parentLayer.lead_out_mode = 'straight'
+        shape.parentLayer.lead_length = 0
+        shape.overcut_enabled = False
+        with patch.object(g.config, 'machine_type', 'milling'):
+            build_stmove(shape)
+            result = make_plan_service().execute_result(shape, self.pp)
+        self.assertIsNone(result.plan)
+        self.assertEqual(result.diagnostics[0].code, 'lead.invalid_exit')
+        self.assertEqual(self.pp.export_errors, [])
+
+    def test_inverted_depth_warnings_are_returned_without_dialogs(self):
+        shape = make_shape(square_geos(), cut_cor=40)
+        shape.axis3_mill_depth = 1
+        shape.parentLayer.lead_in_mode = LEAD_OFF
+        shape.parentLayer.lead_out_mode = LEAD_OFF
+        shape.overcut_enabled = False
+        with patch.object(g.config, 'machine_type', 'milling'), patch(
+                'dxf2gcode.presentation.qt.qt_compat.QtWidgets.QMessageBox.warning',
+                side_effect=AssertionError("planning opened a dialog")):
+            build_stmove(shape)
+            result = make_plan_service().execute_result(shape, self.pp)
+        self.assertIsNotNone(result.plan)
+        self.assertEqual([item.code for item in result.diagnostics],
+                         ['depth.inverted_range', 'depth.initial_below_final'])
+        self.assertEqual(self.pp.export_errors, [])
+
     def test_simple_contour_software_comp(self):
         g.config.vars.Cutter_Compensation['done_by_machine'] = False
         sh = make_shape(square_geos(10.0), cut_cor=41, cw=True)
@@ -337,8 +449,17 @@ class TestStMoveGCode(unittest.TestCase):
             postprocessor = make_postpro()
             preview_plan = postprocessor.plan_shape_toolpath(planned_shape)
             self.assertIsNotNone(preview_plan)
+            self.assertTrue(preview_plan.actions)
+            self.assertEqual(
+                tuple(toolpath_pass.depth for toolpath_pass in preview_plan.passes),
+                tuple(planned_shape.get_pass_depths()))
+            self.assertEqual(
+                tuple((move.start_xy, move.end_xy)
+                      for move in preview_plan.passes[0].moves),
+                tuple(((geo.Ps.x, geo.Ps.y), (geo.Pe.x, geo.Pe.y))
+                      for geo in planned_shape.geos.abs_iter()))
             plan_service = postprocessor._shape_export_use_case._plan_toolpath
-            with patch.object(plan_service, 'execute', wraps=plan_service.execute) as plan_mock:
+            with patch.object(plan_service, 'execute_result', wraps=plan_service.execute_result) as plan_mock:
                 actual = postprocessor.write_shape_gcode(planned_shape)
             plan_mock.assert_called_once_with(planned_shape, postprocessor)
             self.assertEqual(actual, expected)
@@ -397,7 +518,7 @@ class TestStMoveGCode(unittest.TestCase):
         postprocessor = make_postpro()
         plan = postprocessor.plan_shape_toolpath(shape)
         self.assertIsNotNone(plan)
-        self.assertIsNotNone(plan.commands)
+        self.assertTrue(plan.actions)
         self.assertTrue(plan.passes)
         code = postprocessor.write_shape_gcode(shape)
         self.assertIn("G1", code)
