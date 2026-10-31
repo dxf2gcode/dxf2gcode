@@ -1,0 +1,27 @@
+name: Feature request
+description: Propose an improvement to dxf2gcode.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For user questions and discussions, please use the [existing forum](https://www.ltspiceusers.ch/forums/english-section.67/).
+        Check existing issues before proposing an improvement.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Describe the task you want to accomplish and the current limitation.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: Explain the behavior you would like and how it would help.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Alternatives and additional context
+      description: Mention workarounds, relevant machine modes or postprocessors, examples or related issues.

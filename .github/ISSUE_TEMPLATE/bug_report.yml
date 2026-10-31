@@ -1,0 +1,50 @@
+name: Bug report
+description: Report a reproducible problem in dxf2gcode.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For user questions and discussions, please use the [existing forum](https://www.ltspiceusers.ch/forums/english-section.67/).
+        Check existing issues before reporting a bug.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Include the release version or commit, and whether you use an installer, package or source checkout.
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system
+      description: Include the operating system and version; add Python and Qt versions if known.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Give the steps and relevant settings. For toolpath or export problems, include the machine mode and postprocessor profile.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include relevant error messages or logs, if available.
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example files and additional context
+      description: |
+        If the problem depends on a drawing or project, attach a small DXF or D2G example, with the referenced drawing for D2G projects.
+        Put files in a ZIP archive if GitHub does not accept their extension. Screenshots or G-code excerpts may also help.
+        Share only files you have permission to publish and remove private information.
