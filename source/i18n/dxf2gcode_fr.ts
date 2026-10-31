@@ -3654,4 +3654,15 @@ La longueur doit être supérieure à la tolérance</translation>
         <translation>Calques exclus de l’importation : %s</translation>
     </message>
 </context>
+<context>
+    <name>ToolpathPreview</name>
+    <message>
+        <source>Programmed contour (G41/G42)</source>
+        <translation>Contour programmé (G41/G42)</translation>
+    </message>
+    <message>
+        <source>Tool center path (G40)</source>
+        <translation>Trajectoire du centre de l’outil (G40)</translation>
+    </message>
+</context>
 </TS>

@@ -3,7 +3,7 @@
 from collections import OrderedDict
 
 from dxf2gcode.presentation.qt.qt_compat import QtCore
-from dxf2gcode.domain.toolpath.leadmove import lead_mode_labels
+from dxf2gcode.presentation.qt.toolpath_labels import lead_mode_labels
 from dxf2gcode.presentation.qt.configwindow import (
     CfgCheckBox,
     CfgComboBox,
@@ -105,7 +105,7 @@ def build_application_config_widgets(config):
             ("__subtitle__", CfgSubtitle(tr("Drag Knife options"))),
             ("drag_angle", CfgDoubleSpinBox(tr('Retract to drag depth ("Third axis slice depth") if angle exceeds:'), "°")),
             ("drag_start_angle", CfgDoubleSpinBox(tr("Direction the knife points to when the cut starts (0 = positive X axis):"), "°")),
-            ("ramp_in_length", CfgDoubleSpinBox(tr("Ramp in length (the knife is plunged gradually over this length):"), "", None, None, 3)),
+            ("ramp_in_length", CfgDoubleSpinBox(tr("Ramp in length (the knife is plunged gradually over this length):"), "", None, None, 4)),
         ])),
         ("Lead_In_Out", OrderedDict([
             ("__section_title__", tr("Output settings")),

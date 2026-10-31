@@ -60,7 +60,7 @@ from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.domain.toolpath.pocketmove import PocketMove  # noqa: E402
 from dxf2gcode.domain.toolpath.pocketmill import PocketMill, BBArray  # noqa: E402
 from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape  # noqa: E402
 from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 
 # Reuse the existing test helpers instead of duplicating them.
@@ -95,7 +95,7 @@ def pocket_stmove(shape, tool_diameter, cut_cor, cw=True):
     g.config.vars.Cutter_Compensation["done_by_machine"] = False
     try:
         with contextlib.redirect_stdout(io.StringIO()):
-            st = StMove(shape)
+            st = prepare_shape(shape)
     finally:
         g.config.vars.Cutter_Compensation["done_by_machine"] = prev
     return st
@@ -238,7 +238,7 @@ class TestPocketing1MissingLines(unittest.TestCase):
         shape.cw = True
         shape.calc_bounding_box()
         with contextlib.redirect_stdout(io.StringIO()):
-            st = StMove(shape)
+            st = prepare_shape(shape)
 
         pm = PocketMill(st)
         pm.diff = pm.tool_rad * 2 * 0.7
@@ -284,7 +284,7 @@ class TestLargeToolDiameter(unittest.TestCase):
             g.config.vars.Cutter_Compensation["done_by_machine"] = False
             with self.assertLogs("core.pocketmill", level="WARNING"):
                 with contextlib.redirect_stdout(io.StringIO()):
-                    shape.stmove = StMove(shape)
+                    shape.stmove = prepare_shape(shape)
             # no fill lines at all for a grid that cannot be built
             self.assertEqual(horizontal_mill_rows(shape.stmove), {})
 
@@ -308,7 +308,7 @@ class TestCirclePocket(unittest.TestCase):
             g.config.vars.Cutter_Compensation["done_by_machine"] = False
             with self.assertLogs("core.pocketmill", level="WARNING"):
                 with contextlib.redirect_stdout(io.StringIO()):
-                    st = StMove(shape)
+                    st = prepare_shape(shape)
             self.assertEqual(degenerate_pocketmoves(st), [],
                              "degenerate PocketMove for cut_cor %d" % cut_cor)
 

@@ -37,6 +37,8 @@ class ToolpathPlan:
     feed_depth: float
     feed_xy: float
     actions: tuple = ()
+    tool_radius: float = 0.0
+    compensation_space: str = "tool_center"
 
 
 @dataclass(frozen=True)

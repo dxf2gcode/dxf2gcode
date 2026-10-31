@@ -34,7 +34,7 @@ from dxf2gcode.domain.project.layercontent import Shapes
 from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.domain.geometry.boundingbox import BoundingBox
 from dxf2gcode.domain.geometry.point3d import Point3D
-from dxf2gcode.domain.toolpath.stmove import StMove
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.presentation.qt.canvas import CanvasBase, MyDropDownMenu
 
@@ -494,37 +494,24 @@ class GLWidget(CanvasBase):
         self.paint_shape(shape)
 
     def paint_shape(self, shape):
-        shape.stmove = StMove(shape)
+        shape.stmove = prepare_shape(shape, build_preview=False)
         plan = self._shape_toolpath_plan(shape)
         shape.toolpath_plan = plan
-        shape.drawObject = self.makeShape(shape, plan)  # 1 object
-        shape.drawStMove = self.makeStMove(shape.stmove)  # 1 object
+        shape.drawObject = self.makeShape(shape)  # imported geometry
+        shape.drawStMove = self.makeStMove(shape.stmove)  # selection overlay
         shape.drawArrowsDirection = self.makeDirArrows(shape)  # 2 objects
 
     @staticmethod
     def _shape_toolpath_plan(shape):
-        """Use the export planner for the preview when the GUI has a postprocessor."""
-        window = getattr(g, "window", None)
-        postprocessor = getattr(window, "MyPostProcessor", None)
-        if postprocessor is None:
-            return None
-        try:
-            return postprocessor.plan_shape_toolpath(shape)
-        except (AttributeError, TypeError, ValueError):
-            return None
+        from dxf2gcode.adapters.toolpath.preview import preview_plan
+        return preview_plan(shape)
 
-    def makeShape(self, shape, plan=None):
+    def makeShape(self, shape):
         genList = GL.glGenLists(1)
         GL.glNewList(genList, GL.GL_COMPILE)
 
         GL.glBegin(GL.GL_LINES)
-        if plan is None:
-            shape.make_path(self.drawHorLine, self.drawVerLine)
-        else:
-            from dxf2gcode.application.toolpath.projections import plan_xyz_segments
-            for start, end in plan_xyz_segments(plan):
-                GL.glVertex3f(start[0], -start[1], start[2])
-                GL.glVertex3f(end[0], -end[1], end[2])
+        shape.make_path(self.drawHorLine, self.drawVerLine)
         GL.glEnd()
 
         GL.glEndList()
@@ -539,7 +526,14 @@ class GLWidget(CanvasBase):
         GL.glNewList(genList, GL.GL_COMPILE)
 
         GL.glBegin(GL.GL_LINES)
-        stmove.make_path(self.drawHorLine, self.drawVerLine)
+        from dxf2gcode.application.toolpath.projections import plan_preview_segments
+        for segment in plan_preview_segments(stmove.shape.toolpath_plan):
+            rgb = {'rapid': (30, 60, 120), 'lead_in': (255, 140, 0),
+                   'lead_out': (200, 60, 200), 'pocket': (120, 170, 255),
+                   'tab': (255, 0, 255)}.get(segment.role, (50, 100, 255))
+            GL.glColor3f(*(value / 255.0 for value in rgb))
+            for point in (segment.start, segment.end):
+                GL.glVertex3f(point[0], -point[1], point[2])
         GL.glEnd()
 
         GL.glEndList()

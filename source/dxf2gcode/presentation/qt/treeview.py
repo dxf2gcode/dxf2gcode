@@ -66,23 +66,39 @@ class TreeView(QTreeView):
         self.keyPressEventcallback = None
         self.signals_blocked = False #Transmit events between classes
         self._expansion_model = None
+        self._bulk_expansion_depth = 0
+        self._updating_expansion = False
+        self._expansion_update_requested = False
+        self._last_expansion_availability = None
+        self._expansion_update_timer = QtCore.QTimer(self)
+        self._expansion_update_timer.setSingleShot(True)
+        self._expansion_update_timer.timeout.connect(self.updateExpansionAvailability)
 
         self.pressed.connect(self.elementPressed)
-        self.expanded.connect(self.updateExpansionAvailability)
-        self.collapsed.connect(self.updateExpansionAvailability)
+        self.expanded.connect(self._scheduleExpansionAvailability)
+        self.collapsed.connect(self._scheduleExpansionAvailability)
 
     def setModel(self, model):
         """Follow the current model, including replacement during file load."""
         if self._expansion_model is not None:
             for name in self._expansion_model_signals:
                 getattr(self._expansion_model, name).disconnect(
-                    self.updateExpansionAvailability)
+                    self._scheduleExpansionAvailability)
         QTreeView.setModel(self, model)
         self._expansion_model = model
         if model is not None:
             for name in self._expansion_model_signals:
-                getattr(model, name).connect(self.updateExpansionAvailability)
+                getattr(model, name).connect(self._scheduleExpansionAvailability)
+        self._last_expansion_availability = None
         self.updateExpansionAvailability()
+
+    def _scheduleExpansionAvailability(self, *unused):
+        # isExpanded() may force a pending Qt layout. Never walk the tree
+        # synchronously from expanded/collapsed or model-change signals.
+        if self._bulk_expansion_depth or self._updating_expansion:
+            self._expansion_update_requested = True
+        elif not self._expansion_update_timer.isActive():
+            self._expansion_update_timer.start(0)
 
     def updateExpansionAvailability(self, *unused):
         """Report whether folding can change any visible branch.
@@ -90,6 +106,25 @@ class TreeView(QTreeView):
         Descendants of a collapsed node cannot currently be collapsed any
         further on screen, even if Qt remembers their expanded state.
         """
+        if self._bulk_expansion_depth or self._updating_expansion:
+            self._scheduleExpansionAvailability()
+            return
+        self._expansion_update_timer.stop()
+        if self.signalsBlocked():
+            return
+        self._updating_expansion = True
+        try:
+            state = self._expansionAvailability()
+            if state != self._last_expansion_availability:
+                self._last_expansion_availability = state
+                self.expansionAvailabilityChanged.emit(*state)
+        finally:
+            self._updating_expansion = False
+            if self._expansion_update_requested:
+                self._expansion_update_requested = False
+                self._scheduleExpansionAvailability()
+
+    def _expansionAvailability(self):
         can_collapse = can_expand = False
         model = self.model()
         if model is not None:
@@ -106,21 +141,28 @@ class TreeView(QTreeView):
                     else:
                         can_expand = True
                     if can_collapse and can_expand:
-                        self.expansionAvailabilityChanged.emit(True, True)
-                        return
-        self.expansionAvailabilityChanged.emit(can_collapse, can_expand)
+                        return True, True
+        return can_collapse, can_expand
+
+    def _changeExpansion(self, operation, *arguments):
+        self._expansion_update_timer.stop()
+        self._bulk_expansion_depth += 1
+        try:
+            operation(self, *arguments)
+        finally:
+            self._bulk_expansion_depth -= 1
+            if not self._bulk_expansion_depth:
+                self._expansion_update_requested = False
+                self.updateExpansionAvailability()
 
     def expandAll(self):
-        QTreeView.expandAll(self)
-        self.updateExpansionAvailability()
+        self._changeExpansion(QTreeView.expandAll)
 
     def collapseAll(self):
-        QTreeView.collapseAll(self)
-        self.updateExpansionAvailability()
+        self._changeExpansion(QTreeView.collapseAll)
 
     def expandToDepth(self, depth):
-        QTreeView.expandToDepth(self, depth)
-        self.updateExpansionAvailability()
+        self._changeExpansion(QTreeView.expandToDepth, depth)
 
     def setExportOrderUpdateCallback(self, callback):
         self.exportOrderUpdateCallback = callback
@@ -188,10 +230,12 @@ class TreeView(QTreeView):
         print("\033[32mdropEvent {0} at pos({1}).{3}, index = {2}\033[m\n".format(event, event.pos(), self.indexAt(event.pos()).parent().internalId(), self.dropIndicatorPosition()))
         """
 
-        logger.debug("\033[32mdropEvent {0} at pos({1}).{3}, index = {2}\033[m\n".format(event, event.pos(), self.indexAt(event.pos()).parent().internalId(), self.dropIndicatorPosition()))
-
         # Check if a element has been started to drag and if a index of the dragged element is given otherwise return
-        if self.dragged_element and self.dragged_element_model_index:
+        dragging = self.dragged_element
+        self.dragged_element = False
+        if (dragging and self.dragged_element_model_index is not None
+                and self.dragged_element_model_index.isValid()
+                and self.dragged_element_model_index.model() is self.model()):
             logger.debug("proposedAction = {0}".format(event.proposedAction()))
             event.setDropAction(QtCore.Qt.DropAction.IgnoreAction) #Ignore since completely reimplemented.
             event.accept()
@@ -202,6 +246,9 @@ class TreeView(QTreeView):
 
         # Get the drag_item itself and its parent
         drag_item = self.dragged_element_model_index.model().itemFromIndex(self.dragged_element_model_index)
+        if drag_item is None:
+            event.ignore()
+            return
         drag_row = self.dragged_element_model_index.row()
         drag_item_parent = drag_item.parent()
         drag_item_level = 1
@@ -220,7 +267,9 @@ class TreeView(QTreeView):
         #                                                                                 drag_item_parent, \
         #                                                                                 drag_item_level))
 
-        drop_model_index = self.indexAt(event.pos())
+        # Qt6 exposes floating-point position(); Qt5 uses integer pos().
+        position = event.position().toPoint() if hasattr(event, "position") else event.pos()
+        drop_model_index = self.indexAt(position)
         logger.debug("drop_model_index: %s", drop_model_index)
 
         # Get the insert position related to the drop item:
@@ -229,9 +278,14 @@ class TreeView(QTreeView):
         logger.debug("relative_position: %s", relative_position)
 
         # Check if the item is dropped on a valid item and not on the Viewport.
-        if drop_model_index.isValid() and relative_position != QTreeView.OnViewport:
+        if (drop_model_index.isValid()
+                and drop_model_index.model() is self.model()
+                and relative_position != QTreeView.DropIndicatorPosition.OnViewport):
             # drop position is computable from a real element
             drop_item = drop_model_index.model().itemFromIndex(drop_model_index)
+            if drop_item is None:
+                event.ignore()
+                return
             logger.debug("drop_item: %s", drop_item)
 
         # If dropped on the Viewport just return
@@ -249,7 +303,7 @@ class TreeView(QTreeView):
         if drag_item.parent() == drop_item.parent():
             drag_row = self.dragged_element_model_index.row()  # original row
             # destination row (+1 if relative pos is below the drop element)...
-            drop_row = drop_model_index.row() + (1 if relative_position == QTreeView.BelowItem else 0)
+            drop_row = drop_model_index.row() + (1 if relative_position == QTreeView.DropIndicatorPosition.BelowItem else 0)
             logger.debug("\033[32;1mACCEPTED!\033[m drag_row: {0}, drop_row: {1}\n".format(drag_row, drop_row))
 
 
@@ -258,7 +312,7 @@ class TreeView(QTreeView):
         # inserted, so we must compare with this col)
         elif (drag_item.parent() == drop_item or not drop_item.parent() \
               and drag_item.parent() == drop_item.model().invisibleRootItem().child(drop_item.row(), 0)) \
-              and (relative_position == QTreeView.BelowItem or relative_position == QTreeView.OnItem):
+              and (relative_position == QTreeView.DropIndicatorPosition.BelowItem or relative_position == QTreeView.DropIndicatorPosition.OnItem):
 
             # original row...
             drag_row = self.dragged_element_model_index.row()
@@ -270,7 +324,7 @@ class TreeView(QTreeView):
         elif (not drop_item.parent() and \
               self.dragged_element_model_index.parent().sibling(self.dragged_element_model_index.parent().row() + 1, 0) \
               == drop_item.model().invisibleRootItem().child(drop_item.row(), 0).index()) \
-             and (relative_position == QTreeView.AboveItem or relative_position == QTreeView.OnItem):
+             and (relative_position == QTreeView.DropIndicatorPosition.AboveItem or relative_position == QTreeView.DropIndicatorPosition.OnItem):
               # original row...
               drag_row = self.dragged_element_model_index.row()
               # insert at end...
@@ -279,11 +333,9 @@ class TreeView(QTreeView):
 
         # we are in the wrong branch of the tree, item can't be pasted here
         else:
-            drag_row = self.dragged_element_model_index.row()
-            drop_row = drop_item.parent().rowCount()
-
-            drop_row = -1
-            logger.debug("\033[31;1mREFUSED!\033[m drag_row: {0}, drop_row: {1}\n".format(drag_row, drop_row))
+            event.ignore()
+            logger.debug("Drop on a different tree branch refused")
+            return
 
         # effectively move the item
         if drop_row >= 0:
@@ -469,7 +521,7 @@ class TreeView(QTreeView):
         self.signals_blocked = block
         QTreeView.blockSignals(self, block)
         if not block:
-            self.updateExpansionAvailability()
+            self._scheduleExpansionAvailability()
 
     def selectionChanged(self, selected, deselected):
         """

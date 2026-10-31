@@ -42,7 +42,7 @@ from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
 from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.domain.geometry.point import Point  # noqa: E402
 from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
-from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape  # noqa: E402
 from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
 from dxf2gcode.adapters.postprocessor.breaks import Breaks  # noqa: E402
 from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor  # noqa: E402
@@ -124,7 +124,7 @@ def build_shape(closed=True, cut_cor=41, done_by_machine=True,
     shape.axis3_mill_depth = mill_depth
     shape.axis3_start_mill_depth = 0.0
     shape.axis3_slice_depth = slice_depth
-    shape.stmove = StMove(shape)
+    shape.stmove = prepare_shape(shape)
     return shape, layer
 
 

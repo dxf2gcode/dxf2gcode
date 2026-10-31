@@ -62,6 +62,8 @@ class MovementPlan:
             raise ValueError("unsupported planning geometry: %s" % geo.kind)
 
     def cut_geometry(self, geo, drill=False, role="cut"):
+        if role == "cut":
+            role = geo.role
         geo = geo.resolved
         if geo.kind == "pocket":
             self.geometry(geo, role)
@@ -112,9 +114,11 @@ class MovementPlan:
         groups = []
         depth = settings.workpiece_top
         approach = (0.0, 0.0)
+        has_approach = False
         for action in self.actions:
-            if action.kind == "rapid_xy":
+            if action.kind == "rapid_xy" and not has_approach:
                 approach = action.args[0]
+                has_approach = True
             elif action.kind in ("linear_z", "drill"):
                 depth = action.args[0]
             elif action.kind in ("linear_xy", "arc"):
@@ -122,7 +126,8 @@ class MovementPlan:
                     move = ToolpathMove("linear_xy", *action.args)
                 else:
                     args = action.args
-                    move = ToolpathMove("arc", args[1], args[2], args[6], args[8])
+                    sweep = abs(args[8]) if args[0] == "ccw" else -abs(args[8])
+                    move = ToolpathMove("arc", args[1], args[2], args[6], sweep)
                 if not groups or groups[-1][0] != depth:
                     groups.append((depth, []))
                 groups[-1][1].append(move)
@@ -134,4 +139,7 @@ class MovementPlan:
             passes=passes, workpiece_top=settings.workpiece_top,
             safe_margin=settings.safe_margin, retract_depth=settings.retract_depth,
             feed_depth=settings.feed_depth, feed_xy=settings.feed_xy,
-            actions=tuple(self.actions))
+            actions=tuple(self.actions), tool_radius=settings.tool_radius,
+            compensation_space=("programmed" if settings.machine_compensation
+                                and request.compensation in (41, 42)
+                                else "tool_center"))

@@ -176,28 +176,53 @@ class TestGLWidgetGeometry(unittest.TestCase):
             (2, -3, -2.0), (5, -7, -2.0),
             (2, -3, 0.0), (2, -3, -2.0)])
 
-    def test_plan_shape_display_list_contains_each_cutting_depth(self):
+    def test_shape_display_list_uses_original_geometry_despite_a_toolpath_plan(self):
+        from types import SimpleNamespace
+        shape = _Shape()
+        shape.BB = BoundingBox(Point(0, 0), Point(10, 1))
+        shape.toolpath_plan = SimpleNamespace(approach_xy=(99, 99))
+        shape.make_path = lambda horizontal, vertical: horizontal(shape, Point(0, 1), Point(10, 1))
+        self.canvas.drawHorLine = lambda *args: GLWidget.drawHorLine(self.canvas, *args)
+        self.canvas.drawVerLine = lambda *args: GLWidget.drawVerLine(self.canvas, *args)
+        GLWidget.makeShape(self.canvas, shape)
+        vertices = [args for name, args in self.gl.calls if name == "glVertex3f"]
+        self.assertEqual(vertices, [(0, -1, 0), (10, -1, 0), (0, -1, -2), (10, -1, -2)])
+
+    def test_plan_overlay_display_list_contains_each_cutting_depth_and_lead_colors(self):
+        from types import SimpleNamespace
         from dxf2gcode.domain.toolpath.plan import (
-            ToolpathMove, ToolpathPass, ToolpathPlan)
+            ToolpathAction, ToolpathPlan)
 
         shape = _Shape()
         shape.BB = BoundingBox(Point(0, 0), Point(10, 1))
-        move = ToolpathMove("linear_xy", (0, 0), (10, 0))
         plan = ToolpathPlan(
             shape_number=1, approach_xy=(0, 0),
-            passes=(ToolpathPass(1, -1, (move,)),
-                    ToolpathPass(2, -2, (move,))),
+            passes=(),
             workpiece_top=0, safe_margin=0, retract_depth=5,
-            feed_depth=100, feed_xy=500)
+            feed_depth=100, feed_xy=500,
+            actions=(ToolpathAction('linear_xy', ((0, 0), (1, 0)), 'lead_in'),
+                     ToolpathAction('linear_z', (-1,), 'plunge'),
+                     ToolpathAction('linear_xy', ((1, 0), (10, 0))),
+                     ToolpathAction('linear_z', (-2,), 'plunge'),
+                     ToolpathAction('linear_xy', ((10, 0), (1, 0))),
+                     ToolpathAction('linear_xy', ((1, 0), (0, 0)), 'lead_out')))
 
-        GLWidget.makeShape(self.canvas, shape, plan)
+        shape.toolpath_plan = plan
+        GLWidget.makeStMove(self.canvas, SimpleNamespace(shape=shape))
         vertices = [args for name, args in self.gl.calls
                     if name == "glVertex3f"]
 
         self.assertEqual(vertices, [
-            (0, 0, 0), (10, 0, 0),
-            (0, 0, -1), (10, 0, -1),
-            (0, 0, -2), (10, 0, -2)])
+            (0, 0, 0), (1, 0, 0),
+            (1, 0, 0), (1, 0, -1),
+            (1, 0, -1), (10, 0, -1),
+            (10, 0, -1), (10, 0, -2),
+            (10, 0, -2), (1, 0, -2),
+            (1, 0, -2), (0, 0, -2)])
+        colors = [args for name, args in self.gl.calls if name == 'glColor3f']
+        self.assertEqual(colors[0], tuple(v / 255 for v in (255, 140, 0)))
+        self.assertEqual(colors[-1], tuple(v / 255 for v in (200, 60, 200)))
+        self.assertIn(tuple(v / 255 for v in (50, 100, 255)), colors)
 
     def test_solid_circle_cone_and_cylinder_emit_expected_vertices(self):
         GLWidget.drawSolidCircle(self.canvas, Point(1, 2), 1, 0.5, 4)

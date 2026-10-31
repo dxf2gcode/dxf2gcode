@@ -64,7 +64,7 @@ from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
 from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.domain.geometry.point import Point  # noqa: E402
 from dxf2gcode.domain.project.layercontent import LayerContent, Layers, Shapes  # noqa: E402
-from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape  # noqa: E402
 from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode.domain.project.project import Project  # noqa: E402
 
@@ -318,7 +318,7 @@ class TestMillingOffsetPocketFill(unittest.TestCase):
         shape.parentLayer = layer
         shape.calc_bounding_box()
         with contextlib.redirect_stdout(io.StringIO()):
-            st = StMove(shape)
+            st = prepare_shape(shape)
         shape.stmove = st
         return shape, st
 

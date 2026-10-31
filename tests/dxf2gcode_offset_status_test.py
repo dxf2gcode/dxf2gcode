@@ -177,6 +177,9 @@ class TestStMoveMessages(unittest.TestCase):
             lambda parent=None, offset=1, offtype='in': _FakeOff(status)
         try:
             m = stmove.StMove.__new__(stmove.StMove)
+            from dxf2gcode.domain.toolpath.inputs import PreparationSettings
+            m.settings = PreparationSettings(tool=_FakeLayer())
+            m._translate = lambda context, text: text
             m.shape = _FakeShape()
             m.start = Point(0, 0)
             m.angle = 0.0

@@ -70,6 +70,19 @@ class TestPureToolpathPlanner(unittest.TestCase):
              if action.kind == "linear_z" and action.role == "pocket" and
              action.args[0] < 0], [-1, -2, -3])
 
+    def test_pocket_connections_keep_the_first_approach_position(self):
+        request = self.request()
+        body = (request.contour[0],
+                PathGeometry("pocket", (10, 0), (3, 4)),
+                PathGeometry("line", (3, 4), (0, 0), length=5))
+        request = replace(request, pocket=True,
+                          prepared_path=request.prepared_path + body,
+                          split_contour=body)
+        plan = ToolpathPlanner().plan(request).plan
+        self.assertEqual(plan.approach_xy, (0, 0))
+        self.assertIn((3, 4), [a.args[0] for a in plan.actions
+                              if a.kind == "rapid_xy"])
+
     def test_capabilities_are_explicit_and_arc_tessellation_is_planned(self):
         from math import pi
         request = self.request(closed=False)

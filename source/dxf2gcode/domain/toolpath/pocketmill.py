@@ -34,19 +34,17 @@ from math import sin, cos, pi, sqrt, ceil, asin, floor
 from copy import deepcopy
 from bisect import bisect_left, bisect_right, insort
 
-import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.domain.project.tool_settings import effective_tool
 
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.domain.geometry.boundingbox import BoundingBox
-from dxf2gcode.domain.project.shape import Geos
-from dxf2gcode.domain.project.shape import Shape
+from dxf2gcode.domain.geometry.collections import Geos
 from dxf2gcode.domain.toolpath.shapeoffset import *
 from dxf2gcode.domain.toolpath.pocketmove import PocketMove
 
-from dxf2gcode.presentation.qt.qt_compat import QtCore
+from types import SimpleNamespace
 
 import logging
 logger = logging.getLogger('core.pocketmill')
@@ -355,10 +353,20 @@ class BBArray(object):
         return closestPoint        
     
 class PocketMill(object):
-    def __init__(self, stmove=None):
+    def __init__(self, stmove=None, edge_clearance_percent=HISTORIC_POCKET_EDGE_CLEARANCE_PERCENT,
+                 translate=None):
         #It gets stmove object and do whole magic with it:
         # creates paths for pocket milling
-        self.stmove = stmove
+        self.edge_clearance_percent = edge_clearance_percent
+        self._translate = translate or (lambda context, text: text)
+        self.stmove = SimpleNamespace(**vars(stmove))
+        self.stmove.geos = Geos(stmove.geos)
+        self._input_count = len(self.stmove.geos)
+
+        def append(geometry):
+            geometry.make_abs_geo()
+            self.stmove.geos.append(geometry)
+        self.stmove.append = append
         
         # Get tool radius based on tool diameter.
         self.tool_rad = effective_tool(self.stmove.shape).getToolRadius()
@@ -382,8 +390,7 @@ class PocketMill(object):
         @param: string_to_translate: a unicode string
         @return: the translated unicode string if it was possible to translate
         """
-        return str(QtCore.QCoreApplication.translate("PocketMill",
-                                                     string_to_translate))
+        return self._translate("PocketMill", string_to_translate)
 
     def _reference_geos(self):
         """Geometry the pocket fill is derived from.
@@ -537,18 +544,13 @@ class PocketMill(object):
             yi -= self.diff/self.bbarray.divY
             #print("End of finding intersections")
 
-    @staticmethod
-    def _pocket_edge_clearance_percent():
-        """Pocket edge clearance as a percentage of the tool diameter.
+    def _pocket_edge_clearance_percent(self):
+        return self.edge_clearance_percent
 
-        Returns the historical value (cutter radius / 0.7 stand-off) when the
-        configuration or the option is missing, so old configurations keep
-        working unchanged.
-        """
-        try:
-            return float(g.config.vars.Pocketing.pocket_edge_clearance)
-        except Exception:
-            return HISTORIC_POCKET_EDGE_CLEARANCE_PERCENT
+    def generate(self):
+        """Return new pocket geometry without modifying the prepared input path."""
+        self.createLines()
+        return tuple(self.stmove.geos[self._input_count:])
 
     @staticmethod
     def _line_horizontal_intersection(geo, yi):

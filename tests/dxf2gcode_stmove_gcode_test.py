@@ -53,7 +53,7 @@ from dxf2gcode.domain.project.shape import Shape, Geos
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.domain.geometry.point import Point
-from dxf2gcode.domain.toolpath.stmove import StMove
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF
 from dxf2gcode.domain.toolpath.pocketmove import PocketMove
 from dxf2gcode.domain.project.layercontent import LayerContent
@@ -101,7 +101,7 @@ def make_shape(geos, closed=True, nr=0, cut_cor=41, cw=True, drill=False, pocket
     return s
 
 def build_stmove(shape):
-    st = StMove(shape)
+    st = prepare_shape(shape)
     shape.stmove = st
     return st
 

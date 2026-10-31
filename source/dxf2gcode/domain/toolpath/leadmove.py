@@ -114,14 +114,13 @@ import logging
 from copy import deepcopy
 from math import atan2, cos, sin
 
-import dxf2gcode.bootstrap.runtime_state as g
 
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.domain.geometry.breakgeo import BreakGeo
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.point import Point
 
-from dxf2gcode.presentation.qt.qt_compat import QtCore
+from dxf2gcode.domain.toolpath.messages import QT_TRANSLATE_NOOP
 
 
 logger = logging.getLogger("core.leadmove")
@@ -165,11 +164,10 @@ def _tr(string_to_translate):
     The strings are marked with the translation context "LeadMove", so that
     the translation update tool finds them.
     """
-    return str(QtCore.QCoreApplication.translate("LeadMove",
-                                                 string_to_translate))
+    return QT_TRANSLATE_NOOP("LeadMove", string_to_translate)
 
 
-def lead_move_enabled(machine_type=None):
+def lead_move_enabled(machine_type="milling"):
     """
     Whether the lead in, the lead out and the overcut may be used.
 
@@ -180,26 +178,9 @@ def lead_move_enabled(machine_type=None):
     @param machine_type: the machine type, the global configuration by default
     @return: True if the functions may be used
     """
-    if machine_type is None:
-        machine_type = getattr(getattr(g, 'config', None), 'machine_type',
-                               'milling')
     return machine_type != 'lathe'
 
 
-def lead_mode_labels():
-    """
-    The (translated) labels of the methods of the lead in and of the lead
-    out. They are used by the configuration window and by the mill settings
-    of the tree, so that both show the same names.
-    @return: a dictionary {method: label}
-    """
-    return {LEAD_OFF: QtCore.QCoreApplication.translate("LeadMove", "None"),
-            LEAD_STRAIGHT: QtCore.QCoreApplication.translate("LeadMove",
-                                                             "Straight"),
-            LEAD_RADIUS: QtCore.QCoreApplication.translate("LeadMove",
-                                                            "Circle"),
-            LEAD_STARTMOVE: QtCore.QCoreApplication.translate(
-                "LeadMove", "Straight with circle")}
 
 
 # The state of the overcut of a shape: the shape uses the standard of the
@@ -383,7 +364,7 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
     except (TypeError, ValueError):
         tool_diameter = 0.0
     if tool_diameter <= 0:
-        errors.append(('tool_diameter', QtCore.QCoreApplication.translate(
+        errors.append(('tool_diameter', QT_TRANSLATE_NOOP(
             "LeadMove", "The diameter of the tool must be greater than "
                         "zero.")))
         # Without a valid tool radius nothing else can be checked.
@@ -399,11 +380,11 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
         except (TypeError, ValueError):
             lead_radius = 0.0
         if lead_radius <= 0:
-            errors.append(('lead_radius', QtCore.QCoreApplication.translate(
+            errors.append(('lead_radius', QT_TRANSLATE_NOOP(
                 "LeadMove", "The radius of the lead in / lead out must be "
                             "greater than zero.")))
         elif lead_radius < tool_radius - eps:
-            errors.append(('lead_radius', QtCore.QCoreApplication.translate(
+            errors.append(('lead_radius', QT_TRANSLATE_NOOP(
                 "LeadMove", "The radius at the workpiece (%.3f mm) is "
                             "smaller than the radius of the tool (%.3f mm) "
                             "- it can not be milled.")
@@ -411,7 +392,7 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
         elif abs(lead_radius - tool_radius) <= eps:
             # The limit case: it is geometrically possible, but the tool
             # center does not move while the arc is milled.
-            warnings.append(('lead_radius', QtCore.QCoreApplication.translate(
+            warnings.append(('lead_radius', QT_TRANSLATE_NOOP(
                 "LeadMove", "The radius at the workpiece (%.3f mm) equals "
                             "the radius of the tool: the tool center does "
                             "not move while the arc is milled. This limit "
@@ -426,7 +407,7 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
         except (TypeError, ValueError):
             lead_length = 0.0
         if lead_length <= 0:
-            errors.append(('lead_length', QtCore.QCoreApplication.translate(
+            errors.append(('lead_length', QT_TRANSLATE_NOOP(
                 "LeadMove", "The length of the lead in / lead out must be "
                             "greater than zero.")))
 
@@ -448,18 +429,18 @@ def resolve_radius(workpiece_radius, tool_radius, space):
         message: an empty string if the status is OK
     """
     if tool_radius < 0:
-        return 0.0, ERROR, QtCore.QCoreApplication.translate(
+        return 0.0, ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The tool radius is negative - the lead in / lead "
                         "out can not be calculated.")
 
     if workpiece_radius <= 0:
-        return 0.0, ERROR, QtCore.QCoreApplication.translate(
+        return 0.0, ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The radius of the lead in / lead out has to be "
                         "greater than zero.")
 
     tool_center_radius = workpiece_radius - tool_radius
     if tool_center_radius < -eps:
-        return 0.0, ERROR, QtCore.QCoreApplication.translate(
+        return 0.0, ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The radius at the workpiece (%.3f mm) is smaller "
                         "than the tool radius (%.3f mm) - it can not be "
                         "milled.") % (workpiece_radius, tool_radius)
@@ -471,13 +452,13 @@ def resolve_radius(workpiece_radius, tool_radius, space):
         # the tool collapses to a point and the internal compensation can not
         # build the (degenerate) arc at all.
         if space == SPACE_TOOL_CENTER:
-            return 0.0, ERROR, QtCore.QCoreApplication.translate(
+            return 0.0, ERROR, QT_TRANSLATE_NOOP(
                 "LeadMove", "The radius at the workpiece equals the tool "
                             "radius (%.3f mm): the tool center does not move "
                             "while the arc is milled, so the arc can not be "
                             "built with the internal cutter compensation."
                             % workpiece_radius)
-        return workpiece_radius, WARNING, QtCore.QCoreApplication.translate(
+        return workpiece_radius, WARNING, QT_TRANSLATE_NOOP(
             "LeadMove", "The radius at the workpiece equals the tool radius "
                         "(%.3f mm): the tool center does not move while the "
                         "arc is milled. This limit case is geometrically "
@@ -517,7 +498,7 @@ def _nominal_collapse_message(workpiece_radius, tool_radius):
     @param tool_radius: the radius of the tool
     @return: the translated message
     """
-    return QtCore.QCoreApplication.translate(
+    return QT_TRANSLATE_NOOP(
         "LeadMove", "The radius at the workpiece (%.3f mm) is not greater "
                     "than the radius of the tool (%.3f mm): the machine "
                     "compensation of the nominal arc collapses to a point, "
@@ -558,7 +539,7 @@ def build_start_move(end_point, angle, side, workpiece_radius, tool_radius,
     if status == ERROR:
         return [], ERROR, message
     if length <= 0:
-        return [], ERROR, QtCore.QCoreApplication.translate(
+        return [], ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The length of the lead in has to be greater than "
                         "zero.")
     if space == SPACE_NOMINAL and radius - tool_radius <= eps:
@@ -636,7 +617,7 @@ def build_lead_in(end_point, angle, side, workpiece_radius, tool_radius,
         # The contour is extended backwards: the tool enters the material
         # tangentially and without a corner.
         if length <= 0:
-            return [], ERROR, QtCore.QCoreApplication.translate(
+            return [], ERROR, QT_TRANSLATE_NOOP(
                 "LeadMove", "The length of the lead in has to be greater "
                             "than zero.")
         direction = _direction(angle, side)
@@ -673,7 +654,7 @@ def build_lead_in(end_point, angle, side, workpiece_radius, tool_radius,
         # lead in for the software compensation too (the machine compensation
         # programs the same straight length in the nominal plane).
         if length <= 0:
-            return [], ERROR, QtCore.QCoreApplication.translate(
+            return [], ERROR, QT_TRANSLATE_NOOP(
                 "LeadMove", "The length of the lead in has to be greater "
                             "than zero.")
         build_up_length = length
@@ -683,7 +664,7 @@ def build_lead_in(end_point, angle, side, workpiece_radius, tool_radius,
         build_up_length = radius
 
     if radius <= 0:
-        return [], ERROR, QtCore.QCoreApplication.translate(
+        return [], ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The lead in radius is too small to be calculated.")
 
     tangent = _direction(angle, side)
@@ -773,7 +754,7 @@ def build_lead_out(end_point, angle, side, workpiece_radius, tool_radius,
     """
     if mode == LEAD_STRAIGHT:
         if length <= 0:
-            return [], ERROR, QtCore.QCoreApplication.translate(
+            return [], ERROR, QT_TRANSLATE_NOOP(
                 "LeadMove", "The length of the lead out has to be greater "
                             "than zero.")
         direction = _direction(angle, side)
@@ -792,7 +773,7 @@ def build_lead_out(end_point, angle, side, workpiece_radius, tool_radius,
         # The straight line which continues the cut, followed by the quarter
         # arc which leaves the contour.
         if length <= 0:
-            return [], ERROR, QtCore.QCoreApplication.translate(
+            return [], ERROR, QT_TRANSLATE_NOOP(
                 "LeadMove", "The length of the lead out has to be greater "
                             "than zero.")
         arc_start = end_point + tangent * length
@@ -876,17 +857,17 @@ def build_overcut(geos, length):
     @return: (geos, status, message)
     """
     if length <= 0:
-        return [], ERROR, QtCore.QCoreApplication.translate(
+        return [], ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The overcut length has to be greater than zero.")
 
     total = chain_cut_length(geos)
     if total <= 0:
-        return [], ERROR, QtCore.QCoreApplication.translate(
+        return [], ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The contour does not contain any geometry which "
                         "could be overcut.")
 
     if length > total + eps:
-        return [], ERROR, QtCore.QCoreApplication.translate(
+        return [], ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The overcut length (%.3f mm) is longer than the "
                         "contour (%.3f mm).") % (length, total)
 
@@ -915,7 +896,7 @@ def build_overcut(geos, length):
             else:
                 part = None
             if part is None:
-                return [], ERROR, QtCore.QCoreApplication.translate(
+                return [], ERROR, QT_TRANSLATE_NOOP(
                     "LeadMove", "The overcut can not be built from this "
                                 "contour geometry.")
             overcut.append(part)
@@ -923,7 +904,7 @@ def build_overcut(geos, length):
             break
 
     if not overcut:
-        return [], ERROR, QtCore.QCoreApplication.translate(
+        return [], ERROR, QT_TRANSLATE_NOOP(
             "LeadMove", "The overcut could not be calculated.")
 
     return overcut, OK, ""
@@ -1012,7 +993,7 @@ def build_exit_geometries(geos, side, space, tool_radius, lead_out_mode,
         start_point = chain_end_point(lead_out_chain)
         angle = chain_direction(lead_out_chain)
         if start_point is None or angle is None:
-            return [], ERROR, QtCore.QCoreApplication.translate(
+            return [], ERROR, QT_TRANSLATE_NOOP(
                 "LeadMove", "The lead out can not be calculated.")
         lead_out_geos, status, message = build_lead_out(
             start_point, angle, side, lead_radius, tool_radius, space,

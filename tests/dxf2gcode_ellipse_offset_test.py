@@ -32,7 +32,7 @@ from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
 from dxf2gcode.domain.toolpath.leadmove import LEAD_RADIUS, LEAD_STRAIGHT  # noqa: E402
 from dxf2gcode.domain.project.shape import Geos, Shape  # noqa: E402
 from dxf2gcode.domain.toolpath.shapeoffset import OffArcGeo, offShapeClass  # noqa: E402
-from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape  # noqa: E402
 from dxf2gcode.adapters.dxf.parser import ReadDXF  # noqa: E402
 
 DXF = os.path.join(_REPO_DIR, "dxf", "test.dxf")
@@ -145,7 +145,7 @@ class TestFullEllipseOffset(unittest.TestCase):
             shape.axis3_mill_depth = -12.45
             shape.axis3_start_mill_depth = 0.0
             shape.axis3_slice_depth = -4.06
-            shape.stmove = StMove(shape)
+            shape.stmove = prepare_shape(shape)
 
             offset_geos = [geo for geo in shape.stmove.geos
                            if isinstance(geo, OffArcGeo)]

@@ -31,6 +31,7 @@ SOURCES += \
     dxf2gcode/adapters/dxf/spline_convert.py \
     dxf2gcode/adapters/dxf/__init__.py \
     dxf2gcode/adapters/postprocessor/breaks.py \
+    dxf2gcode/adapters/postprocessor/dialect.py \
     dxf2gcode/adapters/postprocessor/postprocessor.py \
     dxf2gcode/adapters/postprocessor/postprocessorconfig.py \
     dxf2gcode/adapters/postprocessor/__init__.py \
@@ -39,6 +40,8 @@ SOURCES += \
     dxf2gcode/adapters/project/legacy_repository.py \
     dxf2gcode/adapters/project/__init__.py \
     dxf2gcode/adapters/toolpath/planning.py \
+    dxf2gcode/adapters/toolpath/preparation.py \
+    dxf2gcode/adapters/toolpath/preview.py \
     dxf2gcode/adapters/toolpath/gcode_exporter.py \
     dxf2gcode/adapters/toolpath/__init__.py \
     dxf2gcode/application/cli_export.py \
@@ -66,6 +69,7 @@ SOURCES += \
     dxf2gcode/domain/constants.py \
     dxf2gcode/domain/__init__.py \
     dxf2gcode/domain/geometry/arcgeo.py \
+    dxf2gcode/domain/geometry/collections.py \
     dxf2gcode/domain/geometry/boundingbox.py \
     dxf2gcode/domain/geometry/breakgeo.py \
     dxf2gcode/domain/geometry/holegeo.py \
@@ -85,6 +89,7 @@ SOURCES += \
     dxf2gcode/domain/toolpath/diagnostics.py \
     dxf2gcode/domain/toolpath/inputs.py \
     dxf2gcode/domain/toolpath/movements.py \
+    dxf2gcode/domain/toolpath/messages.py \
     dxf2gcode/domain/toolpath/planner.py \
     dxf2gcode/domain/toolpath/strategies/__init__.py \
     dxf2gcode/domain/toolpath/strategies/contour.py \
@@ -104,6 +109,7 @@ SOURCES += \
     dxf2gcode/presentation/qt/canvas2d.py \
     dxf2gcode/presentation/qt/canvas3d.py \
     dxf2gcode/presentation/qt/configuration_widgets.py \
+    dxf2gcode/presentation/qt/toolpath_labels.py \
     dxf2gcode/presentation/qt/configwindow.py \
     dxf2gcode/presentation/qt/messagebox.py \
     dxf2gcode/presentation/qt/popupdialog.py \

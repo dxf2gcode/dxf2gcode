@@ -358,24 +358,24 @@ class TestLeadOutModes(LeadInModeTestBase):
     up movement is needed."""
 
     def test_off_has_no_geometry(self):
-        shape, layer = self.shape_with(LEAD_OFF, lead_out_mode=LEAD_OFF)
+        shape, layer = self.shape_with(LEAD_STARTMOVE, lead_out_mode=LEAD_OFF)
         self.assertEqual(list(shape.stmove.exit_geos), [])
 
     def test_radius_is_the_arc_only(self):
-        shape, layer = self.shape_with(LEAD_OFF, lead_out_mode=LEAD_RADIUS)
+        shape, layer = self.shape_with(LEAD_STARTMOVE, lead_out_mode=LEAD_RADIUS)
         geos = list(shape.stmove.exit_geos)
         self.assertEqual(len(geos), 1)
         self.assertIsInstance(geos[0], ArcGeo)
         self.assertAlmostEqual(geos[0].r, WORKPIECE_RADIUS)
 
     def test_straight_is_one_line_of_the_common_length(self):
-        shape, layer = self.shape_with(LEAD_OFF, lead_out_mode=LEAD_STRAIGHT)
+        shape, layer = self.shape_with(LEAD_STARTMOVE, lead_out_mode=LEAD_STRAIGHT)
         geos = list(shape.stmove.exit_geos)
         self.assertEqual(len(geos), 1)
         self.assertIsInstance(geos[0], LineGeo)
 
     def test_startmove_is_a_straight_line_and_an_arc(self):
-        shape, layer = self.shape_with(LEAD_OFF, lead_out_mode=LEAD_STARTMOVE)
+        shape, layer = self.shape_with(LEAD_STARTMOVE, lead_out_mode=LEAD_STARTMOVE)
         geos = list(shape.stmove.exit_geos)
         self.assertEqual(len(geos), 2)
         self.assertIsInstance(geos[0], LineGeo)
@@ -444,7 +444,7 @@ class TestModeFromTheGui(LeadInModeTestBase):
     """The method selected in the GUI is really used for the geometry."""
 
     def test_the_selected_method_is_used(self):
-        from dxf2gcode.domain.toolpath.stmove import StMove
+        from dxf2gcode.adapters.toolpath.preparation import prepare_shape
         for mode, expected in ((LEAD_OFF, 0), (LEAD_STRAIGHT, 1),
                                (LEAD_RADIUS, 2), (LEAD_STARTMOVE, 2)):
             shape, layer = self.shape_with(mode)
@@ -452,7 +452,7 @@ class TestModeFromTheGui(LeadInModeTestBase):
             # The layer holds the selected method and the toolpath is built
             # from it.
             self.assertEqual(layer.get_lead_in_mode(), mode)
-            shape.stmove = StMove(shape)
+            shape.stmove = prepare_shape(shape)
             self.assertEqual(len(shape.stmove.lead_in_geos), expected, mode)
 
 

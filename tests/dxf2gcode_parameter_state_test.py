@@ -522,6 +522,21 @@ class TestParameterEditing(unittest.TestCase):
         self.assertEqual(self.a.milling_offset, -0.15)
         self.assertEqual(self.b.milling_offset, 0.2)
 
+    def test_rounded_display_preserves_original_until_explicit_edit(self):
+        self.a.milling_offset = -.01234567
+        self.harness.select([self.a])
+        widget = self._widget()
+        self.assertEqual(widget.text(), '-0.0123')
+        self.harness.th.toolParameterMillingOffsetUpdate()
+        self.assertEqual(self.a.milling_offset, -.01234567)
+        # Retyping the displayed value deliberately accepts its rounding.
+        widget.setModified(True)
+        self.harness.th.toolParameterMillingOffsetUpdate()
+        self.assertEqual(self.a.milling_offset, -.0123)
+        widget.setText('-0,0005')
+        self.harness.th.toolParameterMillingOffsetUpdate()
+        self.assertEqual(self.a.milling_offset, -.0005)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

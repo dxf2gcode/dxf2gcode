@@ -35,14 +35,13 @@ import traceback
 from inspect import getmembers
 from pprint import pprint
 
-import dxf2gcode.bootstrap.runtime_state as g
+from dxf2gcode.domain.toolpath.inputs import PreparationSettings
 from dxf2gcode.domain.project.tool_settings import effective_tool
 
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.domain.geometry.point import Point
-from dxf2gcode.domain.project.shape import Geos
-from dxf2gcode.domain.project.shape import Shape
+from dxf2gcode.domain.geometry.collections import Geos
 from dxf2gcode.domain.toolpath.pocketmill import PocketMill
 from dxf2gcode.domain.toolpath.pocketmove import PocketMove
 from dxf2gcode.domain.toolpath.shapeoffset import *
@@ -56,7 +55,6 @@ from dxf2gcode.domain.toolpath.leadmove import (ERROR, LEAD_OFF, LEAD_RADIUS,
                                    lead_move_enabled, machine_g40_approach,
                                    reverse_chain, resolve_radius)
 
-from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 import logging
 logger = logging.getLogger('core.stmove')
@@ -69,10 +67,14 @@ class StMove(object):
     to the shape of its parent
     """
     # only need default arguments here because of the change of usage with super in QGraphicsLineItem
-    def __init__(self, shape=None):
+    def __init__(self, shape=None, settings=None, translate=None):
         if shape is None:
             return
 
+        if settings is None:
+            raise ValueError("geometry preparation requires explicit settings")
+        self.settings = settings
+        self._translate = translate or (lambda context, text: text)
         self.shape = shape
 
         self.updateShape()
@@ -87,8 +89,7 @@ class StMove(object):
         @param: string_to_translate: a unicode string
         @return: the translated unicode string if it was possible to translate
         """
-        return str(QtCore.QCoreApplication.translate("StMove",
-                                                     string_to_translate))
+        return self._translate("StMove", string_to_translate)
 
     def append(self, geo):
         # we don't want to additional scale / rotate the stmove geo
@@ -96,102 +97,9 @@ class StMove(object):
         geo.make_abs_geo()
         self.geos.append(geo)
 
-    def _last_pass_is_mirrored(self):
-        """
-        True if the last depth pass of an open contour is the mirrored one.
 
-        The open contours are milled in alternating directions: the first pass
-        is the original direction, the second one is mirrored, the third one
-        is the original again and so on. The cutter compensation is switched
-        with every pass.
 
-        @return: True if the last pass is the mirrored one
-        """
-        if self.shape.closed:
-            return False
-        try:
-            number_of_passes = len(self.shape.get_pass_depths())
-        except Exception:
-            return False
-        return number_of_passes % 2 == 0
 
-    def set_break_chain(self, chain):
-        """
-        The chain of the last pass with the break (tab) hops.
-
-        The tabs are not cut: the export hops over them. The preview of the
-        exit geometry has to show the same, so the preview is built from this
-        chain (the tabs are the gaps in the preview).
-
-        @param chain: the chain with the break hops or None if the tabs can
-                not be determined
-        """
-        self.break_chain = chain
-        self.rebuild_exit_preview()
-
-    def rebuild_exit_preview(self):
-        """
-        Recalculate the preview of the exit geometry.
-        """
-        chain = self.break_chain if self.break_chain else self.exit_chain
-        if not chain:
-            self.exit_geos = Geos([])
-            return
-        self._build_exit_preview(list(chain), self.lead_space)
-
-    def _build_exit_preview(self, chain, space):
-        """
-        The preview of the lead out and the overcut: the geometry which is
-        written at the end of the last pass.
-
-        It is only used for the preview in the canvas - the export calculates
-        the same geometry again with the geometry of the pass which is
-        exported (see Shape.write_lead_out_and_overcut).
-
-        Known limitations of the preview:
-        * The drag knife has no preview: its overcut is inserted into the
-          contour before the tip offset is applied, so the tip path of the
-          overcut can not be derived from the toolpath here.
-
-        @param chain: the chain of the toolpath of the last pass
-        @param space: SPACE_NOMINAL (the machine compensates) or
-                      SPACE_TOOL_CENTER (dxf2gcode compensates)
-        """
-        self.exit_geos = Geos([])
-        layer = effective_tool(self.shape)
-        lead_out_mode = get_lead_out_mode(self.shape)
-        overcut_enabled = get_overcut_enabled(
-            self.shape, g.config.vars.Lead_In_Out['overcut_enabled'])
-        self.exit_error = ""
-        if not lead_move_enabled():
-            return
-        if lead_out_mode == LEAD_OFF and not overcut_enabled:
-            return
-        chain = list(chain)
-        if not chain:
-            return
-        side = self.lead_side
-        if self._last_pass_is_mirrored():
-            # The last pass is the mirrored one: the exit geometry is mirrored
-            # as well. The free side (away from the material) is a physical
-            # property, so relative to the reversed travel direction the lead
-            # out has to curve to the other side. This holds for the machine
-            # and for the internal cutter compensation.
-            chain = reverse_chain(chain)
-            side = -side
-        exit_geos, status, message = build_exit_geometries(
-            chain, side, space, layer.getToolRadius(), lead_out_mode,
-            getattr(layer, 'lead_radius', 0.0), overcut_enabled,
-            getattr(layer, 'overcut_length', 0.0), closed=self.shape.closed,
-            lead_length=getattr(layer, 'lead_length', 0.0))
-        if status == ERROR:
-            # An invalid geometry is reported by the export, the preview
-            # stays empty and the error is shown in the canvas.
-            self.exit_error = message
-            logging.warning(self.tr("Shape %i: %s") % (self.shape.nr,
-                                                        message))
-            return
-        self.exit_geos = Geos(exit_geos)
 
     def _build_lead_in(self, start, angle, side, space,
                        use_lead_length=False):
@@ -215,11 +123,11 @@ class StMove(object):
                       False keeps the historical tool center radius (G40)
         @return: True if the lead in could be built (or is not needed)
         """
-        layer = effective_tool(self.shape)
-        lead_in_mode = get_lead_in_mode(self.shape)
+        layer = self.settings.tool
+        lead_in_mode = self.settings.lead_in_mode
         if lead_in_mode not in (LEAD_STRAIGHT, LEAD_RADIUS, LEAD_STARTMOVE):
             return True
-        if not lead_move_enabled():
+        if not lead_move_enabled(self.settings.machine_type):
             # The lathe is not supported by the lead in (the X axis is the
             # diameter there).
             return True
@@ -319,14 +227,14 @@ class StMove(object):
         # works on the original contour (previous behaviour).
         self.pocket_wall_reference = None
 
-        if g.config.machine_type == 'drag_knife':
+        if self.settings.machine_type == 'drag_knife':
             self.make_swivelknife_move()
             # All swivel knife geometries belong to the compensated toolpath
             self.pocket_geos_start = len(self.geos)
             return
 
         # Get tool radius based on tool diameter.
-        tool_rad = effective_tool(self.shape).getToolRadius()
+        tool_rad = self.settings.tool.getToolRadius()
 
         # Calculate the starting point with and without compensation.
         start = self.start
@@ -349,7 +257,7 @@ class StMove(object):
             self.append(circle)
 
 
-        elif (not g.config.vars.Cutter_Compensation["done_by_machine"] and
+        elif (not self.settings.machine_compensation and
                 (self.shape.cut_cor != 40 or self.shape.Pocket)):
             # Software cutter compensation: the compensated contour is baked
             # into the exported geometry.
@@ -360,7 +268,7 @@ class StMove(object):
 
             logging.debug("We have custom offset by tool")
 
-            toolwidth = effective_tool(self.shape).getToolRadius()
+            toolwidth = self.settings.tool.getToolRadius()
 
             # Additional offset (finishing allowance) of this individual shape:
             # it is added to the cutter radius so that a roughing pass can leave
@@ -382,7 +290,7 @@ class StMove(object):
                             "the cutter compensation (tool diameter %.3f mm) - "
                             "the shape will NOT be milled!")
                     % (self.shape.nr, extra_offset,
-                       effective_tool(self.shape).tool_diameter))
+                       self.settings.tool.tool_diameter))
                 self.pocket_geos_start = len(self.geos)
                 return
 
@@ -416,7 +324,6 @@ class StMove(object):
                 # The preview of the lead out and the overcut.
                 self.lead_space = SPACE_TOOL_CENTER
                 self.exit_chain = list(self.shape.geos)
-                self._build_exit_preview(self.exit_chain, SPACE_TOOL_CENTER)
             else:
                 offshape = offShapeClass(parent = self.shape, offset = comp_offset, offtype = offtype)
 
@@ -427,7 +334,7 @@ class StMove(object):
                     # the user gets a meaningful hint. With an empty stmove,
                     # Write_GCode skips this shape.
                     status = getattr(offshape, "offset_status", None)
-                    tool_dia = effective_tool(self.shape).tool_diameter
+                    tool_dia = self.settings.tool.tool_diameter
                     if status == "vanished":
                         # Reliable border case: nothing left to mill.
                         if self.shape.Pocket:
@@ -507,8 +414,6 @@ class StMove(object):
                     self.lead_space = SPACE_TOOL_CENTER
                     self.exit_chain = list(
                         self.geos[1 + len(self.lead_in_geos):])
-                    self._build_exit_preview(self.exit_chain,
-                                             SPACE_TOOL_CENTER)
 
                     if (self.shape.Pocket and
                             self.shape.cut_cor in (41, 42)):
@@ -560,13 +465,12 @@ class StMove(object):
             # compensation the contour itself is the tool center path.
             self.lead_space = SPACE_TOOL_CENTER
             self.exit_chain = list(self.shape.geos)
-            self._build_exit_preview(self.exit_chain, SPACE_TOOL_CENTER)
 
         # Cutting Compensation Left / Right
         elif self.shape.cut_cor == 41 or self.shape.cut_cor == 42:
             side = 1 if self.shape.cut_cor == 41 else -1
             self.lead_side = side
-            lead_in_mode = get_lead_in_mode(self.shape)
+            lead_in_mode = self.settings.lead_in_mode
             if lead_in_mode in (LEAD_RADIUS, LEAD_STARTMOVE):
                 # The circle and the start move are programmed in the nominal
                 # plane: G41/G42 is activated after the plunge (see
@@ -585,7 +489,7 @@ class StMove(object):
                     self.pocket_geos_start = len(self.geos)
                     return
                 nominal = Geos(list(self.lead_in_geos))
-                tool_radius = effective_tool(self.shape).getToolRadius()
+                tool_radius = self.settings.tool.getToolRadius()
                 # Calculate compensated start position of the first nominal segment
                 first = nominal[0]
                 line_length = first.Ps.distance(first.Pe)
@@ -613,7 +517,7 @@ class StMove(object):
                 # activated at the end of the lead in (see shape.Write_GCode).
                 # The nominal contour itself is still compensated by the
                 # machine.
-                tool_radius = effective_tool(self.shape).getToolRadius()
+                tool_radius = self.settings.tool.getToolRadius()
                 normal = Point(x=-sin(angle) * side, y=cos(angle) * side)
                 offset_start = start + normal * tool_radius
                 if not self._build_lead_in(offset_start, angle, side,
@@ -631,7 +535,6 @@ class StMove(object):
             # center plane (LEAD_STRAIGHT).
             self.lead_space = SPACE_NOMINAL
             self.exit_chain = list(self.shape.geos)
-            self._build_exit_preview(self.exit_chain, SPACE_NOMINAL)
 
         # Remember where the pocket mill geometries start. Everything before
         # belongs to the G41/G42 compensation contour (or the start moves).
@@ -647,9 +550,11 @@ class StMove(object):
             if len(self.geos) == 0:
                 self.append(RapidPos(self.start))
             
-            pocket = PocketMill(self)
+            pocket = PocketMill(self, edge_clearance_percent=self.settings.pocket_edge_clearance,
+                                translate=self._translate)
             try:
-                pocket.createLines()
+                for geometry in pocket.generate():
+                    self.append(geometry)
             except Exception:
                 # Safety net: an unexpected error in the pocket calculation
                 # must not crash the application nor leave a half-built
@@ -668,14 +573,13 @@ class StMove(object):
         @param offset: knife tip distance from tool centerline. The radius of the
         tool is used for this.
         """
-        offset = effective_tool(self.shape).getToolRadius()
+        offset = self.settings.tool.getToolRadius()
         drag_angle = self.shape.drag_angle
 
         # The direction the knife points to when the cut starts. The default
         # (0 degree = positive X axis) is the behaviour of the program before
         # the start orientation became configurable.
-        start_angle = radians(g.config.vars.Drag_Knife_Options[
-            'drag_start_angle'])
+        start_angle = radians(self.settings.drag_start_angle)
         startnorm = offset * Point(cos(start_angle), sin(start_angle))
         prvend, prvnorm = Point(), Point()
         first = True
@@ -686,10 +590,9 @@ class StMove(object):
         # the closing point as well.
         contour_geos = list(self.shape.geos.abs_iter())
         overcut_geos = []
-        if (get_overcut_enabled(self.shape,
-                                  g.config.vars.Lead_In_Out['overcut_enabled']) and
-                lead_move_enabled()):
-            overcut_length = getattr(effective_tool(self.shape), 'overcut_length',
+        if (self.settings.shape_overcut and
+                lead_move_enabled(self.settings.machine_type)):
+            overcut_length = getattr(self.settings.tool, 'overcut_length',
                                      0.0)
             if overcut_length > 0.0 and self.shape.closed:
                 # The overcut is only possible for closed contours: an open
@@ -778,12 +681,6 @@ class StMove(object):
         self.geos[0].make_abs_geo()
 
 
-    def make_path(self, drawHorLine, drawVerLine):
-        for geo in self.geos.abs_iter():
-            drawVerLine(self.shape, geo.get_start_end_points(True))
-            geo.make_path(self.shape, drawHorLine)
-        if len(self.geos):
-            drawVerLine(self.shape, geo.get_start_end_points(False))
 
 
 class RapidPos(Point):

@@ -115,9 +115,14 @@ class Breaks(object):
         for breakGeo in breakShape.geos.abs_iter():
             if isinstance(breakGeo, LineGeo):
                 breakLine = QLineF(breakGeo.Ps.x, breakGeo.Ps.y, breakGeo.Pe.x, breakGeo.Pe.y)
-                intersection = QPointF(0, 0)  # values do not matter
-                res = line.intersect(breakLine, intersection)
-                if res == QLineF.BoundedIntersection:
+                if hasattr(line, "intersects"):
+                    res, intersection = line.intersects(breakLine)
+                else:
+                    # Retain compatibility with older Qt5 releases.
+                    intersection = QPointF(0, 0)
+                    res = line.intersect(breakLine, intersection)
+                intersection_types = getattr(QLineF, "IntersectionType", QLineF)
+                if res == intersection_types.BoundedIntersection:
                     intersections.append(Point(intersection.x(), intersection.y()))
         return intersections
 

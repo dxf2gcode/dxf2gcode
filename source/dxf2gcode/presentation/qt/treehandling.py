@@ -40,6 +40,7 @@ It has the following functions:
 from __future__ import absolute_import
 
 from math import degrees
+from dxf2gcode.presentation.qt.toolpath_labels import lead_mode_labels
 import logging
 
 import dxf2gcode.bootstrap.runtime_state as g
@@ -55,7 +56,7 @@ from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 from dxf2gcode.domain.toolpath.leadmove import (LEAD_DEFAULT, LEAD_OFF, LEAD_RADIUS,
                                      LEAD_STARTMOVE, LEAD_STRAIGHT,
                                      OVERCUT_DEFAULT, OVERCUT_OFF, OVERCUT_ON,
-                                     lead_mode_labels, mode_needs_length,
+                                     mode_needs_length,
                                      mode_needs_radius)
 from dxf2gcode.presentation.qt.treeview import MyStandardItemModel
 
@@ -1428,7 +1429,7 @@ class TreeHandler(QWidget):
         self.ui.zRetractionArealLineEdit.setPalette(self.palette)  # Restore color
 
         # Get the new value and convert it to float
-        val = toFloat(self.ui.zRetractionArealLineEdit.text())
+        val = self._edited_parameter_value(self.ui.zRetractionArealLineEdit)
         if val[1]:
             selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
 
@@ -1455,7 +1456,7 @@ class TreeHandler(QWidget):
         self.ui.zSafetyMarginLineEdit.setPalette(self.palette)  # Restore color
 
         # Get the new value and convert it to float
-        val = toFloat(self.ui.zSafetyMarginLineEdit.text())
+        val = self._edited_parameter_value(self.ui.zSafetyMarginLineEdit)
         if val[1]:
             selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
 
@@ -1482,7 +1483,7 @@ class TreeHandler(QWidget):
         self.ui.zInfeedDepthLineEdit.setPalette(self.palette)  # Restore color
 
         # Get the new value and convert it to float
-        val = toFloat(self.ui.zInfeedDepthLineEdit.text())
+        val = self._edited_parameter_value(self.ui.zInfeedDepthLineEdit)
         if val[1]:
             selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
 
@@ -1509,7 +1510,7 @@ class TreeHandler(QWidget):
         self.ui.g1FeedXYLineEdit.setPalette(self.palette)  # Restore color
 
         # Get the new value and convert it to float
-        val = toFloat(self.ui.g1FeedXYLineEdit.text())
+        val = self._edited_parameter_value(self.ui.g1FeedXYLineEdit)
         if val[1]:
             selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
 
@@ -1532,7 +1533,7 @@ class TreeHandler(QWidget):
         self.ui.g1FeedZLineEdit.setPalette(self.palette)  # Restore color
 
         # Get the new value and convert it to float
-        val = toFloat(self.ui.g1FeedZLineEdit.text())
+        val = self._edited_parameter_value(self.ui.g1FeedZLineEdit)
         if val[1]:
             selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
 
@@ -1555,7 +1556,7 @@ class TreeHandler(QWidget):
         self.ui.zInitialMillDepthLineEdit.setPalette(self.palette)  # Restore color
 
         # Get the new value and convert it to float
-        val = toFloat(self.ui.zInitialMillDepthLineEdit.text())
+        val = self._edited_parameter_value(self.ui.zInitialMillDepthLineEdit)
         if val[1]:
             selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
 
@@ -1582,7 +1583,7 @@ class TreeHandler(QWidget):
         self.ui.zFinalMillDepthLineEdit.setPalette(self.palette)  # Restore color
 
         # Get the new value and convert it to float
-        val = toFloat(self.ui.zFinalMillDepthLineEdit.text())
+        val = self._edited_parameter_value(self.ui.zFinalMillDepthLineEdit)
         if val[1]:
             selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
 
@@ -1609,7 +1610,7 @@ class TreeHandler(QWidget):
         self.ui.millingOffsetLineEdit.setPalette(self.palette)  # Restore color
 
         # Get the new value and convert it to float
-        val = toFloat(self.ui.millingOffsetLineEdit.text())
+        val = self._edited_parameter_value(self.ui.millingOffsetLineEdit)
         if val[1]:
             selected_indexes_list = self.ui.layersShapesTreeView.selectedIndexes()
 
@@ -2127,6 +2128,14 @@ class TreeHandler(QWidget):
             palette.setColor(role, QtCore.Qt.GlobalColor.gray)
         return palette
 
+    @staticmethod
+    def _edited_parameter_value(widget):
+        # A rounded display is not a request to replace the original value.
+        if (not widget.isModified() and
+                widget.text() == getattr(widget, '_parameter_display_text', None)):
+            return (0.0, False)
+        return toFloat(widget.text().replace(',', '.'))
+
     def _set_parameter_widget(self, widget, state, value, standard):
         """
         Show one parameter state in its widget (single central styling).
@@ -2137,6 +2146,9 @@ class TreeHandler(QWidget):
         palette = QPalette(self.palette)
         if state == sps.SAME:
             widget.setText(str(round(value, 4)))
+            widget._parameter_display_text = widget.text()
+            if hasattr(widget, 'setModified'):
+                widget.setModified(False)
             if standard:
                 self._gray_palette(palette)
             widget.setPalette(palette)

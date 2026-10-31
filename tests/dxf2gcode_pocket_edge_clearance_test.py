@@ -60,7 +60,7 @@ from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
 from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape  # noqa: E402
 from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode_stmove_gcode_test import make_postpro, norm  # noqa: E402
 
@@ -111,7 +111,7 @@ def build(mode, cut_cor, pct, reversed_dir=False, geos=None):
     s.calc_bounding_box()
     g.config.vars.Cutter_Compensation["done_by_machine"] = False
     with contextlib.redirect_stdout(io.StringIO()):
-        st = StMove(s)
+        st = prepare_shape(s)
     s.stmove = st
     return s, st
 

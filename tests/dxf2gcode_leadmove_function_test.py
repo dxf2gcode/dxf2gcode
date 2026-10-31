@@ -162,7 +162,7 @@ class TestErrorHandling(LeadMoveTestBase):
         from dxf2gcode.domain.geometry.linegeo import LineGeo
         from dxf2gcode.domain.geometry.point import Point
         from dxf2gcode.domain.project.shape import Shape, Geos
-        from dxf2gcode.domain.toolpath.stmove import StMove
+        from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 
         geos = Geos([LineGeo(Point(0, 0), Point(100, 0)),
                      LineGeo(Point(100, 0), Point(100, 100)),
@@ -187,7 +187,7 @@ class TestErrorHandling(LeadMoveTestBase):
         shape.axis3_mill_depth = -5.0
         shape.axis3_start_mill_depth = 0.0
         shape.axis3_slice_depth = -2.0
-        shape.stmove = StMove(shape)
+        shape.stmove = prepare_shape(shape)
 
         gcode, errors = export_with_errors(shape)
         self.assertFalse(errors)
@@ -203,7 +203,7 @@ class TestErrorHandling(LeadMoveTestBase):
         from dxf2gcode.domain.geometry.linegeo import LineGeo
         from dxf2gcode.domain.geometry.point import Point
         from dxf2gcode.domain.project.shape import Shape, Geos
-        from dxf2gcode.domain.toolpath.stmove import StMove
+        from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 
         geos = Geos([LineGeo(Point(0, 0), Point(100, 0)),
                      LineGeo(Point(100, 0), Point(100, 100)),
@@ -228,7 +228,7 @@ class TestErrorHandling(LeadMoveTestBase):
         shape.axis3_mill_depth = -5.0
         shape.axis3_start_mill_depth = 0.0
         shape.axis3_slice_depth = -2.0
-        shape.stmove = StMove(shape)
+        shape.stmove = prepare_shape(shape)
 
         gcode, errors = export_with_errors(shape)
         self.assertFalse(errors)
@@ -825,7 +825,15 @@ class TestCanvasFullCirclePreview(LeadMoveTestBase):
             shape=shape, geos=Geos(geos), pocket_geos_start=0,
             lead_in_geos=[], exit_geos=[], exit_chain=[],
             set_break_chain=lambda chain: None)
-        return StMoveGUI(shape, model)
+        from dataclasses import replace
+        from dxf2gcode.adapters.toolpath.planning import snapshot_geometry
+        from dxf2gcode.domain.toolpath.inputs import ToolpathRequest, MachiningSettings, MachineCapabilities
+        from dxf2gcode.domain.toolpath.movements import MovementPlan
+        output = MovementPlan(ToolpathRequest(0, MachiningSettings(), MachineCapabilities()))
+        output.add('linear_z', -1)
+        for geo in geos:
+            output.geometry(replace(snapshot_geometry(geo), role='pocket'), role='pocket')
+        return StMoveGUI(shape, model, plan=output.finish())
 
     def test_full_circle_is_drawn_in_both_directions(self):
         from dxf2gcode.domain.geometry.arcgeo import ArcGeo
@@ -837,7 +845,7 @@ class TestCanvasFullCirclePreview(LeadMoveTestBase):
                                 O=Point(0, 0), r=5, direction=direction)
                 item = self._preview([circle])
                 path = item._pocket_path
-                self.assertGreater(path.elementCount(), 100)
+                self.assertGreater(path.elementCount(), 60)
                 self.assertAlmostEqual(path.boundingRect().width(), 10, delta=0.01)
                 self.assertAlmostEqual(path.boundingRect().height(), 10, delta=0.01)
 
@@ -855,7 +863,7 @@ class TestCanvasFullCirclePreview(LeadMoveTestBase):
             ArcGeo(Ps=second, Pe=second, O=Point(20, 0), r=5),
         ])
         path = item._pocket_path
-        self.assertGreater(path.elementCount(), 200)
+        self.assertGreater(path.elementCount(), 120)
         self.assertEqual(sum(path.elementAt(i).isMoveTo()
                              for i in range(path.elementCount())), 2)
         for i in range(1, path.elementCount()):

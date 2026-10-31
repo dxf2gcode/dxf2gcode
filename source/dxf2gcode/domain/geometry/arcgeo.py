@@ -34,10 +34,8 @@ from copy import deepcopy
 from dxf2gcode.domain.geometry.point import Point
 
 from dxf2gcode.domain.geometry.boundingbox import BoundingBox
-import dxf2gcode.bootstrap.runtime_state as g
 
-import dxf2gcode.domain.constants as c
-from dxf2gcode.presentation.qt.qt_compat import QtCore
+from dxf2gcode.domain.toolpath.messages import QT_TRANSLATE_NOOP
 
 import logging
 logger = logging.getLogger("core.arcgeo")
@@ -53,7 +51,8 @@ class ArcGeo(object):
     """
 
     def __init__(self, Ps=None, Pe=None, O=None, r=1,
-                 s_ang=None, e_ang=None, direction=1, drag=False):
+                 s_ang=None, e_ang=None, direction=1, drag=False,
+                 fitting_tolerance=0.001):
         """
         Standard Method to initialize the ArcGeo. Not all of the parameters are
         required to fully define a arc. e.g. Ps and Pe may be given or s_ang and
@@ -85,7 +84,7 @@ class ArcGeo(object):
                 arc = self.Pe.norm_angle(self.Ps) - pi / 2
                 m = self.Pe.distance(self.Ps) / 2
 
-                if abs(self.r - m) < g.config.fitting_tolerance:
+                if abs(self.r - m) < fitting_tolerance:
                     lo = 0.0
                 else:
                     lo = sqrt(pow(self.r, 2) - pow(m, 2))
@@ -352,8 +351,7 @@ class ArcGeo(object):
         @param string_to_translate: a unicode string
         @return: the translated unicode string if it was possible to translate
         """
-        return str(QtCore.QCoreApplication.translate('ArcGeo',
-                                                           string_to_translate))
+        return QT_TRANSLATE_NOOP('ArcGeo', string_to_translate)
 
     def update_start_end_points(self, start_point, value):
         prv_dir = self.ext

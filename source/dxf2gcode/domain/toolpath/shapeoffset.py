@@ -34,10 +34,9 @@ import logging
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.domain.geometry.point import Point
-from dxf2gcode.domain.project.shape import Geos
-from dxf2gcode.domain.project.shape import Shape
+from dxf2gcode.domain.geometry.collections import Geos
+from dxf2gcode.domain.geometry.collections import ContourGeometry
 
-import dxf2gcode.bootstrap.runtime_state as g
 
 logger = logging.getLogger('core.shapeoffset')
 
@@ -46,7 +45,7 @@ min_length=0.01
 
 
 
-class offShapeClass(Shape):
+class offShapeClass(ContourGeometry):
 
     """
     This Class is used to generate The fofset aof a shape according to:

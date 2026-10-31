@@ -3701,4 +3701,15 @@ Die Länge muss größer der Toleranz sein.
         <translation>Vom Import ausgeschlossene Layer: %s</translation>
     </message>
 </context>
+<context>
+    <name>ToolpathPreview</name>
+    <message>
+        <source>Programmed contour (G41/G42)</source>
+        <translation>Programmierte Kontur (G41/G42)</translation>
+    </message>
+    <message>
+        <source>Tool center path (G40)</source>
+        <translation>Werkzeugmittelpunktbahn (G40)</translation>
+    </message>
+</context>
 </TS>

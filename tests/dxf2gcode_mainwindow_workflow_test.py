@@ -15,6 +15,17 @@ _REPO_DIR = os.path.dirname(_TEST_DIR)
 class TestMainWindowWorkflow(unittest.TestCase):
     """Exercise load, canvas plot, tree edit, preview, and export together."""
 
+    def test_shown_frontplate_tree_buttons_after_manual_collapse(self):
+        with tempfile.TemporaryDirectory(prefix="d2g_tree_fold_") as temp_dir:
+            env = os.environ.copy()
+            env.update(QT_QPA_PLATFORM="offscreen", D2G_WORKFLOW_TEMP=temp_dir)
+            result = subprocess.run(
+                [sys.executable, __file__, "--worker", "--fold-worker"],
+                cwd=temp_dir, env=env, capture_output=True, timeout=15)
+            self.assertEqual(result.returncode, 0,
+                             result.stdout.decode("utf-8", errors="replace") +
+                             result.stderr.decode("utf-8", errors="replace"))
+
     def test_mainwindow_load_edit_preview_and_export(self):
         with tempfile.TemporaryDirectory(prefix="d2g_mainwindow_") as temp_dir:
             env = os.environ.copy()
@@ -37,6 +48,10 @@ class TestMainWindowWorkflow(unittest.TestCase):
 def _run_mainwindow_workflow():
     """Worker entry point; run separately so a Qt crash cannot kill unittest."""
     from types import SimpleNamespace
+    fold_worker = "--fold-worker" in sys.argv
+    if fold_worker:
+        import faulthandler
+        faulthandler.dump_traceback_later(4, repeat=True)
 
     sys.path.insert(0, os.path.join(_REPO_DIR, "source"))
     import dxf2gcode.bootstrap.runtime_state as g
@@ -102,13 +117,52 @@ def _run_mainwindow_workflow():
         assert "Source branch:" in message
         assert "$Date" not in message and "$Revision" not in message
 
-    fixture = os.path.join(_REPO_DIR, "dxf", "test.dxf")
+    fixture = os.path.join(_REPO_DIR, "dxf", "Frontplatte_Texte_aufgebrochen.dxf"
+                           if fold_worker else "test.dxf")
+    if fold_worker:
+        window.show()
+        app.processEvents()
     window.filename = fixture
     assert window.load() is True
     assert len(window.shapes) > 0
     assert window.canvas.scene() is window.canvas_scene
     assert len(window.canvas_scene.items()) > len(window.shapes)
     assert_empty_machining_dropdowns()
+
+    if fold_worker:
+        from importlib import import_module
+        QTest = import_module("PyQt%d.QtTest" % PYQT_VERSION).QTest
+        for tab, view, collapse, expand in (
+                (1, window.ui.layersShapesTreeView, window.ui.layersCollapsePushButton,
+                 window.ui.layersExpandPushButton),
+                (0, window.ui.entitiesTreeView, window.ui.blocksCollapsePushButton,
+                 window.ui.blocksExpandPushButton)):
+            window.ui.mytabWidget.setCurrentIndex(tab)
+            view.expandAll()
+            app.processEvents()
+            for row in range(view.model().rowCount()):
+                index = view.model().index(row, 0)
+                if not view.model().hasChildren(index):
+                    continue
+                for button in (expand, collapse):
+                    view.setCurrentIndex(view.model().index(0, 0, index))
+                    view.scrollTo(index)
+                    app.processEvents()
+                    rect = view.visualRect(index)
+                    branch = QtCore.QPoint(
+                        rect.left() - view.indentation() // 2, rect.center().y())
+                    QTest.mouseClick(view.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                                     pos=branch)
+                    app.processEvents()
+                    assert not view.isExpanded(index), (tab, row)
+                    print("Click fold button", tab, row, button.objectName(), flush=True)
+                    QTest.mouseClick(button, QtCore.Qt.MouseButton.LeftButton)
+                    app.processEvents()
+                    view.expandAll()
+                    app.processEvents()
+        window.close()
+        faulthandler.cancel_dump_traceback_later()
+        return
 
     # Both actual toolbars follow their own tree, including the Entities root.
     for view, collapse, expand in (

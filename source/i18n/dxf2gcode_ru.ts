@@ -3915,4 +3915,15 @@ Skipped Geometries</source>
         <translation>Слои, исключённые из импорта: %s</translation>
     </message>
 </context>
+<context>
+    <name>ToolpathPreview</name>
+    <message>
+        <source>Programmed contour (G41/G42)</source>
+        <translation>Запрограммированный контур (G41/G42)</translation>
+    </message>
+    <message>
+        <source>Tool center path (G40)</source>
+        <translation>Траектория центра инструмента (G40)</translation>
+    </message>
+</context>
 </TS>

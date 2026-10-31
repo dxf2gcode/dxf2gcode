@@ -20,7 +20,7 @@ from dxf2gcode.domain.project.layercontent import LayerContent, Layers  # noqa: 
 from dxf2gcode.domain.geometry.point import Point  # noqa: E402
 from dxf2gcode.domain.project.shape import Shape  # noqa: E402
 from dxf2gcode.domain.toolpath.shapeoffset import offShapeClass  # noqa: E402
-from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape  # noqa: E402
 from dxf2gcode.adapters.dxf.parser import ReadDXF  # noqa: E402
 from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor  # noqa: E402
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
@@ -110,7 +110,7 @@ class TestInteractiveWorkflow(unittest.TestCase):
         self.assertGreater(len(preview.geos), 0)
 
         # Export the selected shape through the production postprocessor.
-        shape.stmove = StMove(shape)
+        shape.stmove = prepare_shape(shape)
         layer.exp_order = [shape.nr]
         layer.exp_order_complete = [0]
         layers = Layers([layer])

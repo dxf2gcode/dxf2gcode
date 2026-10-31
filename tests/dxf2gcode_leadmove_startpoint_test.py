@@ -149,8 +149,8 @@ class StartPointTestBase(unittest.TestCase):
         return shape, layer
 
     def stmove_of(self, shape):
-        from dxf2gcode.domain.toolpath.stmove import StMove
-        stmove = StMove(shape)
+        from dxf2gcode.adapters.toolpath.preparation import prepare_shape
+        stmove = prepare_shape(shape)
         shape.stmove = stmove
         return stmove
 

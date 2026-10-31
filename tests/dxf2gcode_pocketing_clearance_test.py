@@ -61,7 +61,7 @@ from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.domain.toolpath.pocketmill import PocketMill  # noqa: E402
 from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.domain.toolpath.stmove import StMove  # noqa: E402
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape, preparation_settings  # noqa: E402
 from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 from dxf2gcode.domain.toolpath.pocketmove import PocketMove  # noqa: E402
 from dxf2gcode_pocketmill_zigzag_test import _load_shapes  # noqa: E402
@@ -155,7 +155,7 @@ def _pocket(tool_dia, cut_cor, pct):
     shape.calc_bounding_box()
     g.config.vars.Cutter_Compensation["done_by_machine"] = False
     with contextlib.redirect_stdout(io.StringIO()):
-        st = StMove(shape)
+        st = prepare_shape(shape)
     return shape, st
 
 
@@ -184,7 +184,7 @@ class TestEdgeClearanceConfiguration(unittest.TestCase):
     def test_unit_test_helper_default_matches_historic(self):
         # default configuration value must reproduce cutter_radius / 0.7
         _set_clearance(HISTORIC)
-        pct = PocketMill._pocket_edge_clearance_percent()
+        pct = preparation_settings(g.config).pocket_edge_clearance
         self.assertAlmostEqual(pct, HISTORIC, places=6)
         tool_rad = 1.0
         dist = tool_rad + pct / 100.0 * 2 * tool_rad
@@ -196,7 +196,7 @@ class TestEdgeClearanceConfiguration(unittest.TestCase):
         try:
             del g.config.vars.Pocketing.__dict__["pocket_edge_clearance"]
             self.assertAlmostEqual(
-                PocketMill._pocket_edge_clearance_percent(), HISTORIC, places=6)
+                preparation_settings(g.config).pocket_edge_clearance, HISTORIC, places=6)
         finally:
             g.config.vars.Pocketing.__dict__["pocket_edge_clearance"] = saved
 

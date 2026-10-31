@@ -156,13 +156,22 @@ class ShapePlanningInputs:
         breaks = getattr(postprocessor, "breaks", None)
         # Break intersection is an existing geometry adapter, not a postprocessor
         # movement call. Freeze its result before any strategy traverses passes.
-        split = (iter(breaks.getNewGeos(Geos(cut_geos)))
-                 if breaks is not None else iter(cut_geos))
+        pocket_ids = {id(geo) for geo in prepared[
+            getattr(shape.stmove, "pocket_geos_start", len(prepared)):]} if shape.Pocket else set()
+
+        def frozen(geo, role=None):
+            return replace(snapshot_geometry(geo),
+                           role=role or ("pocket" if id(geo) in pocket_ids else "cut"))
+
+        split = tuple(frozen(part, "pocket" if id(geo) in pocket_ids else "cut")
+                      for geo in cut_geos
+                      for part in (breaks.getNewGeos(Geos([geo]))
+                                   if breaks is not None else (geo,)))
         return ToolpathRequest(
             shape.nr, settings, capabilities,
             contour=tuple(snapshot_geometry(geo) for geo in contour),
-            prepared_path=tuple(snapshot_geometry(geo) for geo in prepared),
-            split_contour=tuple(snapshot_geometry(geo) for geo in split),
+            prepared_path=tuple(frozen(geo) for geo in prepared),
+            split_contour=split,
             lead_in=tuple(snapshot_geometry(geo) for geo in leads),
             lead_nominal_index=getattr(shape.stmove, "lead_in_nominal_index",
                                        len(leads)),

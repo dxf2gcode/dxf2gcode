@@ -46,6 +46,20 @@ class TestDomainImportBoundary(unittest.TestCase):
 
         subprocess.check_call([sys.executable, "-c", script], cwd=_SOURCE_DIR)
 
+    def test_all_geometry_and_toolpath_modules_import_without_qt_or_runtime(self):
+        script = (
+            "import sys, importlib, pkgutil; "
+            "sys.path.insert(0, {!r}); "
+            "import dxf2gcode.domain.geometry as geometry; "
+            "import dxf2gcode.domain.toolpath as toolpath; "
+            "[importlib.import_module(m.name) for package in (geometry, toolpath) "
+            "for m in pkgutil.walk_packages(package.__path__, package.__name__ + '.')]; "
+            "assert 'dxf2gcode.bootstrap.runtime_state' not in sys.modules; "
+            "assert not any(m.startswith(('PyQt', 'dxf2gcode.presentation', "
+            "'dxf2gcode.adapters.postprocessor')) for m in sys.modules)"
+        ).format(_SOURCE_DIR)
+        subprocess.check_call([sys.executable, "-c", script], cwd=_SOURCE_DIR)
+
     def test_application_use_cases_do_not_import_qt_or_runtime_globals(self):
         script = (
             "import sys; "
@@ -56,6 +70,18 @@ class TestDomainImportBoundary(unittest.TestCase):
             "assert 'dxf2gcode.bootstrap.runtime_state' not in sys.modules"
         ).format(_SOURCE_DIR)
 
+        subprocess.check_call([sys.executable, "-c", script], cwd=_SOURCE_DIR)
+
+    def test_profile_dialect_and_serializer_do_not_import_qt_or_runtime_globals(self):
+        script = (
+            "import sys; "
+            "sys.path.insert(0, {!r}); "
+            "from dxf2gcode.adapters.postprocessor.dialect import ProfileDialect; "
+            "from dxf2gcode.adapters.toolpath.gcode_exporter import ToolpathGCodeExporter; "
+            "assert 'dxf2gcode.presentation.qt.qt_compat' not in sys.modules; "
+            "assert 'dxf2gcode.bootstrap.runtime_state' not in sys.modules; "
+            "assert 'dxf2gcode.domain.toolpath.planner' not in sys.modules"
+        ).format(_SOURCE_DIR)
         subprocess.check_call([sys.executable, "-c", script], cwd=_SOURCE_DIR)
 
     def test_geometry_classes_are_defined_in_the_domain_package(self):

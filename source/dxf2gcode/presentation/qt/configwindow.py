@@ -88,7 +88,8 @@ from dxf2gcode.presentation.qt.qt_compat.QtCore import QLocale, QRegularExpressi
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 from dxf2gcode.presentation.qt.popupdialog import PopUpDialog
-from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF, validate_lead_move
+from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF
+from dxf2gcode.presentation.qt.toolpath_labels import validate_lead_move
 
 logger = logging.getLogger("Gui.ConfigWindow")
 
@@ -276,7 +277,7 @@ class ConfigWindow(QDialog):
         @param errors_list: a string that contains all the errors
         """
         errors_list = self.tr('Please correct the following error(s):\n') + errors_list
-        error_message = QMessageBox(QMessageBox.Critical, self.tr('Invalid changes'), errors_list);
+        error_message = QMessageBox(QMessageBox.Icon.Critical, self.tr('Invalid changes'), errors_list)
         error_message.exec()
 
 
@@ -954,6 +955,9 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
 
     def __init__(self, parent = None):
         QDoubleSpinBox.__init__(self, parent)
+        self._original_value = None
+        self.setDecimals(4)
+        self.lineEdit().textEdited.connect(self._value_edited)
         self.saved_suffix = ''
         #Let's use the locale decimal separator if it is different from the dot ('.')
         local_decimal_separator = QLocale().decimalPoint()
@@ -965,10 +969,28 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
         self.saved_suffix = suffix
         QDoubleSpinBox.setSuffix(self, suffix)
 
+    def setValue(self, value):
+        """Keep loaded precision until the user edits the displayed value."""
+        QDoubleSpinBox.setValue(self, value)
+        self._original_value = (value if self.minimum() <= value <= self.maximum()
+                                else None)
+
+    def value(self):
+        if self._original_value is not None:
+            return self._original_value
+        return QDoubleSpinBox.value(self)
+
+    def _value_edited(self, *args):
+        self._original_value = None
+
+    def stepBy(self, steps):
+        self._value_edited()
+        QDoubleSpinBox.stepBy(self, steps)
+
     def valueFromText(self, text):
         # result = float(text.replace('.', QLocale().decimalPoint()))
         # python expect a dot ('.') as decimal separator
-        text = qstr_encode(text).replace(str_encode(self.saved_suffix), '').replace(str(QLocale().decimalPoint()), '.')
+        text = qstr_encode(text).replace(str_encode(self.saved_suffix), '').replace(',', '.')
         return toFloat(text)[0]
 
     def validate(self, entry, pos):
@@ -1624,7 +1646,7 @@ class CfgTableToolParameters(CfgTable):
         if column > 0:
             #we use QDoubleSpinBox for storing the values
             spinbox = CorrectedDoubleSpinBox()
-            spinbox.setMinimum(0)
+            spinbox.setMinimum(-1000000000 if self.keys[column] == 'milling_offset' else 0)
             spinbox.setMaximum(1000000000) #Default value is 99
             computed_value = toFloat(value)[0]  # Convert the value to float
             spinbox.setValue(computed_value)

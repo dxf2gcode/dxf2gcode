@@ -112,7 +112,7 @@ class TestG40PocketStart1997(unittest.TestCase):
 
     def _pocket_added(self, shape, cut_cor=40, cw=True):
         from dxf2gcode.domain.project.layercontent import LayerContent
-        from dxf2gcode.domain.toolpath.stmove import StMove
+        from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 
         layer = LayerContent(0, "L", [shape])
         shape.parentLayer = layer
@@ -123,7 +123,7 @@ class TestG40PocketStart1997(unittest.TestCase):
         prev = g.config.vars.Cutter_Compensation["done_by_machine"]
         g.config.vars.Cutter_Compensation["done_by_machine"] = False
         try:
-            st = StMove(shape)
+            st = prepare_shape(shape)
         finally:
             g.config.vars.Cutter_Compensation["done_by_machine"] = prev
         return len(st.geos) - st.pocket_geos_start

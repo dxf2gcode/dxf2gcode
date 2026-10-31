@@ -2,8 +2,8 @@
 
 > Archivierter älterer Entwurf. Die enthaltenen `core/`- und `gui/`-Pfade
 > entsprechen nicht mehr der aktuellen Paketstruktur. Dieser Text ist kein
-> aktueller Umsetzungsauftrag; maßgeblich sind der Werkzeugwegplan und das
-> TODO im übergeordneten `doc`-Verzeichnis. Der damalige fachliche Inhalt
+> aktueller Umsetzungsauftrag; maßgeblich sind die [Architektur](../architecture.md)
+> und die [Todo](../todo.md). Der damalige fachliche Inhalt
 > bleibt als historische Referenz erhalten.
 
 ## Ziel

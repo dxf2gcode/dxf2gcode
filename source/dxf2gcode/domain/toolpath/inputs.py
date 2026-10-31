@@ -8,6 +8,19 @@ XY = Tuple[float, float]
 
 
 @dataclass(frozen=True)
+class PreparationSettings:
+    machine_type: str = "milling"
+    machine_compensation: bool = False
+    overcut_enabled: bool = False
+    drag_start_angle: float = 0.0
+    pocket_edge_clearance: float = 100.0 * 3 / 14
+    lead_in_mode: str = "off"
+    lead_out_mode: str = "off"
+    shape_overcut: bool = False
+    tool: object = None
+
+
+@dataclass(frozen=True)
 class PathGeometry:
     kind: str
     start: XY
@@ -26,10 +39,11 @@ class PathGeometry:
     depth: float = 0.0
     retract_depth: float = 0.0
     absolute: Optional["PathGeometry"] = None
+    role: str = "cut"
 
     @property
     def resolved(self):
-        return self.absolute if self.absolute is not None else self
+        return replace(self.absolute, role=self.role) if self.absolute is not None else self
 
     def reversed(self):
         return replace(

@@ -38,7 +38,7 @@ import math
 from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.domain.project.shape import Shape
 from dxf2gcode.domain.geometry.boundingbox import BoundingBox
-from dxf2gcode.domain.toolpath.stmove import StMove
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 from dxf2gcode.domain.geometry.breakgeo import BreakGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.presentation.qt.wpzero import WpZero
@@ -479,25 +479,17 @@ class MyGraphicsScene(QGraphicsScene):
         @param shape: The shape to be plotted.
         """
         model = shape.model
-        model.stmove = StMove(model)
+        model.stmove = prepare_shape(model, build_preview=False)
         plan = self._shape_toolpath_plan(model)
         shape.path = QPainterPath()
-        if plan is None:
-            start, start_ang = model.get_start_end_points(True, True)
-            shape.path.moveTo(start.x, -start.y)
-            drawHorLine = lambda caller, start, end: shape.path.lineTo(end.x, -end.y)
-            drawVerLine = lambda caller, start: None  # Not used in 2D mode
-            model.make_path(drawHorLine, drawVerLine)
-            model.toolpath_plan = None
-        else:
-            from dxf2gcode.application.toolpath.projections import plan_xy_segments
-            segments = plan_xy_segments(plan)
-            if segments:
-                first_start = segments[0][0]
-                shape.path.moveTo(first_start[0], -first_start[1])
-                for _start, end in segments:
-                    shape.path.lineTo(end[0], -end[1])
-            model.toolpath_plan = plan
+        # The imported contour owns the always-visible path and hit area.
+        # Planned machining movements belong only to the selection overlay.
+        start, _ = model.get_start_end_points(True, True)
+        shape.path.moveTo(start.x, -start.y)
+        model.make_path(
+            lambda caller, start, end: shape.path.lineTo(end.x, -end.y),
+            lambda caller, start: None)
+        model.toolpath_plan = plan
 
         self.BB = self.BB.joinBB(model.BB)
 
@@ -514,16 +506,8 @@ class MyGraphicsScene(QGraphicsScene):
 
     @staticmethod
     def _shape_toolpath_plan(shape):
-        """Use the shared toolpath planner for the preview."""
-        window = getattr(g, "window", None)
-        postprocessor = getattr(window, "MyPostProcessor", None)
-        if postprocessor is None:
-            return None
-        try:
-            return postprocessor.plan_shape_toolpath(shape)
-        except (AttributeError, TypeError, ValueError):
-            # An incomplete GUI setup should retain the established preview path.
-            return None
+        from dxf2gcode.adapters.toolpath.preview import preview_plan
+        return preview_plan(shape)
 
     def draw_wp_zero(self):
         """
@@ -591,7 +575,7 @@ class MyGraphicsScene(QGraphicsScene):
         window when the shape is selected
         @param shape: The shape for which the Move shall be created.
         """
-        stmove = StMoveGUI(shape, shape.stmove)
+        stmove = StMoveGUI(shape, shape.stmove, plan=getattr(shape, 'toolpath_plan', None))
         return stmove
 
     def delete_opt_paths(self):
@@ -908,9 +892,10 @@ class StMoveGUI(QGraphicsItem):
                         QtCore.Qt.PenCapStyle.RoundCap, QtCore.Qt.PenJoinStyle.RoundJoin)
     PEN_WARNING.setCosmetic(True)
 
-    def __init__(self, shape, model=None):
+    def __init__(self, shape, model=None, plan=None):
         QGraphicsItem.__init__(self)
-        self.model = model or StMove(shape)
+        self.model = model or prepare_shape(shape)
+        self._provided_plan = plan
 
         self.allwaysshow = False
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, False)
@@ -926,8 +911,9 @@ class StMoveGUI(QGraphicsItem):
         # The preview of the lead out and the overcut (the movements which are
         # written at the end of the last pass).
         self._exit_path = QPainterPath()
+        self._tab_path = QPainterPath()
 
-        self._rebuild_paths_from_geos()
+        self._rebuild_paths_from_plan()
 
     def __getattr__(self, name):
         model = self.__dict__.get('model')
@@ -941,202 +927,41 @@ class StMoveGUI(QGraphicsItem):
         """
         return float(0x7fffffff)
 
-    def _break_chain(self):
-        """
-        The chain of the last pass with the break (tab) hops.
 
-        The tabs are not cut: the export hops over them. The preview of the
-        exit geometry has to show the same, so the tabs are calculated here
-        with the same class the export uses (postpro/breaks.py). The break
-        layers are part of the layer contents, so this is only possible in
-        the GUI context.
-
-        @return: the chain with the break hops or None if the tabs can not be
-                determined
-        """
-        chain = getattr(self, 'exit_chain', None)
-        if not chain:
-            return None
-        shape = self.model.shape
-        if shape is not None and getattr(shape, 'break_pass', -1) == 0:
-            # The breaks are never processed: there are no tabs.
-            return None
-        layers = getattr(getattr(g, "window", None), "layerContents", None)
-        if layers is None:
-            return None
-        try:
-            from dxf2gcode.domain.project.shape import Geos
-            from dxf2gcode.adapters.postprocessor.breaks import Breaks
-            return Breaks(layers).getNewGeos(Geos(list(chain)))
-        except Exception:
-            return None
-
-    def _rebuild_paths_from_geos(self):
-        """Rebuild _comp_path, _pocket_path and _rapid_paths from current geos."""
+    def _rebuild_paths_from_plan(self):
+        """Build all auxiliary paths from the same actions used by export."""
+        from dxf2gcode.adapters.toolpath.preview import preview_plan
+        from dxf2gcode.application.toolpath.projections import plan_preview_segments
         self._comp_path = QPainterPath()
         self._pocket_path = QPainterPath()
         self._rapid_paths = []
         self._lead_in_path = QPainterPath()
         self._exit_path = QPainterPath()
-
-        # The user has to know why the geometry of this shape is not complete.
-        # The message is set before the paths are built: if the geometry could
-        # not be calculated at all, there is no path to draw, but the warning
-        # still has to be shown.
-        self.setToolTip(self._warning())
-
-        try:
-            first_geo = self.geos.abs_el(0)
-            start = first_geo.get_start_end_points(True)
-            prev_pe = Point(start.x, start.y)
-        except Exception:
-            return
-        
-        # Index where the pocket mill geometries start (set by
-        # StMove.make_start_moves); everything before belongs to the
-        # G41/G42 compensation contour / start moves.
-        pocket_start = getattr(self, 'pocket_geos_start', None)
-
-        # The lead in is drawn separately (with an own colour): it is part of
-        # self.geos right after the rapid to the dive point (index 0).
-        lead_in_count = len(getattr(self, 'lead_in_geos', None) or [])
-        lead_in_start = 1 if lead_in_count else 0
-        lead_in_end = lead_in_start + lead_in_count
-
-        comp_pos = None    # current end position of _comp_path
-        pocket_pos = None  # current end position of _pocket_path
-        lead_in_pos = None  # current end position of _lead_in_path
-        force_break = False  # set after a PocketMove (retract/plunge)
-        
-        n = len(self.geos)
-        for i in range(n):
-            geo = self.geos[i]
-            
-            ps, pe = None, None
-            
-            # Detect RapidPos early before calling get_start_end_points
-            geo_type_name = type(geo).__name__
-            if 'Rapid' in geo_type_name and 'PocketMove' not in geo_type_name:
-                # RapidPos has x,y coords directly since it inherits from Point
-                ps, pe = geo, geo
-            
-            if ps is None or pe is None:
-                if hasattr(geo, 'abs_geo') and geo.abs_geo is not None:
-                    ag = geo.abs_geo
-                    if hasattr(ag, 'Ps') and hasattr(ag, 'Pe'):
-                        ps, pe = ag.Ps, ag.Pe
-                    elif hasattr(ag, 'x') and hasattr(ag, 'y'):
-                        ps = Point(ag.x, ag.y)
-                        pe = Point(ag.x, ag.y)
-                
-                if ps is None or pe is None:
-                    try:
-                        ps = geo.get_start_end_points(True)
-                        pe = geo.get_start_end_points(False)
-                    except Exception:
-                        continue
-            
-            is_rapid = ('Rapid' in geo_type_name or 
-                       'PocketMove' in geo_type_name)
-            
-            eps = 1e-9
-            dx = abs(pe.x - ps.x)
-            dy = abs(pe.y - ps.y)
-            # Full circles return to their start point but have a nonzero
-            # length. Keep them; only skip genuinely stationary movements.
-            is_arc = isinstance(geo, ArcGeo) and geo.length > eps
-            if dx < eps and dy < eps and not is_arc:
-                if 'PocketMove' in geo_type_name:
-                    # Zero-length rapid between separate loops (retract and
-                    # plunge at the same point): start a new subpath for the
-                    # next loop so the loops stay visually separated.
-                    force_break = True
-                prev_pe = Point(pe.x, pe.y)
-                continue
-
-            # Draw connection gap from previous geo end to current geo start
-
-            dx_gap = abs(ps.x - prev_pe.x)
-            dy_gap = abs(ps.y - prev_pe.y)
-            if dx_gap > 1e-6 or dy_gap > 1e-6:
-                gap_rp = QPainterPath()
-                gap_rp.moveTo(prev_pe.x, -prev_pe.y)
-                gap_rp.lineTo(ps.x, -ps.y)
-                self._rapid_paths.append(gap_rp)
-            
-            in_pocket = (pocket_start is not None and i >= pocket_start)
-            is_lead_in = lead_in_start <= i < lead_in_end
-
-            if is_rapid:
-                rp = QPainterPath()
-                rp.moveTo(ps.x, -ps.y)
-                rp.lineTo(pe.x, -pe.y)
-                self._rapid_paths.append(rp)
-            else:
-                if is_lead_in:
-                    target = self._lead_in_path
-                    pos = lead_in_pos
-                elif in_pocket:
-                    target = self._pocket_path
-                    pos = pocket_pos
-                else:
-                    target = self._comp_path
-                    pos = comp_pos
-                
-                # Start a new subpath if the target path is not at this geo's
-                # start point, otherwise lineTo draws a phantom diagonal
-                # across the pocket after a rapid move
-                if (force_break or pos is None or
-                        abs(ps.x - pos.x) > 1e-6 or
-                        abs(ps.y - pos.y) > 1e-6):
-                    target.moveTo(ps.x, -ps.y)
-                drawHorLine = lambda caller, s, e: target.lineTo(e.x, -e.y)
-                try:
-                    geo.make_path(None, drawHorLine)
-                except Exception:
-                    pass
-                force_break = False
-                
-                if is_lead_in:
-                    lead_in_pos = Point(pe.x, pe.y)
-                elif in_pocket:
-                    pocket_pos = Point(pe.x, pe.y)
-                else:
-                    comp_pos = Point(pe.x, pe.y)
-            
-            prev_pe = Point(pe.x, pe.y)
-
-        # The preview of the lead out and the overcut: it is not part of the
-        # toolpath of the shape, it is drawn separately (and it is only a
-        # preview - the export calculates the same geometry again).
-        # The tabs (break hops) are not cut: they are shown as a gap, like the
-        # export hops over them.
-        self.set_break_chain(self._break_chain())
-        exit_geos = getattr(self, 'exit_geos', None)
-        if exit_geos:
-            position = None
-            exit_path = self._exit_path
-            for geo in exit_geos:
-                if isinstance(geo, BreakGeo):
-                    # The tab is not cut: the preview shows a gap here.
-                    position = None
-                    continue
-                try:
-                    ps = geo.get_start_end_points(True)
-                    pe = geo.get_start_end_points(False)
-                except Exception:
-                    continue
-                if position is None:
-                    exit_path.moveTo(ps.x, -ps.y)
-                else:
-                    exit_path.lineTo(ps.x, -ps.y)
-                try:
-                    geo.make_path(
-                        None,
-                        lambda caller, s, e: exit_path.lineTo(e.x, -e.y))
-                except Exception:
-                    pass
-                position = pe
+        self._tab_path = QPainterPath()
+        shape = self.model.shape
+        shape.stmove = self.model
+        self.plan = self._provided_plan or preview_plan(shape)
+        description = (QtCore.QCoreApplication.translate(
+            'ToolpathPreview', 'Programmed contour (G41/G42)')
+            if self.plan is not None and self.plan.compensation_space == 'programmed'
+            else QtCore.QCoreApplication.translate(
+                'ToolpathPreview', 'Tool center path (G40)'))
+        self.setToolTip(self._warning() or description)
+        positions = {}
+        for segment in plan_preview_segments(self.plan, dimensions=2):
+            role = segment.role
+            target = (self._lead_in_path if role == 'lead_in' else
+                      self._exit_path if role == 'lead_out' else
+                      self._pocket_path if role == 'pocket' else
+                      self._tab_path if role == 'tab' else self._comp_path)
+            if role == 'rapid':
+                target = QPainterPath()
+                self._rapid_paths.append(target)
+            start, end = segment.start, segment.end
+            if positions.get(id(target)) != start:
+                target.moveTo(start[0], -start[1])
+            target.lineTo(end[0], -end[1])
+            positions[id(target)] = end
 
     def _lead_in_dive_point(self):
         """
@@ -1211,7 +1036,8 @@ class StMoveGUI(QGraphicsItem):
         for message in (getattr(self, "start_move_error", ""),
                         getattr(self, "exit_error", "")):
             if message and message not in messages:
-                messages.append(message)
+                from dxf2gcode.presentation.qt.toolpath_labels import translate_message
+                messages.append(translate_message(message))
         return "\n".join(messages)
 
     def _warning_point(self):
@@ -1335,6 +1161,10 @@ class StMoveGUI(QGraphicsItem):
             painter.setPen(self.PEN_EXIT_LINE)
             painter.drawPath(self._exit_path)
 
+        if not self._tab_path.isEmpty():
+            painter.setPen(ShapeGUI.PEN_BREAK)
+            painter.drawPath(self._tab_path)
+
         # Draw the warning marker: the geometry of this shape is not complete
         if self._warning():
             self._draw_warning(painter)
@@ -1380,6 +1210,7 @@ class StMoveGUI(QGraphicsItem):
             br = br.united(rp.boundingRect())
         br = br.united(self._lead_in_path.boundingRect())
         br = br.united(self._exit_path.boundingRect())
+        br = br.united(self._tab_path.boundingRect())
         # The tool circle at the actual dive point of the lead in.
         if not self._lead_in_path.isEmpty():
             radius = self._tool_radius()
@@ -1400,6 +1231,6 @@ class StMoveGUI(QGraphicsItem):
 
     def updateGeometry(self):
         """Rebuild paths when underlying geos change."""
-        self._rebuild_paths_from_geos()
+        self._rebuild_paths_from_plan()
         self.prepareGeometryChange()
         self.update()

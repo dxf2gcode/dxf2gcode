@@ -3,7 +3,7 @@
 import os
 
 from dxf2gcode.domain.geometry.point import Point
-from dxf2gcode.domain.toolpath.stmove import StMove
+from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 from dxf2gcode.application.optimization.routes import OptimizeRoutes
 from dxf2gcode.application.shapes import AutomaticCutterCompensation
 from dxf2gcode.application.exporting import ExportToolpath
@@ -62,7 +62,7 @@ class ExportDrawing:
                 for shape_nr in layer.exp_order]
 
         for shape in model.shapes:
-            shape.stmove = StMove(shape)
+            shape.stmove = prepare_shape(shape, config=self._config, build_preview=False)
 
         ExportToolpath(self._postprocessor).execute(
             filename, output_filename, model.layers, postprocessor_index)
