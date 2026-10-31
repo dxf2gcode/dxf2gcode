@@ -1420,7 +1420,15 @@ class MainWindow(QMainWindow):
         Load all variables from file
         """
         project_document = LoadProject(self.project_repository).execute(filename)
-        self.d2g.load(project_document)
+        conflicts = self.d2g.load(project_document)
+        if conflicts:
+            QMessageBox.warning(
+                self, self.tr("Conflicting machining settings"),
+                self.tr("Shapes %s combine drilling with pocket milling or G41/G42. "
+                        "Their settings were preserved. Select drilling, pocket milling "
+                        "or cutter compensation in the context menu to resolve each "
+                        "conflict. Affected shapes cannot be exported until then.") %
+                ', '.join(str(number) for number in conflicts))
 
     def saveProject(self):
         """

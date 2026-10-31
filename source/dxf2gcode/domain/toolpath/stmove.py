@@ -42,6 +42,9 @@ from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.domain.geometry.collections import Geos
+from dxf2gcode.domain.project.machining import machining_conflict
+from dxf2gcode.domain.toolpath.diagnostics import MODE_CONFLICT
+from dxf2gcode.domain.toolpath.messages import SourceMessage
 from dxf2gcode.domain.toolpath.pocketmill import PocketMill
 from dxf2gcode.domain.toolpath.pocketmove import PocketMove
 from dxf2gcode.domain.toolpath.shapeoffset import *
@@ -226,6 +229,12 @@ class StMove(object):
         # (finishing allowance) shifts the milled contour. None means: the fill
         # works on the original contour (previous behaviour).
         self.pocket_wall_reference = None
+
+        # Preserve conflicting project values, but prepare no ambiguous path.
+        # The planner supplies the translatable diagnostic until an explicit edit.
+        if machining_conflict(self.shape.Drill, self.shape.Pocket, self.shape.cut_cor):
+            self.start_move_error = SourceMessage(MODE_CONFLICT, 'Shape', (self.shape.nr,))
+            return
 
         if self.settings.machine_type == 'drag_knife':
             self.make_swivelknife_move()

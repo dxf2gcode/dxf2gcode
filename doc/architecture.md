@@ -163,7 +163,8 @@ verwechselt werden.
   explizite Eingaben.
 - G40/G41/G42 bestimmen auch bei Taschen die Richtung. `always_inward`
   bleibt entfernt; ältere Profile bleiben ladbar. Die bisherige GUI-Sperre
-  für Pocketing bei Maschinenkompensation bleibt zunächst bestehen; siehe B2.
+  für Pocketing bei Maschinenkompensation bleibt zunächst bestehen; siehe
+  [B1/B2](archive/toolpath-refactoring-completed.md#b1-b2).
   Die Gültigkeit ist zusätzlich im Planer zu prüfen.
 
 ### Vorschau aus demselben Plan

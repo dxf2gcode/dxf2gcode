@@ -6,7 +6,8 @@ Diese Todo enthält die verbleibenden Aufgaben. Abgeschlossene Arbeiten,
 historische Prüfergebnisse und verworfene Wünsche stehen im neuen Dokument
 [Abgeschlossene Arbeiten und Prüfergebnisse](archive/toolpath-refactoring-completed.md).
 Die [Architekturverträge](architecture.md#weitergeltende-architekturverträge)
-gelten weiter. Die früheren Werkzeugweg-Etappen 1–6 und 5a sind abgeschlossen.
+gelten weiter. Die früheren Werkzeugweg-Etappen 1–6 und 5a sowie K3 und
+[B1/B2](archive/toolpath-refactoring-completed.md#b1-b2) sind abgeschlossen.
 
 Die Reihenfolge unten ist ein Prioritätsvorschlag, kein Auftrag zur Umsetzung
 aller Punkte. Die bestehenden Kennungen bleiben erhalten. Codebefunde und
@@ -18,93 +19,19 @@ werden vor der jeweiligen Implementierung geklärt.
 
 | Reihenfolge | Abschnitt / Aufgaben | Grund und Voraussetzungen |
 | --- | --- | --- |
-| 1 | [Bearbeitungswerte und gültige Zustände](#1-bearbeitungswerte-und-gültige-zustände): B1/B2 | Widersprüchliche Bearbeitungszustände zuerst behandeln; Regeln für alte Werte/Projekte vorher klären |
-| 2 | [Exportablauf und Werkzeugwechsel](#2-exportablauf-und-werkzeugwechsel): R2, danach P1 | Bestehende Reihenfolge als Vertrag absichern; anschließend ATC mit konkretem Maschinenprofil spezifizieren |
-| 3 | [Schleppmesser](#3-schleppmesser): D1, danach gegebenenfalls D2 | Konturschluss zuerst untersuchen; optionale Wiederholung darf einen Fehler nicht verdecken |
-| 4 | [Konfiguration und Bedienung](#4-konfiguration-und-bedienung): K1 → K2, danach V1, U3, U5 | Übersetzungskontexte vor weiteren Konfigurationstexten bereinigen; die drei Bedienwünsche sind danach unabhängig auswählbar |
-| 5 | [Paketabnahme und Abnahmegrenzen](#5-paketabnahme-und-abnahmegrenzen): M1, A1 | Artefaktprüfungen an einem ausdrücklich freigegebenen Stand; verbleibende Abnahmegrenzen klar benennen |
-| Zurückgestellt | [Bedienmodell und Teilkonturen](#6-zurückgestelltes-bedienmodell-und-teilkonturen): R3 mit R1b, anschließend Teilkontur-Erweiterung abstimmen | Kein Layerwechsel vor dem gemeinsamen Bedien-/Modell-/Persistenzentwurf |
-| Optional | [Zusätzliche Qt-Bindung](#7-optionale-zusätzliche-qt-bindung): Q1 | PySide6 nur bei konkretem Bedarf als eigener Schritt |
+| 1 | [Exportablauf und Werkzeugwechsel](#1-exportablauf-und-werkzeugwechsel): R2, danach P1 | Bestehende Reihenfolge als Vertrag absichern; anschließend ATC mit konkretem Maschinenprofil spezifizieren |
+| 2 | [Schleppmesser](#2-schleppmesser): D1, danach gegebenenfalls D2 | Konturschluss zuerst untersuchen; optionale Wiederholung darf einen Fehler nicht verdecken |
+| 3 | [Konfiguration und Bedienung](#3-konfiguration-und-bedienung): K1 → K2, danach V1, U3, U5 | Übersetzungskontexte vor weiteren Konfigurationstexten bereinigen; die drei Bedienwünsche sind danach unabhängig auswählbar |
+| 4 | [Paketabnahme und Abnahmegrenzen](#4-paketabnahme-und-abnahmegrenzen): M1, A1 | Artefaktprüfungen an einem ausdrücklich freigegebenen Stand; verbleibende Abnahmegrenzen klar benennen |
+| Zurückgestellt | [Bedienmodell und Teilkonturen](#5-zurückgestelltes-bedienmodell-und-teilkonturen): R3 mit R1b, anschließend Teilkontur-Erweiterung abstimmen | Kein Layerwechsel vor dem gemeinsamen Bedien-/Modell-/Persistenzentwurf |
+| Optional | [Zusätzliche Qt-Bindung](#6-optionale-zusätzliche-qt-bindung): Q1 | PySide6 nur bei konkretem Bedarf als eigener Schritt |
 
 **Abgrenzungen:** R1a, U1, U2, U4 und I2 sind erledigt. I1 (kurze Segmente
 markieren) und R4 (alphanumerische Layersortierung) wurden ausdrücklich
 abgewählt. Diese Punkte werden nicht erneut als offene Aufgaben geführt.
 M1 ist trotz bestandener Debian-Quelltests weiterhin eine offene Paketabnahme.
 
-## 1. Bearbeitungswerte und gültige Zustände
-
-B1 und B2 gemeinsam behandeln; B2 beginnt mit der
-Reproduktion der gemeldeten Einschränkung und ist noch kein bestätigter Fix.
-
-K3 ist umgesetzt; Ergebnisse und die vereinbarte Präzisionsregel stehen
-im [Abschlussdokument](archive/toolpath-refactoring-completed.md#k3-dezimalpräzision-und-werterhaltung).
-
-### B1 – Bohren schließt Pocketing und aktive Fräsradienkompensation aus
-
-**Codebefund:** `MyDropDownMenu` in
-`presentation/qt/canvas.py` verändert in `setDrill`, `setPocket` und den
-Kompensationsaktionen jeweils nur den eigenen Wert. Eine gemeinsame Regel
-fehlt; `Drill`, `Pocket` und `cut_cor` können widersprüchlich gesetzt sein.
-`domain/toolpath/strategies/contour.py` wertet diese Werte an mehreren Stellen
-aus. Der Export darf die widersprüchliche Auswahl nicht erst auflösen müssen.
-
-- [ ] Die zuletzt bewusst ausgewählte Aktion bestimmt den Zustand aller
-  betroffenen Shapes. Bohren einschalten setzt `Drill=True`, `Pocket=False`
-  und `cut_cor=40`. G40 ist dabei der technische Neutralzustand, keine aktive
-  G41-/G42-Kompensation.
-- [ ] Pocketing einschalten oder G40/G41/G42 ausdrücklich auswählen schaltet
-  Bohren aus. Pocketing und die drei Kompensationsauswahlen bleiben
-  kombinierbar; kein Modus „immer nach innen“ wird wieder eingeführt.
-- [ ] Das bloße Ausschalten einer Bearbeitungsart stellt keinen früheren
-  Zustand wieder her. Bei Mehrfachauswahl gilt eine gemeinsame Zielaktion;
-  keine unabhängige Umkehr jedes einzelnen Ausgangszustands.
-- [ ] Die Zustandsänderung über einen gemeinsamen Anwendungsfall und eine
-  fachliche Regel ausführen. Menühaken, Parameteranzeige, Plan und Vorschau
-  müssen anschließend denselben Zustand darstellen. Die Regel nicht als
-  getrennte Sonderlogik in mehreren Qt-Slots implementieren.
-- [ ] Beim Laden bereits widersprüchlicher Projekte den Konflikt erkennen.
-  **Vor Umsetzung festlegen:** Warnung und explizite Auswahl oder eine
-  dokumentierte Vorrangregel. Ohne Aktionshistorie ist „zuletzt gewählt“
-  aus einer alten Datei nicht rekonstruierbar; nichts stillschweigend raten.
-
-**Abnahme und Tests:** Alle Übergänge von/nach Bohren mit Pocket an/aus und
-G40/G41/G42 prüfen, einschließlich gemischter Mehrfachauswahl und erneutem
-Öffnen des Menüs. Fachregel ohne Qt testen; vorhandene
-`dxf2gcode_pocket_multiselect_test.py` und
-`dxf2gcode_pocket_comp_mode_test.py` um GUI-Aktionen ergänzen. Projekt-Roundtrip
-und Plan-/G-Code-Regression belegen, dass Bohren keine Taschenbewegungen oder
-aktive Fräskompensation hinterlässt. Bewusst geändertes Verhalten zuvor
-ungültiger Kombinationen getrennt vom unveränderten Golden-Bestand behandeln.
-
-### B2 – Bohren unabhängig vom Ort der Kompensationsberechnung anbieten
-
-**Codebefund:** Der aktuelle Bohren-Menüeintrag in `canvas.py` ist an
-`allClosed` und `allArcs` gebunden, bereits **ohne** Prüfung von
-`Cutter_Compensation.done_by_machine`. Nur Pocketing hat dort eine zusätzliche
-Sperre bei Maschinenkompensation. Die gemeldete Einschränkung des Bohrens ist
-somit im aktuellen Quellstand noch nicht bestätigt. Zusätzlich enthält die
-Geschlossenheitsprüfung `allClosed == False` statt einer Zuweisung; sie ist
-bei der Untersuchung der Menüverfügbarkeit mitzuberücksichtigen.
-
-- [ ] Mit derselben gültigen Bohrkontur, ausgewähltem Profil und derselben
-  Version beide Werte von `done_by_machine` reproduzieren. Geometrieauswahl
-  und gegebenenfalls einen veralteten installierten Stand unterscheiden.
-- [ ] Bohren bei geeigneter Geometrie sowohl bei Software- als auch bei
-  Maschinenkompensation auswählbar halten. Die globale Einstellung bestimmt,
-  wer eine Fräsbahn kompensiert; sie aktiviert keine Kompensation für Bohren.
-  Die gegenseitigen Ausschlüsse aus B1 gelten in beiden Konfigurationen.
-- [ ] Die Geometrieprüfung einschließlich offener und gemischter Auswahl
-  korrekt absichern. Die Pocketing-Sperre bei Maschinenkompensation ist eine
-  gesonderte bestehende Einschränkung und wird durch diesen Punkt nicht
-  automatisch aufgehoben.
-
-**Abnahme und Tests:** Parametrisierte Menü-/Workflowtests für beide
-Konfigurationen mit gültiger geschlossener Kreisgeometrie sowie ungültiger
-und gemischter Auswahl; mindestens ein Plan-/Exportfall pro Konfiguration.
-Falls der Fehler nur in einem älteren Wheel auftritt, den Versionsunterschied
-dokumentieren und keine unnötige Änderung am aktuellen Code vornehmen.
-
-## 2. Exportablauf und Werkzeugwechsel
+## 1. Exportablauf und Werkzeugwechsel
 
 R2 betrifft das Umordnen innerhalb der bestehenden Ebenen und den Export
 ohne/mit bewusst gewählter Optimierung. Dafür keinen Layerwechsel R1b
@@ -215,7 +142,7 @@ und kann um die ausgegebene Reihenfolge ergänzt werden. Diese Prüfungen
 bewerten erzeugten Code, nicht die Freigabe für eine reale Maschine.
 Analyse und Testspezifikation sind vorgemerkt; kein Exportverhalten geändert.
 
-## 3. Schleppmesser
+## 2. Schleppmesser
 
 D1 zuerst bearbeiten. D2 bleibt eine optionale Erweiterung nach Klärung des
 Konturschlusses und der gewünschten Umlauf-/Tiefenregel.
@@ -299,7 +226,7 @@ dieselben Z-Bewegungen; 2D darf deckungsgleiche XY-Bahnen weiterhin einmal
 darstellen. Unveränderten Ein-Umlauf-Modus sowie Roundtrip der neuen Option
 absichern. D1/D2 sind vorgemerkt, noch nicht umgesetzt oder neu getestet.
 
-## 4. Konfiguration und Bedienung
+## 3. Konfiguration und Bedienung
 
 K1 vor K2 bearbeiten, damit Beschriftungen und Standardwert-Erklärungen auf
 stabilen Übersetzungskontexten aufbauen. V1, U3 und U5 sind anschließend
@@ -457,7 +384,7 @@ bleibt bis zur Auswahl dieses Punkts zurückgestellt.
 leerem, vollständig ein-/ausgeklapptem und gemischtem Baum. Keine Auslösung
 bei Texteingabe oder unbeabsichtigte Änderung des Canvas-Zooms.
 
-## 5. Paketabnahme und Abnahmegrenzen
+## 4. Paketabnahme und Abnahmegrenzen
 
 <a id="m1"></a>
 
@@ -491,16 +418,16 @@ Die früheren allgemeinen Abnahmetore sind im
 [Erledigt-Dokument eingeordnet](archive/toolpath-refactoring-completed.md#einordnung-der-früheren-abnahmetore).
 Bereits nachgewiesene Kriterien sind keine neue Implementierungsserie.
 
-- [ ] Den noch offenen Nachweis für gültige/ungültige Maschinen- und
-  Kompensationskombinationen bei B1/B2 konkret ergänzen; weitere relevante
-  Profilfälle nur bei einer benannten Abdeckungslücke festlegen.
+- [ ] Über die gezielten B1/B2-Nachweise hinaus weitere relevante Maschinen-,
+  Kompensations- und Profilfälle nur bei einer benannten Abdeckungslücke
+  festlegen; aus der früher pauschalen Matrix keine neue Vollprüfung ableiten.
 - [ ] Die Reichweite des früher pauschal auf „Domain und Application“
   bezogenen Import-Abnahmetors klären. Importfreiheit ist für alle Module
   unter `domain/geometry` und `domain/toolpath` nachgewiesen, nicht für alle
   übrigen Projektmodelle oder die GUI-/Datei-Exportfassade. Eine darüber
   hinausgehende Entkopplung wäre gesondert zu beschließen und zu planen.
 
-## 6. Zurückgestelltes Bedienmodell und Teilkonturen
+## 5. Zurückgestelltes Bedienmodell und Teilkonturen
 
 Diese Themen bleiben zurückgestellt. Weder die abgeschlossenen
 Refactoring-Etappen noch die Neuordnung dieser Liste geben ihre Umsetzung
@@ -628,7 +555,7 @@ Untergliederung eines Werkzeugwegplans ergänzt werden können. Die konkrete
 Modellierung und GUI-Bedienung werden erst beim Aufgreifen dieser Erweiterung
 entschieden; sie ist kein Abnahmetor für das aktuelle Refactoring.
 
-## 7. Optionale zusätzliche Qt-Bindung
+## 6. Optionale zusätzliche Qt-Bindung
 
 ### Q1 – PySide6 als zusätzliche Qt-Bindung
 

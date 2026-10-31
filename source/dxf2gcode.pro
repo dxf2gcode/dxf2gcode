@@ -81,6 +81,7 @@ SOURCES += \
     dxf2gcode/domain/project/layercontent.py \
     dxf2gcode/domain/project/project.py \
     dxf2gcode/domain/project/shape.py \
+    dxf2gcode/domain/project/machining.py \
     dxf2gcode/domain/project/__init__.py \
     dxf2gcode/domain/toolpath/customgcode.py \
     dxf2gcode/domain/toolpath/depths.py \

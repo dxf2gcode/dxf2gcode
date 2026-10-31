@@ -30,6 +30,7 @@ from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 from dxf2gcode.domain.project.layercontent import Layers, Shapes
 from dxf2gcode.domain.project.tool_settings import ToolSettings
+from dxf2gcode.domain.project.machining import machining_conflict
 from dxf2gcode.domain.toolpath.leadmove import LEAD_DEFAULT, OVERCUT_DEFAULT
 import dxf2gcode.bootstrap.runtime_state as g
 
@@ -341,6 +342,9 @@ d2g.layers = ''' + str(layers)
         layers.extend(set(self.parent.layerContents) - set(layers))  # add "new" layers to the end
         self.parent.layerContents = Layers(layers)  # overwrite original
         self.parent.plot()
+        return tuple(shape.nr for layer in layers for shape in layer.shapes
+                     if not isinstance(shape, CustomGCode) and
+                     machining_conflict(shape.Drill, shape.Pocket, shape.cut_cor))
 
     def reload(self, compleet=True):
         if self.parent.filename:

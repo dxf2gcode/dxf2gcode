@@ -1,6 +1,7 @@
 """Select pure planning strategies for explicit toolpath requests."""
 
-from dxf2gcode.domain.toolpath.diagnostics import START_ERROR, diagnostic
+from dxf2gcode.domain.toolpath.diagnostics import START_ERROR, MODE_CONFLICT, diagnostic
+from dxf2gcode.domain.project.machining import machining_conflict
 from dxf2gcode.domain.toolpath.movements import MovementPlan
 from dxf2gcode.domain.toolpath.plan import ToolpathPlanningResult
 from dxf2gcode.domain.toolpath.strategies.contour import ContourStrategy
@@ -25,6 +26,9 @@ class ToolpathPlanner:
             output = MovementPlan(request)
             output.add("literal", request.literal)
             return ToolpathPlanningResult(output.finish())
+        if machining_conflict(request.drill, request.pocket, request.compensation):
+            return ToolpathPlanningResult(None, (diagnostic(
+                request, "machining.conflict", MODE_CONFLICT, request.shape_number),))
         if request.start_error:
             return ToolpathPlanningResult(None, (diagnostic(
                 request, "lead.invalid_start", START_ERROR,

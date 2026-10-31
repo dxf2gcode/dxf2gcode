@@ -3,6 +3,23 @@
 from dxf2gcode.domain.toolpath.leadmove import OVERCUT_DEFAULT
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 from dxf2gcode.domain.project.tool_settings import ToolSettings, effective_tool
+from dxf2gcode.domain.project.machining import MachiningState
+
+
+class SetMachiningMode:
+    """Apply one deliberate target to the entire selection."""
+
+    def execute(self, shapes, action, value=None):
+        shapes = tuple(shapes)
+        if action in ('drill', 'pocket') and value is None:
+            attribute = 'Drill' if action == 'drill' else 'Pocket'
+            value = not all(getattr(shape, attribute) for shape in shapes)
+        states = [MachiningState(shape.Drill, shape.Pocket, shape.cut_cor)
+                  .transition(action, value) for shape in shapes]
+        for shape, state in zip(shapes, states):
+            shape.Drill, shape.Pocket, shape.cut_cor = (
+                state.drill, state.pocket, state.compensation)
+        return shapes
 
 
 class AssignTool:
@@ -162,6 +179,11 @@ class AutomaticCutterCompensation:
             while shapes_left:
                 deferred = []
                 for shape in shapes_left:
+                    if getattr(shape, 'Drill', False):
+                        # Automatic milling compensation must not rewrite a
+                        # drilling choice or silently resolve a loaded conflict.
+                        new_order.append(shape.nr)
+                        continue
                     if self._is_contained_by_other(shape, shapes_left):
                         deferred.append(shape)
                         continue
@@ -185,5 +207,6 @@ class AutomaticCutterCompensation:
             return False
         return any(
             shape is not outer and not isinstance(outer, CustomGCode) and
+            not getattr(outer, 'Drill', False) and
             shape.BB.iscontained(outer.BB)
             for outer in shapes)

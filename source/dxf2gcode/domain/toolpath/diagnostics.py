@@ -9,6 +9,9 @@ def QT_TRANSLATE_NOOP(context, text):
 
 
 START_ERROR = QT_TRANSLATE_NOOP("Shape", "Shape %i: %s")
+MODE_CONFLICT = QT_TRANSLATE_NOOP(
+    "Shape", "Shape %i: drilling cannot be combined with pocket milling or G41/G42. "
+    "Select a machining mode before exporting.")
 EXIT_ERROR = QT_TRANSLATE_NOOP("Shape", "Shape %i: %s The shape is NOT milled!")
 ZERO_SLICE = QT_TRANSLATE_NOOP("Shape", "Shape %i: Z infeed depth is null!")
 INVERTED_RANGE = QT_TRANSLATE_NOOP(

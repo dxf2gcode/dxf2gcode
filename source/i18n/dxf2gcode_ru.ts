@@ -2253,6 +2253,14 @@ Do you want to save them before switching the profile?</source>
         <source>Ungültige Werkzeugweg-Einstellungen</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Conflicting machining settings</source>
+        <translation>Несовместимые настройки обработки</translation>
+    </message>
+    <message>
+        <source>Shapes %s combine drilling with pocket milling or G41/G42. Their settings were preserved. Select drilling, pocket milling or cutter compensation in the context menu to resolve each conflict. Affected shapes cannot be exported until then.</source>
+        <translation>Фигуры %s совмещают сверление с фрезерованием карманов или G41/G42. Их настройки сохранены. Выберите сверление, фрезерование карманов или компенсацию радиуса инструмента в контекстном меню для устранения каждого конфликта. До этого соответствующие фигуры не могут быть экспортированы.</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -3480,6 +3488,10 @@ Skipped Geometries</source>
     <message>
         <source>Shape %i: the lead in mode &apos;off&apos; is not possible with G41/G42: the machine can only build the tool radius compensation with a movement in the XY plane - the shape is NOT milled! Use the lead in mode &apos;startmove&apos;, &apos;straight&apos; or &apos;radius&apos;.</source>
         <translation type="obsolete">Контур %i: режим входа 'off' невозможен с G41/G42: станок может построить компенсацию радиуса инструмента только при перемещении в плоскости XY - контур НЕ будет фрезерован! Используйте режим входа 'startmove', 'straight' или 'radius'.</translation>
+    </message>
+    <message>
+        <source>Shape %i: drilling cannot be combined with pocket milling or G41/G42. Select a machining mode before exporting.</source>
+        <translation>Фигура %i: сверление нельзя совмещать с фрезерованием карманов или G41/G42. Перед экспортом выберите режим обработки.</translation>
     </message>
 </context>
 <context>

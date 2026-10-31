@@ -2023,6 +2023,14 @@ Voulez-vous les enregistrer avant de changer de profil ?</translation>
         <source>Ungültige Werkzeugweg-Einstellungen</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Conflicting machining settings</source>
+        <translation>Paramètres d’usinage incompatibles</translation>
+    </message>
+    <message>
+        <source>Shapes %s combine drilling with pocket milling or G41/G42. Their settings were preserved. Select drilling, pocket milling or cutter compensation in the context menu to resolve each conflict. Affected shapes cannot be exported until then.</source>
+        <translation>Les formes %s combinent le perçage avec le fraisage de poche ou G41/G42. Leurs paramètres ont été conservés. Choisissez le perçage, le fraisage de poche ou la compensation du rayon d’outil dans le menu contextuel pour résoudre chaque conflit. Les formes concernées ne peuvent pas être exportées entre-temps.</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -3232,6 +3240,10 @@ La longueur doit être supérieure à la tolérance</translation>
     <message>
         <source>Shape %i: the lead in mode &apos;off&apos; is not possible with G41/G42: the machine can only build the tool radius compensation with a movement in the XY plane - the shape is NOT milled! Use the lead in mode &apos;startmove&apos;, &apos;straight&apos; or &apos;radius&apos;.</source>
         <translation type="obsolete">Forme %i : le mode d'entrée 'off' n'est pas possible avec G41/G42 : la machine ne peut construire la compensation du rayon d'outil qu'avec un déplacement dans le plan XY - la forme ne sera PAS usinée ! Utilisez le mode d'entrée 'startmove', 'straight' ou 'radius'.</translation>
+    </message>
+    <message>
+        <source>Shape %i: drilling cannot be combined with pocket milling or G41/G42. Select a machining mode before exporting.</source>
+        <translation>Forme %i : le perçage ne peut pas être combiné avec le fraisage de poche ou G41/G42. Choisissez un mode d’usinage avant l’exportation.</translation>
     </message>
 </context>
 <context>

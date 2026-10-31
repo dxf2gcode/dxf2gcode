@@ -34,6 +34,8 @@ import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 #from dxf2gcode.domain.geometry.holegeo import HoleGeo
 
+from dxf2gcode.application.shapes import SetMachiningMode
+
 import dxf2gcode.domain.constants as c
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QGraphicsView, QMenu
 from dxf2gcode.presentation.qt.qt_compat import QtCore
@@ -168,20 +170,11 @@ class MyDropDownMenu(QMenu):
 
         self.addSeparator()
         
-        #enable pocket mill only if all selected shapes are closed
-        allClosed = True
-        allArcs = True
-        
-        for item in self.selectedItems:
-            if item.closed == False:
-                allClosed == False
-                break
-            for geo in item.geos:
-                if not(isinstance(geo, ArcGeo)):
-                    allArcs = False
-                    
-        
-            
+        allClosed = all(item.closed for item in self.selectedItems)
+        allArcs = all(item.geos and all(isinstance(geo, ArcGeo)
+                                       for geo in item.geos)
+                      for item in self.selectedItems)
+
         #if all are closed and compensation is NOT done by machine,
         # since I do not know how this should work... /SZ
         # The drag knife does not support the pocket milling: the entry is
@@ -393,74 +386,40 @@ class MyDropDownMenu(QMenu):
             self.canvas_scene.repaint_shape(shape)
         g.window.updateExportRoute()
 
-    def setNoComp(self):
-        """
-        Sets the compensation to 40, which is none, for the selected shapes.
-        """
-        for shape in self.selectedItems:
-            shape.cut_cor = 40
-            logger.debug(self.tr('Changed Cutter Correction to None for shape: %i') % shape.nr)
+    def _setMachiningMode(self, action, value=None):
+        if not self.selectedItems:
+            return
+        before = [(shape.Drill, shape.Pocket) for shape in self.selectedItems]
+        SetMachiningMode().execute(self.selectedItems, action, value)
+        tree = g.window.TreeHandler
+        for shape, (drill, pocket) in zip(self.selectedItems, before):
+            if action == 'pocket' or pocket != shape.Pocket:
+                tree.updatePocketMill(shape, shape.Pocket)
+            if action == 'drill' or drill != shape.Drill:
+                tree.updateDrill(shape, shape.Drill)
             self.canvas_scene.repaint_shape(shape)
+        for name, attribute in (('PocketAction', 'Pocket'), ('DrillAction', 'Drill')):
+            menu_action = getattr(self, name, None)
+            if menu_action is not None:
+                self._updateBoolActionState(menu_action, attribute)
+        if hasattr(self, 'noCompAction'):
+            self.checkMenuDir(self.calcMenuDir())
+        refresh = getattr(tree, 'updateToolParameters', None)
+        if refresh is not None:
+            refresh()
         self.canvas_scene.update()
+
+    def setNoComp(self):
+        self._setMachiningMode('compensation', 40)
 
     def setLeftComp(self):
-        """
-        Sets the compensation to 41, which is Left, for the selected shapes.
-        """
-        for shape in self.selectedItems:
-            shape.cut_cor = 41
-            logger.debug(self.tr('Changed Cutter Correction to left for shape: %i') % shape.nr)
-            self.canvas_scene.repaint_shape(shape)
-        self.canvas_scene.update()
+        self._setMachiningMode('compensation', 41)
 
     def setRightComp(self):
-        """
-        Sets the compensation to 42, which is Right, for the selected shapes.
-        """
-        for shape in self.selectedItems:
-            shape.cut_cor = 42
-            logger.debug(self.tr('Changed Cutter Correction to right for shape: %i') % shape.nr)
-            self.canvas_scene.repaint_shape(shape)
-        self.canvas_scene.update()
+        self._setMachiningMode('compensation', 42)
 
     def setPocket(self):
-        """
-        Enable or disable pocket milling for the selected shapes.
+        self._setMachiningMode('pocket')
 
-        The new state is applied to ALL selected shapes as ONE uniform group:
-        if every selected shape already mills its pocket, the group is turned
-        off, otherwise it is turned on. This avoids inverting each shape
-        individually (which left a mixed multi-selection inconsistent and
-        disabled an already enabled shape).
-        """
-        if not self.selectedItems:
-            return
-        target = not all(shape.Pocket for shape in self.selectedItems)
-        for shape in self.selectedItems:
-            shape.Pocket = target
-            logger.debug(self.tr('Set to %s for Pocket Mill for shape: %i')
-                         % (target, shape.nr))
-            g.window.TreeHandler.updatePocketMill(shape, target)
-            self.canvas_scene.repaint_shape(shape)
-        self.PocketAction.setChecked(target)
-        self.canvas_scene.update()
-    
     def setDrill(self):
-        """
-        Enable or disable G73 drilling for the selected shapes.
-
-        The new state is applied to ALL selected shapes as ONE uniform group
-        (all off -> all on, otherwise all off), never by inverting each shape
-        individually.
-        """
-        if not self.selectedItems:
-            return
-        target = not all(shape.Drill for shape in self.selectedItems)
-        for shape in self.selectedItems:
-            shape.Drill = target
-            logger.debug(self.tr('Set to %s for G73 Drill, for shape: %i')
-                         % (target, shape.nr))
-            g.window.TreeHandler.updateDrill(shape, target)
-            self.canvas_scene.repaint_shape(shape)
-        self.DrillAction.setChecked(target)
-        self.canvas_scene.update()
+        self._setMachiningMode('drill')

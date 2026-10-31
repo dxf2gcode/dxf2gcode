@@ -2060,6 +2060,14 @@ Möchten Sie diese vor dem Profilwechsel speichern?</translation>
         <source>The overcut continues the cut along the existing contour beyond the closing point of a closed contour. &quot;Configuration default&quot; uses the setting which is set in the configuration file, &quot;None&quot; switches the overcut off for these shapes. The length of the overcut is set in the configuration file (or with the layer name identifier).</source>
         <translation>Keine</translation>
     </message>
+    <message>
+        <source>Conflicting machining settings</source>
+        <translation>Widersprüchliche Bearbeitungseinstellungen</translation>
+    </message>
+    <message>
+        <source>Shapes %s combine drilling with pocket milling or G41/G42. Their settings were preserved. Select drilling, pocket milling or cutter compensation in the context menu to resolve each conflict. Affected shapes cannot be exported until then.</source>
+        <translation>Shapes %s kombinieren Bohren mit Taschenfräsen oder G41/G42. Ihre Einstellungen wurden beibehalten. Wählen Sie im Kontextmenü Bohren, Taschenfräsen oder Fräsradienkompensation, um jeden Konflikt aufzulösen. Bis dahin können die betroffenen Shapes nicht exportiert werden.</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -3279,6 +3287,10 @@ Die Länge muss größer der Toleranz sein.
     <message>
         <source>Shape %i: the lead in mode &apos;off&apos; is not possible with G41/G42: the machine can only build the tool radius compensation with a movement in the XY plane - the shape is NOT milled! Use the lead in mode &apos;startmove&apos;, &apos;straight&apos; or &apos;radius&apos;.</source>
         <translation type="obsolete">Shape %i: der Einfahrt-Modus 'off' ist mit G41/G42 nicht möglich: die Maschine kann den Werkzeugradiusversatz nur mit einer Bewegung in der XY-Ebene aufbauen - die Form wird NICHT gefräst! Bitte den Einfahrt-Modus 'startmove', 'straight' oder 'radius' verwenden.</translation>
+    </message>
+    <message>
+        <source>Shape %i: drilling cannot be combined with pocket milling or G41/G42. Select a machining mode before exporting.</source>
+        <translation>Shape %i: Bohren kann nicht mit Taschenfräsen oder G41/G42 kombiniert werden. Wählen Sie vor dem Export eine Bearbeitungsart.</translation>
     </message>
 </context>
 <context>

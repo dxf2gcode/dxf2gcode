@@ -20,16 +20,78 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 | Werkzeugweg-Etappen 1–6 | Planvertrag, native Strategien, Fallmatrix, Profilformatierung, gemeinsame Werkzeugwegvorschau und Entkopplung |
 | Etappe 5a | Shape-spezifische Werkzeugzuordnung einschließlich Persistenz und Anzeige |
 | Darstellungskorrektur | Originalgeometrie bleibt Grunddarstellung und Auswahlfläche; Werkzeugweg erscheint zusätzlich bei Auswahl in den bestehenden Farben |
+| Importreihenfolge | Rückwärts importierte Kurvenketten behalten die korrekte Reihenfolge ihrer Teilstücke; rote Kontur und G40-Plan sind zusammenhängend |
 | U1 / U2 | Werkzeugauswahl ausrichten; Klappbuttons nach Baumzustand und Hänger-Nachbesserung |
 | U4 / I2 | Konfigurierbarer Startzustand des Layerbaums; optionale Importfilter |
 | R1a | Drag-and-drop-Absturzpfade und Qt5-/Qt6-Kompatibilität |
 | K3 | Vierstellige Längeneingabe und Erhaltung genauer Originalwerte bis zur bewussten Bearbeitung; Profilformatierung bleibt maßgeblich |
+| B1 / B2 | Gemeinsame Bearbeitungszustände, sichtbare Konflikte alter Projekte und korrekte Geometrieprüfung für Bohren/Pocketing |
 | Versionsmetadaten | Provider, Build-Anbindung, Infofenster/G-Code-Kopf und Entfernung der alten Keywords; Paketabnahme M1 bleibt offen |
 | Bereinigung | `.kilo/` und erzeugte `.coverage` entfernt |
 
 Die weiterhin geltenden [Architekturverträge](../architecture.md#weitergeltende-architekturverträge)
 stehen in der aktuellen Architekturdokumentation. Dieses Archiv bewahrt
 Umsetzungshistorie und damalige Prüfergebnisse.
+
+## Importreihenfolge zusammengesetzter Kurven
+
+Korrigiert am **31.10.2026** anhand von `fräsen_test_02 2004.dxf` und
+`ATT00079.dxf`. Bei rückwärts verwendeten DXF-Entitäten drehte
+`BuildDrawingModel` jedes einzelne Linien-/Bogenstück um, ließ aber die
+Reihenfolge der Stücke unverändert. Die ausgewählte Originalkontur verband
+dadurch falsche Endpunkte mit roten Geraden. Die blaue Vorschau zeichnete
+die Teilstücke einzeln und verdeckte diese Unterbrechungen. Die fehlerhafte
+Geometriekette war auch für die Planung relevant, nicht nur für die Anzeige.
+
+Beim Rückwärtsimport wird jetzt zuerst die Teilstückreihenfolge umgekehrt
+und dann jedes kopierte Teilstück gedreht. Die importierten Quelldaten
+bleiben unverändert. `dxf2gcode_import_chain_test.py` prüft für beide Dateien
+alle Shape-Verbindungen einschließlich Konturschluss, mit und ohne optionale
+Linienteilung, sowie die Anschlusspositionen innerhalb der G40-Planpässe.
+Die Prüfungen bestehen unter Qt5 und Qt6; zusätzlich wurde die tatsächliche
+2D-Darstellung über den Hauptfenster-Ladeweg geprüft. Keine Vollsuite oder
+Debian-Prüfung ausgeführt.
+
+<a id="b1-b2"></a>
+
+## B1/B2: Bohren, Pocketing und Kompensation
+
+Umgesetzt am **31.10.2026**. `domain/project/machining.py` enthält die reine
+Zustandsregel; `application/shapes.py:SetMachiningMode` wendet eine gemeinsame
+Zielaktion auf die gesamte Auswahl an. Die Qt-Aktionen delegieren dorthin.
+
+- Bohren einschalten setzt `Drill=True`, `Pocket=False` und G40.
+- Pocketing einschalten oder G40/G41/G42 ausdrücklich wählen schaltet Bohren
+  aus. Pocketing bleibt mit allen drei Kompensationszuständen kombinierbar.
+- Ausschalten stellt keine frühere Bearbeitungsart wieder her. Gemischte
+  Mehrfachauswahlen erhalten einen einheitlichen Zielzustand. Menühaken,
+  Parameteranzeige und Vorschau werden anschließend aktualisiert.
+- Widersprüchliche Projektwerte bleiben beim Laden erhalten. Das Hauptfenster
+  meldet die betroffenen Shape-Nummern und fordert zur Auswahl einer gültigen
+  Bearbeitungsart im Kontextmenü auf. Keine stillschweigende Vorrangregel.
+- Für solche Shapes wird keine Geometrie vorbereitet. Der Planer liefert
+  `machining.conflict` ohne exportierbaren Plan; die 2D-Vorschau zeigt eine
+  Warnung statt einer Bearbeitungsbahn. Andere gültige Shapes bleiben
+  exportierbar. Nach ausdrücklicher Auflösung ist das Shape wieder nutzbar.
+- Automatische Fräskompensation verändert Bohreinstellungen nicht und löst
+  bestehende Konflikte ebenfalls nicht stillschweigend auf.
+- B2: Eine zusätzliche Sperre für Bohren bei Maschinenkompensation ließ sich
+  im aktuellen Stand nicht bestätigen. Die Menüprüfung verwendet jetzt echte
+  Geschlossenheit für alle ausgewählten Shapes; der bisherige Vergleich
+  `allClosed == False` hatte offene Geometrie nicht ausgeschlossen. Bohren
+  bleibt für geschlossene Kreisgeometrie bei beiden Kompensationskonfigurationen
+  verfügbar. Leere, offene und gemischte ungeeignete Auswahlen bieten Bohren
+  nicht an. Die gesonderte Pocketing-Sperre bei Maschinenkompensation bleibt.
+
+Gezielte Tests unter Qt5 und Qt6 prüfen Zustandsübergänge, gemischte Auswahl,
+Menühaken und erneut geöffnetes Menü, beide Kompensationskonfigurationen,
+Projekt-Roundtrip mit Konfliktmeldung, blockierte Planung/Ausgabe, Auflösung
+und Vorschauwarnung. Ein gültiger Bohrfall liefert pro Konfiguration einen
+Plan und G-Code ohne Taschenbewegungen und G41/G42. Die deutschen,
+französischen und russischen Meldungen wurden ergänzt, QM-Dateien regeneriert
+und alle neuen Übersetzungen geprüft. Zusätzlich bestanden unter Qt5 die
+bestehenden Projekt-/Adapter- und Werkzeugweg-Falltests einschließlich Goldens.
+Keine Vollsuite, Debian-Prüfung oder Paketabnahme ausgeführt.
 
 ## K3: Dezimalpräzision und Werterhaltung
 

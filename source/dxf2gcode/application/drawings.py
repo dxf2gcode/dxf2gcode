@@ -105,7 +105,10 @@ class BuildDrawingModel:
                 continue
             shape = self.shape_factory(len(self.shapes), contour.closed, parent)
             for geo_number, reverse in contour.order:
-                for imported_geo in entities.geo[geo_number].geo:
+                imported_geos = entities.geo[geo_number].geo
+                # Reverse the complete chain, not just each individual piece.
+                # Splines and polylines can expand into many lines/arcs.
+                for imported_geo in (reversed(imported_geos) if reverse else imported_geos):
                     geo = copy(imported_geo)
                     if reverse:
                         geo.reverse()
