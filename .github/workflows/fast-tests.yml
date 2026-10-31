@@ -11,11 +11,24 @@ permissions:
 
 jobs:
   fast:
-    name: Python 3.11 / PyQt5
+    name: Python ${{ matrix.python }} / PyQt${{ matrix.qt }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Keep the established Python 3.11 / PyQt5 combination as the baseline.
+          - python: "3.11"
+            qt: "5"
+          - python: "3.12"
+            qt: "5"
+          - python: "3.13"
+            qt: "5"
+          - python: "3.11"
+            qt: "6"
     env:
-      DXF2GCODE_QT: "5"
+      DXF2GCODE_QT: ${{ matrix.qt }}
       QT_QPA_PLATFORM: offscreen
 
     steps:
@@ -25,18 +38,38 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y libgl1
 
+      - name: Install Qt6 resource compiler and runtime libraries
+        if: matrix.qt == '6'
+        run: sudo apt-get install --no-install-recommends -y qt6-base-dev-tools libegl1 libopengl0
+
       - name: Install Python dependencies
         # Match the application's PyQt5 minimum as well as the test requirements.
         run: python -m pip install -r requirements-test.txt "PyQt5>=5.15"
 
-      - name: Generate Qt5 UI and resources
+      - name: Install PyQt6
+        if: matrix.qt == '6'
+        run: python -m pip install PyQt6
+
+      - name: Verify selected Qt binding
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          sys.path.insert(0, "source")
+          from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION, QtCore
+          expected = os.environ["DXF2GCODE_QT"]
+          assert str(PYQT_VERSION) == expected, (expected, PYQT_VERSION)
+          print(f"PyQt {QtCore.PYQT_VERSION_STR}; Qt {QtCore.QT_VERSION_STR}")
+          PY
+
+      - name: Generate Qt${{ matrix.qt }} UI and resources
         # Translation compilation is not needed by the fast suite.
         run: python source/tools/build/qt_assets.py
 
