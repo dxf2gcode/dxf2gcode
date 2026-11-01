@@ -2,8 +2,27 @@
 
 This prototype uses [Zensical](https://zensical.org/docs/get-started/), configured
 in `zensical.toml` at the repository root. The development website is hosted
-with GitHub Pages. Publishing uses a separate manual GitHub Actions workflow
-on `develop`; local builds and automatic documentation checks never deploy.
+with GitHub Pages. A separate GitHub Actions workflow automatically publishes
+website changes pushed or merged into `develop`, after a successful strict
+documentation build. Local builds and pull-request checks do not deploy.
+
+## Publish website updates
+
+Commit and push the reviewed website changes to `develop`, or merge a reviewed
+pull request into `develop`. Changes under `docs/` (including logos and icons),
+to `zensical.toml`, `requirements-docs.txt` or the publishing workflow trigger
+**Development documentation preview** automatically. A local commit alone
+does not update the live website.
+
+The workflow builds the documentation in strict mode and publishes only if
+that build succeeds. Check the build and deploy jobs under
+[GitHub Actions](https://github.com/dxf2gcode/dxf2gcode/actions/workflows/documentation-pages.yml).
+The existing repository approval variable `DOCS_PREVIEW_PUBLISH_APPROVED=true`
+and the `develop`-only Pages environment remain required.
+
+To republish the current site without a new commit, select **Run workflow**
+on `develop` and enable the `publish` input. Pull requests targeting `develop`
+run documentation checks without publishing.
 
 ## Requirements
 

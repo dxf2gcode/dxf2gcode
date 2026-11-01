@@ -1,7 +1,14 @@
 name: Development documentation preview
 
-# A push or pull request can never start this publishing workflow.
+# Publish website changes pushed or merged into develop after a strict build.
 on:
+  push:
+    branches: [develop]
+    paths:
+      - 'docs/**'
+      - 'zensical.toml'
+      - 'requirements-docs.txt'
+      - '.github/workflows/documentation-pages.yml'
   workflow_dispatch:
     inputs:
       publish:
@@ -20,11 +27,12 @@ concurrency:
 jobs:
   build:
     # Set the variable only after rights, target URL and deployment approval.
-    # Publishing remains manual and is restricted to the develop branch.
+    # Automatic and manual publication are restricted to the develop branch.
     if: >-
       github.repository == 'dxf2gcode/dxf2gcode' &&
       vars.DOCS_PREVIEW_PUBLISH_APPROVED == 'true' &&
-      inputs.publish == true &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && inputs.publish == true)) &&
       github.ref == 'refs/heads/develop'
     runs-on: ubuntu-24.04
     timeout-minutes: 10

@@ -31,10 +31,14 @@ preparation and authorization gates preserved below.
 
 - Pages uses **GitHub Actions**, `build_type=workflow`, with HTTPS enforced at
   the exact `/dxf2gcode/` project URL. No custom domain was configured.
-- The prepared `documentation-pages.yml` remains **manual only**. Pushes and PRs
-  run checks without deploying. Publication requires `publish=true`, the
-  repository variable `DOCS_PREVIEW_PUBLISH_APPROVED=true`, the correct repository
-  and `refs/heads/develop`. The approval variable is now explicitly enabled.
+- Following the user's automatic-publication request, `documentation-pages.yml`
+  now publishes website changes pushed or merged into `develop`, after its
+  strict documentation build succeeds. The path filter includes `docs/**`
+  (including branding), `zensical.toml`, `requirements-docs.txt` and the Pages
+  workflow itself. Manual dispatch still requires `publish=true`; both triggers
+  require `DOCS_PREVIEW_PUBLISH_APPROVED=true`, the correct repository and
+  `refs/heads/develop`. Pull requests do not deploy. The workflow change takes
+  effect once committed and pushed to GitHub.
 - The new `github-pages` environment permits only the `develop` branch.
   Build permissions remain `contents: read` / `pages: read`; deployment alone
   gets `pages: write` and `id-token: write`. Other repository rules and secrets
@@ -77,9 +81,10 @@ Local preview and strict-build commands are unchanged (see below and
 [Documentation preview](../../docs/documentation-preview.md)). Publication
 evidence and request/response logs are ignored under `.tox/pages-publication/`.
 
-For a future website update: commit/review the docs changes on develop, wait for
-the applicable checks, then run **Development documentation preview** manually
-with `publish=true`. The workflow does not automatically publish on a push.
+For a future website update: commit/review and push the docs changes to develop.
+**Development documentation preview** automatically builds and publishes
+matching website changes. A local commit alone is insufficient. Manual dispatch
+with `publish=true` remains available for republishing without a new commit.
 Do not rebuild or redispatch merely because this handover-only report changed.
 
 The next content task is to create `docs/wiki-migration` from current develop
