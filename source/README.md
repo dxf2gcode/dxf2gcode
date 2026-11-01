@@ -245,9 +245,11 @@ a temporary directory with isolated configuration paths.
 
 ## Version and build provenance
 
-The About dialog displays the package version, source revision and branch,
-commit date, build date, local-change status and Python/Qt runtime versions.
-When running the source checkout, these values are read from that checkout;
+The About dialog displays the package version, short source revision and branch
+on one line, with a local-change marker when applicable. A second line shows
+the Python and Qt runtime versions. Commit and build dates remain available in
+the build provenance data; they are not shown in the compact About display.
+When running the source checkout, version and provenance are read from that checkout;
 a normal commit or branch switch needs no hook or manual metadata update.
 The release version in `dxf2gcode/_version.py` is still updated deliberately.
 
