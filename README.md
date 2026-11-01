@@ -8,6 +8,9 @@ dxf2gcode is an open-source converter from 2D DXF drawings to G-code for CNC
 machines. It provides a Qt interface for preparing drawings and toolpaths,
 with configurable postprocessors for output.
 
+**[Read the development documentation](https://dxf2gcode.github.io/dxf2gcode/)**
+for installation, startup and an introduction to the workflow.
+
 **Development status:** the `develop` branch on GitHub is being actively
 modernized and restructured. It does not automatically represent a stable
 release. For previously published releases, visit the

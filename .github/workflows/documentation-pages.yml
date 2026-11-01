@@ -19,14 +19,13 @@ concurrency:
 
 jobs:
   build:
-    # The variable must remain unset/false until rights, target URL and a
-    # deployment have been explicitly approved. This task does not set it.
+    # Set the variable only after rights, target URL and deployment approval.
+    # Publishing remains manual and is restricted to the develop branch.
     if: >-
       github.repository == 'dxf2gcode/dxf2gcode' &&
       vars.DOCS_PREVIEW_PUBLISH_APPROVED == 'true' &&
       inputs.publish == true &&
-      (github.ref == 'refs/heads/develop' ||
-       github.ref == 'refs/heads/docs/zensical-prototype')
+      github.ref == 'refs/heads/develop'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

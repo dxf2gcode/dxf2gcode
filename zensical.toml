@@ -1,4 +1,4 @@
-# Prepared project-site URL; no publication has been performed.
+# Canonical GitHub Pages project-site URL, including the repository subpath.
 [project]
 site_name = "dxf2gcode Development Documentation"
 site_description = "Development documentation for dxf2gcode"

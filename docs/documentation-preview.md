@@ -1,7 +1,9 @@
 # Documentation preview
 
 This prototype uses [Zensical](https://zensical.org/docs/get-started/), configured
-in `zensical.toml` at the repository root. It has no publishing workflow.
+in `zensical.toml` at the repository root. The development website is hosted
+with GitHub Pages. Publishing uses a separate manual GitHub Actions workflow
+on `develop`; local builds and automatic documentation checks never deploy.
 
 ## Requirements
 
