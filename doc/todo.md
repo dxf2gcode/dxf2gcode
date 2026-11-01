@@ -697,3 +697,66 @@ für Vollsuite, Debian oder Builds gelten nicht als dauerhafte Freigabe.
 Bei GUI-Textänderungen alle gepflegten TS-Kataloge (Deutsch, Französisch,
 Russisch) im selben Schritt aktualisieren, die zugehörigen QM-Dateien
 erzeugen und die geänderten Übersetzungen prüfen. Kein Commit ohne Auftrag.
+
+## DOC1 – Zensical-Dokumentation und GitHub Development Preview
+
+**Übergabestand 01.11.2026.** Maßgeblicher Bericht mit lokalen und GitHub-
+Prüfergebnissen, Commitbezügen und Wiederaufnahmebefehlen:
+[Phase-1-Abnahme und Wiederaufnahme](migration/zensical-prototype.md).
+Die vier englischen Seiten bleiben ein technischer Prototyp.
+
+### Phase 1 – tatsächlicher Status
+
+- [x] Technische Abnahme: Strict-Build, 167 lokale Verweise ohne Fehler,
+  vier Sitemap-Adressen unter `/dxf2gcode/`, 18 Suchindexeinträge.
+- [x] Visuelle Inhaltsabnahme der vier Seiten durch den Nutzer abgeschlossen.
+- [ ] Kurze zusätzliche Sichtprüfung des aktualisierten Symbols/Headers vor
+  einem Pages-Deployment; bisherige Inhaltsabnahmen bleiben gültig.
+- [x] 15 Wiki-Seiten gesichert, 23 von 24 Medien/Anhängen vorhanden;
+  Herkunftsverzeichnis und Rechteprüfung dokumentiert. Rohsicherung ignoriert.
+- [x] Neue versionsfreie Wortmarken-/Symbolquellen und abgeleitete
+  Windows-/Linux-/ICNS-Symbole lokal eingebunden und unter Qt5/Qt6 geprüft.
+- [x] Programm-/Test-/CI-/Infofensteränderungen auf `origin/develop` veröffentlicht;
+  ursprüngliche Commits `5017e16` und `a982969` unverändert erhalten.
+- [x] Werkzeugwechsel-Testisolation und zusätzliche Qt-/CI-Testfixturefehler
+  korrigiert; keine dafür notwendige Änderung des produktiven Exportcodes.
+- [x] GitHub-Volltestmatrix für `e2ceed4` bestanden: Python 3.11/3.12/3.13
+  mit PyQt5 und Python 3.11 mit PyQt6; siehe Lauf 41327575137 im Übergabebericht.
+- [ ] Dokumentation, Branding und Dokumentationsworkflows: drei getrennte
+  Pakete lokal vorbereitet; erst nach erfolgreicher Develop-CI committen/pushen.
+- [ ] GitHub Pages weiterhin deaktiviert: manuell gesperrter Workflow vorbereitet,
+  kein Deployment und keine GitHub-Einstellungsänderung. Geplante Adresse:
+  `https://dxf2gcode.github.io/dxf2gcode/`.
+
+### Phase 2 – geplanter Umfang
+
+- [x] [Migrationsmatrix für alle 15 Wiki-Seiten, Zielnavigation und priorisierte
+  Arbeitspakete](migration/wiki-migration-plan.md) vorhanden.
+- [ ] Nach gesonderter Integration von Phase 1 in `develop` den neuen Branch
+  `docs/wiki-migration` vom aktualisierten Develop erstellen.
+- [ ] Zuerst WP1: First DXF to G-code mit eigenem kleinen Beispiel und
+  ausdrücklich benannten Profilannahmen; anschließend User Guide (WP2–WP7).
+- [ ] Danach Configuration und Postprozessoren (WP8–WP10), dann Developer Guide
+  (WP11–WP12) und historische/Projekt-Dokumentation (WP13).
+
+### Offene Punkte und Wiederaufnahme
+
+- [ ] Rechteklärung für Wiki-Texte, Screenshots, fremde DXFs und Git-Flow-Grafik.
+  Ungeklärte Inhalte bleiben außerhalb von Git und Website.
+- [x] Neue Logos laut Nutzer selbst gestaltet, GPT-unterstützt, ohne fremde
+  Gestaltungsbestandteile; öffentliche Projektverwendung beauftragt. Erklärung
+  und Hashes in RIGHTS.md dokumentiert; keine pauschale Rechtegarantie oder
+  neue allgemeine Asset-Lizenz daraus ableiten.
+- [ ] Fehlendes `Spant.png` (404) bei späterer Migration klären/autorisiert ersetzen.
+- [ ] Externe Wiki-/Forum-Verweise bei der jeweiligen Inhaltsmigration prüfen;
+  GitHub-Zugriff und öffentliche Zielbranches sind geprüft.
+- [ ] Frische Windows-/Ubuntu-/PyQt6-Installationen bleiben getrennte Aufgaben;
+  ebenso CNC-/ATC-/manuelle Maschinenabnahme und macOS-Paketabnahme.
+- [ ] Pages-Konfiguration, Environment und ausdrückliche Deployment-Freigabe
+  klären; `DOCS_PREVIEW_PUBLISH_APPROVED` bis dahin nicht aktivieren.
+
+Zur Wiederaufnahme auf `docs/zensical-prototype` den aktuellen Übergabebericht,
+Status und jüngsten CI-Lauf lesen. Lokale Vorschau:
+`.\.tox\docs\Scripts\python.exe -m zensical serve`; technische Docs-Prüfung:
+mit demselben Interpreter `-m zensical build --strict`. Nächstes Inhaltspaket ist
+WP1 nach Integration; keine Vollsuite/Installer-Builds zum bloßen Wiederaufnehmen.

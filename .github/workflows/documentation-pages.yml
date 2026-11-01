@@ -1,0 +1,81 @@
+name: Development documentation preview
+
+# A push or pull request can never start this publishing workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish the reviewed Development Documentation preview'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: development-documentation-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # The variable must remain unset/false until rights, target URL and a
+    # deployment have been explicitly approved. This task does not set it.
+    if: >-
+      github.repository == 'dxf2gcode/dxf2gcode' &&
+      vars.DOCS_PREVIEW_PUBLISH_APPROVED == 'true' &&
+      inputs.publish == true &&
+      (github.ref == 'refs/heads/develop' ||
+       github.ref == 'refs/heads/docs/zensical-prototype')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+      - name: Read existing Pages configuration
+        id: pages
+        uses: actions/configure-pages@v6.0.0
+      - name: Verify the approved project-site address
+        env:
+          PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import tomllib
+          config = tomllib.loads(pathlib.Path('zensical.toml').read_text())
+          expected = config['project']['site_url'].rstrip('/')
+          actual = os.environ['PAGES_BASE_URL'].rstrip('/')
+          if actual != expected:
+              raise SystemExit(f'Pages URL mismatch: {actual!r} != {expected!r}')
+          PY
+      - name: Install existing documentation requirements
+        run: python -m pip install -r requirements-docs.txt
+      - name: Build reviewed documentation
+        run: python -m zensical build --strict
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: .tox/docs-site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy approved development preview
+        id: deployment
+        uses: actions/deploy-pages@v5.0.1
