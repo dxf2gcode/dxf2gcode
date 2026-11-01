@@ -62,10 +62,10 @@ def main(argv=None):
         if not args.keep_ln:
             compiler = find_tool((
                 "lrelease-qt%d" % PYQT_VERSION, "lrelease%d" % PYQT_VERSION,
-                "lrelease.exe", "lrelease",
                 "/usr/lib/qt%d/bin/lrelease" % PYQT_VERSION,
                 "/usr/lib64/qt%d/bin/lrelease" % PYQT_VERSION,
-                "/usr/lib/qt%d/libexec/lrelease" % PYQT_VERSION))
+                "/usr/lib/qt%d/libexec/lrelease" % PYQT_VERSION,
+                "lrelease.exe", "lrelease"))
             subprocess.check_call([compiler] + [str(p) for p in catalogs], cwd=ROOT)
     except RuntimeError as error:
         parser.exit(1, str(error) + "\n")

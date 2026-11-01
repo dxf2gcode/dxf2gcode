@@ -3622,6 +3622,7 @@ La longueur doit être supérieure à la tolérance</translation>
 </context>
 <context>
     <name>VersionInfo</name>
+    <message><source>Version:</source><translation>Version :</translation></message>
     <message>
         <source>Not available</source>
         <translation>Indisponible</translation>

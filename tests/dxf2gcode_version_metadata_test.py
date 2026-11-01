@@ -207,7 +207,9 @@ class TestVersionPresentation(unittest.TestCase):
         self.assertIn("1.2.3", html)
         self.assertIn("feature/&lt;demo&gt;&amp;", html)
         self.assertNotIn("feature/<demo>", html)
-        self.assertIn("aaaaaaaaaaaa", html)
+        self.assertIn("1.2.3 · aaaaaaa · feature/&lt;demo&gt;&amp; · Local changes", html)
+        self.assertNotIn("aaaaaaaa", html)
+        self.assertNotIn("Commit date:", html)
         self.assertIn("Local changes", html)
         self.assertNotIn("$Date", html)
 
@@ -242,7 +244,8 @@ class TestVersionPresentation(unittest.TestCase):
                 tree = ET.parse(catalog.with_suffix(".ts"))
                 context = next(c for c in tree.getroot().findall("context")
                                if c.findtext("name") == "VersionInfo")
-                self.assertEqual(len(context.findall("message")), 14)
+                self.assertIn("Version:", {m.findtext("source")
+                                           for m in context.findall("message")})
                 for message in context.findall("message"):
                     text = translator.translate("VersionInfo", message.findtext("source"))
                     self.assertEqual(text, message.findtext("translation"))

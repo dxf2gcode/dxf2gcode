@@ -3883,6 +3883,7 @@ Skipped Geometries</source>
 </context>
 <context>
     <name>VersionInfo</name>
+    <message><source>Version:</source><translation>Версия:</translation></message>
     <message>
         <source>Not available</source>
         <translation>Недоступно</translation>

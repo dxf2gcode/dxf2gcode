@@ -3669,6 +3669,7 @@ Die Länge muss größer der Toleranz sein.
 </context>
 <context>
     <name>VersionInfo</name>
+    <message><source>Version:</source><translation>Version:</translation></message>
     <message>
         <source>Not available</source>
         <translation>Nicht verfügbar</translation>

@@ -113,8 +113,9 @@ def _run_mainwindow_workflow():
         window.about()
         message = dialog.call_args.kwargs["message"]
         assert __version__ in message
-        assert "Package version:" in message
-        assert "Source branch:" in message
+        assert "Version:" in message
+        assert "Runtime:" in message
+        assert "Package version:" not in message
         assert "$Date" not in message and "$Revision" not in message
 
     fixture = os.path.join(_REPO_DIR, "dxf", "Frontplatte_Texte_aufgebrochen.dxf"
