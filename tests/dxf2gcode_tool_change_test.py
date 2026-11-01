@@ -160,17 +160,32 @@ class TestToolChange(unittest.TestCase):
         self.assertEqual(ToolChangeMacro(self.pp).expand(context), 'G20 T1 Z  15.000\n')
 
     def test_macro_uses_lead_entry_instead_of_original_contour_start(self):
-        shape = machining.make_shape(machining.square_geos(), nr=0, cut_cor=41)
-        layer = shape.parentLayer
-        layer.lead_in_mode = 'straight'
-        layer.lead_length = 2.0
-        layer.exp_order_complete = [0]
-        machining.build_stmove(shape)
-        self.layers = Layers([layer])
-        self.assertEqual(shape.get_start_end_points(True), Point(0, 0))
-        code = self.export()
-        self.assertFalse(self.pp.export_errors)
-        self.assertIn('G0 X  -1.000 Y  -2.000', code.split('(* SHAPE')[0])
+        self._assert_macro_lead_entry(done_by_machine=True, expected_entry=(-1, -2))
+
+    def test_macro_uses_software_compensated_lead_entry(self):
+        self._assert_macro_lead_entry(done_by_machine=False, expected_entry=(2, -1))
+
+    def _assert_macro_lead_entry(self, done_by_machine, expected_entry):
+        compensation = g.config.vars.Cutter_Compensation.__dict__
+        previous = compensation.copy()
+        with patch.dict(compensation, done_by_machine=done_by_machine):
+            shape = machining.make_shape(machining.square_geos(), nr=0, cut_cor=41)
+            layer = shape.parentLayer
+            layer.lead_in_mode = 'straight'
+            layer.lead_length = 2.0
+            layer.exp_order_complete = [0]
+            machining.build_stmove(shape)
+            self.layers = Layers([layer])
+            self.assertEqual(shape.get_start_end_points(True), Point(0, 0))
+            preview = self.pp.plan_shape_toolpath(shape)
+            for actual, expected in zip(preview.approach_xy, expected_entry):
+                self.assertAlmostEqual(actual, expected)
+            expected = 'G0 X%s Y%s' % tuple(self.pp.fnprint(value)
+                                            for value in expected_entry)
+            code = self.export()
+            self.assertFalse(self.pp.export_errors)
+            self.assertIn(expected, code.split('(* SHAPE')[0])
+        self.assertEqual(compensation, previous)
 
     def test_length_offset_is_not_assumed_without_a_rule(self):
         self.settings.length_offset_mode = 'none'

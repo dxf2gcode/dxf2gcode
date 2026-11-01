@@ -1038,7 +1038,7 @@ class TestCanvasPreviewBreaks(LeadMoveTestBase):
         count = 0
         for index in range(path.elementCount()):
             element = path.elementAt(index)
-            if element.type == 0x01:  # MoveToElement
+            if element.isMoveTo():
                 count += 1
         return count
 
