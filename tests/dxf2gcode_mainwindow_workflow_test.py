@@ -15,6 +15,17 @@ _REPO_DIR = os.path.dirname(_TEST_DIR)
 class TestMainWindowWorkflow(unittest.TestCase):
     """Exercise load, canvas plot, tree edit, preview, and export together."""
 
+    def test_startpoint_actions_respect_manual_route_display(self):
+        with tempfile.TemporaryDirectory(prefix="d2g_startpoint_route_") as temp_dir:
+            env = os.environ.copy()
+            env.update(QT_QPA_PLATFORM="offscreen", D2G_WORKFLOW_TEMP=temp_dir)
+            result = subprocess.run(
+                [sys.executable, __file__, "--worker", "--startpoint-worker"],
+                cwd=temp_dir, env=env, capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 0,
+                             result.stdout.decode("utf-8", errors="replace") +
+                             result.stderr.decode("utf-8", errors="replace"))
+
     def test_shown_frontplate_tree_buttons_after_manual_collapse(self):
         with tempfile.TemporaryDirectory(prefix="d2g_tree_fold_") as temp_dir:
             env = os.environ.copy()
@@ -45,10 +56,61 @@ class TestMainWindowWorkflow(unittest.TestCase):
                 result.stderr.decode("utf-8", errors="replace"))
 
 
+def _check_startpoint_route_display(window, app):
+    from unittest.mock import patch
+    from dxf2gcode.presentation.qt.canvas import MyDropDownMenu
+    from dxf2gcode.presentation.qt.qt_compat.QtCore import QPoint
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMenu
+
+    shape = next(shape for shape in window.shapes if shape.closed and len(shape.geos) > 2)
+    view = window.ui.layersShapesTreeView
+    view.setCurrentIndex(window.TreeHandler.findLayerItemIndexFromShape(shape))
+    assert shape.isSelected()
+    scene = window.canvas_scene
+    window.TreeHandler.updateExportOrder()
+    order = [(layer.nr, list(layer.exp_order_complete)) for layer in window.layerContents]
+
+    for live in (False, True):
+        window.ui.actionLiveUpdateExportRoute.setChecked(live)
+        assert window.TreeHandler.auto_update_export_order == live
+        for source in ("Set Nearest StartPoint", "Set Sharpest StartPoint"):
+            for visible in ((False, True) if not live else (True,)):
+                window.deleteG0Paths()
+                if visible:
+                    window.updateExportRoute()
+                previous_routes = tuple(scene.routearrows)
+                previous_preview = shape.stmove
+                old_start = shape.get_start_end_points(True)
+                clicked = shape.geos[len(shape.geos) // 2].Ps
+                with patch.object(QMenu, "exec", return_value=None):
+                    menu = MyDropDownMenu(scene, QPoint(), clicked)
+                assert menu.selectedItems == [shape]
+                action = next(action for action in menu.actions()
+                              if action.text() == menu.tr(source))
+                action.trigger()
+                app.processEvents()
+                assert shape.stmove is not previous_preview
+                if source == "Set Nearest StartPoint":
+                    assert shape.get_start_end_points(True) != old_start
+                if live:
+                    assert scene.routearrows and tuple(scene.routearrows) != previous_routes
+                else:
+                    assert tuple(scene.routearrows) == previous_routes, (source, visible)
+                    assert bool(scene.routetext) == visible
+                    assert window.ui.actionDeleteG0Paths.isEnabled() == visible
+                assert [(layer.nr, list(layer.exp_order_complete))
+                        for layer in window.layerContents] == order
+                # Explicitly requesting the route must still work afterwards.
+                window.updateExportRoute()
+                assert scene.routearrows and scene.routetext
+                assert window.ui.actionDeleteG0Paths.isEnabled()
+
+
 def _run_mainwindow_workflow():
     """Worker entry point; run separately so a Qt crash cannot kill unittest."""
     from types import SimpleNamespace
     fold_worker = "--fold-worker" in sys.argv
+    startpoint_worker = "--startpoint-worker" in sys.argv
     if fold_worker:
         import faulthandler
         faulthandler.dump_traceback_later(4, repeat=True)
@@ -119,7 +181,7 @@ def _run_mainwindow_workflow():
         assert "$Date" not in message and "$Revision" not in message
 
     fixture = os.path.join(_REPO_DIR, "dxf", "Frontplatte_Texte_aufgebrochen.dxf"
-                           if fold_worker else "test.dxf")
+                           if fold_worker else "1997.DXF" if startpoint_worker else "test.dxf")
     if fold_worker:
         window.show()
         app.processEvents()
@@ -129,6 +191,11 @@ def _run_mainwindow_workflow():
     assert window.canvas.scene() is window.canvas_scene
     assert len(window.canvas_scene.items()) > len(window.shapes)
     assert_empty_machining_dropdowns()
+
+    if startpoint_worker:
+        _check_startpoint_route_display(window, app)
+        window.close()
+        return
 
     if fold_worker:
         from importlib import import_module

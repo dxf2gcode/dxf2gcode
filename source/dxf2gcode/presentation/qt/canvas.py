@@ -375,7 +375,8 @@ class MyDropDownMenu(QMenu):
                     clicked = xyForZ[z] = self.canvas_scene.determineSelectedPosition(self.clicked, z, self.offset)
             shape.setNearestStPoint(clicked)
             self.canvas_scene.repaint_shape(shape)
-        g.window.updateExportRoute()
+        self.canvas_scene.update()
+        g.window.TreeHandler.prepareExportOrderUpdate()
 
     def setSharpestStPoint(self):
         """
@@ -384,7 +385,8 @@ class MyDropDownMenu(QMenu):
         for shape in self.selectedItems:
             shape.setSharpestStPoint()
             self.canvas_scene.repaint_shape(shape)
-        g.window.updateExportRoute()
+        self.canvas_scene.update()
+        g.window.TreeHandler.prepareExportOrderUpdate()
 
     def _setMachiningMode(self, action, value=None):
         if not self.selectedItems:
