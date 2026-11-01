@@ -872,8 +872,7 @@ class MainWindow(QMainWindow):
         """
 
         message = self.tr("<html>"
-                          "<h2><center>You are using</center></h2>"
-                          "<body bgcolor="
+                          "<body>"
                           "<center><img src=':images/dxf2gcode_logo.png' border='1' color='white'></center></body>"
                           "<h2>Version:</h2>"
                           "<body>%s</body>"
@@ -1164,7 +1163,7 @@ class MainWindow(QMainWindow):
                 return False  # cancelled
 
         self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
-        self.setWindowTitle("DXF2GCODE - [%s]" % self.filename)
+        self.setWindowTitle("XF2GCODE - [%s]" % self.filename)
         self.canvas.resetAll()
         self.app.processEvents()
 

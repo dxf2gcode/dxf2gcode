@@ -1,6 +1,4 @@
-# dxf2gcode
-
-![dxf2gcode project logo](assets/images/dxf2gcode_logo.png)
+<h1 id="dxf2gcode"><img src="assets/images/dxf2gcode_logo.png" alt="dxf2gcode"></h1>
 
 dxf2gcode converts 2D DXF drawings into G-code for CNC machines. It provides
 a Qt interface for preparing drawings and toolpaths, with configurable

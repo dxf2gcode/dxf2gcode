@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>DXF2GCODE</string>
+   <string>XF2GCODE</string>
   </property>
   <property name="windowIcon">
    <iconset resource="dxf2gcode_images.qrc">
