@@ -633,12 +633,18 @@ class TestBreakPassGUILayout(unittest.TestCase):
     the collapse behaviour of the used QGridLayout with plain widgets.
     """
 
-    def _ui5_add_items(self):
+    @staticmethod
+    def _generated_ui_path():
+        from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
         base = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(base, "dxf2gcode", "presentation", "qt", "generated", "dxf2gcode_ui5.py")
+        filename = "dxf2gcode_ui%d.py" % PYQT_VERSION
+        path = os.path.join(base, "dxf2gcode", "presentation", "qt", "generated", filename)
         if not os.path.isfile(path):  # source tree variant
-            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode", "presentation", "qt", "generated", "dxf2gcode_ui5.py")
-        with open(path, "r", encoding="utf-8") as f:
+            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode", "presentation", "qt", "generated", filename)
+        return path
+
+    def _ui_add_items(self):
+        with open(self._generated_ui_path(), "r", encoding="utf-8") as f:
             tree = ast.parse(f.read())
         rows = {}
         for node in ast.walk(tree):
@@ -652,7 +658,7 @@ class TestBreakPassGUILayout(unittest.TestCase):
         return rows
 
     def test_combobox_is_below_infeed_and_final_depth(self):
-        rows = self._ui5_add_items()
+        rows = self._ui_add_items()
         self.assertEqual(rows["zInfeedDepthLineEdit"], 5)
         self.assertEqual(rows["zFinalMillDepthLineEdit"], 6)
         self.assertEqual(rows["breaksPassComboBox"], 7)
@@ -660,21 +666,26 @@ class TestBreakPassGUILayout(unittest.TestCase):
         self.assertEqual(rows["g1FeedZLineEdit"], 9)
 
     def test_combobox_is_child_of_mill_settings_frame(self):
-        base = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(base, "dxf2gcode", "presentation", "qt", "generated", "dxf2gcode_ui5.py")
-        if not os.path.isfile(path):
-            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode", "presentation", "qt", "generated", "dxf2gcode_ui5.py")
-        with open(path, "r", encoding="utf-8") as f:
-            content = f.read()
+        with open(self._generated_ui_path(), "r", encoding="utf-8") as f:
+            tree = ast.parse(f.read())
+        parents = {}
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Assign)
+                    and isinstance(node.value, ast.Call)):
+                continue
+            call = node.value
+            parent = call.args[0] if call.args else next(
+                (keyword.value for keyword in call.keywords
+                 if keyword.arg == "parent"), None)
+            if isinstance(parent, ast.Attribute):
+                for target in node.targets:
+                    if isinstance(target, ast.Attribute):
+                        parents[target.attr] = parent.attr
         # The breaks-pass combobox lives in the "Shape parameters" group box,
         # which is itself a child of the mill settings frame, so disabling the
         # frame (no selection) disables it as before.
-        self.assertIn(
-            "self.breaksPassComboBox = QtWidgets.QComboBox(self.shapeGroupBox)",
-            content)
-        self.assertIn(
-            "self.shapeGroupBox = QtWidgets.QGroupBox(self.millSettingsFrame)",
-            content)
+        self.assertEqual(parents["breaksPassComboBox"], "shapeGroupBox")
+        self.assertEqual(parents["shapeGroupBox"], "millSettingsFrame")
 
     def test_hidden_widget_collapses_in_grid_layout(self):
         global _APP

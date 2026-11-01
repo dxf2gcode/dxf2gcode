@@ -23,6 +23,8 @@ from dxf2gcode.domain.toolpath.shapeoffset import offShapeClass  # noqa: E402
 from dxf2gcode.adapters.toolpath.preparation import prepare_shape  # noqa: E402
 from dxf2gcode.adapters.dxf.parser import ReadDXF  # noqa: E402
 from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor  # noqa: E402
+from dxf2gcode.adapters.config.runtime_config import MyConfig  # noqa: E402
+import dxf2gcode.domain.constants as c  # noqa: E402
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication  # noqa: E402
 
 import dxf2gcode_import_contract_test as import_contract  # noqa: E402
@@ -68,11 +70,17 @@ class TestInteractiveWorkflow(unittest.TestCase):
         global _APP
         _APP = QApplication.instance() or QApplication([])
         self.old_quiet = g.quiet
+        self.old_folder, self.old_config, self.old_window = g.folder, g.config, g.window
         g.quiet = True
         self.temp_dir = tempfile.TemporaryDirectory(prefix="d2g_workflow_")
+        g.folder = self.temp_dir.name
+        g.config = MyConfig()
+        g.window = None
+        os.makedirs(os.path.join(g.folder, c.DEFAULT_POSTPRO_DIR))
 
     def tearDown(self):
         g.quiet = self.old_quiet
+        g.folder, g.config, g.window = self.old_folder, self.old_config, self.old_window
         self.temp_dir.cleanup()
 
     def test_load_select_edit_preview_and_export(self):

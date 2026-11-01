@@ -29,12 +29,15 @@ _APP = QApplication.instance() or QApplication([])
 class TestNumericPrecision(unittest.TestCase):
     def setUp(self):
         self.old_folder, self.old_config = g.folder, g.config
+        self.old_window = g.window
+        g.window = None
         self.directory = tempfile.TemporaryDirectory(prefix='d2g_precision_')
         g.folder = self.directory.name
         g.config = MyConfig()
 
     def tearDown(self):
         g.folder, g.config = self.old_folder, self.old_config
+        g.window = self.old_window
         self.directory.cleanup()
 
     def test_invalid_configuration_shows_error_without_applying_changes(self):
