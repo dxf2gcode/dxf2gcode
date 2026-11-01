@@ -2822,13 +2822,10 @@ class TreeHandler(QWidget):
 
     def prepareExportOrderUpdate(self):
         """
-        If the live update of export route is enabled, this function is
-        called each time the shape order changes. It aims to update the drawing.
+        Commit manual tree reordering; live update controls drawing only.
         """
+        self.updateExportOrder()
         if self.auto_update_export_order:
-            # Update the exported shapes
-            self.updateExportOrder()
-
             # Emit the signal "exportOrderUpdated", so that the main can update tool path if he wants
             g.window.updateExportRoute()
 

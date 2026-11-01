@@ -40,7 +40,7 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 import logging
 logger = logging.getLogger("PostPro.PostProcessorConfig")
 
-SUPPORTED_CONFIGS = [8, 8.1]
+SUPPORTED_CONFIGS = [8, 8.1, 8.2]
 CONFIG_VERSION = SUPPORTED_CONFIGS[-1]
 
 """
@@ -113,7 +113,7 @@ POSTPRO_SPEC = str('''
     line_nrs_step = integer(default=10)
 
     [Program]
-    # This will be done after each layer, if different tools are used.
+    # Called for the first tool and whenever the effective tool number changes.
     tool_change = string(default=T%tool_nr M6%nlS%speed%nl)
     # This will be done after each change between cutting in plane or cutting in depth.
     feed_change = string(default=F%feed%nl)
@@ -144,6 +144,14 @@ POSTPRO_SPEC = str('''
     post_shape_cut = string(default=M9 M5%nl)
     # Defines comments' format. Comments are written at some places during the export in order to make the g-code better readable.
     comment = string(default=%nl(%comment)%nl)
+
+    [Tool_Change]
+    # Legacy preserves existing output; managed macros declare their return state.
+    return_state = option('legacy', 'next_start_at_retract', default='legacy')
+    end_distance_mode = option('G90', 'G91', default='G90')
+    work_offset = string(default='G54')
+    length_offset_mode = option('none', 'tool_number', 'mapping', default='none')
+    length_offset_mapping = string(default='')
 
     # Define here custom GCODE actions:
     # - name: this is the unique name of the action

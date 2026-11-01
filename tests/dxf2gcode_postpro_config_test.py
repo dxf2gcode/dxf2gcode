@@ -76,8 +76,32 @@ class TestPostProConfigDefaultsAndRoundTrip(PostProConfigTestCase):
         self.assertEqual(loaded.vars.Number_Format.decimal_separator, ",")
         self.assertEqual(loaded.vars.Program.code_end, "M30 (Done)")
 
+    def test_managed_macro_settings_survive_save_and_reload(self):
+        self.config.create_default_config()
+        self.config.var_dict['Tool_Change'].update(dict(
+            return_state='next_start_at_retract', end_distance_mode='G91',
+            work_offset='G55', length_offset_mode='mapping',
+            length_offset_mapping='1:4,2:8'))
+        self.config.var_dict['Program']['tool_change'] = 'M0%nlG43 H%length_offset_nr'
+        self.config.save_varspace()
+        loaded = MyPostProConfig(filename='machine.cfg')
+        loaded.load_config()
+        self.assertEqual(dict(loaded.var_dict['Tool_Change']),
+                         dict(self.config.var_dict['Tool_Change']))
+        self.assertEqual(loaded.vars.Program.tool_change, 'M0%nlG43 H%length_offset_nr')
+
 
 class TestPostProConfigVersions(PostProConfigTestCase):
+
+    def test_81_profile_without_macro_contract_keeps_legacy_output(self):
+        values = self._write_valid_config(version=8.1)
+        del values['Tool_Change']
+        values['Program']['tool_change'] = 'T%tool_nr M6%nlS%speed%nl'
+        values.write()
+        self.config.load_config()
+        self.assertFalse(self.config.version_mismatch)
+        self.assertEqual(self.config.vars.Tool_Change.return_state, 'legacy')
+        self.assertEqual(self.config.vars.Program.tool_change, 'T%tool_nr M6%nlS%speed%nl')
 
     def test_supported_older_version_is_upgraded_without_losing_settings(self):
         self._write_valid_config(version=8.0)

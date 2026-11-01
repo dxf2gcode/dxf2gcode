@@ -1763,8 +1763,8 @@ renvoi le code erreur:{1}</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1464"/>
-        <source>&amp;Export Shapes</source>
-        <translation>&amp;Exporter le parcours</translation>
+        <source>&amp;Export Shapes without Optimization</source>
+        <translation>&amp;Exporter le parcours sans optimisation</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1475"/>
@@ -2650,6 +2650,12 @@ Vous devez détruire(ou éditer soigneusement) le fichier de configuration &quot
 </context>
 <context>
     <name>MyPostProConfig</name>
+    <message><source>Tool change macro</source><translation>Macro de changement d'outil</translation></message>
+    <message><source>Declared return position:</source><translation>Position de retour déclarée :</translation></message>
+    <message><source>Distance mode at macro end:</source><translation>Mode de coordonnées en fin de macro :</translation></message>
+    <message><source>Work coordinate system after change:</source><translation>Repère pièce après le changement :</translation></message>
+    <message><source>Tool length offset selection:</source><translation>Sélection de la correction de longueur d'outil :</translation></message>
+    <message><source>Tool-to-offset mapping (1:1,4:8):</source><translation>Correspondance outil-correcteur (1:1,4:8) :</translation></message>
     <message>
         <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="196"/>
         <source>errors reading %s:</source>
@@ -2918,6 +2924,20 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
 </context>
 <context>
     <name>MyPostProcessor</name>
+    <message><source>Tool-change macro is empty; its return state cannot be established</source><translation>La macro de changement d'outil est vide ; son état de retour ne peut pas être établi</translation></message>
+    <message><source>Tool-change work offset must be G54 through G59.3</source><translation>Le repère pièce du changement d'outil doit être compris entre G54 et G59.3</translation></message>
+    <message><source>Tool-change end distance mode must be G90 or G91</source><translation>Le mode de coordonnées en fin de macro doit être G90 ou G91</translation></message>
+    <message><source>Unavailable scalar profile parameter: %s.%s</source><translation>Paramètre scalaire de profil indisponible : %s.%s</translation></message>
+    <message><source>Cyclic custom macro in tool-change template</source><translation>Référence cyclique de macro dans le modèle de changement d'outil</translation></message>
+    <message><source>Unknown or nested profile parameter in tool-change macro</source><translation>Paramètre de profil inconnu ou imbriqué dans la macro de changement d'outil</translation></message>
+    <message><source>Unavailable tool-change parameter: %s</source><translation>Paramètre de changement d'outil indisponible : %s</translation></message>
+    <message><source>Unknown tool length offset mode: %s</source><translation>Mode de correction de longueur d'outil inconnu : %s</translation></message>
+    <message><source>Tool length offset mapping must use tool:offset pairs</source><translation>La correspondance de longueur doit contenir des paires outil:correcteur</translation></message>
+    <message><source>Duplicate tool in length offset mapping: %s</source><translation>Outil en double dans la correspondance de longueur : %s</translation></message>
+    <message><source>No tool length offset mapping for tool %s</source><translation>Aucune correspondance de longueur pour l'outil %s</translation></message>
+    <message><source>Managed tool-change macros currently require milling G-code</source><translation>Les macros avec état de retour déclaré nécessitent actuellement du G-code de fraisage</translation></message>
+    <message><source>Managed tool-change export does not support opaque Custom G-Code rows</source><translation>L'export avec état de retour déclaré ne prend pas en charge les lignes de G-code libre sans état connu</translation></message>
+    <message><source>Cannot prepare tool-change entry for shape %s</source><translation>Impossible de préparer l'entrée du changement d'outil pour la forme %s</translation></message>
     <message>
         <location filename="../dxf2gcode/adapters/postprocessor/postprocessor.py" line="77"/>
         <source>Postprocessor configuration</source>

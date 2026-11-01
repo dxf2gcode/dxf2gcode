@@ -44,6 +44,7 @@ class ProfileDialect:
         self.vars = profile
         self.diameter_factor = diameter_factor
         self.feed = 0
+        self._force_feed = False
         self.speed = 0
         self.tool_nr = 1
         self.comment = ""
@@ -154,8 +155,9 @@ class ProfileDialect:
         @param feed: New feedrate
         @return: Returns the string which shall be added.
         """
-        if self.feed != feed:
+        if self.feed != feed or self._force_feed:
             self.feed = feed
+            self._force_feed = False
             return self.make_print_str(self.vars.Program["feed_change"])
         return ""
 

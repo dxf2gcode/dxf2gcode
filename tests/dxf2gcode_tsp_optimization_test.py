@@ -145,6 +145,10 @@ class TestTspOptimization(unittest.TestCase):
         start, end = Point(0, 0), Point(1, 0)
         shapes = [Shape(start, end, True), Shape(end, start, False)]
         layer = Layer()
+        layer.shapes = shapes
+        layer.exp_order_complete = [0, 1]
+        for nr, shape in enumerate(shapes):
+            shape.nr = nr
         optimizer = Optimizer()
         factory_args = []
 
@@ -165,6 +169,19 @@ class TestTspOptimization(unittest.TestCase):
         self.assertEqual(factory_args[0][0][-1], (Point(5, 5), Point(5, 5)))
         self.assertEqual(updated, [layer])
         self.assertEqual(result.shape_count, 2)
+
+    def test_startpoint_optimization_leaves_unreleased_shapes_unchanged(self):
+        from unittest.mock import Mock
+        from dxf2gcode.domain.project.layercontent import LayerContent
+        shapes = [Mock(nr=nr, send_to_TSP=nr == 2) for nr in range(3)]
+        for nr, shape in enumerate(shapes):
+            shape.get_start_end_points.return_value = Point(nr, 0)
+        layer = LayerContent(0, "order", shapes)
+        layer.exp_order = [0, 1, 2]
+        layer.optimize()
+        shapes[0].setNearestStPoint.assert_not_called()
+        shapes[1].setNearestStPoint.assert_not_called()
+        shapes[2].setNearestStPoint.assert_called_once_with(Point(1, 0))
 
 
 if __name__ == "__main__":

@@ -296,7 +296,7 @@ class LayerContent(object):
             shape = nr2shape.get(nr, None)
             if shape is None:
                 continue
-            if lastPoint is not None:
+            if lastPoint is not None and shape.send_to_TSP:
                 shape.setNearestStPoint (lastPoint)
             lastPoint = shape.get_start_end_points (False)
 

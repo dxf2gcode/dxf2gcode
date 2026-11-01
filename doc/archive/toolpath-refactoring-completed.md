@@ -24,6 +24,7 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 | U1 / U2 | Werkzeugauswahl ausrichten; Klappbuttons nach Baumzustand und Hänger-Nachbesserung |
 | U4 / I2 | Konfigurierbarer Startzustand des Layerbaums; optionale Importfilter |
 | R1a | Drag-and-drop-Absturzpfade und Qt5-/Qt6-Kompatibilität |
+| R2 | Sichtbare Exportreihenfolge, Treeview-Synchronisierung und gemeinsame GUI-/CLI-Optimierungsmodi |
 | K3 | Vierstellige Längeneingabe und Erhaltung genauer Originalwerte bis zur bewussten Bearbeitung; Profilformatierung bleibt maßgeblich |
 | B1 / B2 | Gemeinsame Bearbeitungszustände, sichtbare Konflikte alter Projekte und korrekte Geometrieprüfung für Bohren/Pocketing |
 | Versionsmetadaten | Provider, Build-Anbindung, Infofenster/G-Code-Kopf und Entfernung der alten Keywords; Paketabnahme M1 bleibt offen |
@@ -32,6 +33,88 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 Die weiterhin geltenden [Architekturverträge](../architecture.md#weitergeltende-architekturverträge)
 stehen in der aktuellen Architekturdokumentation. Dieses Archiv bewahrt
 Umsetzungshistorie und damalige Prüfergebnisse.
+
+<a id="r2"></a>
+
+## Abgeschlossener Exportreihenfolgevertrag
+
+### R2 – Sichtbare Reihenfolge als Exportvertrag festlegen
+
+**Codebefund:** `TreeHandler.updateExportOrder` übernimmt die Layerreihenfolge
+in `layers_list` und die Shape-Reihenfolge in `exp_order` beziehungsweise
+`exp_order_complete`, auch beim manuellen Umordnen ohne Routen-Live-Update.
+`MainWindow` bietet getrennte Aktionen
+`exportShapes` und `optimizeAndExportShapes`. `application/optimization/routes.py`
+optimiert pro Layer, berücksichtigt `send_to_TSP` und ruft anschließend
+`LayerContent.optimize` auf; Letzteres verändert nur Startpunkte von zur
+Optimierung freigegebenen Shapes. Eine
+zusätzliche Exportoption ist daher nicht ungeprüft neu zu erfinden, sondern
+zuerst gegen die vorhandenen Wege und Optimierungsmodi abzugleichen.
+
+- [x] Die dargestellte Reihenfolge der Bearbeitungslayer strikt abarbeiten;
+  eine Optimierung darf keine Layergrenze überspringen oder Layer vertauschen.
+- [x] Manuelles Umordnen von Shapes im Treeview (Drag-and-drop oder
+  Auf-/Ab-Schaltflächen) legt die neue Bearbeitungsreihenfolge innerhalb
+  desselben Layers fest. Modell und Exportlisten übernehmen diese Reihenfolge
+  auch bei ausgeschaltetem Routen-Live-Update; eingeschaltet zeigt die
+  Routenanzeige sofort die neuen Verbindungen. Geometrie, Startpunkte,
+  Werkzeugzuordnung und Optimierungsfreigabe bleiben dabei erhalten.
+  Speichern/Laden und anschließender Export ohne Optimierung übernehmen
+  die manuelle Reihenfolge einschließlich benutzerdefiniertem G-Code.
+- [x] Innerhalb eines Layers die Shape-Reihenfolge beibehalten, außer für
+  ausdrücklich zur Optimierung freigegebene Shapes bei bewusst gewählter
+  Optimierung. Nutzerentscheidung vom 01.11.2026: Die bestehenden Modi
+  bleiben erhalten; die relative Reihenfolge nicht freigegebener Shapes
+  genügt. `CONSTRAIN_ORDER_ONLY` erhält diese relative Reihenfolge;
+  `CONSTRAIN_PLACE_AFTER` stellt diese Shapes vor die freigegebenen Shapes.
+- [x] „Ohne Optimierung exportieren“ muss als klar erkennbare Aktion verfügbar
+  sein. Sie löst weder eine neue Sortierung noch eine automatische Änderung
+  der festgelegten Startpunkte aus. Exportiert wird die aktuell sichtbare
+  Reihenfolge, auch wenn diese zuvor bewusst optimiert wurde.
+- [x] Routenanzeige/Live-Update von Optimierung unterscheiden. Anzeigen oder
+  Exportieren allein darf die Bearbeitungsreihenfolge nicht verändern.
+- [x] GUI, CLI, Projekt-Roundtrip und tatsächliche G-Code-Sequenz verwenden
+  denselben expliziten Reihenfolgevertrag. Werkzeugwechsel innerhalb eines
+  Layers dürfen keine versteckte Gruppierung nach Werkzeug auslösen.
+
+**Abnahme und Tests:** Mindestens zwei Layer mit eindeutig unterscheidbaren
+Shapes und unterschiedlichen Werkzeugen verwenden. Layer und Shapes innerhalb ihrer bestehenden Ebene
+manuell umordnen und mit Optimierung aus/an exportieren. Layerwechsel erst
+bei der späteren gemeinsamen Umsetzung von R1b/R3 ergänzen.
+Gemischte Optimierungsfreigabe und benutzerdefinierten G-Code einbeziehen;
+Shape-/Werkzeugsequenzen im ausgegebenen G-Code statt nur Baumzeilen prüfen.
+`dxf2gcode_tsp_optimization_test.py`, Tree- und Workflowtests erweitern.
+Die Reihenfolge-Anforderungen vor einer Änderung des Optimierers präzise
+festschreiben; bestehende Golden-Fälle bleiben Regressionen.
+
+**Abgeschlossen und lokal geprüft, 01.11.2026:** Manuelles Umordnen und
+Routenanzeige synchronisieren die Exportlisten ohne Optimierung. Die normale
+Exportaktion ist ausdrücklich als Export ohne Optimierung bezeichnet;
+DE/FR/RU-Kataloge und QM-Dateien wurden aktualisiert und mit tatsächlich
+geladenen Übersetzungen geprüft. CLI-Projektexport erhält benutzerdefinierten
+G-Code an seiner Position. Der kombinierte Treeview-/Projekt-/Exporttest prüft
+zwei Layer, manuelle Shape-/Layer-Umordnung, Werkzeugwechsel, Startpunkte und
+die tatsächliche G-Code-Sequenz; deaktivierte Einträge werden ausgelassen.
+Auch der echte MainWindow-Workflow prüft manuelle Umordnung vor dem Export.
+Die neuen Regressionen weisen die jeweiligen Fehler am vorherigen Stand nach.
+
+Gezielt bestanden: PyQt5 mit 52 Tests (TSP, Tree-Multiselect, Exportreihenfolge,
+MainWindow-Workflow und Shape-Werkzeuge); PyQt6 mit 40 Tests (dieselben Module
+ohne Shape-Werkzeuge). Keine Vollsuite, Debian-Prüfung oder Paketbuild ausgeführt.
+Die bisherigen Treeview-Drag-and-drop-Tests wurden dabei nicht erneut ausgeführt;
+die neue gemeinsame Exportprüfung verwendet die Auf-/Ab-Schaltflächen.
+
+**Optimierungsvertrag:** Die bestehenden Modi bleiben gemäß Nutzerentscheidung
+erhalten. Der gemeinsame Anwendungsablauf wendet sie vor Startpunktoptimierung
+und Routenanzeige an, sodass GUI und CLI dieselbe Shape-/Werkzeugfolge ausgeben.
+Benutzerdefinierter G-Code behält beim normalen Export seine sichtbare Position;
+bei bewusster Optimierung gelten die bisherigen Treeview-Modi auch für den CLI:
+`CONSTRAIN_ORDER_ONLY` hängt alle aktiven Shapes hinter die übrigen Baumzeilen,
+`CONSTRAIN_PLACE_AFTER` nur die freigegebenen Shapes. Die übrigen Zeilen behalten
+ihre relative Reihenfolge. Die ergänzten Tests vergleichen beide Modi mit zwei
+Layern und gemischter Freigabe im tatsächlichen G-Code sowie den anschließenden
+Export ohne Optimierung. Ein weiterer CLI-Fall verwendet den echten TSP-Optimierer
+mit deaktivierten Shapes, deaktiviertem G-Code und leerem Bearbeitungslayer.
 
 ## Importreihenfolge zusammengesetzter Kurven
 

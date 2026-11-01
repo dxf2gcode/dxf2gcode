@@ -1933,8 +1933,8 @@ returned error code: {1}</source>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1464"/>
-        <source>&amp;Export Shapes</source>
-        <translation>&amp;Экспортировать фигуры</translation>
+        <source>&amp;Export Shapes without Optimization</source>
+        <translation>&amp;Экспортировать фигуры без оптимизации</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1475"/>
@@ -2874,6 +2874,12 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
 </context>
 <context>
     <name>MyPostProConfig</name>
+    <message><source>Tool change macro</source><translation>Макрос смены инструмента</translation></message>
+    <message><source>Declared return position:</source><translation>Заданная позиция возврата:</translation></message>
+    <message><source>Distance mode at macro end:</source><translation>Режим координат в конце макроса:</translation></message>
+    <message><source>Work coordinate system after change:</source><translation>Система координат детали после смены:</translation></message>
+    <message><source>Tool length offset selection:</source><translation>Выбор коррекции длины инструмента:</translation></message>
+    <message><source>Tool-to-offset mapping (1:1,4:8):</source><translation>Соответствие инструмента и коррекции (1:1,4:8):</translation></message>
     <message>
         <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="196"/>
         <source>errors reading %s:</source>
@@ -3144,6 +3150,20 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
 </context>
 <context>
     <name>MyPostProcessor</name>
+    <message><source>Tool-change macro is empty; its return state cannot be established</source><translation>Макрос смены инструмента пуст; состояние возврата не может быть установлено</translation></message>
+    <message><source>Tool-change work offset must be G54 through G59.3</source><translation>Система координат при смене инструмента должна быть от G54 до G59.3</translation></message>
+    <message><source>Tool-change end distance mode must be G90 or G91</source><translation>Режим координат в конце макроса должен быть G90 или G91</translation></message>
+    <message><source>Unavailable scalar profile parameter: %s.%s</source><translation>Недоступный скалярный параметр профиля: %s.%s</translation></message>
+    <message><source>Cyclic custom macro in tool-change template</source><translation>Циклическая ссылка на макрос в шаблоне смены инструмента</translation></message>
+    <message><source>Unknown or nested profile parameter in tool-change macro</source><translation>Неизвестный или вложенный параметр профиля в макросе смены инструмента</translation></message>
+    <message><source>Unavailable tool-change parameter: %s</source><translation>Недоступный параметр смены инструмента: %s</translation></message>
+    <message><source>Unknown tool length offset mode: %s</source><translation>Неизвестный режим коррекции длины инструмента: %s</translation></message>
+    <message><source>Tool length offset mapping must use tool:offset pairs</source><translation>Таблица коррекций должна содержать пары инструмент:коррекция</translation></message>
+    <message><source>Duplicate tool in length offset mapping: %s</source><translation>Повторяющийся инструмент в таблице коррекций длины: %s</translation></message>
+    <message><source>No tool length offset mapping for tool %s</source><translation>Нет коррекции длины для инструмента %s</translation></message>
+    <message><source>Managed tool-change macros currently require milling G-code</source><translation>Макросы с заданным состоянием возврата пока требуют G-код фрезерования</translation></message>
+    <message><source>Managed tool-change export does not support opaque Custom G-Code rows</source><translation>Экспорт с заданным состоянием возврата не поддерживает строки произвольного G-кода с неизвестным состоянием</translation></message>
+    <message><source>Cannot prepare tool-change entry for shape %s</source><translation>Не удалось подготовить начальную позицию смены инструмента для контура %s</translation></message>
     <message>
         <location filename="../dxf2gcode/adapters/postprocessor/postprocessor.py" line="77"/>
         <source>Postprocessor configuration</source>

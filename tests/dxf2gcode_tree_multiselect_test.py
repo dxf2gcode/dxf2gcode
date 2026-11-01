@@ -339,6 +339,36 @@ class TestExportOrderAndTreeSync(unittest.TestCase):
         self.assertEqual(self.layer.exp_order, [2, 0, 1])
         self.assertEqual(self.layer.exp_order_complete, [2, 0, 1])
 
+    def test_manual_reorder_commits_model_even_without_live_route_update(self):
+        from unittest.mock import Mock
+        g.window.updateExportRoute = Mock()
+        original_shapes = list(self.layer.shapes)
+        starts = [shape.get_start_end_points() for shape in original_shapes]
+        for live in (False, True):
+            self.h.th.auto_update_export_order = live
+            parent = self.h.model.item(0, 0)
+            parent.insertRow(0, parent.takeRow(2))
+            self.h.th.prepareExportOrderUpdate()
+            expected = [int(parent.child(row, 2).text()) for row in range(3)]
+            self.assertEqual(self.layer.exp_order, expected)
+            self.assertEqual(self.layer.exp_order_complete, expected)
+            self.assertEqual(self.layer.shapes, original_shapes)
+            self.assertEqual([shape.get_start_end_points()
+                              for shape in original_shapes], starts)
+        g.window.updateExportRoute.assert_called_once_with()
+
+    def test_layer_reorder_commits_without_changing_shape_membership(self):
+        other = LayerContent(1, "L2", [_mk_shape(10)])
+        other.shapes[0].parentLayer = other
+        self.h.th.layers_list.append(other)
+        self.h.th.buildLayerTree(self.h.th.layers_list)
+        model = self.h.th.layer_item_model
+        model.insertRow(0, model.takeRow(1))
+        self.h.th.prepareExportOrderUpdate()
+        self.assertEqual(self.h.th.layers_list, [other, self.layer])
+        self.assertEqual(other.exp_order, [10])
+        self.assertEqual(self.layer.exp_order, [0, 1, 2])
+
     def test_tree_order_applies_the_optimizer_order(self):
         previous_order_mode = g.config.vars.Route_Optimisation[
             "TSP_shape_order"]
@@ -369,7 +399,8 @@ class TestExportOrderAndTreeSync(unittest.TestCase):
 
         self.assertTrue(shape.isDisabled())
         self.assertEqual(
-            item_index.data(QtCore.Qt.ItemDataRole.CheckStateRole), _UNCHECKED)
+            item_index.data(QtCore.Qt.ItemDataRole.CheckStateRole),
+            getattr(_UNCHECKED, "value", _UNCHECKED))
         self.assertEqual(self.h.layer_col0().checkState(),
                          QtCore.Qt.CheckState.PartiallyChecked)
 

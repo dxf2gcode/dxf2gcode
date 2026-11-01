@@ -1461,7 +1461,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Export Shapes</string>
+    <string>&amp;Export Shapes without Optimization</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+E</string>

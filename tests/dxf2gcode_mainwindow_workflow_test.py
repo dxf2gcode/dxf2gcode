@@ -225,6 +225,23 @@ def _run_mainwindow_workflow():
         window.MyPostProcessor.output_text[0],
         window.MyPostProcessor.output_format[0])
     app_module.options = SimpleNamespace(post_pro=output_format)
+    # A manual tree edit is authoritative even with route live update off.
+    window.TreeHandler.setLiveUpdateExportRoute(False)
+    model = window.TreeHandler.layer_item_model
+    for row in range(model.rowCount()):
+        layer_item = model.item(row, 0)
+        if layer_item.rowCount() > 1:
+            window.ui.layersShapesTreeView.setCurrentIndex(layer_item.child(0, 0).index())
+            window.ui.layersShapesTreeView.moveDownCurrentItem()
+            break
+    else:
+        raise AssertionError("workflow fixture needs two shapes in one layer")
+    window.TreeHandler.updateExportOrder()
+    expected_sequence = [layer.shapes[index].nr
+                         for layer in window.layerContents.non_break_layer_iter()
+                         for index in layer.exp_order_complete]
+    startpoints = [shape.get_start_end_points() for shape in window.shapes]
+    window.updateExportRoute()
     window.exportShapes(None, output_base)
     output = output_base + window.MyPostProcessor.output_format[0]
     assert os.path.isfile(output), "MainWindow.exportShapes did not create output"
@@ -233,6 +250,9 @@ def _run_mainwindow_workflow():
     assert "G21" in gcode
     assert "G1 X" in gcode
     assert "M2" in gcode
+    import re
+    assert [int(nr) for nr in re.findall(r"SHAPE Nr: (\d+)", gcode)] == expected_sequence
+    assert [shape.get_start_end_points() for shape in window.shapes] == startpoints
 
     machining_values = (shape.lead_in_mode, shape.lead_out_mode,
                         shape.overcut_enabled, shape.tool_override)

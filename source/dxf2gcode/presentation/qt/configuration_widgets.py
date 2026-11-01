@@ -233,6 +233,14 @@ def build_postprocessor_config_widgets(translate):
             ("post_shape_cut", CfgLineEdit(tr("Placed after any shape:"))),
             ("comment", CfgLineEdit(tr("Comment for current shape:"))),
         ])),
+        ("Tool_Change", OrderedDict([
+            ("__section_title__", tr("Tool change macro")),
+            ("return_state", CfgComboBox(tr("Declared return position:"))),
+            ("end_distance_mode", CfgComboBox(tr("Distance mode at macro end:"))),
+            ("work_offset", CfgLineEdit(tr("Work coordinate system after change:"))),
+            ("length_offset_mode", CfgComboBox(tr("Tool length offset selection:"))),
+            ("length_offset_mapping", CfgLineEdit(tr("Tool-to-offset mapping (1:1,4:8):"))),
+        ])),
         ("Custom_GCode", CfgTableCustomActions(tr("Define here custom GCODE that can be inserted anywhere in the program:"))),
     ])
 

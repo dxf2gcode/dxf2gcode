@@ -264,6 +264,7 @@ class MainWindow(QMainWindow):
             config=g.config, logger=logger, quiet=g.quiet)
 
         # Build the configuration window
+        logger.info('Creating application configuration window')
         self.config_window = ConfigWindow(g.config.makeConfigWidgets(),
                                           g.config.var_dict,
                                           g.config.var_dict.configspec,
@@ -761,12 +762,13 @@ class MainWindow(QMainWindow):
         Optimize the tool path, then export the shapes
         """
         self.optimizeTSP()
-        self.exportShapes( saveas, post_pro)
+        self.exportShapes(saveas=saveas)
 
     def updateExportRoute(self):
         """
         Update the drawing of the export route
         """
+        self.TreeHandler.updateExportOrder()
         self.canvas_scene.delete_opt_paths()
 
         self.canvas_scene.addexproutest()
@@ -818,7 +820,7 @@ class MainWindow(QMainWindow):
 
         # Update order in the treeView, according to path calculation done by the TSP
         self.TreeHandler.updateTreeViewOrder()
-        self.canvas_scene.update()
+        self.updateExportRoute()
 
         self.unsetCursor()
 

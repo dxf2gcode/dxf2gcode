@@ -12,6 +12,7 @@ from dxf2gcode.application.drawings import BuildDrawingModel, DrawingModel
 from dxf2gcode.application.importing import ImportDrawing
 from dxf2gcode.domain.project.shape import Shape
 from dxf2gcode.domain.project.project import Project
+from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 
 
 class ExportDrawing:
@@ -38,7 +39,11 @@ class ExportDrawing:
         for layer in model.layers:
             enabled_shapes = [shape for shape in layer.shapes
                               if not shape.isDisabled()]
-            layer.exp_order = [shape.nr for shape in enabled_shapes]
+            layer.exp_order = [shape.nr for shape in enabled_shapes
+                               if not isinstance(shape, CustomGCode)]
+            layer.exp_order_complete = [
+                index for index, shape in enumerate(layer.shapes)
+                if not shape.isDisabled()]
 
         AutomaticCutterCompensation().execute(
             model.layers.non_break_layer_iter(),
@@ -56,16 +61,13 @@ class ExportDrawing:
             optimizer.execute(model.layers.non_break_layer_iter(),
                               model.shapes)
 
-        for layer in model.layers:
-            layer.exp_order_complete = [
-                layer.shapes.index(model.shapes[shape_nr])
-                for shape_nr in layer.exp_order]
-
         for shape in model.shapes:
             shape.stmove = prepare_shape(shape, config=self._config, build_preview=False)
 
         ExportToolpath(self._postprocessor).execute(
             filename, output_filename, model.layers, postprocessor_index)
+        if getattr(self._postprocessor, 'export_failed', False):
+            raise ValueError('; '.join(self._postprocessor.export_errors))
 
 
 class _HeadlessProjectSession:

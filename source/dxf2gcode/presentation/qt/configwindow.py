@@ -398,7 +398,6 @@ class ConfigWindow(QDialog):
         Automatically build a widget, based on dict definition of the items.
         @return: a QWidget containing all the elements of the configuration window
         """
-        logger.info('Creating configuration window')
         definition = self.cfg_window_def
 
         tab_widgets = OrderedDict()

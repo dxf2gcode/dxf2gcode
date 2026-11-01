@@ -75,6 +75,7 @@ class MyPostProcessor(ProfileDialect):
 
         self.config_postpro_window = None
         if create_config_window:
+            logger.info('Creating postprocessor configuration window')
             self.config_postpro_window = ConfigWindow(
                 MyPostProConfig.makeConfigWidgets(),
                 title=self.tr("Postprocessor configuration"))
@@ -320,6 +321,61 @@ class MyPostProcessor(ProfileDialect):
 
         exstr = self.write_gcode_be(load_filename)
 
+        from dxf2gcode.adapters.postprocessor.tool_change import managed, ToolChangeError
+        managed_profile = managed(self.vars)
+        has_moves = True
+        if managed_profile:
+            try:
+                body = self._managed_tool_changes(LayerContents)
+                exstr += body
+                has_moves = bool(body)
+            except ValueError as error:
+                message = str(error)
+                if isinstance(error, ToolChangeError):
+                    message = self.tr(error.message)
+                    if error.parameters:
+                        message %= error.parameters
+                self.export_errors.append(message)
+                self.export_failed = True
+                return
+        else:
+            exstr += self._legacy_tool_changes(LayerContents)
+
+        # Move machine to the Final Position
+        EndPosition = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
+                            g.config.vars.Plane_Coordinates['axis2_start_end'])
+
+        if has_moves:
+            exstr += self.rap_pos_xy(EndPosition)
+
+        # Write the end G-Code at the end
+        exstr += self.write_gcode_en()
+
+        exstr = self.make_line_numbers(exstr)
+        exstr = self.make_windows_line_endings(exstr)
+
+        # If the String shall be given to STDOUT
+        if g.config.vars.General['write_to_stdout']:
+            print(exstr)
+            logger.info(self.tr("Export to STDOUT was successful"))
+        else:
+            try:
+                with open(save_filename, "w") as stream:
+                    stream.write(str_encode(exstr))
+                logger.info(self.tr("Export to FILE was successful"))
+            except IOError:
+                if getattr(g, "window", None) is not None:
+                    QMessageBox.warning(g.window,
+                                        self.tr("Warning during Export"),
+                                        self.tr("Cannot Save the File"))
+                else:
+                    logger.error("Cannot save G-code output file: %s",
+                                 save_filename)
+
+    def _legacy_tool_changes(self, LayerContents):
+        """Preserve the original profile traversal and initial Z positioning."""
+        exstr = ""
+
         # Move Machine to retraction Area before continuing anything.
         # Note: none of the changes done in the GUI can affect this height,
         #       only the config file can do so (intended)
@@ -350,39 +406,52 @@ class MyPostProcessor(ProfileDialect):
 
                     exstr += self.write_shape_gcode(shape)
 
-        # Move machine to the Final Position
-        EndPosition = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
-                            g.config.vars.Plane_Coordinates['axis2_start_end'])
+        return exstr
 
-        exstr += self.rap_pos_xy(EndPosition)
+    def _managed_tool_changes(self, layers):
+        """Render declared macros around plans prepared once at the boundary."""
+        from dxf2gcode.adapters.postprocessor.tool_change import ToolChangeMacro, ToolChangeError
+        from dxf2gcode.application.toolpath.tool_change import ToolChangeContext
+        from dxf2gcode.domain.project.tool_settings import effective_tool
+        from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 
-        # Write the end G-Code at the end
-        exstr += self.write_gcode_en()
+        if g.config.machine_type != 'milling' or self.vars.General['output_type'] != 'g-code':
+            raise ToolChangeError('Managed tool-change macros currently require milling G-code')
+        service = self._get_shape_export_use_case()
+        prepared = []
+        for layer in layers.non_break_layer_iter():
+            entries = []
+            for index in layer.exp_order_complete:
+                shape = layer.shapes[index]
+                if isinstance(shape, CustomGCode):
+                    raise ToolChangeError('Managed tool-change export does not support opaque Custom G-Code rows')
+                result = service.prepare(shape, self)
+                if result.plan is None or result.has_errors:
+                    raise ToolChangeError('Cannot prepare tool-change entry for shape %s', shape.nr)
+                entries.append((shape, result))
+            prepared.append((layer, entries))
 
-        exstr = self.make_line_numbers(exstr)
-        exstr = self.make_windows_line_endings(exstr)
-
-        # If the String shall be given to STDOUT
-        if g.config.vars.General['write_to_stdout']:
-            print(exstr)
-            logger.info(self.tr("Export to STDOUT was successful"))
-            # self.close
-        else:
-            # Export Data to file
-            try:
-                # File open and write
-                f = open(save_filename, "w")
-                f.write(str_encode(exstr))
-                f.close()
-                logger.info(self.tr("Export to FILE was successful"))
-            except IOError:
-                if getattr(g, "window", None) is not None:
-                    QMessageBox.warning(g.window,
-                                        self.tr("Warning during Export"),
-                                        self.tr("Cannot Save the File"))
-                else:
-                    logger.error("Cannot save G-code output file: %s",
-                                 save_filename)
+        output = []
+        previous_tool = None
+        macro = ToolChangeMacro(self)
+        for layer, entries in prepared:
+            if entries:
+                output.append(self.commentprint('*** LAYER: %s ***' % layer.name))
+            for shape, result in entries:
+                tool = effective_tool(shape, layer)
+                if tool.tool_nr != previous_tool:
+                    start = next((action.args[0] for action in result.plan.actions
+                                  if action.kind == 'rapid_xy'), result.plan.approach_xy)
+                    context = ToolChangeContext(
+                        tool.tool_nr, previous_tool, tool.speed, start,
+                        result.plan.retract_depth,
+                        g.config.vars.Depth_Coordinates['axis3_retract'],
+                        g.config.metric == 1)
+                    output.append(macro.expand(context))
+                    previous_tool = tool.tool_nr
+                output.append(self.commentprint('* SHAPE Nr: %i *' % shape.nr))
+                output.append(service.export_prepared(result, self))
+        return ''.join(output)
 
     def write_shape_gcode(self, shape):
         """Export a shape through the application toolpath boundary."""
@@ -423,6 +492,7 @@ class MyPostProcessor(ProfileDialect):
             start_z=g.config.vars.Depth_Coordinates['axis3_retract'],
             diameter_factor=2 if g.config.machine_type == 'lathe' else 1)
         self.export_errors = []
+        self.export_failed = False
         self.planning_diagnostics = []
 
     def write_gcode_be(self, load_filename):

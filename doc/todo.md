@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben und Umsetzungsreihenfolge
 
-Stand: **31.10.2026**.
+Stand: **01.11.2026**.
 
 Diese Todo enthält die verbleibenden Aufgaben. Abgeschlossene Arbeiten,
 historische Prüfergebnisse und verworfene Wünsche stehen im neuen Dokument
@@ -19,7 +19,7 @@ werden vor der jeweiligen Implementierung geklärt.
 
 | Reihenfolge | Abschnitt / Aufgaben | Grund und Voraussetzungen |
 | --- | --- | --- |
-| 1 | [Exportablauf und Werkzeugwechsel](#1-exportablauf-und-werkzeugwechsel): R2, danach P1 | Bestehende Reihenfolge als Vertrag absichern; anschließend ATC mit konkretem Maschinenprofil spezifizieren |
+| 1 | [Exportablauf und Werkzeugwechsel](#1-exportablauf-und-werkzeugwechsel): P1 (R2 abgeschlossen) | ATC mit konkretem Maschinenprofil spezifizieren; Reihenfolgevertrag ist abgesichert |
 | 2 | [Schleppmesser](#2-schleppmesser): D1, danach gegebenenfalls D2 | Konturschluss zuerst untersuchen; optionale Wiederholung darf einen Fehler nicht verdecken |
 | 3 | [Konfiguration und Bedienung](#3-konfiguration-und-bedienung): K1 → K2, danach V1, U3, U5 | Übersetzungskontexte vor weiteren Konfigurationstexten bereinigen; die drei Bedienwünsche sind danach unabhängig auswählbar |
 | 4 | [Paketabnahme und Abnahmegrenzen](#4-paketabnahme-und-abnahmegrenzen): M1, A1 | Artefaktprüfungen an einem ausdrücklich freigegebenen Stand; verbleibende Abnahmegrenzen klar benennen |
@@ -38,44 +38,41 @@ ohne/mit bewusst gewählter Optimierung. Dafür keinen Layerwechsel R1b
 implementieren. P1 baut auf einem klaren Reihenfolge-/Werkzeugwechselvertrag
 auf und benötigt vor Codeänderungen das konkrete Maschinenprofil.
 
-### R2 – Sichtbare Reihenfolge als Exportvertrag festlegen
+### R2 – Sichtbare Reihenfolge als Exportvertrag (abgeschlossen)
 
-**Codebefund:** `TreeHandler.updateExportOrder` übernimmt die Layerreihenfolge
-in `layers_list` und die Shape-Reihenfolge in `exp_order` beziehungsweise
-`exp_order_complete`. `MainWindow` bietet bereits getrennte Aktionen
-`exportShapes` und `optimizeAndExportShapes`. `application/optimization/routes.py`
-optimiert pro Layer, berücksichtigt `send_to_TSP` und ruft anschließend
-`LayerContent.optimize` auf; Letzteres verändert auch Startpunkte. Eine
-zusätzliche Exportoption ist daher nicht ungeprüft neu zu erfinden, sondern
-zuerst gegen die vorhandenen Wege und Optimierungsmodi abzugleichen.
+Abgeschlossen am **01.11.2026**; Umsetzung und lokale Prüfergebnisse stehen
+im [Erledigt-Dokument](archive/toolpath-refactoring-completed.md#r2).
 
-- [ ] Die dargestellte Reihenfolge der Bearbeitungslayer strikt abarbeiten;
-  eine Optimierung darf keine Layergrenze überspringen oder Layer vertauschen.
-- [ ] Innerhalb eines Layers die Shape-Reihenfolge beibehalten, außer für
-  ausdrücklich zur Optimierung freigegebene Shapes bei bewusst gewählter
-  Optimierung. Nicht freigegebene Shapes dürfen nicht als Nebeneffekt
-  umsortiert werden; vorhandene Modi wie `TSP_shape_order` darauf prüfen.
-- [ ] „Ohne Optimierung exportieren“ muss als klar erkennbare Aktion verfügbar
-  sein. Sie löst weder eine neue Sortierung noch eine automatische Änderung
-  der festgelegten Startpunkte aus. Exportiert wird die aktuell sichtbare
-  Reihenfolge, auch wenn diese zuvor bewusst optimiert wurde.
-- [ ] Routenanzeige/Live-Update von Optimierung unterscheiden. Anzeigen oder
-  Exportieren allein darf die Bearbeitungsreihenfolge nicht verändern.
-- [ ] GUI, CLI, Projekt-Roundtrip und tatsächliche G-Code-Sequenz verwenden
-  denselben expliziten Reihenfolgevertrag. Werkzeugwechsel innerhalb eines
-  Layers dürfen keine versteckte Gruppierung nach Werkzeug auslösen.
+Manuelles Umordnen von Shapes im Treeview (Drag-and-drop oder Auf/Ab) legt
+innerhalb desselben Layers die neue Bearbeitungsreihenfolge fest. Modell und
+Exportlisten übernehmen sie auch ohne Routen-Live-Update; mit Live-Update zeigt
+die Routenanzeige die neuen Verbindungen. Startpunkte, Geometrie, Werkzeuge und
+Optimierungsfreigaben bleiben beim manuellen Umordnen erhalten. Speichern/Laden
+und Export ohne Optimierung erhalten die sichtbare Reihenfolge einschließlich
+benutzerdefiniertem G-Code.
 
-**Abnahme und Tests:** Mindestens zwei Layer mit eindeutig unterscheidbaren
-Shapes und unterschiedlichen Werkzeugen verwenden. Layer und Shapes innerhalb ihrer bestehenden Ebene
-manuell umordnen und mit Optimierung aus/an exportieren. Layerwechsel erst
-bei der späteren gemeinsamen Umsetzung von R1b/R3 ergänzen.
-Gemischte Optimierungsfreigabe und benutzerdefinierten G-Code einbeziehen;
-Shape-/Werkzeugsequenzen im ausgegebenen G-Code statt nur Baumzeilen prüfen.
-`dxf2gcode_tsp_optimization_test.py`, Tree- und Workflowtests erweitern.
-Die Reihenfolge-Anforderungen vor einer Änderung des Optimierers präzise
-festschreiben; bestehende Golden-Fälle bleiben Regressionen.
+**Nutzerentscheidung:** Bisherige Optimierungsmodi behalten; relative Reihenfolge
+nicht freigegebener Shapes genügt. GUI und CLI wenden denselben Modus an.
+P1 ist der nächste offene Schritt und benötigt das konkrete Maschinenprofil.
 
 ### P1 – Z-Positionierung beim automatischen Werkzeugwechsel absichern
+
+**Optionale Profilerweiterung implementiert, 01.11.2026:** Manueller Wechsel und
+ATC verwenden weiterhin `Program.tool_change`. Neue Wechselparameter, ein
+erklärter Rückkehrzustand, H-Zuordnungen und G91-Wiederaufnahme sind verfügbar;
+alte Profile bleiben im Legacy-Verhalten. Einrichtung und Grenzen stehen in
+der [Makro-Anleitung](tool-change-macros.md), die Herleitung im
+[Werkzeugwechsel-Vorschlag](tool-change-proposal.md). 16 gezielte neue Tests
+prüfen unter anderem zwei vollständige Ausgabesequenzen, A–B–A, tatsächlichen
+Lead-Einstieg, Profilparameter, Fehlerbehandlung und geladene Übersetzungen.
+Postprozessorversionen 8/8.1 bleiben lesbar; neues Schema ist 8.2.
+
+**Verbleibend:** Ein tatsächlich eingesetztes Maschinenprofil mit Controller-
+Version, Wechselverfahren und Vermessung abstimmen und daran abnehmen. Die
+synthetischen manuellen/ATC-Testprofile sind keine Maschinenfreigaben.
+Verwalteter Export ist zunächst auf Fräsen ohne freie Custom-G-Code-Baumzeilen
+begrenzt; die Legacy-Funktionen bleiben für diese Fälle erhalten. Die folgenden
+Codebefunde beschreiben die Ausgangslage des Legacy-Exports.
 
 **Meldung:** Ein ATC-Profil kann zunächst Z zur Werkzeugwechselposition
 fahren, das Werkzeug wechseln und erst danach mit aktiver
@@ -105,28 +102,28 @@ Das ist bei einer Lösung insbesondere für inkrementellen Export zu beachten.
   und mindestens zwei Werkzeugen erstellen; tatsächliche Ausgabe gegen die
   gewünschte Reihenfolge prüfen. Controller, Wechselmakro, H-Nummernzuordnung
   und geltende Koordinatensysteme vor Implementierung festhalten.
-- [ ] Programmstart, Freifahren vor einem Werkzeugwechsel und Positionieren
+- [x] Programmstart, Freifahren vor einem Werkzeugwechsel und Positionieren
   nach einem Werkzeugwechsel als getrennte Anforderungen beschreiben.
   Initiale Positionierung bleibt auch ohne weiteren Werkzeugwechsel oder
   bei leerem/manuellem Wechseltemplate sichergestellt; eine Zeile nicht
   ersatzlos in den Zweig „Werkzeugnummer geändert“ verschieben.
-- [ ] Eine profilabhängige ATC-Sequenz vorsehen: Wechselposition anfahren,
+- [x] Eine profilabhängige ATC-Sequenz vorsehen: Wechselposition anfahren,
   Werkzeugwechsel, benötigten Modalzustand wiederherstellen und
   Werkzeuglängenkorrektur/Positionierung passend zum Controller ausgeben.
   `G28`, `G43` und eine Zuordnung `H = T` nicht ungeprüft für alle Maschinen
   fest einbauen. Die Lage der XY-Positionierung innerhalb dieser Sequenz
   ist Teil des zu vereinbarenden Maschinenprofilvertrags.
-- [ ] Festlegen, welche Höhe nach dem Wechsel gilt: globale initiale
+- [x] Festlegen, welche Höhe nach dem Wechsel gilt: globale initiale
   Rückzugshöhe, nächste Layer-/Shape-Rückzugshöhe oder eine besondere
   Profilvorgabe. Diese Höhen nicht mit Maschinen-Z-Home gleichsetzen.
-- [ ] Internen Positions-/Modalzustand nach Wechselmakros eindeutig neu
+- [x] Internen Positions-/Modalzustand nach Wechselmakros eindeutig neu
   herstellen oder über einen definierten Profilvertrag aktualisieren;
   keine falschen inkrementellen Z-Differenzen aus Werten vor dem Wechsel
   berechnen. Nicht versuchen, beliebigen Makro-G-Code allgemein zu parsen.
-- [ ] Werkzeugwechsel innerhalb eines Layers wegen Shape-Overrides ebenso
+- [x] Werkzeugwechsel innerhalb eines Layers wegen Shape-Overrides ebenso
   behandeln wie Wechsel zwischen Layern. Wiederholte Shapes mit demselben
   Werkzeug dürfen keinen unbeabsichtigten erneuten ATC-Zyklus auslösen.
-- [ ] Exportorchestrierung und Profiladapter übernehmen diese Verantwortung;
+- [x] Exportorchestrierung und Profiladapter übernehmen diese Verantwortung;
   Geometrie-/Konturplaner erhalten keine hartcodierten ATC-Befehle.
   Vorhandene Profile bleiben kompatibel. Absichtliche neue ATC-Ausgaben
   gesondert freigeben; vorhandene Golden-Ausgaben nicht pauschal ändern.
@@ -140,7 +137,9 @@ dem Wechsel ab; absolute und inkrementelle Ausgabe berücksichtigen.
 `dxf2gcode_shape_tool_test.py` prüft Werkzeugwechsel bereits auf Aufrufebene
 und kann um die ausgegebene Reihenfolge ergänzt werden. Diese Prüfungen
 bewerten erzeugten Code, nicht die Freigabe für eine reale Maschine.
-Analyse und Testspezifikation sind vorgemerkt; kein Exportverhalten geändert.
+Die optionale Makro-Erweiterung ist implementiert; alte Profile behalten ihre
+Ausgabe. Ein direkter Vergleich mit dem vorherigen Stand bestätigt dies für
+G90/G91 und normales/leeres Wechseltemplate in vier vollständigen Exporten.
 
 ## 2. Schleppmesser
 
@@ -483,8 +482,8 @@ Geometrie                         Bearbeitung (Export von oben nach unten)
   bestehendem Layer als verlustfreie Ausgangssicht? Speicherformat und
   Kompatibilitätsweg vor Implementierung klären.
 
-**Weiteres Vorgehen:** R1a sichert den bestehenden Baum ab. R2 kann den
-Reihenfolgevertrag unabhängig vom Layerwechsel absichern. R1b wird erst
+**Weiteres Vorgehen:** R1a sichert den bestehenden Baum ab. R2 hat den
+Reihenfolgevertrag unabhängig vom Layerwechsel abgesichert. R1b wird erst
 gemeinsam mit R3 anhand von Bedienabläufen und einem Modell-/Speicherentwurf
 geplant und zur Freigabe vorgelegt. R1b und R3 bleiben ebenso wie die
 Teilkontur-Erweiterung zunächst zurückgestellt.
