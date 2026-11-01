@@ -142,3 +142,33 @@ it does not grant reuse rights for archived SourceForge prose or third-party
 attachments. Those remain excluded. See the [current publication record](../zensical-prototype.md#current-pages-publication-status-2026-11-01)
 for the deployment and live checks. No blanket wiki/media license or exclusive
 rights guarantee is inferred from this approval.
+
+## CNC cutter branding refresh (2026-11-01)
+
+The user supplied `Dxf2gcode_icon.svg` and `Dxf2gcode_Logo.svg`, reviewed the
+cropped and centered versions with corrected cyan point/arc spacing, and
+requested PNG exports and replacement of the project's existing branding.
+The reviewed sources are retained under the stable resource filenames:
+
+| Source | Repository filename | SHA-256 |
+| --- | --- | --- |
+| `Dxf2gcode_Logo_randlos.svg` | `dxf2gcode-logo.svg` | `4494cba2aa212a2639cadc43055f0947fe3207e1fd03435c434c4e1a7f9300fb` |
+| `Dxf2gcode_icon_randlos.svg` | `dxf2gcode-symbol.svg` | `1e42f0371ad3bdbe6bc57d7c45c9b2ce72e145918b874d4abd6b84c2c1c61730` |
+
+Transparent PNGs were rendered from these SVGs with the installed Edge/Chromium
+SVG renderer. The wordmark retains its Arial/Helvetica/sans-serif text in the
+editable SVG; the PNGs contain the rendered lettering. No external images or
+fonts were fetched. Logo PNG widths are 492 (About/README), 1024, 2048 and
+4096 pixels; corresponding heights are 178, 371, 743 and 1485 pixels.
+
+Square symbol PNG sizes are 16, 24, 32, 48, 64, 128, 256, 512 and 1024 pixels.
+The 512-pixel PNG retains the stable `dxf2gcode-symbol.png` filename; other
+sizes have a pixel-size suffix. The symbol is centered without distortion.
+The Linux `dxf2gcode.svg` uses the same geometry on a square canvas. Windows
+ICO contains 16 through 256-pixel frames; macOS ICNS contains 16 through
+1024-pixel PNG representations, including Retina representations.
+
+The documentation PNG copies and Qt application resources use this same
+branding. Earlier filenames and hashes above remain historical provenance
+records. This asset replacement does not assign a new general license or
+change the recorded publication permissions.
