@@ -710,8 +710,8 @@ Die vier englischen Seiten bleiben ein technischer Prototyp.
 - [x] Technische Abnahme: Strict-Build, 167 lokale Verweise ohne Fehler,
   vier Sitemap-Adressen unter `/dxf2gcode/`, 18 Suchindexeinträge.
 - [x] Visuelle Inhaltsabnahme der vier Seiten durch den Nutzer abgeschlossen.
-- [ ] Kurze zusätzliche Sichtprüfung des aktualisierten Symbols/Headers vor
-  einem Pages-Deployment; bisherige Inhaltsabnahmen bleiben gültig.
+- [ ] Optionale zusätzliche visuelle Kontrolle des veröffentlichten Symbols/
+  Headers im Browser; technische Live-Prüfung und Publikationsfreigabe liegen vor.
 - [x] 15 Wiki-Seiten gesichert, 23 von 24 Medien/Anhängen vorhanden;
   Herkunftsverzeichnis und Rechteprüfung dokumentiert. Rohsicherung ignoriert.
 - [x] Neue versionsfreie Wortmarken-/Symbolquellen und abgeleitete
@@ -727,16 +727,29 @@ Die vier englischen Seiten bleiben ein technischer Prototyp.
   `origin/docs/zensical-prototype` veröffentlicht. Dokumentationscheck
   [41328175268](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41328175268)
   bestanden; Status-/Wiederaufnahmebericht als eigener Abschluss aktualisiert.
-- [ ] GitHub Pages weiterhin deaktiviert: manuell gesperrter Workflow vorbereitet,
-  kein Deployment und keine GitHub-Einstellungsänderung. Geplante Adresse:
-  `https://dxf2gcode.github.io/dxf2gcode/`.
+- [x] Dokumentationsbranch einschließlich Branding/Ressourcen/Workflows ohne
+  History-Rewrite nach `develop` integriert; README-/Publishing-Anpassung
+  [e4beb1e](https://github.com/dxf2gcode/dxf2gcode/commit/e4beb1e).
+- [x] Erneute Integrations-Volltestmatrix
+  [41329328147](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329328147)
+  und Dokumentationscheck
+  [41329328253](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329328253)
+  bestanden.
+- [x] GitHub Pages mit Actions aktiviert und
+  [Deployment 41329699445](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329699445)
+  erfolgreich: <https://dxf2gcode.github.io/dxf2gcode/>. Vier Seiten, 159 Live-
+  Verweise, Bilder/Favicon, Sitemap und echte Suche geprüft. Veröffentlichung
+  bleibt manuell, mit Freigabevariable und Environment nur für `develop`.
+- [x] Leeres GitHub-Wiki vor und nach Veröffentlichung geprüft, anschließend
+  deaktiviert; keine eigenen Seiten zu sichern. Repository-Website und README
+  verlinken die neue Dokumentation; SourceForge bleibt unverändert.
 
 ### Phase 2 – geplanter Umfang
 
 - [x] [Migrationsmatrix für alle 15 Wiki-Seiten, Zielnavigation und priorisierte
   Arbeitspakete](migration/wiki-migration-plan.md) vorhanden.
-- [ ] Nach gesonderter Integration von Phase 1 in `develop` den neuen Branch
-  `docs/wiki-migration` vom aktualisierten Develop erstellen.
+- [ ] Jetzt von integriertem `develop` den neuen Branch `docs/wiki-migration`
+  für WP1 erstellen; in diesem Veröffentlichungsauftrag noch nicht angelegt.
 - [ ] Zuerst WP1: First DXF to G-code mit eigenem kleinen Beispiel und
   ausdrücklich benannten Profilannahmen; anschließend User Guide (WP2–WP7).
 - [ ] Danach Configuration und Postprozessoren (WP8–WP10), dann Developer Guide
@@ -755,11 +768,12 @@ Die vier englischen Seiten bleiben ein technischer Prototyp.
   GitHub-Zugriff und öffentliche Zielbranches sind geprüft.
 - [ ] Frische Windows-/Ubuntu-/PyQt6-Installationen bleiben getrennte Aufgaben;
   ebenso CNC-/ATC-/manuelle Maschinenabnahme und macOS-Paketabnahme.
-- [ ] Pages-Konfiguration, Environment und ausdrückliche Deployment-Freigabe
-  klären; `DOCS_PREVIEW_PUBLISH_APPROVED` bis dahin nicht aktivieren.
+- [x] Pages-Ziel, Environment und ausdrückliche Deployment-Freigabe geklärt;
+  `DOCS_PREVIEW_PUBLISH_APPROVED=true`. Künftige Änderungen nach bestandenen
+  Checks bewusst per manuellem Workflow von `develop` veröffentlichen.
 
-Zur Wiederaufnahme auf `docs/zensical-prototype` den aktuellen Übergabebericht,
+Zur Wiederaufnahme auf `develop` den aktuellen Übergabebericht,
 Status und jüngsten CI-Lauf lesen. Lokale Vorschau:
 `.\.tox\docs\Scripts\python.exe -m zensical serve`; technische Docs-Prüfung:
 mit demselben Interpreter `-m zensical build --strict`. Nächstes Inhaltspaket ist
-WP1 nach Integration; keine Vollsuite/Installer-Builds zum bloßen Wiederaufnehmen.
+WP1 vom aktuellen Develop; keine Vollsuite/Installer-Builds zum bloßen Wiederaufnehmen.

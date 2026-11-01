@@ -130,4 +130,15 @@ scripts or text/font dependency. The documentation symbol PNG is copied
 unchanged; application icon formats are derived with existing Qt encoders.
 Historical source names above are provenance records, not active file paths.
 This refresh does not alter the recorded user authorship/project-use request
-or assign a new general license. Visual acceptance of this new icon remains open.
+or assign a new general license. Additional visual acceptance of this new icon
+remains optional after the subsequent explicit publication approval below.
+
+## Explicit prototype publication approval (2026-11-01)
+
+The user explicitly approved integration of the reviewed documentation and
+branding into develop and public publication through GitHub Pages. This applies
+to the four newly written English pages and the supplied own-design branding;
+it does not grant reuse rights for archived SourceForge prose or third-party
+attachments. Those remain excluded. See the [current publication record](../zensical-prototype.md#current-pages-publication-status-2026-11-01)
+for the deployment and live checks. No blanket wiki/media license or exclusive
+rights guarantee is inferred from this approval.

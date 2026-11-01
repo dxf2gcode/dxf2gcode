@@ -1,6 +1,97 @@
-# Zensical prototype: publication handover
+# Zensical documentation: publication and migration handover
 
-## Current handover status (2026-11-01)
+## Current Pages publication status (2026-11-01)
+
+**Live development documentation:** <https://dxf2gcode.github.io/dxf2gcode/>.
+The user explicitly approved integration, Pages activation/publication and
+replacement of an empty GitHub Wiki. This section supersedes all earlier
+preparation and authorization gates preserved below.
+
+### Integration and acceptance
+
+- `origin/develop` was `e2ceed4`; `origin/docs/zensical-prototype` was `2186f79`.
+  The complete 34-path diff matched the approved documentation, branding,
+  resource and workflow packages. Develop was fast-forwarded without conflicts;
+  every existing commit was retained. No rebase, force-push or history rewrite.
+- [e4beb1e](https://github.com/dxf2gcode/dxf2gcode/commit/e4beb1e)
+  adds the prominent README documentation link, corrects the outdated claim
+  that no publishing workflow exists, records the canonical project URL and
+  restricts the prepared manual publishing workflow to `develop`.
+- Local checks rerun on the integrated tree: **149 fast tests per Qt binding**,
+  Qt5/Qt6 resource loading and compiled DE/FR/RU About translations, strict
+  Zensical build, 167 generated-site references, four sitemap URLs and 18 search
+  entries. The required PyQt5 fast hook runs before each new local commit.
+- [Full integration matrix](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329328147)
+  passed all four Ubuntu jobs: Python 3.11/3.12/3.13 with PyQt5 and Python 3.11
+  with PyQt6. [Documentation checks](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329328253)
+  passed on the same integrated commit. No full local suite or installer build
+  was started.
+
+### Pages configuration and live verification
+
+- Pages uses **GitHub Actions**, `build_type=workflow`, with HTTPS enforced at
+  the exact `/dxf2gcode/` project URL. No custom domain was configured.
+- The prepared `documentation-pages.yml` remains **manual only**. Pushes and PRs
+  run checks without deploying. Publication requires `publish=true`, the
+  repository variable `DOCS_PREVIEW_PUBLISH_APPROVED=true`, the correct repository
+  and `refs/heads/develop`. The approval variable is now explicitly enabled.
+- The new `github-pages` environment permits only the `develop` branch.
+  Build permissions remain `contents: read` / `pages: read`; deployment alone
+  gets `pages: write` and `id-token: write`. Other repository rules and secrets
+  were not changed.
+- [First Pages deployment](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329699445)
+  passed both build and deploy jobs, publishing `e4beb1e`. The subsequent
+  handover-only update changes this report/TODO, not website content.
+- Direct HTTPS checks passed for **all four pages**, **159 references** and
+  **11 distinct live resources**: navigation and active page links, internal
+  anchors, canonical URLs, wordmark/header image, favicon, sitemap and search
+  data/worker. Image/favicon bytes match the supplied assets. The earlier
+  167-reference local check additionally included the generated 404 page.
+- The **actual deployed search worker and index** were executed in a Node VM
+  using the website's real message protocol, without a browser or new dependency.
+  `postprocessor` returned **four results**, including the introduction's
+  drawings/output and basic-workflow anchors. Every result target was checked.
+  This is functional/HTTP verification, not a new visual browser acceptance.
+
+### GitHub Wiki and repository links
+
+Before deactivation the public `/wiki` address redirected to the repository
+root, and the separate `.wiki.git` repository did not exist. Both checks were
+repeated before changing the setting: no own Wiki pages/history were found to
+back up. HTTP response evidence was saved locally. A Python certificate-chain
+failure during the repeat HTML fetch was resolved using Windows' normal
+certificate-verifying HTTPS client; TLS verification was never disabled.
+
+Only after successful live Pages/search acceptance was **`has_wiki=false`** set.
+The repository website now points to <https://dxf2gcode.github.io/dxf2gcode/>.
+There were no active links to the old GitHub Wiki to replace. Historical
+SourceForge download/wiki references remain; no SourceForge settings or content
+were changed. Unreviewed wiki snapshots, third-party text/media and contributed
+attachments are not site content or Git additions.
+
+### Resume work after publication
+
+Continue from the published `develop` branch. The prototype branch remains a
+historical review branch; do not recommit the old `.tox/docs-handoff/` indexes.
+Local preview and strict-build commands are unchanged (see below and
+[Documentation preview](../../docs/documentation-preview.md)). Publication
+evidence and request/response logs are ignored under `.tox/pages-publication/`.
+
+For a future website update: commit/review the docs changes on develop, wait for
+the applicable checks, then run **Development documentation preview** manually
+with `publish=true`. The workflow does not automatically publish on a push.
+Do not rebuild or redispatch merely because this handover-only report changed.
+
+The next content task is to create `docs/wiki-migration` from current develop
+and implement [WP1: First DXF to G-code](wiki-migration-plan.md#wp1-first-dxf-to-g-code),
+following the [full migration plan](wiki-migration-plan.md). No Phase-2 chapter
+was added during publication. Wiki rights, missing `Spant.png`, fresh installation
+variants and real CNC/manual/ATC acceptance remain separate open tasks.
+
+## Previous branch-publication handover (historical, before Pages)
+
+The following status describes the preceding repository-publication step.
+Its pending Pages approvals/settings are superseded by the live record above.
 
 This section supersedes the historical preparation record below. The user has
 explicitly approved the program/CI corrections, thematic commits and normal
