@@ -108,7 +108,7 @@ class ConfigWindow(QDialog):
         QDialog.__init__(self, parent)
         self.setWindowTitle(title)
         iconWT = QIcon()
-        iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Mode.Normal, QIcon.State.Off)
+        iconWT.addPixmap(QPixmap(":images/dxf2gcode.ico"), QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(QIcon(iconWT))
 
         self.edition_mode = False #No editing in progress for now

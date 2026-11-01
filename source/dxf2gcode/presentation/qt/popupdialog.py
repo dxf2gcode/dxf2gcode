@@ -126,7 +126,7 @@ class PopUpDialog(QDialog):
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
         self.setWindowTitle(self.title)
         iconWT = QIcon()
-        iconWT.addPixmap(QPixmap(":images/DXF2GCODE-001.ico"), QIcon.Mode.Normal, QIcon.State.Off)
+        iconWT.addPixmap(QPixmap(":images/dxf2gcode.ico"), QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(QIcon(iconWT))
 
         self.exec()

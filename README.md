@@ -1,7 +1,7 @@
 # dxf2gcode
 
 <p align="center">
-  <img src="source/dxf2gcode/presentation/qt/resources/images/dxf2gcode_logo.png" alt="dxf2gcode logo" width="160">
+  <img src="source/dxf2gcode/presentation/qt/resources/images/dxf2gcode_logo.png" alt="dxf2gcode logo" width="400">
 </p>
 
 dxf2gcode is an open-source converter from 2D DXF drawings to G-code for CNC

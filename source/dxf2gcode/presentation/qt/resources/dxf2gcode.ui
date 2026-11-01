@@ -18,7 +18,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="dxf2gcode_images.qrc">
-    <normaloff>:/images/DXF2GCODE-001.ico</normaloff>:/images/DXF2GCODE-001.ico</iconset>
+    <normaloff>:/images/dxf2gcode.ico</normaloff>:/images/dxf2gcode.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">

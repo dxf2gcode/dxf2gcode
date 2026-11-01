@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4096" height="1300" viewBox="0 0 2048 650" role="img" aria-labelledby="title desc">
+  <title id="title">DXF2Gcode â€” contour and toolpath logo</title>
+  <desc id="desc">Red selected D and G contours, blue cutting paths, orange dashed cutter circles, drilling symbols and a green snake forming the numeral 2. The X exit arrow follows its descending diagonal.</desc>
+  <style>
+    .contour { fill: white; stroke: #000000; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+    .selected { fill: white; stroke: #FF0000; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+    .cut { fill: none; stroke: #3264FF; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    .center { fill: none; stroke: #000000; stroke-width: 3; stroke-linecap: round; }
+    .cutter { fill: none; stroke: #FF8C00; stroke-width: 5; stroke-dasharray: 8 7; stroke-linecap: round; }
+    .entry { fill: none; stroke: #FF8C00; stroke-width: 5; stroke-dasharray: 7 8; stroke-linecap: round; }
+    .exit { fill: none; stroke: #C83CC8; stroke-width: 5; stroke-dasharray: 7 8; stroke-linecap: round; }
+  </style>
+  <rect width="2048" height="650" fill="white"/>
+
+  <!-- D: selected contour and a deliberately restrained raster-pocket illustration. -->
+  <g id="letter-D" transform="translate(60 200)">
+    <path class="selected" d="M20 0H100C192 0 250 59 250 150S192 300 100 300H20Q0 300 0 280V20Q0 0 20 0Z"/>
+    <path class="selected" d="M80 80H100C145 80 170 108 170 150S145 220 100 220H80Z"/>
+    <path id="d-pocket-1" class="cut" d="M39 28H165.75A8 8 0 0 1 165.75 44H19A8 8 0 0 0 19 60H203.5A8 8 0 0 1 203.5 76H168.25A8 8 0 0 0 168.25 92H221A8 8 0 0 1 221 108H185.75A8 8 0 0 0 185.75 124H229A8 8 0 0 1 229 140H189A8 8 0 0 0 189 156H229.5A8 8 0 0 1 229.5 172H186.75A8 8 0 0 0 186.75 188H222.5A8 8 0 0 1 222.5 204H171.75A8 8 0 0 0 171.75 220H206.5A8 8 0 0 1 206.5 236H19A8 8 0 0 0 19 252H172.75A8 8 0 0 1 172.75 268H19.5A8 8 0 0 0 19.5 284H142.5"/>
+    <path id="d-pocket-2" class="cut" d="M11 76H60.75A8 8 0 0 1 60.75 92H19A8 8 0 0 0 19 108H60.75A8 8 0 0 1 60.75 124H19A8 8 0 0 0 19 140H60.75A8 8 0 0 1 60.75 156H19A8 8 0 0 0 19 172H60.75A8 8 0 0 1 60.75 188H19A8 8 0 0 0 19 204H60.75A8 8 0 0 1 60.75 220H11"/>
+    <circle class="cutter" cx="39" cy="28" r="20"/>
+  </g>
+
+  <!-- X: the final triangle is constructed on the same axis as the exit. -->
+  <g id="letter-X" transform="translate(330 250)">
+    <path class="contour" d="M17 0H45L105 77L165 0H193Q210 0 201 15L133 111L207 224Q214 240 195 240H166L105 155L44 240H15Q-4 240 5 224L77 111L8 15Q-1 0 17 0Z"/>
+    <path class="cut" d="M29 214L174 25M69 69L139 166"/>
+    <path class="entry" d="M47 38.51428571428571L69 69"/>
+    <path id="x-start-arrow" d="M41.06454923434960 13.20084216725837L47.00000000000000 38.51428571428571L24.84655700144569 24.90454790234367Z" fill="#32C8FF" stroke="#FF8C00" stroke-width="4" stroke-linejoin="round"/>
+    <path id="x-exit" class="exit" d="M139 166L169 207.57142857142856"/>
+    <path id="x-end-arrow" d="M178.73079533974234 200.54920513037737L185.38518802911940 230.27661769749403L159.26920466025766 214.59365201247974Z" fill="#00F564" stroke="#C83CC8" stroke-width="4" stroke-linejoin="round"/>
+  </g>
+
+  <g id="letter-F" transform="translate(560 200)">
+    <path class="contour" d="M15 0H150Q164 0 164 14V34Q164 48 150 48H47V120H118Q132 120 132 134V150Q132 164 118 164H47V286Q47 300 33 300H15Q0 300 0 285V15Q0 0 15 0Z"/>
+    <path class="cut" d="M24 275V24H140M24 142H108"/>
+  </g>
+
+  <!-- Python heritage: an independent mascot, not a machining-path color. -->
+  <g id="snake-2" transform="translate(686 120)">
+    <path d="M32 49C65 23 106 0 155 0C232 0 286 46 286 112C286 158 261 189 215 230L105 326H265Q294 326 294 352Q294 380 264 380H36Q0 380 0 350Q0 332 20 313L173 178C201 153 214 134 214 111C214 85 192 70 165 70C136 70 113 81 90 86C66 91 40 89 24 80Q9 70 32 49Z" fill="#00AA35" stroke="#000000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M171 38C216 38 251 65 251 108C251 145 231 169 197 199L53 326Q35 342 49 345H264" fill="none" stroke="white" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="112" cy="44" r="12" fill="#000000"/>
+    <circle cx="108" cy="40" r="3.5" fill="white"/>
+    <circle cx="40" cy="60" r="3" fill="#000000"/>
+    <path d="M26 79Q58 88 86 80" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="264" cy="345" r="8" fill="white"/>
+  </g>
+
+  <g id="letter-G" transform="translate(990 235)">
+    <path class="selected" d="M228 40C202 13 168 0 130 0C52 0 0 53 0 132S52 264 130 264C173 264 210 251 237 228V112H128V170H176V192C163 200 147 204 130 204C88 204 66 177 66 132S88 60 130 60C153 60 173 68 186 83Q198 96 209 84L232 55Q239 48 228 40Z"/>
+    <path id="g-pocket-1" class="cut" d="M158 140H216.75A8 8 0 0 1 216.75 156H196A8 8 0 0 0 196 172H216.75A8 8 0 0 1 216.75 188H196A8 8 0 0 0 196 204H224.75"/>
+    <path id="g-pocket-2" class="cut" d="M65.75 28H185.75A8 8 0 0 1 185.75 44H53.25A8 8 0 0 0 53.25 60H61.25A8 8 0 0 1 61.25 76H31A8 8 0 0 0 31 92H48.25A8 8 0 0 1 48.25 108H21.75A8 8 0 0 0 21.75 124H46A8 8 0 0 1 46 140H21.75A8 8 0 0 0 21.75 156H48.25A8 8 0 0 1 48.25 172H31A8 8 0 0 0 31 188H61.25A8 8 0 0 1 61.25 204H53.25A8 8 0 0 0 53.25 220H195.25A8 8 0 0 1 195.25 236H65.75"/>
+    <path id="g-pocket-3" class="cut" d="M176.75 60H212.5"/>
+    <circle class="cutter" cx="158" cy="140" r="18"/>
+  </g>
+
+  <g id="letter-c" transform="translate(1248 306)">
+    <path class="contour" d="M151 24C132 8 112 0 88 0C36 0 0 39 0 94S36 188 88 188C114 188 136 180 154 162L124 131C114 142 103 147 88 147C60 147 41 127 41 94S60 41 88 41C101 41 112 46 122 55Z"/>
+    <path class="cut" d="M130 27C117 18 104 14 88 14C45 14 14 47 14 94S45 174 88 174C106 174 121 168 135 156"/>
+    <path class="cut" d="M119 39C109 32 99 28 88 28C53 28 28 55 28 94S53 160 88 160C101 160 113 156 123 147"/>
+  </g>
+
+  <g id="letter-o" transform="translate(1417 305)">
+    <circle class="contour" cx="90" cy="96" r="92"/>
+    <circle class="contour" cx="90" cy="96" r="52"/>
+    <circle class="cut" cx="90" cy="96" r="72"/>
+    <path class="center" d="M67 96H113M90 73V119"/>
+  </g>
+
+  <g id="letter-d" transform="translate(1608 190)">
+    <path class="contour" d="M153 0H167Q180 0 180 13V217A90 90 0 1 1 140 142.166852264521V13Q140 0 153 0Z"/>
+    <circle class="contour" cx="90" cy="217" r="50"/>
+    <path class="cut" d="M160 25V217A70 70 0 1 1 90 147A70 70 0 0 1 160 217"/>
+    <path class="center" d="M68 217H112M90 195V239"/>
+  </g>
+
+  <g id="letter-e" transform="translate(1814 306)">
+    <path class="contour" d="M179 108H41C44 134 62 149 91 149C110 149 127 144 144 132L171 162C149 180 123 190 91 190C36 190 0 152 0 96S37 0 91 0C146 0 180 37 180 94Z"/>
+    <circle class="cut" cx="91" cy="49" r="29"/>
+    <path class="center" d="M75 49H107M91 33V65"/>
+    <path class="cut" d="M132 71H147Q157 71 157 81Q157 91 147 91H33Q23 91 23 102V113Q26 131 37 142"/>
+    <path class="exit" d="M44 149Q75 176 137 162"/>
+    <path id="e-end-arrow" d="M143 145L175 160L143 178Z" fill="#00F564" stroke="#C83CC8" stroke-width="4" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -63,7 +63,7 @@ include_files.extend(
     (str(path), "i18n/%s" % path.name) for path in translation_files)
 
 icon_path = (PROJECT_DIR / "dxf2gcode" / "presentation" / "qt" /
-             "resources" / "images" / "DXF2GCODE-001.ico")
+             "resources" / "images" / "dxf2gcode.ico")
 base = "gui" if sys.platform == "win32" else "console"
 
 setup(
