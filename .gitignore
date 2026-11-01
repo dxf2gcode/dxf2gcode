@@ -84,3 +84,6 @@ dxf2gcode_ui*.py
 source/i18n/dxf2gcode_fr.ts
 source/i18n/dxf2gcode_ru.ts
 source/i18n/dxf2gcode_de.ts
+
+# Local, unreviewed wiki preservation (may contain personal data).
+/doc/migration/sourceforge/snapshot/

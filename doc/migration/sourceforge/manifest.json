@@ -1,0 +1,1696 @@
+{
+  "schema_version": 1,
+  "retrieved_at_utc": "2026-11-01T13:30:21.550795+00:00",
+  "snapshot_root": "doc/migration/sourceforge/snapshot/phase1-complete",
+  "scope": "Latest public wiki pages, rendered HTML, public discussion API and referenced media; not revision history or all project downloads.",
+  "publication_status": "NOT CLEARED: local preservation only; snapshot excluded from Git and the website.",
+  "resources": [
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/",
+      "kind": "wiki_index",
+      "status": "saved",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/wiki-index.json",
+      "bytes": 395,
+      "sha256": "7dea1a793b5068c890ab593875be6fbce144040e5aa3e3702d33167972a2d50d"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/browse_pages/",
+      "kind": "wiki_index_html",
+      "status": "saved",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/browse_pages/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/wiki-index.html",
+      "bytes": 59856,
+      "sha256": "4a202ecf0d8e64134ed563b563536b0067a858f9d7ef7f95843a1db306bbe0b5"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "DevelopmentEnvironment_Win7",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/DevelopmentEnvironment_Win7/page.json",
+      "bytes": 3534,
+      "sha256": "2a98c60d6fb24efdfdf4bc7518c7691960b966cd7f1759d42879997d48e5b223"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "DevelopmentEnvironment_Win7",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/DevelopmentEnvironment_Win7/page.html",
+      "bytes": 62817,
+      "sha256": "b21d935253900b760f3a6c0b5420950356431d588cf87dbb3849e1fcb1a8fa4c"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "DevelopmentEnvironment_Win7",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/DevelopmentEnvironment_Win7/history.html",
+      "bytes": 56985,
+      "sha256": "75a4a24dd82ab360009447fcb325bd046518df8c4e5dc8951af0a33df136e5c5"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/34015c1c/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "DevelopmentEnvironment_Win7",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/34015c1c/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/DevelopmentEnvironment_Win7/discussion-0.json",
+      "bytes": 129,
+      "sha256": "77a7defb053688a2e83dc57298d1a95e0eb2a481fcf4adf81dd9a3035cd03c9a"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "GIT Workflow in dxf2gcode",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/GIT_Workflow_in_dxf2gcode/page.json",
+      "bytes": 1241,
+      "sha256": "9f42452b6a20866271fef842baa1f161a4e6d6d90855ce384817469625112aaa"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "GIT Workflow in dxf2gcode",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/GIT_Workflow_in_dxf2gcode/page.html",
+      "bytes": 63656,
+      "sha256": "9b08aa44e6e3dddbac70438c8e435f48963cfb508cb75645083e7b4b526cd594"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "GIT Workflow in dxf2gcode",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/GIT_Workflow_in_dxf2gcode/history.html",
+      "bytes": 58244,
+      "sha256": "0386adb6809f3ac3931d461235fbc83a6f790d32b1e89a57ad5ca9d68e055b84"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/5f4d522c/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "GIT Workflow in dxf2gcode",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/5f4d522c/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/GIT_Workflow_in_dxf2gcode/discussion-0.json",
+      "bytes": 573,
+      "sha256": "cc47aeaf83d02a3b4f6ab01def8d86b096ef4657d9b5b76f81c8bbac448a00f7"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/General%20Configuration",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "General Configuration",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/General%20Configuration",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/General_Configuration/page.json",
+      "bytes": 9244,
+      "sha256": "5571ffb2397aabad785aeabef95f082dbd48bb201866a477a7c9fe66d0dbb7ae"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "General Configuration",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/General_Configuration/page.html",
+      "bytes": 83026,
+      "sha256": "1dbef3cf4ef7fc3b3490cc9e2e737e13d10a7bed360ef6d5fcba9374d5324b12"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "General Configuration",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/General_Configuration/history.html",
+      "bytes": 63180,
+      "sha256": "708b764338c95f6e01e940606ed843afa19f7509d1c6598a33e5d40470517f6a"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/0baa4849/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "General Configuration",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/0baa4849/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/General_Configuration/discussion-0.json",
+      "bytes": 129,
+      "sha256": "ae9fb0e2b3ba3369715542e00ab4bfbc494d1275bb078250adc84312b3f77ae8"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Home",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Home",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Home",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Home/page.json",
+      "bytes": 2828,
+      "sha256": "8b4348d4fe80f6d2e9c6f40c2c9d89548e39bd7f99637e3d9097e4d80185dc31"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Home",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Home/page.html",
+      "bytes": 63641,
+      "sha256": "98330d63389aa4fc7c1af0bfbee669d72d1dd2329639f39a0f794304c39f7682"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Home/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Home",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Home/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Home/history.html",
+      "bytes": 59976,
+      "sha256": "1ccf265b88984654f9085be8d324ea69e2bb9c0ff33988cca8031be651a35834"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/7c4db769/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Home",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/7c4db769/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Home/discussion-0.json",
+      "bytes": 129,
+      "sha256": "edd7eadfd9e8f20a38d7f968e60cd6abf5b7ad029b264928b8522829594aaa83"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/ImportExport",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "ImportExport",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/ImportExport",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/ImportExport/page.json",
+      "bytes": 6990,
+      "sha256": "542b1d979f0aa9bd1b7c0c8eae256e38fbeb101d065fd1114291466d584dc6dd"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "ImportExport",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/ImportExport/page.html",
+      "bytes": 66164,
+      "sha256": "c877528bb2790fbbc5367f2e69b2748f2c61834956fc44ce7f023aa1eb7bd4be"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "ImportExport",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/ImportExport/history.html",
+      "bytes": 55691,
+      "sha256": "78e9bb19a58b57226606477f0ed7b40e4df4fd8885fdbcc78c00ee8b8dc647a8"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/8be11ccc/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "ImportExport",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/8be11ccc/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/ImportExport/discussion-0.json",
+      "bytes": 129,
+      "sha256": "43de7c5bd5e418598e2247af0915b523d20646ea0e076aeca7e852f0a871260d"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Installation",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Installation",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Installation",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Installation/page.json",
+      "bytes": 8652,
+      "sha256": "4bc2581da000c287ce299f1aaab73b7942cd7ec4e65cc58f4058d0367087c4f5"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Installation/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Installation",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Installation/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Installation/page.html",
+      "bytes": 95116,
+      "sha256": "b12cefb1069fbbf0c9a7cce532fd62ccf17e1afa09b65c0753cc1f35a4458600"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Installation/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Installation",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Installation/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Installation/history.html",
+      "bytes": 60575,
+      "sha256": "dcfbefc0b734dae4ab03fb913121741a43a1d462e1699f74d8a376488b4f10dc"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/a3387662/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Installation",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/a3387662/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Installation/discussion-0.json",
+      "bytes": 931,
+      "sha256": "c3e82fe7d96e5b1f9fe63d207166a9084bea3c895042fd8a7d5aacd2d44f5e1a"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/LayerControl",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "LayerControl",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/LayerControl",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/LayerControl/page.json",
+      "bytes": 9837,
+      "sha256": "7bcdd9d52bf7e89477d3d2813bcbeaf657f9e4b97c6fdc97ba302da45455e77c"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/LayerControl/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "LayerControl",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/LayerControl/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/LayerControl/page.html",
+      "bytes": 93500,
+      "sha256": "afd18afba441bad450c22f0e508f36bb33b8e27fc2a6f6b2c12383537df04539"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/LayerControl/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "LayerControl",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/LayerControl/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/LayerControl/history.html",
+      "bytes": 56287,
+      "sha256": "8c4effd7709c449a4a2eb3a1438cb850ce15ca04879ec591fbb0b70fd309e971"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/31a66e96/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "LayerControl",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/31a66e96/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/LayerControl/discussion-0.json",
+      "bytes": 4086,
+      "sha256": "c08d624b1f6858be0277220dfb097ad47ccd0cbd54c63a3aa977fffe146fe46e"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor%20Configuration",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Postprocessor Configuration",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor%20Configuration",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor_Configuration/page.json",
+      "bytes": 13689,
+      "sha256": "862845a7c05e0328c5d60cba1db68e27fbfdd4886ea7191d1a0311283a4b01df"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Postprocessor Configuration",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor_Configuration/page.html",
+      "bytes": 89302,
+      "sha256": "f8e7f6b673b1810ddc8ba2d33fd390b24856763aafbb84f46454f2550d5485c4"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Postprocessor Configuration",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor_Configuration/history.html",
+      "bytes": 63837,
+      "sha256": "edc1069c1f457e36d586425ef90f45e508e585373565d572e72908fb4d11c673"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/63316a55/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Postprocessor Configuration",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/63316a55/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor_Configuration/discussion-0.json",
+      "bytes": 1584,
+      "sha256": "e99c0ac99a8abf9e849bc4506ac1d71b5be02979e77eeff9251779d4cb795394"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Postprocessor-Example China Laser Cutter",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_China_Laser_Cutter/page.json",
+      "bytes": 2578,
+      "sha256": "b5ca167f73d4d169059ff1d0f056f0348bf95cf9539dab00e65d554f7c713443"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Postprocessor-Example China Laser Cutter",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_China_Laser_Cutter/page.html",
+      "bytes": 69554,
+      "sha256": "defbe8ad952f702239ff1dd75892833cbb073c890b3e110e891fbb59238c3086"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Postprocessor-Example China Laser Cutter",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_China_Laser_Cutter/history.html",
+      "bytes": 58313,
+      "sha256": "4594a8968df90f67d12d569540160048bbffa423084580602496575916dc0595"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/f22f28cf/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Postprocessor-Example China Laser Cutter",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/f22f28cf/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_China_Laser_Cutter/discussion-0.json",
+      "bytes": 129,
+      "sha256": "e547d3bbddc02919d0f51b6baf76a9dae253d5e154100a279f23a020c6fe446f"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20DXF",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Postprocessor-Example DXF",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20DXF",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_DXF/page.json",
+      "bytes": 4989,
+      "sha256": "983fa2a51e7ee5f64bf14dfeb7b65887770517988395bcef4c484232afab3f6f"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20DXF/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Postprocessor-Example DXF",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20DXF/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_DXF/page.html",
+      "bytes": 75712,
+      "sha256": "d1b6c0113b31ec80a89d8d4730e4b66c02247e6c6839e066b77b039be0571b8f"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20DXF/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Postprocessor-Example DXF",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20DXF/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_DXF/history.html",
+      "bytes": 56992,
+      "sha256": "f1960e322d935ce18db191c28e5244622441f51e90ab8582ca39f22e14631850"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/3158ff1186/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Postprocessor-Example DXF",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/3158ff1186/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_DXF/discussion-0.json",
+      "bytes": 131,
+      "sha256": "ae29dadc2e9b4a842aa4990881f2698ab8179ef5a576e35157380fb630696764"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Postprocessor-Example Lathe",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Lathe/page.json",
+      "bytes": 4659,
+      "sha256": "03220fb20844c2ed978e1753e80a12bb8e3be0a043445ebd337a12540228b8a0"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Postprocessor-Example Lathe",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Lathe/page.html",
+      "bytes": 75517,
+      "sha256": "aefc58f1277711ccf114d7da863ed838081dee4f6b146f9ef29c41a5801c7b92"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Postprocessor-Example Lathe",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Lathe/history.html",
+      "bytes": 57626,
+      "sha256": "08b4e8348d07d342a3ae330f13393cb39f5be4952afa619819e49de8f11252ae"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/5cd1cd9e/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Postprocessor-Example Lathe",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/5cd1cd9e/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Lathe/discussion-0.json",
+      "bytes": 129,
+      "sha256": "0b9fa149b569f1f53761b032488e87be8aa424e64d82734192d118e432cd2f29"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Python",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Postprocessor-Example Python",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Python",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Python/page.json",
+      "bytes": 2628,
+      "sha256": "bae24cd3e34cf2ee8993403dc9ae383c61c7e5969928d7d4695ddca85ae44d17"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Python/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Postprocessor-Example Python",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Python/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Python/page.html",
+      "bytes": 67818,
+      "sha256": "0b6a557c56cba4942df3323215b63a2e9d1f89f43dad33b6428bfd55de94eb5c"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Python/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Postprocessor-Example Python",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Python/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Python/history.html",
+      "bytes": 60103,
+      "sha256": "d1959eee49a6e31fcf800772112863f27d45036c5dda774c380e0ada0f6c7e18"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/7b877f68/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Postprocessor-Example Python",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/7b877f68/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Python/discussion-0.json",
+      "bytes": 129,
+      "sha256": "741e9b44262680106597c67e822f5ce5c22c7ebc2f75dafb9d4df3d0c785524f"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Postprocessor-Example Styrofoam",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Styrofoam/page.json",
+      "bytes": 2718,
+      "sha256": "b261d324248f56c9042db6d18add6acec04c340eebbb21200416fc2dde9b0c03"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Postprocessor-Example Styrofoam",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Styrofoam/page.html",
+      "bytes": 73201,
+      "sha256": "95a097ab246554412eb1d8eaa85daedb5641ae9ed791279621787e3dfb0e901c"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Postprocessor-Example Styrofoam",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Styrofoam/history.html",
+      "bytes": 58267,
+      "sha256": "6f5d36715fb4ce0fcf97610eb6d4dc43d7feeeb8fb55a1c2dcc3ba8970d56b54"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/69d25c10/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Postprocessor-Example Styrofoam",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/69d25c10/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Styrofoam/discussion-0.json",
+      "bytes": 129,
+      "sha256": "3ca4d76045da5e818774f917d79c9e566a6b71f6bfe91ccc0b5532f6adab421b"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Release%20notes",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "Release notes",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Release%20notes",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Release_notes/page.json",
+      "bytes": 6730,
+      "sha256": "e283e147ae001da5c0ee099a616a88e8b5e5b8e87bd05b65e15da80d6cd0fc81"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Release%20notes/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "Release notes",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Release%20notes/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Release_notes/page.html",
+      "bytes": 66214,
+      "sha256": "333713eb1f30da72a4f1e59957e90df87de7dc8c1c09f154c5f9fc2d8e24aef5"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Release%20notes/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "Release notes",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Release%20notes/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Release_notes/history.html",
+      "bytes": 61164,
+      "sha256": "27adfda94056de809c263e21e776f62904927f953e3137945d0eae2bc04f22fc"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/47e96dcc/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "Release notes",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/47e96dcc/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Release_notes/discussion-0.json",
+      "bytes": 129,
+      "sha256": "53e6078b5b222c5e1904b3fe2e7d1818d7b051c3c37e31fb820f04646907c66b"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE",
+      "kind": "page_api",
+      "status": "saved",
+      "page": "User Guide DXF2GCODE",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/User_Guide_DXF2GCODE/page.json",
+      "bytes": 25434,
+      "sha256": "3494767e90caf89914930babfefe2c1430d814dcee1449391d6f5415413be819"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/",
+      "kind": "page_html",
+      "status": "saved",
+      "page": "User Guide DXF2GCODE",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/User_Guide_DXF2GCODE/page.html",
+      "bytes": 121497,
+      "sha256": "d05ed2cf0c838c4c54456544644be2f2d3ce83fb8c840826ec6c60cd9a195320"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/history",
+      "kind": "page_history_html",
+      "status": "saved",
+      "page": "User Guide DXF2GCODE",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/history",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/User_Guide_DXF2GCODE/history.html",
+      "bytes": 70044,
+      "sha256": "dda00ad61aa1ec39702be0941bdf26bd9910eb192baa851daec50a257298ea46"
+    },
+    {
+      "url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/234f25f5/?limit=100&page=0",
+      "kind": "discussion_api",
+      "status": "saved",
+      "page": "User Guide DXF2GCODE",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/_discuss/thread/234f25f5/?limit=100&page=0",
+      "content_type": "application/json; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/User_Guide_DXF2GCODE/discussion-0.json",
+      "bytes": 13211,
+      "sha256": "8fa9fc3777f4c52873ebe63a5d97c1dd7aad34dba4ef44dddf66562308c76934"
+    },
+    {
+      "url": "https://docs.google.com/uc?export=download&id=0B2negA0eQERDek01WDNXSVc2T1U",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "LayerControl"
+      ],
+      "discovered_via": [
+        "content link"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "http_status": 200,
+      "final_url": "https://drive.usercontent.google.com/download?id=0B2negA0eQERDek01WDNXSVc2T1U&export=download",
+      "content_type": "application/octet-stream",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/001-uc",
+      "bytes": 10542,
+      "sha256": "e0dbb69c8f943d1a74bbc2193f42198562ebae82427f1183e8f9c4e4aa730f23"
+    },
+    {
+      "url": "https://lh6.googleusercontent.com/-MzmeNlgC5rg/Uu4Ra-qwNwI/AAAAAAAACCg/PGOyXf3choI/s320/Spant.png",
+      "kind": "asset",
+      "status": "unavailable",
+      "source_pages": [
+        "LayerControl"
+      ],
+      "discovered_via": [
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "error": "HTTP Error 404: Not Found",
+      "http_status": 404
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/screenshot/SetNearestStartingPoint.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/screenshot/SetNearestStartingPoint.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/003-SetNearestStartingPoint.png",
+      "bytes": 30499,
+      "sha256": "d6d82ff2b5e606540eee2a82b7c688382bc2cf623c640707669cd09130c77102"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/attachment/2020-11-02%2009_03_06-DXF2GCODE_Config_Window.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "General Configuration"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 28878,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/attachment/2020-11-02%2009_03_06-DXF2GCODE_Config_Window.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/004-2020-11-02_09_03_06-DXF2GCODE_Config_Window.png",
+      "bytes": 28878,
+      "sha256": "387ea0ba4a04ea3bd0b80c83412eeb2efbb6732c8293c366c8117aa92e11061e"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/attachment/2020-11-02%2009_35_20-Postprocessor%20configuration_empty_Z.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "Postprocessor Configuration"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 3492,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/attachment/2020-11-02%2009_35_20-Postprocessor%20configuration_empty_Z.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/005-2020-11-02_09_35_20-Postprocessor_configuration_empty_Z.png",
+      "bytes": 3492,
+      "sha256": "e59579343660683867c09ec868663117b2391af44fef6d46e36ee375d672f858"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/Canvas_legend.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 66109,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/Canvas_legend.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/006-Canvas_legend.png",
+      "bytes": 66109,
+      "sha256": "52edae6ee1cc6c55da8a852878fe37f8aebb9c01fa3fe1d4b1d2da67c50d6ce6"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/ExportMenu.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 7542,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/ExportMenu.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/007-ExportMenu.png",
+      "bytes": 7542,
+      "sha256": "0981ea01b9fa93ee7bf8e52e9c56703c1d33d02fa3f1eb35f85b980f0ed55486"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/Export_dialog.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 39753,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/Export_dialog.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/008-Export_dialog.png",
+      "bytes": 39753,
+      "sha256": "b563edfbfa67fb9d96d0a0a234104012f9d6812177eed3ebdef4709b4b45fb4c"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/FileMenu.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 6131,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/FileMenu.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/009-FileMenu.png",
+      "bytes": 6131,
+      "sha256": "f20f68f7abfe89d58e730b27ef601f925993c4d3734dc6cfdbf6968c0758b418"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/Optimize_order.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 5015,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/Optimize_order.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/010-Optimize_order.png",
+      "bytes": 5015,
+      "sha256": "b104fe8b70868298ec10bfb5be0d48ecd9a019e29b9082f07831e006c4f36b55"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/OptionMenu.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 15203,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/OptionMenu.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/011-OptionMenu.png",
+      "bytes": 15203,
+      "sha256": "6f1e07bc4d6d7d87026a022ca66d12586f3359c904da0abd8a96f3fdde978eb8"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/ViewMenu.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 12082,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/ViewMenu.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/012-ViewMenu.png",
+      "bytes": 12082,
+      "sha256": "8025e0ef18c73709388bfc9f77fbbbdb5ad6934d9a3988ae3127e127916e6235"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/Window_description.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 219438,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/Window_description.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/013-Window_description.png",
+      "bytes": 219438,
+      "sha256": "1a7a6480b3037dc5592bec8e963dcd3d4c9b4bc6c9e8e585690b51daf6bd8da1"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/enabled%20and%20disabled%20path.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 3218,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/enabled%20and%20disabled%20path.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/014-enabled_and_disabled_path.png",
+      "bytes": 3218,
+      "sha256": "f53d09dbb7b0569bbadfe49fe64930bcb9e18c730dcea9203072dc4cf28629e5"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/selected_shape_menu.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "page attachment",
+        "embedded content image"
+      ],
+      "contributors": [],
+      "rights_status": "unverified",
+      "expected_bytes": 4796,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/attachment/selected_shape_menu.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/015-selected_shape_menu.png",
+      "bytes": 4796,
+      "sha256": "a5332570f06b36bd8a65c5c52240195b1ffa77bc4ecf0f833913491eddb37f9f"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/970a/6092/attachment/alternate",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "discussion attachment"
+      ],
+      "contributors": [
+        "christi_ko"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 15334,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/970a/6092/attachment/alternate",
+      "content_type": "text/html; charset=UTF-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/016-alternate",
+      "bytes": 15334,
+      "sha256": "b2fd2bafe89792639f994c6d530615c05bfa4d34e0fcc65f79097dab7aa0f3ba"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/970a/attachment/alternate",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "discussion attachment"
+      ],
+      "contributors": [
+        "glasairman"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 3131,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/970a/attachment/alternate",
+      "content_type": "text/html; charset=UTF-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/017-alternate",
+      "bytes": 3131,
+      "sha256": "e1251e897697c0c97dc36fdaeaea217ebd6c94024316f13ce6e40b3fd8b76cd3"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/970a/e229/attachment/alternate",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "discussion attachment"
+      ],
+      "contributors": [
+        "christi_ko"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 8119,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/970a/e229/attachment/alternate",
+      "content_type": "text/html; charset=UTF-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/018-alternate",
+      "bytes": 8119,
+      "sha256": "c49dabf0a67f5ce6f410f68722c8dcfd5311417e4b7d7cb033ea11d2c06520b6"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/attachment/Panel_Cutout_GNS430_fixed.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "discussion attachment",
+        "content link"
+      ],
+      "contributors": [
+        "bob2718281"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 31923,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/attachment/Panel_Cutout_GNS430_fixed.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/019-Panel_Cutout_GNS430_fixed.png",
+      "bytes": 31923,
+      "sha256": "6e7886448056ab6e9695de9e4d6d8ee440366033e4ba45c4d3e73e05877272bd"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/8f99/attachment/Panel_Cutout_GNS430_fixed.DXF",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "discussion attachment"
+      ],
+      "contributors": [
+        "bob2718281"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 20920,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/8f99/attachment/Panel_Cutout_GNS430_fixed.DXF",
+      "content_type": "application/octet-stream",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/020-Panel_Cutout_GNS430_fixed.DXF",
+      "bytes": 20920,
+      "sha256": "33ccf8a14354fe29c4a8bda79e08831402e4f93a8b0e67d36a22dddb4205a5d2"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/8f99/fa8b/attachment/alternate",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "discussion attachment"
+      ],
+      "contributors": [
+        "glasairman"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 2841,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/8f99/fa8b/attachment/alternate",
+      "content_type": "text/html; charset=UTF-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/021-alternate",
+      "bytes": 2841,
+      "sha256": "7a12a2fe94297c10002705b437a6d751361db5abed5fcc0dbe51e1fa2ac214f0"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/94db/attachment/Panel_Cutout_GNS430.DXF",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "discussion attachment"
+      ],
+      "contributors": [
+        "glasairman"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 29911,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/94db/attachment/Panel_Cutout_GNS430.DXF",
+      "content_type": "application/octet-stream",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/022-Panel_Cutout_GNS430.DXF",
+      "bytes": 29911,
+      "sha256": "948ac19a0a45c42642ee1660df65405438f03d3685c4eaaa3d38deaf3661df21"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/aa23/attachment/Candle.JPG",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "User Guide DXF2GCODE"
+      ],
+      "discovered_via": [
+        "discussion attachment"
+      ],
+      "contributors": [
+        "glasairman"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 17399,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/aa23/attachment/Candle.JPG",
+      "content_type": "image/jpeg",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/023-Candle.JPG",
+      "bytes": 17399,
+      "sha256": "944bdc0b4c51d6a4b8e7727a32acc0511ec2f06b3b588167483da5504fabfb61"
+    },
+    {
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/5f4d522c/22b9/attachment/git-model%402x_red.png",
+      "kind": "asset",
+      "status": "saved",
+      "source_pages": [
+        "GIT Workflow in dxf2gcode"
+      ],
+      "discovered_via": [
+        "discussion attachment",
+        "embedded content image"
+      ],
+      "contributors": [
+        "christi_ko"
+      ],
+      "rights_status": "unverified",
+      "expected_bytes": 53528,
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/5f4d522c/22b9/attachment/git-model%402x_red.png",
+      "content_type": "image/png",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/assets/024-git-model_2x_red.png",
+      "bytes": 53528,
+      "sha256": "e900836f2fcd2852f02fb7fc490bd58caed413774f90629bd2afae377a816e20"
+    },
+    {
+      "url": "https://slashdotmedia.com/terms-of-use/",
+      "kind": "rights_evidence",
+      "status": "saved",
+      "http_status": 200,
+      "final_url": "https://slashdotmedia.com/terms-of-use/",
+      "content_type": "text/html; charset=UTF-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/rights/slashdotmedia-terms.html",
+      "bytes": 99681,
+      "sha256": "179458a50f29f3a327d03272b72903fb0e5bfd388c1168aed6c311a6b9792327"
+    },
+    {
+      "url": "https://sourceforge.net/projects/dxf2gcode/",
+      "kind": "rights_evidence",
+      "status": "saved",
+      "http_status": 200,
+      "final_url": "https://sourceforge.net/projects/dxf2gcode/",
+      "content_type": "text/html; charset=utf-8",
+      "path": "doc/migration/sourceforge/snapshot/phase1-complete/rights/project-summary.html",
+      "bytes": 102213,
+      "sha256": "63cbb84f0061c97785c7a5cfd47ef277a33b1510b8db33d5dce16e4b6fbc32fd"
+    }
+  ],
+  "pages": [
+    {
+      "title": "DevelopmentEnvironment_Win7",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Installation/"
+      ],
+      "external_links": [
+        "http://sourceforge.net/projects/pywin32/files/pywin32/",
+        "http://www.riverbankcomputing.com/software/pyqt/download",
+        "https://sourceforge.net/projects/pyinstaller/files/?source=navbar",
+        "https://www.jetbrains.com/pycharm/download/",
+        "https://www.python.org/downloads/release/python-2710/"
+      ],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/DevelopmentEnvironment_Win7/page.md",
+      "markdown_sha256": "b7dd0637de7dd337d1085909a446a37a3910852b7eb930af84c804fb4803daf6",
+      "modified_at": "2015-08-26 20:14:20.122000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "*anonymous",
+        "christi_ko",
+        "jp1357"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "GIT Workflow in dxf2gcode",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/"
+      ],
+      "external_links": [
+        "http://nvie.com/posts/a-successful-git-branching-model/"
+      ],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/GIT_Workflow_in_dxf2gcode/page.md",
+      "markdown_sha256": "a7ba75aaaeb8a5129b4e24f85abbb48406308c1fde8298e2d6273a1cdc53e78f",
+      "modified_at": "2016-02-20 11:25:14.481000",
+      "discussion_posts": 1,
+      "history_editors_observed": [
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "General Configuration",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/General%20Configuration",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-config-version",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-description-of-the-sections",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-faq-frequently-asked-questions",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-for-newer-versions",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-for-older-versions-up-to-22022016",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-i-have-several-passes-shown-on-my-maschine-screen-how-can-i-have-one-only-pass-in-general",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-introduction",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-axis-letters",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-custom-actions",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-cutter-compensation",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-depth-coordinates",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-drag-knife-options",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-feed-rates",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-filters",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-general",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-import-parameters",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-layer-options",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-logging",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-paths",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-plane-coordinates",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-route-optimisation",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-tool-parameters",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-section-version",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/#h-usiing-the-configuration-window",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/inch",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/mm",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/rpm",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/LayerControl/"
+      ],
+      "external_links": [],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/General_Configuration/page.md",
+      "markdown_sha256": "6ef3cacb58a2cbfb0ec05f8aa4d757b2d1340df450ae78ffb76975fded025303",
+      "modified_at": "2023-07-30 11:04:10.621000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Home",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Home",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/DevelopmentEnvironment_Win7/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/GIT%20Workflow%20in%20dxf2gcode/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Installation/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/LayerControl/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20DXF/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Python/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Release%20notes/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/"
+      ],
+      "external_links": [],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Home/page.md",
+      "markdown_sha256": "56f7ab11b7bbe31f18a209d0cb09ad8f223328bd688fa969edc9820fdb1a1b01",
+      "modified_at": "2022-09-01 15:46:01.267000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "ImportExport",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/ImportExport",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/%02klzzwxh%3A0000%03",
+        "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/%02klzzwxh%3A0001%03",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/LayerControl/"
+      ],
+      "external_links": [
+        "http://de.wikipedia.org/wiki/Drawing_Interchange_Format|Wikipedia",
+        "http://usa.autodesk.com/adsk/servlet/item?siteID=123112&id=12272454&linkID=10809853|Autodesk"
+      ],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/ImportExport/page.md",
+      "markdown_sha256": "cf1fb559f8f55966bbbe1168064d3f15d60480b4a470d5997e56e0a7d01a998d",
+      "modified_at": "2015-03-15 09:50:35.457000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "*anonymous"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Installation",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Installation/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Installation",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/"
+      ],
+      "external_links": [
+        "https://github.com/ltspicer/dxf2gcode.linux.installer",
+        "https://sourceforge.net/projects/dxf2gcode/files/?source=typ_redirect"
+      ],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Installation/page.md",
+      "markdown_sha256": "4566423415d077b6047846f587d2e0b1d24f80548833ac95e4ad00e2418cba8b",
+      "modified_at": "2022-04-16 15:34:43.170000",
+      "discussion_posts": 2,
+      "history_editors_observed": [
+        "*anonymous",
+        "christi_ko",
+        "dwrobel",
+        "jp1357",
+        "treki"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "LayerControl",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/LayerControl/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/LayerControl",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/ImportExport/"
+      ],
+      "external_links": [
+        "https://sourceforge.net/u/gmail/profile/",
+        "http://code.google.com/u/112284990325390894018/",
+        "https://docs.google.com/uc?export=download&id=0B2negA0eQERDek01WDNXSVc2T1U",
+        "https://groups.google.com/forum/#!topic/dxf2gcode-users/q3hPQkN2OCo"
+      ],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/LayerControl/page.md",
+      "markdown_sha256": "88f15402b398e1449e6f6a9fb39a57a737d785141bdb7632985c11ed892d0785",
+      "modified_at": "2021-05-06 10:03:36.220000",
+      "discussion_posts": 7,
+      "history_editors_observed": [
+        "*anonymous",
+        "rli"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Postprocessor Configuration",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor%20Configuration",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-examples",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-explanation-of-the-sections",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-faq-frequently-asked-questions",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-general",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-how-do-i-invert-an-axis-or-both-axis",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-how-to-remove-all-comments-from-the-export",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-how-to-replace-the-axis-letters",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-how-to-replace-the-i-and-j-axis-letter-for-cw-and-ccw-arcs-by-a-radius-r",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-i-want-to-remove-the-z-axis-from-my-gcode-how-can-i-do-that",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-introduction",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-line-numbers",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-method-1-gui",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-method-2-postprocessor-configuration-file",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-number-format",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-postprocessor-configuration-styrofoam",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-postprocessor-version",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-program",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-using-different-postprocessor-files",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/#h-version",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/Program",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Python/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam/"
+      ],
+      "external_links": [],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor_Configuration/page.md",
+      "markdown_sha256": "bb2e0ed71ca664b269dba945945f59f6f0729893a68d05e8eda01ce9a421941c",
+      "modified_at": "2020-11-02 08:40:41.198000",
+      "discussion_posts": 2,
+      "history_editors_observed": [
+        "*anonymous",
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Postprocessor-Example China Laser Cutter",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20China%20Laser%20Cutter",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/"
+      ],
+      "external_links": [],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_China_Laser_Cutter/page.md",
+      "markdown_sha256": "f5618ea68ae77ce18aecf71b846a99c0c8da9e689272e8c5b20e0cbb119fbc9f",
+      "modified_at": "2020-08-10 12:33:01.924000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Postprocessor-Example DXF",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20DXF/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20DXF",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/"
+      ],
+      "external_links": [],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_DXF/page.md",
+      "markdown_sha256": "eadd360c4ad8e9d3d6f2df1bb102a66cf3033a769e2354f35a5086bb4ae7599b",
+      "modified_at": "2020-08-10 12:36:02.182000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Postprocessor-Example Lathe",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Lathe",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/"
+      ],
+      "external_links": [],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Lathe/page.md",
+      "markdown_sha256": "5d9913572e2ce06b79799a10db74126e63cd63ad9a6d76e271c11571df7b9bd7",
+      "modified_at": "2020-08-10 12:30:24.635000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Postprocessor-Example Python",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Python/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Python",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/"
+      ],
+      "external_links": [],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Python/page.md",
+      "markdown_sha256": "453e308df460c0d4ea021c737e80a9f7ef8e7d30f7dda13cc3b38dd94f2ccec6",
+      "modified_at": "2020-08-10 12:35:37.030000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Postprocessor-Example Styrofoam",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Postprocessor-Example%20Styrofoam",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/"
+      ],
+      "external_links": [],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Postprocessor-Example_Styrofoam/page.md",
+      "markdown_sha256": "14058a4ecc2a11fd45520c16152dc58398dc5e6319639b24a7c50012a27873d4",
+      "modified_at": "2015-07-16 12:43:02.601000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "*anonymous",
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "Release notes",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/Release%20notes/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/Release%20notes",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/"
+      ],
+      "external_links": [
+        "http://code.google.com/p/dxf2gcode/issues/list",
+        "http://sourceforge.net/p/dxf2gcode/tickets/",
+        "https://groups.google.com/forum/#!forum/dxf2gcode-users",
+        "https://src.fedoraproject.org/rpms/dxf2gcode",
+        "https://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html",
+        "https://www.freedesktop.org/wiki/Distributions/AppStream/"
+      ],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/Release_notes/page.md",
+      "markdown_sha256": "be8250ce4de08efdb488da066ea952357f858e6d6c0bbd267b166bc3f90e206a",
+      "modified_at": "2017-09-26 07:38:48.084000",
+      "discussion_posts": 0,
+      "history_editors_observed": [
+        "*anonymous",
+        "dwrobel",
+        "jp1357"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    },
+    {
+      "title": "User Guide DXF2GCODE",
+      "url": "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/",
+      "api_url": "https://sourceforge.net/rest/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE",
+      "rights_status": "unverified",
+      "internal_links": [
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-brief-description-on-how-to-use-dxf2gcode",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-canvas-area",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-export-menu",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-file-menu",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-frequently-asked-questions",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-how-to-change-the-starting-point-of-a-shape",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-how-to-start-dxf2gcode-in-without-gui",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-install-and-start-xvfb",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-introduction",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-legend-of-the-canvas-elements",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-menu-bar",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-options-menu",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-overview-of-the-dxf2gcode-window",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-selection-of-shapes-in-cavas",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-set-permanent-environments",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-shape-context-menu",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-view-menu",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/#h-zooming-and-draging-of-the-canvas",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Home/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/General%20Configuration/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/Postprocessor%20Configuration/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/",
+        "https://sourceforge.net/p/dxf2gcode/wiki/User%20Guide%20DXF2GCODE/To",
+        "https://sourceforge.net/p/dxf2gcode/wiki/_discuss/thread/234f25f5/436a/attachment/Panel_Cutout_GNS430_fixed.png"
+      ],
+      "external_links": [
+        "https://groups.google.com/g/dxf2gcode-users/c/UY0KVPd0CQg",
+        "https://sourceforge.net/auth/subscriptions/",
+        "https://www.avast.com/antivirus",
+        "https://www.ltspiceusers.ch/#dxf2gcode.68"
+      ],
+      "markdown_path": "doc/migration/sourceforge/snapshot/phase1-complete/pages/User_Guide_DXF2GCODE/page.md",
+      "markdown_sha256": "6f320c0d6787c867cddc349bb298aaa8d63aeda51244657424942aabecb064ca",
+      "modified_at": "2022-01-15 17:41:28.334000",
+      "discussion_posts": 10,
+      "history_editors_observed": [
+        "christi_ko"
+      ],
+      "authorship_note": "Editors on the retrieved history page; not proof of original authorship or a complete contributor list."
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "pages_indexed": 15,
+    "pages_with_markdown": 15,
+    "assets_discovered": 24,
+    "assets_saved": 23,
+    "incomplete_resources": 1
+  }
+}

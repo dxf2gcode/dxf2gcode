@@ -1,0 +1,3 @@
+# Documentation environment only; independent of the application environment.
+# Zensical requires Python >= 3.11. Tested on Windows with Python 3.11.
+zensical==0.0.74

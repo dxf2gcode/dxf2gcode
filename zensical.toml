@@ -1,0 +1,24 @@
+# Prepared project-site URL; no publication has been performed.
+[project]
+site_name = "dxf2gcode Development Documentation"
+site_description = "Development documentation for dxf2gcode"
+site_url = "https://dxf2gcode.github.io/dxf2gcode/"
+docs_dir = "docs"
+site_dir = ".tox/docs-site"
+nav = [
+  { "Home" = "index.md" },
+  { "Installation and startup" = "installation.md" },
+  { "Introduction" = "introduction.md" },
+  { "Documentation preview" = "documentation-preview.md" },
+]
+
+[project.theme]
+language = "en"
+logo = "assets/images/dxf2gcode_symbol.png"
+favicon = "assets/images/dxf2gcode_symbol.png"
+font = false
+
+# Zensical's own search is enabled by default. No MkDocs search plugin is needed.
+[project.validation]
+invalid_links = true
+invalid_link_anchors = true
