@@ -18,11 +18,59 @@ and deployment still require separate approval. No history rewrite is allowed.
   passed all four Ubuntu 24.04 jobs: Python 3.11/3.12/3.13 with PyQt5 and
   Python 3.11 with PyQt6, including native asset/translation generation.
 - The documentation branch was fast-forwarded to the CI-accepted develop
-  `e2ceed4`. Documentation, branding and documentation workflows are being
-  committed as three separate reviewed packages; publication is recorded below
-  after the push and documentation check. Old candidate HEAD/tree IDs are stale.
+  `e2ceed4`. The three reviewed packages were committed separately and pushed
+  through `6831a0b`. The [documentation check](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41328175268)
+  passed on GitHub. Old candidate HEAD/tree IDs are stale.
 - GitHub Pages remains inactive; the API returned 404 and the publication
   approval variable is absent. Nothing has been dispatched or deployed.
+
+### Confirmed publication record
+
+| Target | Commit | Purpose |
+| --- | --- | --- |
+| develop (also inherited by docs) | [5017e16](https://github.com/dxf2gcode/dxf2gcode/commit/5017e16) | Existing order/optimization and tool-change contracts, unchanged |
+| develop (also inherited by docs) | [a982969](https://github.com/dxf2gcode/dxf2gcode/commit/a982969) | Existing translation compilation and compact version display, unchanged |
+| develop | [1907185](https://github.com/dxf2gcode/dxf2gcode/commit/1907185) | Explicit compensation fixtures and Qt path assertions |
+| develop | [71eb6ac](https://github.com/dxf2gcode/dxf2gcode/commit/71eb6ac) | GitHub About/startup links, translations and version documentation |
+| develop | [a500df1](https://github.com/dxf2gcode/dxf2gcode/commit/a500df1) | Full GitHub matrix, local fast hook and CI planning |
+| develop | [e2ceed4](https://github.com/dxf2gcode/dxf2gcode/commit/e2ceed4) | Active-binding layout tests and isolated precision/workflow fixtures |
+| docs/zensical-prototype | [e2ba4b5](https://github.com/dxf2gcode/dxf2gcode/commit/e2ba4b5) | Four-page Zensical prototype and migration inventory/plan |
+| docs/zensical-prototype | [bbc8354](https://github.com/dxf2gcode/dxf2gcode/commit/bbc8354) | Versionless supplied branding and resource references |
+| docs/zensical-prototype | [6831a0b](https://github.com/dxf2gcode/dxf2gcode/commit/6831a0b) | Documentation checks, gated manual Pages workflow and DOC1 |
+
+Public branches: [develop](https://github.com/dxf2gcode/dxf2gcode/tree/develop)
+and [docs/zensical-prototype](https://github.com/dxf2gcode/dxf2gcode/tree/docs/zensical-prototype).
+This record-only update follows those feature commits; identify its own hash
+with `git log -1 --oneline`. The documentation/branding changes have **not** been
+merged into develop. No pull request, release, Pages activation or deployment
+was created. All pushes were normal, without force or history rewrite.
+
+The successful Linux matrix ran **831 tests in each of its four jobs**, including
+native UI/resource generation and translation compilation. The separate docs
+job installed the existing requirements and passed the strict build.
+
+### Index preservation and local artifacts
+
+Program commits were created in the separate `.tox/publish-program` develop
+worktree. Documentation commits used explicit alternate indexes. The only
+originally staged file, `.githooks/pre-commit`, was included in the authorized CI
+commit with its original blob and executable mode. The original main index and
+file hashes were backed up under `.tox/publish-handoff/`; no unknown staged or
+working-tree changes were incorporated.
+
+A final status assertion initially compared the committed docs HEAD with the
+deliberately retained old main index. It therefore reported misleading deleted
+files, and the first docs push was mistakenly allowed to proceed before that
+assertion was resolved. The exact three commit path lists were already correct.
+A fresh separate HEAD-based index subsequently verified **all working files
+match their committed content and no nonignored untracked files exist**, before
+the main index was reconciled. The working tree was then clean. No data was
+discarded; both earlier index backups remain available.
+
+The old preparation artifacts under `.tox/docs-handoff/` are historical review
+data, not instructions to recommit their trees. `.tox` worktrees/logs/indexes,
+Qt caches/QM files, local package artifacts and raw wiki snapshots are ignored
+and untracked. They were retained locally and excluded from the published trees.
 
 ### Changes and evidence
 

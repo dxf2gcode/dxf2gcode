@@ -722,8 +722,11 @@ Die vier englischen Seiten bleiben ein technischer Prototyp.
   korrigiert; keine dafür notwendige Änderung des produktiven Exportcodes.
 - [x] GitHub-Volltestmatrix für `e2ceed4` bestanden: Python 3.11/3.12/3.13
   mit PyQt5 und Python 3.11 mit PyQt6; siehe Lauf 41327575137 im Übergabebericht.
-- [ ] Dokumentation, Branding und Dokumentationsworkflows: drei getrennte
-  Pakete lokal vorbereitet; erst nach erfolgreicher Develop-CI committen/pushen.
+- [x] Dokumentation (`e2ba4b5`), Branding (`bbc8354`) und Dokumentationsworkflows
+  (`6831a0b`) getrennt committed und nach erfolgreicher Develop-CI auf
+  `origin/docs/zensical-prototype` veröffentlicht. Dokumentationscheck
+  [41328175268](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41328175268)
+  bestanden; Status-/Wiederaufnahmebericht als eigener Abschluss aktualisiert.
 - [ ] GitHub Pages weiterhin deaktiviert: manuell gesperrter Workflow vorbereitet,
   kein Deployment und keine GitHub-Einstellungsänderung. Geplante Adresse:
   `https://dxf2gcode.github.io/dxf2gcode/`.
