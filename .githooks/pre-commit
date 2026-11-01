@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+test_python=$(git config --local --get dxf2gcode.testPython || true)
+if [ -z "$test_python" ]; then
+    echo "Configure the fast-test hook with: python tools/install_hooks.py" >&2
+    exit 1
+fi
+
+# Some tests create independent repositories. Do not leak this commit's index
+# or repository location into their Git commands.
+unset $(git rev-parse --local-env-vars)
+export QT_QPA_PLATFORM=offscreen
+echo "Running fast regression tests before commit..." >&2
+exec "$test_python" tests/run_tests.py fast

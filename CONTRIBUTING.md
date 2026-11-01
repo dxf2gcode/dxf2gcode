@@ -42,6 +42,34 @@ Use relevant individual regression tests for the affected behavior. The
 full suite. Agree on full-suite runs, Debian/SSH validation, complete release/MSI
 builds or other extensive checks with a maintainer before starting them.
 
+GitHub Actions runs **Full regression tests** on pushes to `develop` and pull
+requests targeting `develop`, using Python 3.11/3.12/3.13 with PyQt5 and Python
+3.11 with PyQt6. This includes the fast checks; there is no duplicate fast CI
+workflow. The job generates UI/resources and compiles translations first.
+Manual runs remain available via **Actions → Full regression tests → Run workflow**.
+The restriction on agent-started local full-suite runs does not prohibit these
+automatic CI runs. Release/MSI builds remain separate.
+
+### Fast tests before every local commit
+
+After preparing the checkout and activating your test environment, enable the
+versioned pre-commit hook once for this checkout:
+
+```sh
+python tools/install_hooks.py
+```
+
+The installer records that interpreter in the local Git configuration and sets
+`core.hooksPath` to `.githooks`. It refuses to replace an existing custom hook
+configuration. Run the installer again from another environment to change the
+interpreter. It does not change global Git settings.
+
+The hook runs `tests/run_tests.py fast`; a failure blocks the commit. It does not
+install dependencies, generate assets or run the full suite. Missing UI/QM files
+must be prepared using the commands in [source/README.md](source/README.md).
+The tests check the working tree, so keep the staged changes aligned with the
+tested state. Each new clone needs its own hook activation.
+
 ## Translations and generated files
 
 When adding or changing GUI text, update all maintained translation catalogs

@@ -52,6 +52,12 @@ affected tests changes.
 
 ## Running the suite
 
+Every local commit should run the fast suite through the versioned pre-commit
+hook. Enable it once per checkout with `python tools/install_hooks.py` from the
+prepared test environment; see [hook setup](../CONTRIBUTING.md#fast-tests-before-every-local-commit).
+GitHub runs the full suite automatically on pushes to `develop` and pull
+requests targeting `develop`, and also offers a manual workflow run.
+
 Run the focused core checks from the **repository root** before submitting a
 change:
 

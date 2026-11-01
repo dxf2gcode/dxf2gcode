@@ -12,6 +12,10 @@
   user accepts a concrete proposal for that work.
 - Prefer focused, quick local checks for routine changes. Earlier one-off
   approvals do not authorize later lengthy builds or Debian test runs.
+- These limits apply to agent-started local validation. GitHub CI runs the
+  full suite on pushes to `develop` and pull requests targeting `develop`.
+- Before each local commit, run the fast suite through the pre-commit hook.
+  Do not run it a second time manually when the hook has already passed.
 
 ## GUI translations
 

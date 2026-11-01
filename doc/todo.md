@@ -22,7 +22,7 @@ werden vor der jeweiligen Implementierung geklärt.
 | 1 | [Exportablauf und Werkzeugwechsel](#1-exportablauf-und-werkzeugwechsel): P1 (R2 abgeschlossen) | ATC mit konkretem Maschinenprofil spezifizieren; Reihenfolgevertrag ist abgesichert |
 | 2 | [Schleppmesser](#2-schleppmesser): D1, danach gegebenenfalls D2 | Konturschluss zuerst untersuchen; optionale Wiederholung darf einen Fehler nicht verdecken |
 | 3 | [Konfiguration und Bedienung](#3-konfiguration-und-bedienung): K1 → K2, danach V1, U3, U5 | Übersetzungskontexte vor weiteren Konfigurationstexten bereinigen; die drei Bedienwünsche sind danach unabhängig auswählbar |
-| 4 | [Paketabnahme und Abnahmegrenzen](#4-paketabnahme-und-abnahmegrenzen): M1, A1 | Artefaktprüfungen an einem ausdrücklich freigegebenen Stand; verbleibende Abnahmegrenzen klar benennen |
+| 4 | [Paketabnahme und Abnahmegrenzen](#4-paketabnahme-und-abnahmegrenzen): CI1, M1, A1 | Automatische Build-/Download-Pipeline und Aufbewahrung einrichten; Paketabnahme und verbleibende Abnahmegrenzen berücksichtigen |
 | Zurückgestellt | [Bedienmodell und Teilkonturen](#5-zurückgestelltes-bedienmodell-und-teilkonturen): R3 mit R1b, anschließend Teilkontur-Erweiterung abstimmen | Kein Layerwechsel vor dem gemeinsamen Bedien-/Modell-/Persistenzentwurf |
 | Optional | [Zusätzliche Qt-Bindung](#6-optionale-zusätzliche-qt-bindung): Q1 | PySide6 nur bei konkretem Bedarf als eigener Schritt |
 
@@ -385,6 +385,63 @@ bei Texteingabe oder unbeabsichtigte Änderung des Canvas-Zooms.
 
 ## 4. Paketabnahme und Abnahmegrenzen
 
+### CI1 – Automatische Builds und Downloads auf GitHub
+
+**Vereinbarter Zielablauf, 01.11.2026:** Fertige Downloads als GitHub-Release-
+Assets ablegen, nicht in der Git-Historie. Temporäre Testpakete gehören zu
+Actions-Artefakten. Als offene Umsetzung vorgemerkt; diese Todo-Ergänzung
+startet keine Builds, Veröffentlichungen oder Löschungen.
+
+| Anlass | Prüfungen und Builds | Bereitstellung |
+| --- | --- | --- |
+| Lokaler Commit | Fast-Suite über den Pre-Commit-Hook | Keine Veröffentlichung |
+| Pull Request nach `develop` | Vollsuite und Paketprüfungen; Wheel und Windows-Pakete bauen | Temporäre Actions-Artefakte für 7 Tage; kein öffentliches Release aus dem PR |
+| Push auf `develop` | Vollsuite und Paketprüfungen desselben Commits | Bei Erfolg automatisch ein ausdrücklich gekennzeichnetes Develop-Prerelease |
+| Bewusst gesetzter Release-Tag | Vollsuite und Paketprüfungen | Reguläres Release mit dauerhaft aufbewahrten Downloads |
+
+- [ ] Als erste Downloadformate ein entpackbares Windows-x64-ZIP mit EXE und
+  allen benötigten Laufzeitdateien, einen MSI-Installer sowie ein Wheel
+  vorsehen. Windows-Pakete zunächst mit einer festgelegten Python-/Qt-
+  Kombination bauen; die breitere Testmatrix beibehalten. Ein zusätzlicher
+  EXE-Installer oder eine einzelne eigenständige EXE bleibt optional.
+- [ ] Builds und Tests eindeutig demselben Commit zuordnen. Öffentliche
+  Develop-Downloads erst nach erfolgreichen Tests und Paketprüfungen
+  aktualisieren. Bei Fehlern bleibt der letzte erfolgreich geprüfte Download
+  verfügbar. Veröffentlichungsrechte auf den dafür vorgesehenen Ablauf für
+  übernommene Develop-Stände beziehungsweise Release-Tags begrenzen.
+- [ ] Eindeutige Entwicklungsversionsnummern und Dateinamen mit Datum und
+  Commitkennung verwenden. Paketversion, eingebettete Herkunft, Infofenster
+  und Downloadbezeichnung müssen zusammenpassen. MSI-konforme Versionierung
+  einschließlich Unterscheidung mehrerer Builds am selben Tag festlegen;
+  die bisherige Ableitung `2026.10.30` ist wegen des zu großen ersten
+  MSI-Versionsfelds anzupassen.
+- [ ] Die fertigen Artefakte prüfen: Wheel in einer frischen Umgebung
+  installieren und mit `tests/verify_wheel.py` kontrollieren; Windows-Paket
+  auf Vollständigkeit, Programmstart und einen kleinen DXF-Export prüfen.
+  Generierte Qt-Dateien und alle gepflegten Übersetzungen mitliefern.
+- [ ] Unter GitHub Releases klar unterscheidbare Develop-Prereleases und
+  stabile Releases anbieten. Das stabile Release nicht durch einen
+  Entwicklungsstand als reguläres „Latest“-Release ersetzen. Downloads im
+  README verlinken und SHA-256-Prüfsummen mitliefern.
+- [ ] Aufbewahrung automatisieren: PR-/Actions-Testpakete nach **7 Tagen**
+  entfernen und nur die letzten **10 erfolgreich veröffentlichten Develop-
+  Stände** behalten. Alte Develop-Prereleases samt zugehörigen Assets gezielt
+  bereinigen; stabile Releases und deren Downloads dauerhaft erhalten.
+  Tag-Bereinigung gesondert auf die eigenen Develop-Tags begrenzen.
+- [ ] Speicherbelegung und tatsächlichen GitHub-Tarif vor Aktivierung prüfen.
+  Release-Assets, temporäre Actions-Artefakte und Caches getrennt behandeln;
+  kurzlebige CI-Kopien nicht unnötig zusätzlich zu den Releases aufbewahren.
+  Eine Codesignierung für öffentlich verteilte Windows-Pakete einplanen.
+
+**Abnahme:** Den Ablauf mit einem PR-Testpaket, einem erfolgreichen und einem
+fehlgeschlagenen Develop-Build sowie einem regulären Release nachvollziehen.
+Dateinamen, Commitbezug, Installierbarkeit und Downloads prüfen. Die
+Aufbewahrungslogik zunächst mit kontrollierten Testdaten beziehungsweise
+Vorschau der Löschkandidaten prüfen: Die letzten zehn Develop-Stände und alle
+stabilen Releases müssen erhalten bleiben. M1 bleibt die gesonderte
+Paket-/Debian-Abnahme; die Existenz eines erfolgreichen CI-Builds ersetzt sie
+nicht automatisch.
+
 <a id="m1"></a>
 
 ### M1 – Noch offene Paket-/Debian-Abnahme
@@ -598,6 +655,13 @@ Die lokalen Prüfungen ersetzen nicht die abschließende Gesamtprüfung. Lange
 Prüfungen werden nach der Freigaberegel der Teststrategie eingeplant.
 
 ### Prüfstrategie
+
+Die Beschränkung umfangreicher Prüfläufe betrifft die lokale Arbeit von Codex.
+Auf GitHub läuft die Vollsuite automatisch bei Push auf `develop` und Pull
+Requests nach `develop`; ein manueller Start bleibt möglich. Vor jedem lokalen
+Commit führt der Pre-Commit-Hook die Fast-Suite aus. Dieser verpflichtende Lauf
+ersetzt keine gezielten Tests während der Bearbeitung und muss nach bestandenem
+Hook nicht zusätzlich manuell wiederholt werden.
 
 Bei der jeweils beauftragten Umsetzung nur die passenden Prüfungen
 festlegen. Die oben genannten Fälle sind Anforderungen an diese spätere
