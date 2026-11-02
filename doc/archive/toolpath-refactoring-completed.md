@@ -26,11 +26,13 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 | R1a | Drag-and-drop-Absturzpfade und Qt5-/Qt6-Kompatibilität |
 | R2 | Sichtbare Exportreihenfolge, Treeview-Synchronisierung und gemeinsame GUI-/CLI-Optimierungsmodi |
 | K1 | Stabile Konfigurations-Übersetzungskontexte, Hilfetexte, Auswahlanzeigen und Maschinenmenüs in DE/FR/RU |
+| K2 | Geladene Profilwerte von Werkseinstellungen unterscheiden, schemaabhängige Tooltip-Vorgaben und GitHub-Dokumentationsverweise |
 | P1 | Verwaltete Werkzeugwechsel plus vereinbarter manueller LinuxCNC-Ablauf, Standard-Abgleich und G90-/G91-Referenzen; Maschinenprüfung beim Anwender |
 | K3 | Vierstellige Längeneingabe und Erhaltung genauer Originalwerte bis zur bewussten Bearbeitung; Profilformatierung bleibt maßgeblich |
 | B1 / B2 | Gemeinsame Bearbeitungszustände, sichtbare Konflikte alter Projekte und korrekte Geometrieprüfung für Bohren/Pocketing |
 | Versionsmetadaten | Provider, Build-Anbindung, Infofenster/G-Code-Kopf und Entfernung der alten Keywords; Paketabnahme M1 bleibt offen |
 | GUI-Branding | Native Windows-Symbolgrößen, Taskleistenkennung, kompakte Infofenster-Wortmarke und Dokumentationslink |
+| Vorschau und Neustart | Lead-/Überfahrtdetails über allen 2D-Konturbahnen; bestätigter Neustart nach dem Schließen der Konfiguration bei Start-Einstellungen |
 | Bereinigung | `.kilo/` und erzeugte `.coverage` entfernt |
 
 Die weiterhin geltenden [Architekturverträge](../architecture.md#weitergeltende-architekturverträge)
@@ -66,6 +68,44 @@ allen drei Sprachen geprüft. Die Darstellung
 wurde anhand gerenderter Dialoge geprüft. Das sind lokale Quellprüfungen,
 keine erneute Paket-/MSI- oder Maschinenabnahme.
 
+<a id="configuration-restart"></a>
+
+## Vorschau-Ebenen und Konfigurationsneustart (02.11.2026)
+
+Die 2D-Szene zeichnet Lead-in, Lead-out, Überfahrt und Warnmarker nach allen
+Konturbahnen im Vordergrund. Damit kann die blaue Bahn einer anderen Kontur
+diese Details nicht mehr überdecken. Schleppmesser-Überfahrten verwenden
+ebenfalls die Ausfahrtdarstellung. Auswahl und Sichtbarkeit bleiben maßgeblich;
+Plan und G-Code werden durch die Darstellungsreihenfolge nicht verändert.
+
+Maschinentyp und Importtoleranzen werden nach dem Übernehmen unmittelbar über
+die vorhandenen Neuladeabläufe angewendet. Der Maschinenwechsel erhält die
+Kontureinstellungen; geänderte Toleranzen lösen einen vollständigen Neuimport
+aus. Bei gemeinsamer Änderung genügt ein vollständiges Neuladen. Unabhängige
+Konfigurationsänderungen setzen keine im Optionen-Menü oder Projekt gewählten
+Maschinentypen und Toleranzen zurück.
+
+Änderungen an 2D/3D-Modus und Protokollierung zeigen nach dem Übernehmen einen
+übersetzten Neustart-Hinweis. Erst nach dem
+Schließen der Konfiguration wird ein neues Programm gestartet. Auf ausdrücklichen
+Nutzerwunsch öffnet es ein leeres Fenster, ohne aktuelle Zeichnung oder
+ungespeicherte Bearbeitungseinstellungen wiederherzustellen. Ein fehlgeschlagener
+Prozessstart lässt das bisherige Fenster geöffnet. Zurückgenommene Änderungen
+heben einen ausstehenden Neustart auf. Die unmittelbar umgerechnete
+Konfigurationseinheit trägt keinen Neustart-Hinweis mehr.
+
+Je **27 gezielte Tests unter Qt5 und Qt6 bestanden**. Sie prüfen echte Bildpixel bei überlappenden
+Konturen, Sichtbarkeit, Warnmarker, Überfahrt, Bestätigung und Zeitpunkt des
+Neustarts, fehlgeschlagenen Prozessstart, Quell-/Paketaufruf und Profilargumente.
+Der Prozessstart wird im Test ersetzt; ein Paketneustart wurde nicht praktisch
+ausgeführt. DE/FR/RU sind gepflegt und kompiliert; der deutsche Hinweis wurde
+zusätzlich bei 125 % gerendert und geprüft.
+
+Der ergänzte Hauptfenster-Test prüft Maschinenwechsel und Toleranzen ohne
+Neustart, geänderte Vorschau und Menüanzeigen, erhaltene Konturtiefen und
+genau einen Neuladevorgang bei gleichzeitigen Änderungen. Die Fast-Suite läuft
+vor dem abschließenden lokalen Commit über den Pre-Commit-Hook.
+
 <a id="k1"></a>
 
 ## K1 – Konfigurationsübersetzungen (02.11.2026)
@@ -89,8 +129,32 @@ Fokussierte Abnahme unter Qt5 und Qt6: aufgebaute und geöffnete Anwendungs- und
 Postprozessor-Dialoge mit echten QM-Translatoren, Labels, Hilfe, Auswahlwerte,
 unveränderte Konfigurationen, Menüaktionen und erneute Extraktion nach einem
 Dateiumzug. Der Test prüft auch, dass neue Schema-Hilfetexte nicht unbemerkt
-ohne extrahierbaren Quelleintrag bleiben. K2 (fachliche Standardwerte und
-„default“-Kennzeichnung) ist eine eigene offene Aufgabe.
+ohne extrahierbaren Quelleintrag bleiben. K2 wurde anschließend separat
+abgeschlossen, siehe unten.
+
+<a id="k2"></a>
+
+## K2 – Profilwerte und Werkseinstellungen (02.11.2026)
+
+Kurze Beschriftungen ersetzen den pauschalen Zusatz „(default)“. Die Felder
+zeigen weiterhin die gespeicherten Werte des geladenen Profils. Tooltips
+ermitteln die Vorgabe für neue Profile direkt aus dem Konfigurationsschema;
+ein Hinweis erklärt, dass neue Profile Werkseinstellungen erhalten und das
+aktive Profil nicht kopieren. Fachliche Vorgaben sind unverändert.
+
+Die Hilfen unterscheiden Startzustand, aktuelle Menüauswahl und Vorgaben
+für neu importierte Konturen. Die Optimierungsfreigabe gilt für neue Konturen;
+bestehende Freigaben bleiben erhalten. Frühere Wiki-Verweise in den gepflegten
+Konfigurationshilfen führen jetzt zur
+[GitHub-Dokumentation](https://dxf2gcode.github.io/dxf2gcode/).
+Ausführliche Erklärungen stehen beim Überfahren der Felder und Labels bereit.
+
+Je **13 fokussierte Tests unter Qt5 und Qt6 bestanden**: neue temporäre
+Profile über den Hauptfensterablauf, Speichern und erneutes Laden individueller
+Werte, Startmenüs, Dialoganzeige, Konturvorgaben und Dokumentationsverweise.
+DE/FR/RU-Kataloge sind gepflegt, kompiliert und mit echten Translatoren geprüft.
+Die Prüfungen zeigten keinen zusätzlichen Fehler beim Anlegen oder Laden.
+Dies ist keine Vollsuite- oder Paketabnahme.
 
 <a id="p1-linuxcnc"></a>
 

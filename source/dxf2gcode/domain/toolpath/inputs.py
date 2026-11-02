@@ -82,6 +82,16 @@ class MachiningSettings:
     overcut_length: float = 0.0
     lead_side: int = 1
     drag_ramp_length: float = 0.0
+    drag_swivel_depth: float = -0.1
+    drag_extra_pass: bool = False
+    drag_alternate: bool = False
+    drag_exit_length: float = 1.5
+    drag_start_angle: float = 0.0
+    drag_angle: float = 0.3490658503988659
+    drag_entry_mode: str = 'fixed'
+    drag_alignment_length: float = 0.0
+    drag_return: bool = False
+    tool_number: int = 0
     point_tolerance: float = 0.001
 
 
@@ -110,6 +120,7 @@ class PlanningState:
     feed: float = 0.0
     z_word: float = 0.0
     last_absolute_z: float = 0.0
+    knife_heading: Optional[float] = None
 
 
 @dataclass(frozen=True)

@@ -20,6 +20,8 @@ class ToolpathGCodeExporter:
                 text = postprocessor.lin_pol_z(args[0])
             elif kind == "linear_xy":
                 text = postprocessor.lin_pol_xy(Point(*args[0]), Point(*args[1]))
+            elif kind == "linear_xyz":
+                text = postprocessor.lin_pol_xyz(Point(*args[0]), Point(*args[1]), args[3])
             elif kind == "arc":
                 direction, start, end, sa, ea, radius, center, ij, sweep = args
                 text = postprocessor.lin_pol_arc(
@@ -44,4 +46,6 @@ class ToolpathGCodeExporter:
             else:
                 raise ValueError("unsupported toolpath action: %s" % kind)
             output.append(text)
+        postprocessor.knife_heading = plan.knife_heading
+        postprocessor.knife_tool = plan.knife_tool
         return "".join(output)

@@ -322,6 +322,8 @@ class LayerContent(object):
                 shape.tool_override = shape.tool_override.scaled(scale)
             shape.axis3_start_mill_depth *= scale
             shape.axis3_slice_depth *= scale
+            if getattr(shape, '_drag_swivel_depth', None) is not None:
+                shape.drag_swivel_depth *= scale
             shape.axis3_mill_depth *= scale
             shape.milling_offset *= scale
             shape.f_g1_plane *= scale

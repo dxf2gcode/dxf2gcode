@@ -39,6 +39,8 @@ class ToolpathPlan:
     actions: tuple = ()
     tool_radius: float = 0.0
     compensation_space: str = "tool_center"
+    knife_heading: Optional[float] = None
+    knife_tool: Optional[Tuple[int, float]] = None
 
 
 @dataclass(frozen=True)

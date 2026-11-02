@@ -320,7 +320,7 @@ def get_lead_out_mode(layer):
 
 def validate_lead_move(tool_diameter, lead_radius, lead_length,
                        lead_in_mode=LEAD_OFF, lead_out_mode=LEAD_OFF,
-                       lead_in_compensated=True):
+                       lead_in_compensated=True, knife_tip_path=False):
     """
     The central validation of the lead in / lead out parameters.
 
@@ -341,6 +341,8 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
     The lead out never needs the length for 'radius'.
 
     @param tool_diameter: the diameter of the tool
+    @param knife_tip_path: validate leads on the knife tip path, without a
+            milling cutter envelope; the stored diameter must remain positive
     @param lead_radius: the common radius at the workpiece
     @param lead_length: the common length of the straight part
     @param lead_in_mode: the method of the lead in
@@ -370,7 +372,7 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
         # Without a valid tool radius nothing else can be checked.
         return (False, errors, warnings)
 
-    tool_radius = tool_diameter / 2.0
+    tool_radius = 0.0 if knife_tip_path else tool_diameter / 2.0
 
     modes = [lead_in_mode, lead_out_mode]
 

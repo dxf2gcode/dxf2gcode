@@ -145,9 +145,15 @@ class ConfigWindow(QDialog):
         #Layout
         list_widget = QListWidget(parent)
         self.tab_window = QStackedWidget()
+        from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QScrollArea
         for label, widget in self.list_items.items():
             list_widget.addItem(label)
-            self.tab_window.addWidget(widget)
+            page = QScrollArea()
+            page.setWidgetResizable(True)
+            page.setFrameShape(QFrame.Shape.NoFrame)
+            page.setWidget(widget)
+            self.list_items[label] = page
+            self.tab_window.addWidget(page)
         # Translated section names must remain readable in the splitter.
         list_widget.setMinimumWidth(
             max(0, list_widget.sizeHintForColumn(0)) + 2 * list_widget.frameWidth()
@@ -164,6 +170,9 @@ class ConfigWindow(QDialog):
         splitter = QSplitter()
         splitter.addWidget(list_widget)
         splitter.addWidget(tab_widget)
+        splitter.setStretchFactor(0, 0)
+        splitter.setStretchFactor(1, 1)
+        splitter.setSizes([list_widget.minimumWidth(), max(400, 1000-list_widget.minimumWidth())])
 
         #Layout the 2 above widgets vertically
         v_box = QVBoxLayout(self)
@@ -177,6 +186,7 @@ class ConfigWindow(QDialog):
 
         #No modification in progress for now
         self.setEditInProgress(False)
+        self.resize(1000, 700)
 
 
     def keyPressEvent(self, event):
@@ -760,11 +770,53 @@ class CfgBase(QWidget):
     """
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self._description = ''
+        self._hover_hint = ''
+        self._default_hint = ''
+
+    def setDescription(self, text):
+        """Keep detailed explanations out of the row's size hint."""
+        self._description = text
+        self._refresh_hover_help()
+        return self
+
+    def setDefaultHint(self, text):
+        self._default_hint = text
+        self._refresh_hover_help()
+        return self
+
+    def setWhatsThis(self, text):
+        QWidget.setWhatsThis(self, text)
+        self._refresh_hover_help()
+
+    def _refresh_hover_help(self):
+        parts = [self._description]
+        if self.whatsThis() and self.whatsThis() != self._description:
+            parts.append(self.whatsThis())
+        text = '\n\n'.join(filter(None, parts))
+        if self._hover_hint:
+            text = '\n\n'.join(filter(None, (text, self._hover_hint)))
+        if self._default_hint:
+            text = '\n\n'.join(filter(None, (text, self._default_hint)))
+        QWidget.setToolTip(self, text)
+        for name in ('checkbox', 'spinbox', 'lineedit', 'textedit', 'combobox', 'label'):
+            control = getattr(self, name, None)
+            if control is not None:
+                control.setToolTip(text or (control.currentText() if name == 'combobox' else ''))
 
     def setLayout(self, layout=None, indent=True):
         layout.setSpacing(2)  # Don't use too much space, it makes the option window too big otherwise
         layout.setContentsMargins(10 if indent else 0, 5, 1, 1)
+        if isinstance(layout, QHBoxLayout) and hasattr(self, 'label'):
+            # Give the caption real space before wrapping; empty stretches
+            # otherwise take that space while the editor sits at the right.
+            for index in reversed(range(layout.count())):
+                if layout.itemAt(index).spacerItem() is not None:
+                    layout.takeAt(index)
+            layout.setStretchFactor(self.label, 1)
         QWidget.setLayout(self, layout)
+        for label in self.findChildren(QLabel):
+            label.setWordWrap(True)
 
 
 class CfgDummy(CfgBase):
@@ -790,6 +842,19 @@ class CfgSubtitle(CfgDummy):
         layout.addWidget(separator)
 
         self.setLayout(layout, False)
+        if text is not None:
+            layout.itemAt(0).widget().setWordWrap(False)
+
+
+class CfgNote(CfgDummy):
+    """A wrapping page introduction without a persisted configuration value."""
+
+    def __init__(self, text, parent=None):
+        super().__init__(parent)
+        self.label = QLabel(text, self)
+        layout = QVBoxLayout()
+        layout.addWidget(self.label)
+        self.setLayout(layout)
 
 
 class CfgCheckBox(CfgBase):
@@ -1130,7 +1195,9 @@ class CfgListEdit(CfgLineEdit):
         @param size_min: min length (int)
         @param size_max: max length (int)
         """
-        CfgLineEdit.__init__(self, text + " (use '" + separator + "' as separator)", size_max, parent)
+        CfgLineEdit.__init__(self, text, size_max, parent)
+        self._hover_hint = self.tr("Separate entries with '%s'.") % separator
+        self._refresh_hover_help()
         #Store the separator so that we can return a list of strings instead of a single string
         self.separator = separator
 
@@ -1262,6 +1329,9 @@ class CfgComboBox(CfgBase):
 
         self.combobox = QComboBox(parent)
         self.combobox.setMinimumWidth(200)  # Provide better alignment with other items
+        self.combobox.setMinimumContentsLength(16)
+        self.combobox.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.combobox.currentTextChanged.connect(lambda _text: self._refresh_hover_help())
 
         layout = QHBoxLayout(parent)
         layout.addWidget(self.label)
@@ -1280,10 +1350,13 @@ class CfgComboBox(CfgBase):
             # The label is only shown: the value is stored in the
             # configuration file.
             self.combobox.addItem(self.item_labels.get(item, item), item)
+            self.combobox.setItemData(self.combobox.count()-1, self.item_labels.get(item, item),
+                                     QtCore.Qt.ItemDataRole.ToolTipRole)
 
         if spec['comment']:
             self.setWhatsThis(spec['comment'])
         self.combobox.blockSignals(False)
+        self._refresh_hover_help()
 
     def setChangeSlot(self, changeNotifyer):
         """
@@ -1321,6 +1394,7 @@ class CfgComboBox(CfgBase):
             index = self.combobox.findText(value) #Compatible with both PyQt4 and PyQt5
         self.combobox.setCurrentIndex(index)
         self.combobox.blockSignals(False)
+        self._refresh_hover_help()
 
 
 class CfgTable(QWidget):
@@ -1632,14 +1706,34 @@ class CfgTableToolParameters(CfgTable):
     Subclassed CfgTableWidget to use muli-line edits for storing the custom GCODE.
     """
 
-    def __init__(self, text, columns = None, parent = None):
+    def __init__(self, text, columns = None, parent = None, knife_offset=False):
         """
         Initialization of the CfgTableWidget class (editable 2D table for storing the tools table).
         @param text: text string associated with the table
         @param columns: string list containing all the columns names
         """
+        self.knife_mode = knife_offset if callable(knife_offset) else lambda: knife_offset
+        self.knife_offset = self.knife_mode()
         self.max_tool_number = 0
         CfgTable.__init__(self, text, columns, parent)
+
+    def setSpec(self, spec):
+        super().setSpec(spec)
+        if self.knife_offset and 'diameter' in self.keys:
+            self.tablewidget.horizontalHeaderItem(self.keys.index('diameter')).setText(
+                self.tr("Knife offset"))
+
+    def showEvent(self, event):
+        mode = self.knife_mode()
+        if mode != self.knife_offset:
+            values = self.getValue()
+            self.knife_offset = mode
+            self.tablewidget.setHorizontalHeaderLabels(self.keys)
+            if mode and 'diameter' in self.keys:
+                self.tablewidget.horizontalHeaderItem(self.keys.index('diameter')).setText(
+                    self.tr("Knife offset"))
+            self.setValue(values)
+        super().showEvent(event)
 
     def setCellValue(self, line, column, value):
         """
@@ -1654,6 +1748,9 @@ class CfgTableToolParameters(CfgTable):
             spinbox.setMinimum(-1000000000 if self.keys[column] == 'milling_offset' else 0)
             spinbox.setMaximum(1000000000) #Default value is 99
             computed_value = toFloat(value)[0]  # Convert the value to float
+            if self.knife_offset and self.keys[column] == 'diameter':
+                spinbox.setDecimals(4)
+                computed_value /= 2
             spinbox.setValue(computed_value)
         else:
             #tool number is an integer
@@ -1690,7 +1787,8 @@ class CfgTableToolParameters(CfgTable):
         widget = self.tablewidget.cellWidget(row, column)
         if widget is None:
             return None
-        return widget.value()
+        value = widget.value()
+        return value * 2 if self.knife_offset and name == 'diameter' else value
 
     def validateValue(self):
         """
@@ -1748,9 +1846,11 @@ class CfgTableToolParameters(CfgTable):
             diameter = self._column_value(i, 'diameter')
             radius = self._column_value(i, 'lead_radius')
             length = self._column_value(i, 'lead_length')
+            # Knife leads describe the tip path, not a milling cutter envelope.
             ok, errors, warnings = validate_lead_move(diameter, radius, length,
                                                        lead_in_mode,
-                                                       lead_out_mode)
+                                                       lead_out_mode,
+                                                       knife_tip_path=self.knife_mode())
             for field, message in errors:
                 result_bool = False
                 result_string += str(self.tr(
@@ -1788,6 +1888,6 @@ class CfgTableToolParameters(CfgTable):
                     continue
                 value = value.value()
                 if sub_key is not None:
-                    result_dict[key][sub_key] = value
+                    result_dict[key][sub_key] = (value * 2 if self.knife_offset and sub_key == 'diameter' else value)
 
         return result_dict

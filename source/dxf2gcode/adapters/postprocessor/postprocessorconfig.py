@@ -40,7 +40,7 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 import logging
 logger = logging.getLogger("PostPro.PostProcessorConfig")
 
-SUPPORTED_CONFIGS = [8, 8.1, 8.2]
+SUPPORTED_CONFIGS = [8, 8.1, 8.2, 8.3]
 CONFIG_VERSION = SUPPORTED_CONFIGS[-1]
 
 """
@@ -123,6 +123,7 @@ POSTPRO_SPEC = str('''
     rap_pos_depth = string(default=G0 Z%ZE %nl)
     # This will be used for shape cutting.
     lin_mov_plane = string(default= G1 X%XE Y%YE%nl)
+    lin_mov_xyz = string(default= G1 X%XE Y%YE Z%ZE%nl)
     # This will be used for shape cutting.
     lin_mov_depth = string(default= G1 Z%ZE%nl)
     # This will be used to do the drilling of Dill Geometry (for each slice depth)

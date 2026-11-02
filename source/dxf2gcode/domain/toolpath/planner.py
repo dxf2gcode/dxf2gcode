@@ -5,7 +5,7 @@ from dxf2gcode.domain.project.machining import machining_conflict
 from dxf2gcode.domain.toolpath.movements import MovementPlan
 from dxf2gcode.domain.toolpath.plan import ToolpathPlanningResult
 from dxf2gcode.domain.toolpath.strategies.contour import ContourStrategy
-from dxf2gcode.domain.toolpath.strategies.drag_knife import DragKnifeStrategy
+from dxf2gcode.domain.toolpath.strategies.knife_passes import KnifePassStrategy
 from dxf2gcode.domain.toolpath.strategies.simple_milling import SimpleMillingStrategy
 
 
@@ -19,7 +19,6 @@ class ToolpathPlanner:
     def __init__(self, exit_geometry=None):
         self._simple_milling = SimpleMillingStrategy()
         self._contour = ContourStrategy(exit_geometry)
-        self._drag_knife = DragKnifeStrategy()
 
     def plan(self, request):
         if request.literal is not None:
@@ -36,5 +35,10 @@ class ToolpathPlanner:
         if self._simple_milling.supports(request):
             return ToolpathPlanningResult(self._simple_milling.plan(request))
         if request.settings.machine_type == "drag_knife":
-            return ToolpathPlanningResult(self._drag_knife.plan(request))
+            try:
+                return ToolpathPlanningResult(KnifePassStrategy().plan(request))
+            except ValueError as error:
+                return ToolpathPlanningResult(None, (diagnostic(
+                    request, "knife.invalid", START_ERROR,
+                    request.shape_number, error.args[0]),))
         return self._contour.plan(request)

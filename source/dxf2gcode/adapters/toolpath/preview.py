@@ -36,6 +36,10 @@ def preview_result(shape, postprocessor=None, layers=None):
         g.config.vars.Depth_Coordinates['axis3_retract'],
         diameter_factor=2 if g.config.machine_type == 'lathe' else 1)
     dialect.breaks = Breaks(layers) if layers is not None else getattr(postprocessor, "breaks", None)
+    if (g.config.machine_type == 'drag_knife'
+            and getattr(g.config.vars.Drag_Knife_Options, 'entry_mode', 'fixed') == 'previous'
+            and layers is not None):
+        _set_previous_knife_state(shape, layers, dialect)
     request = ShapePlanningInputs(lambda: g.config).request(shape, dialect)
     result = ToolpathPlanner(exit_geometry).plan(request)
     shape.toolpath_plan = result.plan
@@ -43,6 +47,39 @@ def preview_result(shape, postprocessor=None, layers=None):
     shape.stmove.exit_error = next((item.message for item in result.diagnostics
                                    if item.code == "lead.invalid_exit"), "")
     return result
+
+
+def _set_previous_knife_state(shape, layers, dialect):
+    """Read the immediate predecessor in export order; never redraw the route.
+
+    Its final direction is independent of its assumed entry angle. Planning
+    just that predecessor avoids recursively planning an entire prefix.
+    """
+    previous = None
+    layer_iter = layers.non_break_layer_iter() if hasattr(layers, 'non_break_layer_iter') else layers
+    found = False
+    for layer in layer_iter:
+        for index in getattr(layer, 'exp_order_complete', ()):
+            candidate = layer.shapes[index]
+            if candidate is shape:
+                found = True
+                break
+            previous = candidate
+        if found:
+            break
+    if not found or previous is None:
+        return
+    from dxf2gcode.domain.toolpath.customgcode import CustomGCode
+    if isinstance(previous, CustomGCode):
+        return
+    if getattr(previous, 'stmove', None) is None:
+        from dxf2gcode.adapters.toolpath.preparation import prepare_shape
+        prepare_shape(previous, build_preview=False)
+    request = ShapePlanningInputs(lambda: g.config).request(previous, dialect)
+    result = ToolpathPlanner(exit_geometry).plan(request)
+    if result.plan is not None and not result.has_errors:
+        dialect.knife_heading = result.plan.knife_heading
+        dialect.knife_tool = result.plan.knife_tool
 
 
 def preview_plan(shape):

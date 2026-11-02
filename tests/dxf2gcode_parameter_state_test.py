@@ -279,6 +279,37 @@ def _make_shape(nr, tool_nr=1, **values):
 class TestParameterDisplay(unittest.TestCase):
     """Display of standard, individual and mixed values (real path)."""
 
+    def test_knife_swivel_edit_mixed_selection_and_return_to_profile_default(self):
+        original_mode = g.config.machine_type
+        original_depth = g.config.vars.Drag_Knife_Options.swivel_depth
+        try:
+            g.config.machine_type = 'drag_knife'
+            g.config.vars.Drag_Knife_Options.swivel_depth = -.03
+            self.a.drag_swivel_depth = -.04
+            self.b.drag_swivel_depth = -.08
+            self.harness.select([self.a, self.b])
+            widget = self.harness.th.ui.knifeSwivelLineEdit
+            self.assertEqual(widget.text(), self.harness.th.tr('Different'))
+            self.assertFalse(widget.isHidden())
+            widget.setText('-.06')
+            widget.setModified(True)
+            widget.editingFinished.emit()
+            self.assertEqual((self.a.drag_swivel_depth, self.b.drag_swivel_depth), (-.06, -.06))
+            self.harness.select([self.a])
+            widget.clear()
+            widget.setModified(True)
+            widget.editingFinished.emit()
+            self.assertIsNone(self.a._drag_swivel_depth)
+            self.assertEqual(self.a.drag_swivel_depth, -.03)
+            self.assertEqual(self.b.drag_swivel_depth, -.06)
+            self.assertEqual(widget.text(), '-0.03')
+            g.config.machine_type = 'milling'
+            self.harness.th.updateToolParameters()
+            self.assertTrue(widget.isHidden())
+        finally:
+            g.config.machine_type = original_mode
+            g.config.vars.Drag_Knife_Options.swivel_depth = original_depth
+
     @staticmethod
     def _text_color(widget):
         from dxf2gcode.presentation.qt.qt_compat.QtGui import QPalette

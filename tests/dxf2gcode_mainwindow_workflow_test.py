@@ -15,6 +15,33 @@ _REPO_DIR = os.path.dirname(_TEST_DIR)
 class TestMainWindowWorkflow(unittest.TestCase):
     """Exercise load, canvas plot, tree edit, preview, and export together."""
 
+    def test_machine_and_tolerance_config_changes_reload_without_restart(self):
+        with tempfile.TemporaryDirectory(prefix='d2g_live_config_') as folder:
+            env = os.environ.copy()
+            env.update(QT_QPA_PLATFORM='offscreen', D2G_WORKFLOW_TEMP=folder)
+            result = subprocess.run([sys.executable, __file__, '--worker', '--live-config-worker'],
+                cwd=folder, env=env, capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stdout.decode('utf-8', errors='replace') +
+                             result.stderr.decode('utf-8', errors='replace'))
+
+    def test_restart_changes_wait_for_config_close_and_handle_launch_failure(self):
+        with tempfile.TemporaryDirectory(prefix='d2g_restart_') as folder:
+            env = os.environ.copy()
+            env.update(QT_QPA_PLATFORM='offscreen', D2G_WORKFLOW_TEMP=folder)
+            result = subprocess.run([sys.executable, __file__, '--worker', '--restart-worker'],
+                cwd=folder, env=env, capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stdout.decode('utf-8', errors='replace') +
+                             result.stderr.decode('utf-8', errors='replace'))
+
+    def test_profile_defaults_reach_startup_actions_and_new_profiles(self):
+        with tempfile.TemporaryDirectory(prefix='d2g_profile_defaults_') as folder:
+            env=os.environ.copy()
+            env.update(QT_QPA_PLATFORM='offscreen',D2G_WORKFLOW_TEMP=folder)
+            result=subprocess.run([sys.executable,__file__,'--worker','--profile-default-worker'],
+                                  cwd=folder,env=env,capture_output=True,timeout=30)
+            self.assertEqual(result.returncode,0,result.stdout.decode('utf-8',errors='replace')+
+                             result.stderr.decode('utf-8',errors='replace'))
+
     def test_translated_machine_menu_keeps_the_correct_actions(self):
         with tempfile.TemporaryDirectory(prefix="d2g_translated_menu_") as temp_dir:
             env = os.environ.copy()
@@ -123,6 +150,9 @@ def _run_mainwindow_workflow():
     fold_worker = "--fold-worker" in sys.argv
     startpoint_worker = "--startpoint-worker" in sys.argv
     translation_worker = "--translation-worker" in sys.argv
+    profile_worker = '--profile-default-worker' in sys.argv
+    restart_worker = '--restart-worker' in sys.argv
+    live_config_worker = '--live-config-worker' in sys.argv
     if fold_worker:
         import faulthandler
         faulthandler.dump_traceback_later(4, repeat=True)
@@ -159,6 +189,179 @@ def _run_mainwindow_workflow():
     app = QApplication([])
     window = app_module.MainWindow(app)
     g.window = window
+    if live_config_worker:
+        from unittest.mock import patch
+        window.filename = os.path.join(_REPO_DIR, 'dxf', 'drag_knive_test.dxf')
+        assert window.load()
+        window.shapes[0].axis3_mill_depth = -.37
+        form = window.config_window
+        fields = form.cfg_window_def
+        with patch.object(app_module.QMessageBox, 'information') as info, \
+                patch.object(QtCore.QProcess, 'startDetached') as launch, \
+                patch.object(window.d2g, 'small_reload', wraps=window.d2g.small_reload) as small, \
+                patch.object(window.d2g, 'reload', wraps=window.d2g.reload) as full:
+            form.show()
+            fields['General']['machine_type'].setValue('drag_knife')
+            form.applyChanges()
+            assert g.config.machine_type == 'drag_knife'
+            assert window.ui.actionDragKnife.isChecked()
+            assert not window.ui.knifeSwivelLineEdit.isHidden()
+            assert abs(window.shapes[0].axis3_mill_depth + .37) < 1e-9
+            assert small.call_count == 1
+            assert full.call_args.args == (False,)
+            assert info.call_count == launch.call_count == 0
+            assert not window._restart_pending
+            form.applyChanges()
+            assert small.call_count == full.call_count == 1
+            # A combined mode/tolerance change only requires one full reload.
+            fields['General']['machine_type'].setValue('milling')
+            fields['Import_Parameters']['point_tolerance'].setValue(.002)
+            fields['Import_Parameters']['fitting_tolerance'].setValue(.003)
+            form.applyChanges()
+            assert g.config.machine_type == 'milling'
+            assert window.ui.actionMilling.isChecked()
+            assert window.ui.knifeSwivelLineEdit.isHidden()
+            assert g.config.point_tolerance == .002
+            assert g.config.fitting_tolerance == .003
+            assert abs(window.shapes[0].axis3_mill_depth + .37) < 1e-9
+            assert small.call_count == 1
+            assert full.call_count == 2
+            assert full.call_args.args == ()
+            # An unrelated saved setting must not reset a mode or tolerance
+            # selected for the current drawing through the Options menu.
+            window.ui.actionDragKnife.trigger()
+            g.config.point_tolerance = .004
+            previous = full.call_count
+            fields['General']['show_scale_bar'].setValue(not fields['General']['show_scale_bar'].getValue())
+            form.applyChanges()
+            assert g.config.machine_type == 'drag_knife'
+            assert g.config.point_tolerance == .004
+            assert full.call_count == previous
+            form.close()
+            app.processEvents()
+            assert info.call_count == launch.call_count == 0
+        window.close()
+        return
+    if restart_worker:
+        from unittest.mock import patch
+        from pathlib import Path
+        form = window.config_window
+        fields = form.cfg_window_def
+        window.show()
+        window.filename = 'drawing-that-must-not-reopen.dxf'
+        with patch.object(app_module.QMessageBox, 'information') as info, \
+                patch.object(app_module.QMessageBox, 'critical') as error, \
+                patch.object(QtCore.QProcess, 'startDetached', return_value=(False, 0)) as launch:
+            form.show()
+            fields['General']['mode3d'].setValue(True)
+            form.applyChanges()
+            assert window._restart_pending
+            assert g.config.mode3d is False
+            assert info.call_count == 1
+            assert 'empty window' in info.call_args.args[2]
+            assert launch.call_count == 0
+            # Applying unchanged values does not repeat the same notice.
+            form.applyChanges()
+            assert info.call_count == 1
+            assert launch.call_count == 0
+            form.close()
+            app.processEvents()
+            assert launch.call_count == 1
+            assert error.call_count == 1
+            assert window.isVisible()
+            assert not window._restart_scheduled
+            program, arguments, cwd = launch.call_args.args
+            assert 'drawing-that-must-not-reopen.dxf' not in arguments
+            assert not any(arg in ('--quiet', '--export', '-q', '-e', '-o') for arg in arguments)
+            assert Path(arguments[0]).name == 'dxf2gcode.py'
+            # Reverting saved restart changes cancels the pending restart.
+            form.show()
+            fields['General']['mode3d'].setValue(False)
+            form.applyChanges()
+            assert not window._restart_pending
+            form.close()
+            app.processEvents()
+            assert launch.call_count == 1
+            # Live settings and discarded edits never request a restart.
+            form.show()
+            fields['General']['show_scale_bar'].setValue(not fields['General']['show_scale_bar'].getValue())
+            form.applyChanges()
+            assert info.call_count == 1
+            for units in ('in', 'mm'):
+                fields['General']['tool_units'].setValue(units)
+                form.applyChanges()
+                assert g.config.tool_units == units
+                assert info.call_count == 1
+                assert not window._restart_pending
+            fields['General']['mode3d'].setValue(True)
+            form.discardChanges()
+            form.close()
+            app.processEvents()
+            assert launch.call_count == 1
+            form.show()
+            fields['General']['mode3d'].setValue(True)
+            fields['Logging']['console_loglevel'].setValue('DEBUG')
+            form.applyChanges()
+            assert info.call_count == 2
+            notice = info.call_args.args[2]
+            assert all(name in notice for name in ('3D display', 'Logging'))
+            assert g.config.mode3d is False
+            assert launch.call_count == 1
+            # Packaged applications relaunch their executable, retain the
+            # profile and only close the current process after launch succeeds.
+            launch.return_value = (True, 1234)
+            with patch.object(sys, 'frozen', True, create=True), \
+                    patch.object(app_module, 'active_config_profile_suffix', return_value='knife'), \
+                    patch.object(window, 'close') as close, patch.object(app, 'quit') as quit_app:
+                form.close()
+                app.processEvents()
+                assert launch.call_count == 2
+                assert launch.call_args.args[0] == sys.executable
+                assert launch.call_args.args[1] == ['--cfg', 'knife']
+                assert close.call_count == quit_app.call_count == 1
+        window._restart_pending = False
+        window.close()
+        return
+    if profile_worker:
+        from unittest.mock import patch
+        from pathlib import Path
+        defaults=dict(show_disabled_paths=True,live_update_export_route=False,
+                      split_line_segments=False,automatic_cutter_compensation=False,
+                      machine_type='milling')
+        actions=dict(show_disabled_paths=window.ui.actionShowDisabledPaths,
+                     live_update_export_route=window.ui.actionLiveUpdateExportRoute,
+                     split_line_segments=window.ui.actionSplitLineSegments,
+                     automatic_cutter_compensation=window.ui.actionAutomaticCutterCompensation)
+        for key,action in actions.items():
+            assert action.isChecked() is defaults[key],key
+        assert window.ui.actionMilling.isChecked()
+        individual={key:(not value if isinstance(value,bool) else 'lathe') for key,value in defaults.items()}
+        g.config.var_dict['General'].update(individual)
+        g.config.update_config()
+        g.config.save_varspace()
+        original=g.config
+        file_before=Path(original.filename).read_bytes()
+        old_folder=g.folder
+        fresh_folder=os.path.join(temp_dir,'fresh-profile')
+        with patch.object(app_module,'config_profile_folder',return_value=fresh_folder):
+            assert window.initializeConfigProfile('fresh')
+        assert g.folder==old_folder and g.config is original
+        assert Path(original.filename).read_bytes()==file_before
+        with patch.object(g,'folder',fresh_folder):
+            fresh=MyConfig()
+            for key,value in defaults.items():
+                assert fresh.var_dict['General'][key]==value,key
+        g.config=MyConfig()
+        window.connectToolbarToConfig(block_signals=True)
+        for key,action in actions.items():
+            assert action.isChecked() is individual[key],key
+        assert g.config.machine_type=='lathe' and window.ui.actionLathe.isChecked()
+        window.config_window.setValuesFromConfig(window.config_window.cfg_window_def,
+                                                g.config.var_dict,g.config.var_dict.configspec)
+        for key,value in individual.items():
+            assert window.config_window.cfg_window_def['General'][key].getValue()==value,key
+        window.close()
+        return
     assert window.windowTitle() == "Dxf2gcode"
     required_icon_sizes = {16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80, 96, 128, 256}
     for widget in (window, window.config_window):

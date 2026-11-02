@@ -100,7 +100,7 @@ class UpdateShapeParameters:
     """Apply validated machining parameter values to selected shapes."""
 
     PARAMETERS = frozenset((
-        "axis3_slice_depth", "f_g1_plane", "f_g1_depth",
+        "axis3_slice_depth", "drag_swivel_depth", "f_g1_plane", "f_g1_depth",
         "axis3_start_mill_depth", "axis3_mill_depth", "milling_offset",
     ))
 

@@ -351,6 +351,16 @@ class MyGraphicsScene(QGraphicsScene):
     All performed plotting functions should be defined here.
     @sideeffect: None
     """
+    def drawForeground(self, painter, rect):
+        """Paint entry/exit details above toolpaths of every contour."""
+        super().drawForeground(painter, rect)
+        for item in self.items(rect):
+            if isinstance(item, StMoveGUI) and item.isVisible():
+                painter.save()
+                painter.setWorldTransform(item.sceneTransform(), True)
+                item.paint_details(painter)
+                painter.restore()
+
     def __init__(self):
         QGraphicsScene.__init__(self)
 
@@ -951,7 +961,7 @@ class StMoveGUI(QGraphicsItem):
         for segment in plan_preview_segments(self.plan, dimensions=2):
             role = segment.role
             target = (self._lead_in_path if role == 'lead_in' else
-                      self._exit_path if role == 'lead_out' else
+                      self._exit_path if role in ('lead_out', 'overcut') else
                       self._pocket_path if role == 'pocket' else
                       self._tab_path if role == 'tab' else self._comp_path)
             if role == 'rapid':
@@ -1120,9 +1130,8 @@ class StMoveGUI(QGraphicsItem):
     def paint(self, painter, option, widget=None):
         """
         Method triggered on every paint event (including zoom/drag).
-        Draw G41/G42 compensation lines (thick solid), pocket milling
-        lines (thin solid), rapid moves (dotted) and the preview of the
-        lead out / overcut (dashed).
+        Draw compensation, pocket and rapid paths. Entry/exit details are
+        painted afterwards by the scene foreground, across all contours.
         """
         if (self._comp_path.isEmpty() and self._pocket_path.isEmpty()
                 and not self._rapid_paths and self._exit_path.isEmpty()
@@ -1137,6 +1146,14 @@ class StMoveGUI(QGraphicsItem):
 
         painter.setPen(self.PEN_POCKET_LINE)
         painter.drawPath(self._pocket_path)
+
+        # Positioning is below the entry/exit details in the scene foreground.
+        for rp in self._rapid_paths:
+            painter.setPen(self.PEN_RAPID_MOVE)
+            painter.drawPath(rp)
+
+    def paint_details(self, painter):
+        """The scene paints these paths after all contour/toolpath items."""
 
         # Draw the preview of the lead in
         if not self._lead_in_path.isEmpty():
@@ -1168,11 +1185,6 @@ class StMoveGUI(QGraphicsItem):
         # Draw the warning marker: the geometry of this shape is not complete
         if self._warning():
             self._draw_warning(painter)
-
-        # Draw rapid/positioning paths as dotted lines
-        for rp in self._rapid_paths:
-            painter.setPen(self.PEN_RAPID_MOVE)
-            painter.drawPath(rp)
 
     def _warning_marker_radius(self):
         """

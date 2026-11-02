@@ -26,6 +26,52 @@ from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 
 
 class TestToolpathSlices(GoldenTestBase):
+    def test_knife_overcut_uses_exit_overlay_even_without_a_lead_out(self):
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
+        shape, _ = build_shape(cut_cor=40, machine_type='drag_knife', layer_settings=dict(
+            lead_in_mode='off', lead_out_mode='off', overcut_enabled=True, overcut_length=5))
+        plan, _ = self.plan_and_export(shape)
+        self.assertTrue(any(a.role == 'overcut' for a in plan.actions))
+        overlay = StMoveGUI(shape, plan=plan)
+        self.assertFalse(overlay._exit_path.isEmpty())
+        self.assertTrue(shape.stmove.exit_geos)
+
+    def test_leads_render_above_other_contours_and_follow_visibility(self):
+        from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene, StMoveGUI
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QImage, QPainter, QPainterPath
+        from dxf2gcode.presentation.qt.qt_compat.QtCore import QRectF
+        shape, _ = build_shape(cut_cor=40, layer_settings=dict(lead_in_mode='off', lead_out_mode='off'))
+        for field, pen in (('_lead_in_path', StMoveGUI.PEN_LEAD_IN_LINE),
+                           ('_exit_path', StMoveGUI.PEN_EXIT_LINE)):
+            for reversed_order in (False, True):
+                scene = MyGraphicsScene()
+                detail, contour = StMoveGUI(shape), StMoveGUI(shape)
+                for item in (detail, contour):
+                    item._comp_path = QPainterPath()
+                    item._lead_in_path = QPainterPath()
+                    item._exit_path = QPainterPath()
+                    item._rapid_paths = []
+                path = QPainterPath()
+                path.moveTo(10, 20)
+                path.lineTo(90, 20)
+                setattr(detail, field, path)
+                contour._comp_path = path
+                for item in ((contour, detail) if reversed_order else (detail, contour)):
+                    scene.addItem(item)
+                def colors():
+                    image = QImage(100, 40, QImage.Format.Format_ARGB32)
+                    image.fill(0xffffffff)
+                    painter = QPainter(image)
+                    try:
+                        scene.render(painter, QRectF(0, 0, 100, 40), QRectF(0, 0, 100, 40))
+                    finally:
+                        painter.end()
+                    return [image.pixelColor(x, 20).getRgb() for x in range(15, 85)]
+                self.assertIn(pen.color().getRgb(), colors())
+                detail.hide()
+                self.assertNotIn(pen.color().getRgb(), colors())
+                self.assertIn(StMoveGUI.PEN_COMP_LINE.color().getRgb(), colors())
+
     def plan_and_export(self, shape, pp=None):
         pp = pp or make_postpro()
         inputs = ShapePlanningInputs(lambda: g.config)
@@ -50,9 +96,9 @@ class TestToolpathSlices(GoldenTestBase):
         # the historical lathe diameter factor. No exporter mock is involved.
         endpoints = [tuple(map(float, match)) for match in re.findall(
             r"G[123] X\s*([-\d.]+) Y\s*([-\d.]+)", code)]
-        planned = [action.args[1] if action.kind == "linear_xy" else action.args[2]
+        planned = [action.args[1] if action.kind in ("linear_xy", "linear_xyz") else action.args[2]
                    for action in result.plan.actions
-                   if action.kind in ("linear_xy", "arc")]
+                   if action.kind in ("linear_xy", "linear_xyz", "arc")]
         factor = 2 if g.config.machine_type == "lathe" else 1
         self.assertEqual(endpoints, [(round(x, 3), round(y * factor, 3))
                                      for x, y in planned])
@@ -231,9 +277,9 @@ class TestToolpathSlices(GoldenTestBase):
                 self.check_golden(name, code)
                 swivels = [a for a in plan.actions if a.role == "drag_swivel"]
                 self.assertTrue(any(a.kind == "arc" for a in swivels))
-                self.assertTrue(any(a.kind == "linear_z" and a.args[0] == -2
+                self.assertTrue(any(a.kind == "linear_z" and a.args[0] == -.1
                                     for a in swivels))
-                cuts = [a for a in plan.actions if a.kind == "linear_xy"]
+                cuts = [a for a in plan.actions if a.kind in ("linear_xy", "linear_xyz") and a.role == 'cut']
                 # The holder is ahead of the original tip path by the tool
                 # radius (5 mm), so the prepared first side ends at x=105.
                 self.assertEqual(cuts[0].args[0], (5, 0))

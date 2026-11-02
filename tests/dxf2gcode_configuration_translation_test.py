@@ -28,6 +28,27 @@ from dxf2gcode.presentation.qt.configuration_help import HELP_SOURCES
 
 
 class TestConfigurationTranslations(unittest.TestCase):
+    def test_restart_notices_and_unit_label_are_translated(self):
+        notice = ('These saved changes require a restart:\n{0}\n\n'
+                  'After you close the configuration window, DXF2GCODE will restart '
+                  'with an empty window. The current drawing and unsaved machining '
+                  'changes will not be restored.')
+        failure = ('DXF2GCODE could not be restarted. The current window remains open. '
+                   'You can restart the application manually.')
+        for language in ('de', 'fr', 'ru'):
+            translator = QtCore.QTranslator()
+            self.assertTrue(translator.load(str(ROOT / 'source/i18n' / ('dxf2gcode_'+language+'.qm'))))
+            for source in ('Restart required', 'Restart failed', '3D display',
+                           'Logging', notice, failure):
+                text = translator.translate('MainWindow', source)
+                self.assertTrue(text)
+                self.assertNotEqual(text, source)
+                if source == notice:
+                    self.assertIn('\n{0}\n\n', text)
+            label = translator.translate('MyConfig', 'Configuration values use the unit:')
+            self.assertTrue(label)
+            self.assertNotEqual(label, 'Configuration values use the unit:')
+
     @classmethod
     def setUpClass(cls):
         cls.app = QApplication.instance() or QApplication([])
@@ -99,6 +120,73 @@ class TestConfigurationTranslations(unittest.TestCase):
                 finally:
                     for form in forms:
                         form.close()
+                    self.app.removeTranslator(translator)
+
+    def test_compact_pages_resize_and_keep_full_help_on_controls(self):
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QFont, QFontDatabase
+        original = self.app.font()
+        font = QFont('Sans Serif',9)
+        # Windows offscreen Qt may otherwise have no font and use square
+        # fallback glyphs with unrelated metrics. Exercise the real UI font.
+        path = Path('C:/Windows/Fonts/segoeui.ttf')
+        if sys.platform == 'win32' and path.exists():
+            identifier = QFontDatabase.addApplicationFont(str(path))
+            if identifier >= 0:
+                font.setFamily(QFontDatabase.applicationFontFamilies(identifier)[0])
+        self.app.setFont(font)
+        try:
+            self._check_compact_pages()
+        finally:
+            self.app.setFont(original)
+
+    def _check_compact_pages(self):
+        for language in ('en','de','fr','ru'):
+            with self.subTest(language=language), tempfile.TemporaryDirectory() as folder:
+                translator = QtCore.QTranslator()
+                if language != 'en':
+                    self.assertTrue(translator.load(str(ROOT / 'source/i18n' / ('dxf2gcode_'+language+'.qm'))))
+                    self.app.installTranslator(translator)
+                with patch.object(g, 'folder', folder):
+                    config = MyConfig()
+                original = copy.deepcopy(config.var_dict.dict())
+                definitions = config.makeConfigWidgets()
+                form = ConfigWindow(definitions,config.var_dict,config.var_dict.configspec)
+                try:
+                    form.show()
+                    self.app.processEvents()
+                    for width in (1000,780):
+                        form.resize(width,600)
+                        for section in ('Cutter_Compensation','Layer_Options'):
+                            target = definitions[section]
+                            control = target['done_by_machine'] if section == 'Cutter_Compensation' else target['start_radius_identifiers']
+                            for index in range(form.tab_window.count()):
+                                page = form.tab_window.widget(index)
+                                if page.isAncestorOf(control):
+                                    form.tab_window.setCurrentIndex(index)
+                                    self.app.processEvents()
+                                    self.assertEqual(page.horizontalScrollBar().maximum(),0,(language,width,section))
+                                    if section == 'Cutter_Compensation':
+                                        editor = definitions['Drag_Knife_Options']['entry_mode'].combobox
+                                        self.assertLessEqual(editor.mapTo(page.viewport(),editor.rect().topRight()).x(),page.viewport().width())
+                    cutter = definitions['Cutter_Compensation']['done_by_machine']
+                    self.assertIn('G41',cutter.checkbox.toolTip())
+                    overcut = definitions['Lead_In_Out']['overcut_enabled']
+                    self.assertGreater(len(overcut.checkbox.toolTip()),len(overcut.checkbox.text()))
+                    parameters = definitions['Layer_Options']
+                    self.assertTrue(parameters['__intro__'].label.isVisible())
+                    self.assertEqual(parameters['__section_title__'],QtCore.QCoreApplication.translate('MyConfig','Parameter names'))
+                    for key,field in parameters.items():
+                        if key.endswith('_identifiers'):
+                            self.assertNotIn('separator)',field.label.text())
+                            self.assertTrue(field.lineedit.toolTip())
+                            before = field.getValue()
+                            field.setValue(before)
+                            self.assertEqual(field.getValue(),before)
+                    old_label = QtCore.QCoreApplication.translate('MyConfig','Start radius (cutter compensation, deprecated - use the lead radius instead):')
+                    self.assertIn(old_label,parameters['start_radius_identifiers'].lineedit.toolTip())
+                    self.assertEqual(config.var_dict.dict(),original)
+                finally:
+                    form.close()
                     self.app.removeTranslator(translator)
 
     def test_reextraction_keeps_finished_messages_in_the_runtime_contexts(self):

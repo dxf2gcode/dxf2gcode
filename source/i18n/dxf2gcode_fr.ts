@@ -635,14 +635,22 @@ La table &quot;{0}&quot; doit toujours contenir le numéro de l'outils '1'
         <source>
 Tool {0}: the {1} is not valid: {2}
 </source>
-        <translation>Outil {0} : {1} n'est pas valide : {2}</translation>
+        <translation>
+Outil {0} : {1} n'est pas valide : {2}
+</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="1733"/>
         <source>
 Tool {0}: the {1} is at the limit: {2}
 </source>
-        <translation>Outil {0} : {1} est à la limite : {2}</translation>
+        <translation>
+Outil {0} : {1} est à la limite : {2}
+</translation>
+    </message>
+    <message>
+        <source>Knife offset</source>
+        <translation>Décalage du couteau</translation>
     </message>
 </context>
 <context>
@@ -1908,6 +1916,44 @@ Voulez-vous les enregistrer avant de changer de profil ?</translation>
         <source>Shapes %s combine drilling with pocket milling or G41/G42. Their settings were preserved. Select drilling, pocket milling or cutter compensation in the context menu to resolve each conflict. Affected shapes cannot be exported until then.</source>
         <translation>Les formes %s combinent le perçage avec le fraisage de poche ou G41/G42. Leurs paramètres ont été conservés. Choisissez le perçage, le fraisage de poche ou la compensation du rayon d’outil dans le menu contextuel pour résoudre chaque conflit. Les formes concernées ne peuvent pas être exportées entre-temps.</translation>
     </message>
+    <message>
+        <source>3D display</source>
+        <translation>Affichage 3D</translation>
+    </message>
+    <message>
+        <source>Machine type</source>
+        <translation type="obsolete">Type de machine</translation>
+    </message>
+    <message>
+        <source>Import tolerances</source>
+        <translation type="obsolete">Tolérances d’importation</translation>
+    </message>
+    <message>
+        <source>Logging</source>
+        <translation>Journalisation</translation>
+    </message>
+    <message>
+        <source>Restart required</source>
+        <translation>Redémarrage nécessaire</translation>
+    </message>
+    <message>
+        <source>Restart failed</source>
+        <translation>Échec du redémarrage</translation>
+    </message>
+    <message>
+        <source>These saved changes require a restart:
+{0}
+
+After you close the configuration window, DXF2GCODE will restart with an empty window. The current drawing and unsaved machining changes will not be restored.</source>
+        <translation>Ces modifications enregistrées nécessitent un redémarrage :
+{0}
+
+Après la fermeture de la configuration, DXF2GCODE redémarrera avec une fenêtre vide. Le dessin actuel et les modifications d’usinage non enregistrées ne seront pas restaurés.</translation>
+    </message>
+    <message>
+        <source>DXF2GCODE could not be restarted. The current window remains open. You can restart the application manually.</source>
+        <translation>Impossible de redémarrer DXF2GCODE. La fenêtre actuelle reste ouverte. Vous pouvez redémarrer l’application manuellement.</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -2056,7 +2102,7 @@ Vous devez supprimer (ou éditer soigneusement) le fichier de configuration "{2}
     </message>
     <message>
         <source>Configuration values use the unit (restart needed):</source>
-        <translation>valeur des Unité de configuration (Redémarrage nécessaire):</translation>
+        <translation type="obsolete">valeur des Unité de configuration (Redémarrage nécessaire):</translation>
     </message>
     <message>
         <source>Output</source>
@@ -2444,6 +2490,226 @@ Vous devez détruire(ou éditer soigneusement) le fichier de configuration "{2}"
     <message>
         <source>Nearest neighbor</source>
         <translation>Plus proche voisin</translation>
+    </message>
+    <message>
+        <source>Use planned knife cuts (slice depth = infeed per cut)</source>
+        <translation type="obsolete">Utiliser les coupes planifiées (profondeur de passe = incrément par coupe)</translation>
+    </message>
+    <message>
+        <source>Swivel contact Z (planned cuts only):</source>
+        <translation type="obsolete">Z de contact du pivotement (coupes planifiées uniquement) :</translation>
+    </message>
+    <message>
+        <source>One additional complete cut at final depth</source>
+        <translation>Une coupe complète supplémentaire à la profondeur finale</translation>
+    </message>
+    <message>
+        <source>Alternate open cuts using external straight leads</source>
+        <translation>Alterner les coupes ouvertes avec des approches et sorties droites externes</translation>
+    </message>
+    <message>
+        <source>Knife lead out length (lead in uses tool lead length):</source>
+        <translation>Longueur de sortie du couteau (entrée : longueur d'approche de l'outil) :</translation>
+    </message>
+    <message>
+        <source>Lift for swivels if angle exceeds:</source>
+        <translation>Relever pour pivoter si l’angle dépasse :</translation>
+    </message>
+    <message>
+        <source>Ramp length (0 = vertical plunge):</source>
+        <translation>Longueur de rampe (0 = plongée verticale) :</translation>
+    </message>
+    <message>
+        <source>Knife orientation before entry:</source>
+        <translation>Orientation du couteau avant l’entrée :</translation>
+    </message>
+    <message>
+        <source>Assume configured start angle</source>
+        <translation>Supposer l’angle de départ configuré</translation>
+    </message>
+    <message>
+        <source>Retain previous angle (first cut: start angle)</source>
+        <translation>Conserver l’angle précédent (première coupe : angle de départ)</translation>
+    </message>
+    <message>
+        <source>Unknown: external settling stroke</source>
+        <translation>Inconnue : course d’alignement externe</translation>
+    </message>
+    <message>
+        <source>Settling length (verify on the actual knife and material):</source>
+        <translation>Longueur d’alignement (à vérifier sur le couteau et le matériau utilisés) :</translation>
+    </message>
+    <message>
+        <source>Return to start angle in lead out before lifting</source>
+        <translation>Revenir à l’angle de départ dans la sortie avant le relevage</translation>
+    </message>
+    <message>
+        <source>Parameter names</source>
+        <translation>Noms des paramètres</translation>
+    </message>
+    <message>
+        <source>These names identify parameters in DXF layer names. Enter multiple names per parameter separated by commas.</source>
+        <translation>Ces noms identifient les paramètres dans les noms des calques DXF. Plusieurs noms sont possibles par paramètre ; séparez-les par des virgules.</translation>
+    </message>
+    <message>
+        <source>Machine cutter compensation</source>
+        <translation>Compensation du rayon par la machine</translation>
+    </message>
+    <message>
+        <source>Overcut closed contours</source>
+        <translation>Surcoupe des contours fermés</translation>
+    </message>
+    <message>
+        <source>Pocket edge clearance:</source>
+        <translation>Marge au bord de la poche :</translation>
+    </message>
+    <message>
+        <source>Planned knife depth passes</source>
+        <translation type="obsolete">Passes planifiées du couteau</translation>
+    </message>
+    <message>
+        <source>Alignment length:</source>
+        <translation>Longueur d’alignement :</translation>
+    </message>
+    <message>
+        <source>Return knife to start angle</source>
+        <translation>Revenir à l’angle initial du couteau</translation>
+    </message>
+    <message>
+        <source>Swivel contact Z:</source>
+        <translation>Z de contact du pivotement :</translation>
+    </message>
+    <message>
+        <source>Additional cut at final depth</source>
+        <translation>Coupe supplémentaire à la profondeur finale</translation>
+    </message>
+    <message>
+        <source>Alternate open cuts</source>
+        <translation>Alterner le sens des coupes ouvertes</translation>
+    </message>
+    <message>
+        <source>Knife lead out length:</source>
+        <translation>Longueur de sortie du couteau :</translation>
+    </message>
+    <message>
+        <source>Initial knife angle:</source>
+        <translation>Angle initial du couteau :</translation>
+    </message>
+    <message>
+        <source>Optimize shape order by default</source>
+        <translation>Optimiser l’ordre par défaut</translation>
+    </message>
+    <message>
+        <source>Import inserted entities on block layer</source>
+        <translation>Importer les éléments insérés sur le calque du bloc</translation>
+    </message>
+    <message>
+        <source>Legacy start radius:</source>
+        <translation>Rayon de départ (ancien) :</translation>
+    </message>
+    <message>
+        <source>Finishing allowance:</source>
+        <translation>Surépaisseur de finition :</translation>
+    </message>
+    <message>
+        <source>Lead in mode:</source>
+        <translation>Mode d’entrée :</translation>
+    </message>
+    <message>
+        <source>Lead out mode:</source>
+        <translation>Mode de sortie :</translation>
+    </message>
+    <message>
+        <source>Lead radius:</source>
+        <translation>Rayon d’entrée/de sortie :</translation>
+    </message>
+    <message>
+        <source>Straight lead length:</source>
+        <translation>Longueur d’entrée/de sortie droite :</translation>
+    </message>
+    <message>
+        <source>XY feed rate:</source>
+        <translation>Avance XY :</translation>
+    </message>
+    <message>
+        <source>Z feed rate:</source>
+        <translation>Avance Z :</translation>
+    </message>
+    <message>
+        <source>The controls show the loaded profile values. A new profile starts with factory defaults; it does not copy this profile.</source>
+        <translation>Les champs affichent les valeurs du profil chargé. Un nouveau profil utilise les valeurs d’usine ; il ne copie pas ce profil.</translation>
+    </message>
+    <message>
+        <source>Show disabled paths</source>
+        <translation>Afficher les contours désactivés</translation>
+    </message>
+    <message>
+        <source>Update export route live</source>
+        <translation>Actualiser le parcours d’export en direct</translation>
+    </message>
+    <message>
+        <source>Split imported line segments</source>
+        <translation>Diviser les segments de ligne importés</translation>
+    </message>
+    <message>
+        <source>Automatic cutter compensation</source>
+        <translation>Compensation automatique du rayon</translation>
+    </message>
+    <message>
+        <source>Machine type at startup:</source>
+        <translation type="obsolete">Type de machine au démarrage :</translation>
+    </message>
+    <message>
+        <source>Allow optimization for new shapes</source>
+        <translation>Autoriser l’optimisation des nouveaux contours</translation>
+    </message>
+    <message>
+        <source>Initial visibility of disabled contours. The View menu can change visibility for the current session.</source>
+        <translation>Visibilité initiale des contours désactivés. Le menu Affichage permet de la modifier pour la session en cours.</translation>
+    </message>
+    <message>
+        <source>Initial live display of export connections. Manual route display remains available when live updates are off.</source>
+        <translation>Affichage initial en direct des liaisons d’export. L’affichage manuel reste disponible lorsque l’actualisation en direct est désactivée.</translation>
+    </message>
+    <message>
+        <source>Used when importing DXF line segments. Saved projects retain their own import settings.</source>
+        <translation>Utilisé à l’importation des segments DXF. Les projets enregistrés conservent leurs propres réglages d’importation.</translation>
+    </message>
+    <message>
+        <source>Controls automatic compensation selection for imported contours. Contour settings and saved projects are separate from this profile default.</source>
+        <translation>Contrôle le choix automatique de compensation des contours importés. Les réglages des contours et les projets enregistrés sont distincts de cette valeur du profil.</translation>
+    </message>
+    <message>
+        <source>Startup machine type. The machine menu or a loaded project can select a different mode for the current drawing.</source>
+        <translation type="obsolete">Type de machine au démarrage. Le menu Machine ou un projet chargé peut choisir un autre mode pour le dessin actuel.</translation>
+    </message>
+    <message>
+        <source>Initial optimization permission for new contours. Existing contour permissions are not reset by opening this dialog.</source>
+        <translation>Autorisation initiale d’optimisation des nouveaux contours. L’ouverture de ce dialogue ne réinitialise pas les autorisations existantes.</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation>Activé</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Désactivé</translation>
+    </message>
+    <message>
+        <source>Default for new profiles: %s</source>
+        <translation>Valeur d’usine des nouveaux profils : %s</translation>
+    </message>
+    <message>
+        <source>Configuration values use the unit:</source>
+        <translation>Unité des valeurs de configuration :</translation>
+    </message>
+    <message>
+        <source>Machine type:</source>
+        <translation>Type de machine :</translation>
+    </message>
+    <message>
+        <source>Applies the machine type to the current drawing and saves it for new sessions. The drawing is rebuilt without restarting the application.</source>
+        <translation>Applique le type de machine au dessin actuel et l’enregistre pour les prochaines sessions. Le dessin est reconstruit sans redémarrer l’application.</translation>
     </message>
 </context>
 <context>
@@ -2876,6 +3142,10 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <source>Explicit tool-to-offset mapping</source>
         <translation>Correspondance explicite outil-correcteur</translation>
     </message>
+    <message>
+        <source>Coordinated linear XYZ move:</source>
+        <translation>Déplacement linéaire XYZ simultané :</translation>
+    </message>
 </context>
 <context>
     <name>MyPostProcessor</name>
@@ -3220,6 +3490,30 @@ La longueur doit être supérieure à la tolérance</translation>
         <source>Shape %i: drilling cannot be combined with pocket milling or G41/G42. Select a machining mode before exporting.</source>
         <translation>Forme %i : le perçage ne peut pas être combiné avec le fraisage de poche ou G41/G42. Choisissez un mode d’usinage avant l’exportation.</translation>
     </message>
+    <message>
+        <source>Invalid drag-knife settings or contour.</source>
+        <translation>Paramètres du couteau traînant ou contour non valides.</translation>
+    </message>
+    <message>
+        <source>The drag-knife ramp is longer than the available cutting path.</source>
+        <translation>La rampe du couteau traînant dépasse la longueur de coupe disponible.</translation>
+    </message>
+    <message>
+        <source>The drag-knife lead is too short for external alignment.</source>
+        <translation>L’approche du couteau traînant est trop courte pour l’alignement externe.</translation>
+    </message>
+    <message>
+        <source>Alternating drag-knife cuts require straight lead in and lead out.</source>
+        <translation>Les coupes alternées du couteau traînant nécessitent une entrée et une sortie droites.</translation>
+    </message>
+    <message>
+        <source>Unknown knife orientation requires an external lead and an alignment length of at least twice the knife offset.</source>
+        <translation>Une orientation inconnue nécessite une approche externe et une course d’alignement d’au moins deux fois le décalage du couteau.</translation>
+    </message>
+    <message>
+        <source>Knife return alignment requires a lead out.</source>
+        <translation>Le retour à l’orientation de départ nécessite une sortie.</translation>
+    </message>
 </context>
 <context>
     <name>ShapeToolpathCommandBuilder</name>
@@ -3547,6 +3841,14 @@ La longueur doit être supérieure à la tolérance</translation>
         <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="2077"/>
         <source>Length of the overcut, measured along the contour. [mm] Defined in the Tools table.</source>
         <translation>Longueur du surdépassement, mesurée le long du contour. [mm] Définie dans la table des outils.</translation>
+    </message>
+    <message>
+        <source>Swivel contact Z</source>
+        <translation>Hauteur Z de contact au pivotement</translation>
+    </message>
+    <message>
+        <source>Absolute Z contact height while swiveling the knife. Clear the field to use the configuration value. Never plunges below the current cut depth.</source>
+        <translation>Hauteur Z absolue de contact lors du pivotement du couteau. Vider le champ pour utiliser la valeur de configuration. Ne descend jamais sous la profondeur de coupe actuelle.</translation>
     </message>
 </context>
 <context>
@@ -3994,29 +4296,29 @@ Cette valeur s'applique aux contours sans réglage individuel ; les réglages in
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.</source>
-        <translation>À utiliser dans le nom du calque DXF. Voir le wiki DXF2GCODE pour plus d'informations.</translation>
+        <translation type="obsolete">À utiliser dans le nom du calque DXF. Voir le wiki DXF2GCODE pour plus d'informations.</translation>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
  The common length of the straight lead in and of the straight lead out</source>
-        <translation>À utiliser dans le nom du calque DXF. Longueur commune des parties droites d'entrée et de sortie ; voir le wiki DXF2GCODE.</translation>
+        <translation type="obsolete">À utiliser dans le nom du calque DXF. Longueur commune des parties droites d'entrée et de sortie ; voir le wiki DXF2GCODE.</translation>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
  The common radius at the workpiece of the lead in and of the lead out</source>
-        <translation>À utiliser dans le nom du calque DXF. Rayon commun d'entrée et de sortie au niveau de la pièce ; voir le wiki DXF2GCODE.</translation>
+        <translation type="obsolete">À utiliser dans le nom du calque DXF. Rayon commun d'entrée et de sortie au niveau de la pièce ; voir le wiki DXF2GCODE.</translation>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
  The mode of the lead in: 0 = start move, 1 = off, 2 = straight, 3 = radius,
  4 = the default of the configuration file</source>
-        <translation>À utiliser dans le nom du calque DXF. Mode d'entrée : 0 = startmove, 1 = off, 2 = straight, 3 = radius, 4 = valeur de configuration. Voir le wiki DXF2GCODE.</translation>
+        <translation type="obsolete">À utiliser dans le nom du calque DXF. Mode d'entrée : 0 = startmove, 1 = off, 2 = straight, 3 = radius, 4 = valeur de configuration. Voir le wiki DXF2GCODE.</translation>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
  The mode of the lead out: 0 = off, 1 = straight, 2 = radius, 3 = start
  move, 4 = the default of the configuration file</source>
-        <translation>À utiliser dans le nom du calque DXF. Mode de sortie : 0 = off, 1 = straight, 2 = radius, 3 = startmove, 4 = valeur de configuration. Voir le wiki DXF2GCODE.</translation>
+        <translation type="obsolete">À utiliser dans le nom du calque DXF. Mode de sortie : 0 = off, 1 = straight, 2 = radius, 3 = startmove, 4 = valeur de configuration. Voir le wiki DXF2GCODE.</translation>
     </message>
     <message>
         <source>Tolerance at which similar points will be interpreted as similar</source>
@@ -4059,7 +4361,7 @@ Cette valeur s'applique aux contours sans réglage individuel ; les réglages in
     <message>
         <source>drag_angle: if angle of movement exceeds this angle (in degrees), the tool retracts to dragDepth (The dragDepth is given by axis3_slice_depth parameter).
  This parameter depends on the knife that you are using. A bigger knife cannot make small corners like a smaller knife. You will simply break your knife or destroy your working piece. Now, if the angle your knife has to make is bigger than this angle it will move to a different depth (a less deep position) such that the knife will experience less resistance but still has some (otherwise it will not change its angle at all, whence DRAG knife).</source>
-        <translation>drag_angle : si le changement de direction dépasse cet angle en degrés, relever le couteau à la profondeur de pivotement axis3_slice_depth. La valeur dépend du couteau : les grands couteaux tolèrent moins les angles serrés. La profondeur réduite limite la résistance tout en gardant assez de contact pour faire pivoter le couteau.</translation>
+        <translation type="obsolete">drag_angle : si le changement de direction dépasse cet angle en degrés, relever le couteau à la profondeur de pivotement axis3_slice_depth. La valeur dépend du couteau : les grands couteaux tolèrent moins les angles serrés. La profondeur réduite limite la résistance tout en gardant assez de contact pour faire pivoter le couteau.</translation>
     </message>
     <message>
         <source>pstoedit is an external tool to convert PDF files to PS (postscript) files, which can be further processed by pstoedit tool.</source>
@@ -4068,6 +4370,54 @@ Cette valeur s'applique aux contours sans réglage individuel ; les réglages in
     <message>
         <source>pstoedit is an external tool to import *.ps (postscript) files and convert them to DXF, in order to import them in dxf2gcode.</source>
         <translation>pstoedit est un outil externe convertissant les fichiers PS (PostScript) en DXF pour l'import dans DXF2GCODE.</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/</source>
+        <translation>À utiliser dans les noms de calques DXF.
+Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The common length of the straight lead in and of the straight lead out</source>
+        <translation>Longueur commune des parties droites d’entrée et de sortie.
+Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The common radius at the workpiece of the lead in and of the lead out</source>
+        <translation>Rayon commun d’entrée et de sortie au niveau de la pièce.
+Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The mode of the lead in: 0 = start move, 1 = off, 2 = straight, 3 = radius,
+ 4 = the default of the configuration file</source>
+        <translation>Mode d’entrée : 0 = droite et arc, 1 = aucune, 2 = droite, 3 = arc, 4 = valeur de configuration.
+Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The mode of the lead out: 0 = off, 1 = straight, 2 = radius, 3 = start
+ move, 4 = the default of the configuration file</source>
+        <translation>Mode de sortie : 0 = aucune, 1 = droite, 2 = arc, 3 = droite et arc, 4 = valeur de configuration.
+Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The length of the overcut (0 = no overcut)</source>
+        <translation>Longueur de surcoupe ; 0 désactive la surcoupe.
+Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Lift to the swivel contact height when the direction change exceeds this angle. The knife never plunges below the current cut depth.</source>
+        <translation>Remonter à la hauteur de contact de pivotement si le changement de direction dépasse cet angle. Le couteau ne descend jamais sous la profondeur de coupe actuelle.</translation>
+    </message>
+</context>
+<context>
+    <name>CfgListEdit</name>
+    <message>
+        <source>Separate entries with '%s'.</source>
+        <translation>Séparez les entrées par « %s ».</translation>
     </message>
 </context>
 </TS>

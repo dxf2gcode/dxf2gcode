@@ -143,6 +143,16 @@ class ShapePlanningInputs:
             overcut_length=getattr(tool, "overcut_length", 0.0),
             lead_side=getattr(shape.stmove, "lead_side", 1),
             drag_ramp_length=config.vars.Drag_Knife_Options["ramp_in_length"],
+            drag_swivel_depth=getattr(shape, 'drag_swivel_depth', config.vars.Drag_Knife_Options.swivel_depth),
+            drag_extra_pass=getattr(config.vars.Drag_Knife_Options, "extra_pass", False),
+            drag_alternate=getattr(config.vars.Drag_Knife_Options, "alternate", False),
+            drag_exit_length=getattr(config.vars.Drag_Knife_Options, "lead_out_length", 1.5),
+            drag_start_angle=config.vars.Drag_Knife_Options["drag_start_angle"],
+            drag_angle=shape.drag_angle,
+            drag_entry_mode=getattr(config.vars.Drag_Knife_Options, 'entry_mode', 'fixed'),
+            drag_alignment_length=getattr(config.vars.Drag_Knife_Options, 'alignment_length', 0.0),
+            drag_return=getattr(config.vars.Drag_Knife_Options, 'return_to_start', False),
+            tool_number=tool.tool_nr,
             point_tolerance=config.point_tolerance)
         # Preserve source metadata as well as the absolute movement geometry.
         # In particular, a source BreakGeo can have a LineGeo as abs_geo:
@@ -180,4 +190,8 @@ class ShapePlanningInputs:
             has_break_layers=bool(getattr(breaks, "breakLayers", ())),
             start_error=getattr(shape.stmove, "start_move_error", ""),
             initial_state=PlanningState(postprocessor.feed, postprocessor.ze,
-                                        postprocessor.lz))
+                                        postprocessor.lz,
+                                        getattr(postprocessor, 'knife_heading', None)
+                                        if (getattr(config.vars.Drag_Knife_Options, 'entry_mode', 'fixed') == 'previous'
+                                            and getattr(postprocessor, 'knife_tool', None) == (tool.tool_nr, tool.getToolRadius()))
+                                        else None))

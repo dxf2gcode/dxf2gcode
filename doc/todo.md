@@ -20,9 +20,9 @@ werden vor der jeweiligen Implementierung geklärt.
 | Reihenfolge | Abschnitt / Aufgaben | Grund und Voraussetzungen |
 | --- | --- | --- |
 | Abgeschlossen | [Exportablauf und Werkzeugwechsel](#1-exportablauf-und-werkzeugwechsel): P1 und R2 | P1 für den vereinbarten manuellen LinuxCNC-Ablauf softwareseitig geprüft; Praxisprüfung bleibt beim Anwender |
-| 1 | [Schleppmesser](#2-schleppmesser): D1, danach gegebenenfalls D2 | Als nächster Schritt vereinbart: Reproduktion, Spitzenbahn, dann gezielte Korrektur; D2 verdeckt keinen Konturschlussfehler |
-| 2 | [Konfiguration und Bedienung](#3-konfiguration-und-bedienung): K2, danach V1, U3, U5 (K1 abgeschlossen) | Übersetzungskontexte und Kataloge sind abgesichert; fachliche Standardwerte weiterhin separat abstimmen |
-| 3 | [Paketabnahme und Abnahmegrenzen](#4-paketabnahme-und-abnahmegrenzen): CI1, M1, A1 | Automatische Build-/Download-Pipeline und Aufbewahrung einrichten; Paketabnahme und verbleibende Abnahmegrenzen berücksichtigen |
+| Abgeschlossen | [Schleppmesser](#2-schleppmesser): D1 und D2 | Lokal softwareseitig umgesetzt und gezielt unter Qt5/Qt6 geprüft; praktische Materialprüfung bleibt beim Anwender |
+| 1 | [Konfiguration und Bedienung](#3-konfiguration-und-bedienung): V1, U3, U5 (K1/K2 abgeschlossen) | Übersetzungen, Profilvorgaben und Hilfetexte sind abgesichert; offene Bedienentscheidungen vor Umsetzung abstimmen |
+| 2 | [Paketabnahme und Abnahmegrenzen](#4-paketabnahme-und-abnahmegrenzen): CI1, M1, A1 | Automatische Build-/Download-Pipeline und Aufbewahrung einrichten; Paketabnahme und verbleibende Abnahmegrenzen berücksichtigen |
 | Zurückgestellt | [Bedienmodell und Teilkonturen](#5-zurückgestelltes-bedienmodell-und-teilkonturen): R3 mit R1b, anschließend Teilkontur-Erweiterung abstimmen | Kein Layerwechsel vor dem gemeinsamen Bedien-/Modell-/Persistenzentwurf |
 | Optional | [Zusätzliche Qt-Bindung](#6-optionale-zusätzliche-qt-bindung): Q1 | PySide6 nur bei konkretem Bedarf als eigener Schritt |
 
@@ -39,11 +39,24 @@ die kompakte Infofenster-Wortmarke und der Link zur
 Details und Prüfgrenzen stehen im
 [Erledigt-Dokument](archive/toolpath-refactoring-completed.md#gui-branding).
 
-**Nächster Umsetzungsvorschlag: D1.** Zunächst eine kleine geschlossene
-Testkontur mit reproduzierbaren Einstellungen verwenden und die tatsächliche
-Messerspitzenbahn am Konturschluss mit und ohne Überfahrt vergleichen. Erst
-aus diesem Befund eine gezielte Korrektur ableiten. D2 bleibt davon getrennt;
-mit dieser Todo-Aktualisierung ist noch keine Schleppmesseränderung umgesetzt.
+**D1/D2 softwareseitig abgeschlossen, 02.11.2026:** Rampen und Konturschluss,
+Tiefenzustellungen, zusätzliche Endtiefenfahrt, offene Umkehr und auswählbare
+Messerstellung sind implementiert. [Plan und Prüfnachweise](drag-knife-plan.md)
+sowie [Bedienung](drag-knife-usage.md) beschreiben Umfang und Materialprüfgrenze.
+Der Schleppmesser verwendet inzwischen einen gemeinsamen Ablauf ohne
+Freischalter. Konfiguration 9.18 und Projektformat 1.5 migrieren alte
+Schwenktiefen; unterschiedliche Konturwerte bleiben bearbeitbar erhalten.
+Lead-/Überfahrtdetails werden über den 2D-Konturbahnen gezeichnet. Für
+Start-Einstellungen meldet die Konfiguration den erforderlichen Neustart und
+führt ihn nach dem Schließen mit leerem Fenster aus; siehe
+[Abschluss und Prüfgrenzen](archive/toolpath-refactoring-completed.md#configuration-restart).
+Maschinentyp und Importtoleranzen wirken durch Neuladen unmittelbar; nur
+2D/3D-Modus und Protokollierung benötigen diesen Konfigurationsneustart.
+**K2 abgeschlossen, 02.11.2026:** Geladene Profilwerte und Werkseinstellungen
+sind klar unterschieden; Hilfetexte verweisen auf die GitHub-Dokumentation.
+[Umfang und Prüfungen](archive/toolpath-refactoring-completed.md#k2).
+**Nächster Umsetzungsvorschlag: V1**, den Werkzeugkreis am Start unabhängig
+vom Lead-in anzeigen; offene Bedienentscheidungen vorher abstimmen.
 
 ## 1. Exportablauf und Werkzeugwechsel
 
@@ -169,10 +182,18 @@ G90/G91 und normales/leeres Wechseltemplate in vier vollständigen Exporten.
 
 ## 2. Schleppmesser
 
-D1 zuerst bearbeiten. D2 bleibt eine optionale Erweiterung nach Klärung des
-Konturschlusses und der gewünschten Umlauf-/Tiefenregel.
+D1 und D2 bilden den gemeinsam abgestimmten
+[Schleppmesser-Ablauf](drag-knife-plan.md). Zunächst Rampen und Konturschluss
+absichern, darauf Tiefenzustellungen und Wiederholung aufbauen. Dieser Umfang
+ist lokal softwareseitig umgesetzt und gezielt geprüft. Bestätigt sind eine Option für genau einen zusätzlichen
+Endtiefen-Durchgang und kontinuierliche Zustellungen geschlossener Konturen
+ohne Zwischenrückzug; externe Ausrichtung und Lead-in erfolgen dort nur beim
+ersten Einstieg. Bedienung und Kompatibilität stehen in der
+[Schleppmesser-Anleitung](drag-knife-usage.md). Messerstellung und optionale
+Rückausrichtung sind auswählbar, einschließlich unbekannter Stellung nach
+dem Abheben mit einer am Material zu prüfenden externen Ausrichtstrecke.
 
-### D1 – Kleine ungeschnittene Lücke am Start-/Endpunkt untersuchen
+### D1 – Rampen und Konturschluss (softwareseitig abgeschlossen)
 
 **Forumsbericht:** Im gezeigten Thread
 [Overcut with drag knife / vinyl cutter](https://www.ltspiceusers.ch/threads/overcut-with-drag-knife-vinyl-cutter.2247/)
@@ -182,7 +203,7 @@ schwer entfernen, ohne Buchstaben abzulösen. Als Ursache vermutet er den
 Versatz der Messerspitze; genannt werden etwa 0,25 mm. Das ist eine
 Nutzervermutung, noch kein nachgewiesener Fehler im aktuellen Stand.
 
-**Codebefund:** Eine Überfahrt für geschlossene Schleppmesserkonturen ist
+**Legacy-Ausgangslage:** Eine Überfahrt für geschlossene Schleppmesserkonturen ist
 bereits vorhanden: `domain/toolpath/stmove.py` hängt `build_overcut`-Geometrie
 an die Originalkontur an, bevor der Spitzenversatz verarbeitet wird.
 `dxf2gcode_leadmove_golden_test.py` enthält `drag_knife_overcut`, ein
@@ -191,14 +212,19 @@ noch nicht, dass die physische Messerspitze am Konturschluss die gemeldete
 Lücke in allen Fällen überfährt. Der ältere Forumsbericht ist mit dem
 aktuellen Code und den wirksamen Einstellungen abzugleichen.
 
-- [ ] Reproduktion mit einer kleinen geschlossenen Schrift-/Testkontur,
+- [x] Reproduktion mit einer kleinen geschlossenen Schrift-/Testkontur,
   Werkzeugversatz, Startausrichtung, Überfahrt und Schneidtiefe festhalten.
   Werkzeughalterbahn und tatsächliche Messerspitzenbahn unterscheiden.
-- [ ] Konturschluss mit aktivierter und deaktivierter Überfahrt prüfen;
+- [x] Vorhandene `dxf/drag_knive_test.dxf` aus dem
+  [Forumsfall von 2022](https://www.ltspiceusers.ch/threads/dragknife-issue.1126/)
+  als Regression für den abschließenden Messerschwenk und dessen
+  Z-/Vorschubreihenfolge einbeziehen. Zuordnung über Commit `0178408` und
+  Prüfziele stehen im [gemeinsamen Plan](drag-knife-plan.md#vorhandene-forums-testdatei-abschließender-messerschwenk).
+- [x] Konturschluss mit aktivierter und deaktivierter Überfahrt prüfen;
   Startorientierung, Richtung, erste kurze Linie beziehungsweise Bogen und
   Übergang vom letzten zum ersten Segment einbeziehen. Eine Mindestlänge
   größer als der Spitzenversatz nicht ungeprüft als allgemeine Lösung setzen.
-- [ ] Bestehende Überfahrt bei Bedarf gezielt korrigieren. Ein neues
+- [x] Bestehende Überfahrt bei Bedarf gezielt korrigieren. Ein neues
   Wiederholungsmerkmal aus D2 darf einen Fehler des Konturschlusses nicht
   lediglich verdecken. Keine pauschale Änderung anderer Maschinenmodi.
 
@@ -209,52 +235,54 @@ Umlaufrichtungen testen; bestehende Schleppmesser-Goldens vergleichen.
 Praktische Schnittqualität erfordert danach einen gesonderten Materialtest;
 ein solcher ist mit diesem TODO nicht durchgeführt oder freigegeben.
 
-### D2 – Optional zweimal um dieselbe Kontur ohne Anheben dazwischen
+### D2 – Mehrere Schnitttiefen und Endtiefen-Durchgang (softwareseitig abgeschlossen)
 
-**Gewünschte Erweiterung aus dem Bericht:** Jede geschlossene Kontur zweimal
-durchfahren, ohne am Übergang zwischen den Umläufen das Messer zurückzuziehen.
-Die vorhandenen Eckenschleifen und Spitzenversatzkorrekturen müssen erhalten
-bleiben. Der Nutzer nennt alternativ einen ersten flacheren Schnitt und
-danach einen Schnitt auf Endtiefe; gewöhnliche Fräspässe ersetzen den
-Schleppmesserablauf wegen der fehlenden Eckenschleifen nicht.
+**Abgestimmter Umfang, 02.11.2026:** Offene und geschlossene Konturen über
+mehrere Schnitte auf Endtiefe bringen. Vorhandene Endtiefe und Slice depth
+als Endtiefe und maximale Zustellung wiederverwenden; Schwenktiefe davon
+trennen. Eine Ein-/Aus-Option erlaubt genau einen zusätzlichen vollständigen
+Durchgang auf Endtiefe. Die vorhandenen Eckenschleifen und
+Spitzenversatzkorrekturen bleiben erhalten. Einzelheiten einschließlich
+Einstieg, Lead-Auswahl, Ausrichtung und offener Umkehr stehen im
+[gemeinsamen Plan](drag-knife-plan.md).
 
-**Codebefund:** `DragKnifeStrategy` in
+**Legacy-Ausgangslage:** `DragKnifeStrategy` in
 `domain/toolpath/strategies/drag_knife.py` verarbeitet die vorbereitete Bahn
 einmal und hängt danach den Rückzug an. Eine eigene Einstellung für mehrere
 zusammenhängende Umläufe ist dort nicht vorhanden. `slice_depth` dient im
-Schleppmessermodus bereits als Schwenktiefe an Ecken; dieser Parameter darf
-nicht stillschweigend zur Tiefe eines ersten Schnittumlaufs umgedeutet werden.
+Schleppmessermodus bereits als Schwenktiefe an Ecken. Im neuen Ablauf wird er
+zur Zustellung; bestehende Profile benötigen eine ausdrückliche Übernahme
+des bisherigen Verhaltens statt einer stillen Bedeutungsänderung.
 
-- [ ] Vor Umsetzung den gewünschten Modus festlegen: zweimal dieselbe
-  Endtiefe oder erste Teilzustellung und danach Endtiefe. Eine frei wählbare
-  Anzahl Umläufe wäre eine weitere Erweiterung, keine bereits beschlossene
-  Anforderung. Standardverhalten bleibt zunächst ein Umlauf.
-- [ ] Den Übergang zwischen den Umläufen kontinuierlich planen, einschließlich
+- [x] Modus festgelegt: Tiefenzustellungen über Slice depth und optional genau
+  ein zusätzlicher vollständiger Endtiefen-Durchgang; keine freie Umlaufanzahl.
+- [x] Den Übergang zwischen den Umläufen kontinuierlich planen, einschließlich
   Messerorientierung und Eckenkorrektur an der Schließstelle. Anfahrt,
   anfängliche Rampe und abschließenden Rückzug nicht einfach mitduplizieren.
-- [ ] „Ohne Anheben“ am Umlaufwechsel von den vorhandenen Z-Korrekturen bei
-  Messerschwenks unterscheiden. Vor Umsetzung ausdrücklich abstimmen, ob
-  diese Eckenkorrekturen unverändert bleiben sollen; die positiv bewerteten
-  Eckenschleifen dürfen nicht durch einen normalen Fräspfad ersetzt werden.
-- [ ] Kombination mit Überfahrt aus D1, offenen Konturen und Rampe vorab
-  definieren. Vorschlag: zunächst nur geschlossene Konturen; eine Überfahrt
-  erst am Ende des letzten Umlaufs. Vorschlag ist noch freizugeben.
-- [ ] Einstellung, Projektpersistenz und GUI-Anzeige gemeinsam planen;
+- [x] Geschlossene Übergänge festgelegt: weitere Zustellungen auf der Kontur,
+  ohne Zwischenrückzug. Eckenschwenks mit Entlastung bleiben davon getrennt;
+  externe Ausrichtung und Lead-in nur beim ersten Einstieg.
+- [x] Den abgestimmten Rampenausgleich und die abschließende Nahtüberlappung
+  aus D1 mit den Tiefenfolgen und dem zusätzlichen Durchgang verbinden.
+  Offene Konturen mit gleicher/wechselnder Richtung und Umkehr/Zustellung
+  im externen Lead-Bereich berücksichtigen. Jeder Sollkonturabschnitt wird
+  mindestens einmal auf Endtiefe bearbeitet.
+- [x] Einstellung, Projektpersistenz und GUI-Anzeige gemeinsam planen;
   neue Texte in Deutsch, Französisch und Russisch pflegen. Wiederholungen
   als semantischen Ablauf planen, damit Vorschau und Export denselben Plan
   verwenden. Keine bloße Verdoppelung des fertigen G-Code-Texts.
 
 **Abnahme und Tests:** Anzahl und Tiefe der Umläufe, korrekten Nahtübergang,
-fehlenden Zwischenrückzug, erhaltene Eckenschleifen und genau einen
-abschließenden Rückzug im Plan prüfen. G-Code und 3D-Projektion verwenden
+fehlenden Zwischenrückzug bei geschlossenen Umläufen, erhaltene Eckenschleifen
+und geplante Rückkehr-/Umkehrabläufe offener Konturen prüfen. G-Code und 3D-Projektion verwenden
 dieselben Z-Bewegungen; 2D darf deckungsgleiche XY-Bahnen weiterhin einmal
 darstellen. Unveränderten Ein-Umlauf-Modus sowie Roundtrip der neuen Option
-absichern. D1/D2 sind vorgemerkt, noch nicht umgesetzt oder neu getestet.
+absichern. D1/D2 sind lokal implementiert: je 44 fokussierte Tests unter Qt5
+und Qt6 bestanden. Die praktische Schnittqualität bleibt am Material zu prüfen.
 
 ## 3. Konfiguration und Bedienung
 
-K1 vor K2 bearbeiten, damit Beschriftungen und Standardwert-Erklärungen auf
-stabilen Übersetzungskontexten aufbauen. V1, U3 und U5 sind anschließend
+K1 und K2 sind abgeschlossen. V1, U3 und U5 sind anschließend
 unabhängig auswählbare Erweiterungen; ihre offenen Bedienentscheidungen
 bleiben jeweils vor der Umsetzung zu klären.
 
@@ -301,10 +329,12 @@ Zusätzlich die drei Maschinentypen im übersetzten Menü prüfen: „Fräsen“
 „Drehmaschine“ und „Schleppmesser/Drag Knife“ müssen auf die zugehörigen
 internen Werte zeigen; der Hilfemenütext darf nicht als Maschinentyp erscheinen.
 
-### K2 – „default“ gegenüber tatsächlichen Vorgabewerten klären
+### K2 – „default“ gegenüber tatsächlichen Vorgabewerten klären (abgeschlossen)
 
-**Codebefund:** Die Texte in `configuration_widgets.py` tragen pauschal
-„(default)“. `CONFIG_SPEC` in `runtime_config.py` legt dagegen Folgendes fest:
+Abgeschlossen am **02.11.2026**; [Prüfnachweis](archive/toolpath-refactoring-completed.md#k2).
+Der pauschale Zusatz „(default)“ ist entfernt. Tooltips nennen die tatsächliche
+Werkseinstellung aus `CONFIG_SPEC`, während die Felder den geladenen Profilwert
+anzeigen. Die fachlichen Vorgaben bleiben unverändert:
 
 | Einstellung | Derzeitige Vorgabe für ein neues Profil |
 | --- | --- |
@@ -316,24 +346,21 @@ internen Werte zeigen; der Hilfemenütext darf nicht als Maschinentyp erscheinen
 
 `MainWindow.initializeConfigProfile` erzeugt ein neues Profil über die
 Konfigurationsklassen mit deren Vorgaben; es kopiert absichtlich nicht das
-aktuelle Profil. Mehrere `False`-Werte entsprechen damit dem Schema. Ob
-zusätzlich ein Fehler beim tatsächlichen Anlegen/Laden vorliegt, ist mit
-isolierten Profilen noch zu prüfen.
+aktuelle Profil. Die Prüfung isolierter Profile bestätigt dieses Verhalten;
+ein zusätzlicher Fehler beim Anlegen oder Laden wurde nicht festgestellt.
 
-- [ ] Schema, frisch erzeugte Datei, geladene Werte, Checkboxanzeige und
+- [x] Schema, frisch erzeugte Datei, geladene Werte, Checkboxanzeige und
   Wirkung beim Programmstart je betroffener Option vergleichen.
-- [ ] Den Unterschied zwischen Werkseinstellung, gespeichertem Profilwert
+- [x] Den Unterschied zwischen Werkseinstellung, gespeichertem Profilwert
   und Vorgabe für neue/importierte Shapes verständlich benennen.
-  **Beschriftungsvorschlag:** den pauschalen Zusatz entfernen und den
-  konkreten Standardwert in Hilfe/Tooltip nennen, etwa „Standard: Aus“.
-- [ ] Vor einer Änderung der fachlichen Standardwerte die gewünschten Werte
-  einzeln abstimmen. „(default)“ ist kein Auftrag, alle Optionen einzuschalten;
-  vorhandene Profile dürfen nicht überschrieben werden.
+  Der pauschale Zusatz ist entfernt; Tooltips nennen „Vorgabe für neue Profile“.
+- [x] Fachliche Standardwerte und bestehende Profile unverändert lassen.
+  Künftige Änderungen der Vorgaben weiterhin einzeln abstimmen.
 
-**Abnahme und Tests:** Neue temporäre Profile, Speichern/Laden und erneuter
-Start verwenden die vereinbarten Werte; bestehende individuelle Profile
-behalten ihre Werte. Vorhandene Profil-/Konfigurationsworkflowtests erweitern;
-alle geänderten Texte gemäß K1 in den drei Sprachen pflegen.
+**Abnahme und Tests:** Je 13 fokussierte Tests unter Qt5 und Qt6 bestanden:
+neue Profile, Speichern/Laden, Startaktionen, Dialogwerte und Vorgaben für neue
+Konturen. Individuelle Werte bleiben erhalten. DE/FR/RU sind gepflegt,
+kompiliert und mit echten Translatoren geprüft.
 
 ### V1 – Werkzeugkreis am Start unabhängig vom Lead-in anzeigen
 
@@ -790,6 +817,12 @@ Die vier englischen Seiten bleiben ein technischer Prototyp.
   für WP1 erstellen; in diesem Veröffentlichungsauftrag noch nicht angelegt.
 - [ ] Zuerst WP1: First DXF to G-code mit eigenem kleinen Beispiel und
   ausdrücklich benannten Profilannahmen; anschließend User Guide (WP2–WP7).
+- [ ] Für WP6 / Schleppmesser das Tutorial von Erich Styger berücksichtigen:
+  [Optimized Vinyl Cutting G-Code Tool Path with DXF2GCODE](https://mcuoneclipse.com/2021/07/06/optimized-g-code-tool-path-for-vinyl-cutting-with-dxf2gcode/)
+  (MCU on Eclipse, 06.07.2021). Als weiterführenden Link und fachliche Quelle
+  einplanen; Bedienung, Spitzenversatz und maschinenspezifische Einstellungen
+  mit dem dann aktuellen Stand abgleichen. Details stehen im
+  [WP6-Migrationsplan](migration/wiki-migration-plan.md#wp6-tabs-and-machine-modes).
 - [ ] Danach Configuration und Postprozessoren (WP8–WP10), dann Developer Guide
   (WP11–WP12) und historische/Projekt-Dokumentation (WP13).
 

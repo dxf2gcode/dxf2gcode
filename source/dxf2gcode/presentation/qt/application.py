@@ -259,6 +259,11 @@ class MainWindow(QMainWindow):
         used Classes and connects the actions to the GUI.
         """
         QMainWindow.__init__(self)
+        self._restart_baseline = self._restart_settings()
+        self._live_config_applied = self._live_config_settings()
+        self._restart_notified = None
+        self._restart_pending = False
+        self._restart_scheduled = False
 
         self.application_context = application_context or create_application_context(
             config=g.config, logger=logger, quiet=g.quiet)
@@ -270,6 +275,7 @@ class MainWindow(QMainWindow):
                                           g.config.var_dict.configspec,
                                           self)
         self.config_window.finished.connect(self.updateConfiguration)
+        self.config_window.finished.connect(self._configuration_closed)
 
         self.app = app
         self.settings = QtCore.QSettings("dxf2gcode", "dxf2gcode")
@@ -1059,7 +1065,7 @@ class MainWindow(QMainWindow):
             self.ui.actionMilling.setChecked(False)
             self.ui.actionDragKnife.setChecked(True)
             self.ui.actionLathe.setChecked(False)
-            self.ui.label_9.setText(self.tr("Z Drag depth"))
+            self.ui.label_9.setText(self.tr("Z Infeed depth"))
 
     def setMeasurementUnitsToMillimeters(self):
         self.setMeasurementUnits(1)
@@ -1370,6 +1376,16 @@ class MainWindow(QMainWindow):
             # consistent state and the change takes effect immediately
             # (no restart required anymore).
             g.config.update_config()
+            live = self._live_config_settings()
+            machine_changed = live['machine_type'] != self._live_config_applied['machine_type']
+            tolerances_changed = any(live[key] != self._live_config_applied[key]
+                                     for key in ('point_tolerance', 'fitting_tolerance'))
+            if machine_changed:
+                g.config.machine_type = live['machine_type']
+            if tolerances_changed:
+                g.config.point_tolerance = live['point_tolerance']
+                g.config.fitting_tolerance = live['fitting_tolerance']
+            self._live_config_applied = live
             # Write the configuration into the config file (config.cfg)
             g.config.save_varspace()
 
@@ -1380,12 +1396,94 @@ class MainWindow(QMainWindow):
             # Inform about the changes into the configuration
             self.configuration_changed.emit()
 
+            # Reuse the same reloads as the machine menu and tolerance dialog.
+            # A full tolerance reload also covers a simultaneous mode change.
+            if tolerances_changed:
+                self.d2g.reload()
+            elif machine_changed:
+                self.d2g.small_reload()
+
             if g.config.tool_units != units_before:
                 # The config file's unit changed: refresh the still-open
                 # configuration window. Its widgets would otherwise keep
                 # showing the pre-conversion values, and a further "Apply"
                 # would write them back (undoing the conversion).
                 self.refreshConfigWindowUnits()
+            self._check_configuration_restart()
+
+    @staticmethod
+    def _live_config_settings():
+        return dict(machine_type=g.config.var_dict['General']['machine_type'],
+                    point_tolerance=g.config.var_dict['Import_Parameters']['point_tolerance'],
+                    fitting_tolerance=g.config.var_dict['Import_Parameters']['fitting_tolerance'])
+
+    @staticmethod
+    def _restart_settings():
+        keys = {
+            'General': ('mode3d',),
+            'Logging': ('logfile', 'console_loglevel', 'file_loglevel', 'window_loglevel'),
+        }
+        return {(section, key): g.config.var_dict[section][key]
+                for section, names in keys.items() for key in names}
+
+    def _check_configuration_restart(self):
+        current = self._restart_settings()
+        changed = [key for key, value in current.items()
+                   if value != self._restart_baseline[key]]
+        self._restart_pending = bool(changed)
+        if not changed:
+            self._restart_notified = None
+            return
+        if current == self._restart_notified:
+            return
+        labels = {
+            ('General', 'mode3d'): self.tr('3D display'),
+            'Logging': self.tr('Logging'),
+        }
+        names = list(dict.fromkeys(labels.get(key, labels.get(key[0])) for key in changed))
+        QMessageBox.information(self.config_window, self.tr('Restart required'),
+            self.tr('These saved changes require a restart:\n{0}\n\n'
+                    'After you close the configuration window, DXF2GCODE will restart '
+                    'with an empty window. The current drawing and unsaved machining '
+                    'changes will not be restored.').format('\n'.join(names)))
+        self._restart_notified = current
+
+    def _configuration_closed(self, result):
+        if result == ConfigWindow.Applied or not self._restart_pending or self._restart_scheduled:
+            return
+        self._restart_scheduled = True
+        QtCore.QTimer.singleShot(0, self._restart_application)
+
+    def _restart_application(self):
+        # Persist window state before the child reads it. Deliberately omit
+        # drawing/export arguments: the requested restart opens an empty UI.
+        self.saveWindowState()
+        self.settings.sync()
+        program = sys.executable
+        arguments = []
+        if not getattr(sys, 'frozen', False):
+            from pathlib import Path
+            launcher = Path(__file__).resolve().parents[3] / 'dxf2gcode.py'
+            arguments = [str(launcher)] if launcher.is_file() else ['-m', 'dxf2gcode']
+            if sys.platform == 'win32':
+                windowed = Path(program).with_name('pythonw.exe')
+                if windowed.is_file():
+                    program = str(windowed)
+        suffix = active_config_profile_suffix()
+        # An explicit profile survives source and packaged launches alike.
+        if suffix:
+            arguments += ['--cfg', suffix]
+        else:
+            store_config_profile('')
+        started, _pid = QtCore.QProcess.startDetached(program, arguments, os.getcwd())
+        if not started:
+            self._restart_scheduled = False
+            QMessageBox.critical(self, self.tr('Restart failed'),
+                self.tr('DXF2GCODE could not be restarted. The current window remains open. '
+                        'You can restart the application manually.'))
+            return
+        self.close()
+        self.app.quit()
 
     def refreshConfigWindowUnits(self):
         """

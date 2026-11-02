@@ -41,6 +41,9 @@ def plan_preview_segments(plan, dimensions=3):
             add((*xy, z), (*xy, args[0]),
                 "rapid" if kind in ("rapid_z", "drill_retract") else action.role)
             z = args[0]
+        elif kind == "linear_xyz":
+            add((*args[0], args[2]), (*args[1], args[3]), action.role)
+            xy, z = args[1], args[3]
         elif kind in ("linear_xy", "arc"):
             move = (ToolpathMove("linear_xy", *args) if kind == "linear_xy" else
                     ToolpathMove("arc", args[1], args[2], args[6],
@@ -95,6 +98,9 @@ def plan_xy_segments(plan):
 
 def plan_xyz_segments(plan):
     """Project plan XY moves at the top surface and at each cutting depth."""
+    if any(a.kind == "linear_xyz" or a.role == "alignment" for a in plan.actions):
+        return tuple((s.start, s.end) for s in plan_preview_segments(plan)
+                     if s.role != "rapid")
     segments = []
 
     if not plan.passes and any(a.kind in ("drill", "hole_marker")

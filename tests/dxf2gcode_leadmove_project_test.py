@@ -190,6 +190,8 @@ class TestProjectRoundtrip(ProjectRoundtripBase):
         content = project.export(compleet=False)
 
         # Remove the new fields: this is a project file of an older version.
+        content = '\n'.join(line for line in content.splitlines()
+                            if not line.startswith('d2g.drag_knife'))
         for key in ("'lead_in_mode':", "'lead_radius':", "'lead_length':",
                     "'lead_out_mode':",
                     "'overcut_enabled':", "'overcut_length':",

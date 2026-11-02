@@ -47,7 +47,7 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 logger = logging.getLogger("Core.Config")
 
-SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14, 9.15, 9.16]
+SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14, 9.15, 9.16, 9.17, 9.18]
 CONFIG_VERSION = SUPPORTED_CONFIGS[-1]
 """
 version tag - increment this each time you edit CONFIG_SPEC
@@ -255,8 +255,7 @@ CONFIG_SPEC = str('''
 
 
     [Drag_Knife_Options]
-    # drag_angle: if angle of movement exceeds this angle (in degrees), the tool retracts to dragDepth (The dragDepth is given by axis3_slice_depth parameter).
-    # This parameter depends on the knife that you are using. A bigger knife cannot make small corners like a smaller knife. You will simply break your knife or destroy your working piece. Now, if the angle your knife has to make is bigger than this angle it will move to a different depth (a less deep position) such that the knife will experience less resistance but still has some (otherwise it will not change its angle at all, whence DRAG knife).
+    # Lift to the swivel contact height when the direction change exceeds this angle. The knife never plunges below the current cut depth.
     drag_angle = float(min = 0, max = 360, default = 20)
     # The direction the knife points to when the cut starts (in degrees,
     # 0 = positive X axis). The knife is swung to the direction of the first
@@ -266,6 +265,13 @@ CONFIG_SPEC = str('''
     # length (measured along the tip path). 0 = the knife is plunged at once
     # (previous behaviour).
     ramp_in_length = float(min = 0, default = 0.0)
+    swivel_depth = float(default = -0.1)
+    extra_pass = boolean(default = False)
+    alternate = boolean(default = False)
+    lead_out_length = float(min = 0, default = 1.5)
+    entry_mode = option('fixed', 'previous', 'unknown', default = 'fixed')
+    alignment_length = float(min = 0, default = 0.0)
+    return_to_start = boolean(default = False)
 
     [Route_Optimisation]
     # If enabled, it will by default check the TSP for all the shapes in the treeview.
@@ -310,48 +316,49 @@ CONFIG_SPEC = str('''
     # - Example of a layer name: MILL: 1 Md: 2 Sd: 2 FeedXY: 400 FeedZ: 200
     #   (This will cut shapes on the layer 2 mm deep (in one pass, since Sd == Md) using 400 mm / minute speed for X/Y movement and 200 mm / minute for Z movement)
     [Layer_Options]
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     id_float_separator = string(default = ":")
 
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     mill_depth_identifiers = list(default = list('MillDepth', 'Md', 'TiefeGesamt', 'Tg'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     slice_depth_identifiers = list(default = list('SliceDepth', 'Sd', 'TiefeZustellung', 'Tz'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     start_mill_depth_identifiers = list(default = list('StartMillDepth', 'SMd', 'StartTiefe', 'St'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     retract_identifiers = list(default = list('RetractHeight', 'Rh', 'Freifahrthoehe', 'FFh'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     safe_margin_identifiers = list(default = list('SafeMargin', 'Sm', 'Sicherheitshoehe', 'Sh'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     f_g1_plane_identifiers = list(default = list('FeedXY', 'Fxy', 'VorschubXY', 'Vxy', 'F'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     f_g1_depth_identifiers = list(default = list('FeedZ', 'Fz', 'VorschubZ', 'Vz'))
 
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     tool_nr_identifiers = list(default = list('ToolNr', 'Tn', 'T', 'WerkzeugNummer', 'Wn'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     tool_diameter_identifiers = list(default = list('ToolDiameter', 'Td', 'WerkzeugDurchmesser', 'Wd'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     spindle_speed_identifiers = list(default = list('SpindleSpeed', 'Drehzahl', 'RPM', 'UPM', 'S'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     start_radius_identifiers = list(default = list('StartRadius', 'Sr'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     milling_offset_identifiers = list(default = list('MillingOffset', 'Mo'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     # The mode of the lead in: 0 = start move, 1 = off, 2 = straight, 3 = radius,
     # 4 = the default of the configuration file
     lead_in_mode_identifiers = list(default = list('LeadInMode', 'Lim'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     # The mode of the lead out: 0 = off, 1 = straight, 2 = radius, 3 = start
     # move, 4 = the default of the configuration file
     lead_out_mode_identifiers = list(default = list('LeadOutMode', 'Lom'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     # The common radius at the workpiece of the lead in and of the lead out
     lead_radius_identifiers = list(default = list('LeadRadius', 'Lr'))
-    # To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     # The common length of the straight lead in and of the straight lead out
     lead_length_identifiers = list(default = list('LeadLength', 'Ll'))
+    # Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
     # The length of the overcut (0 = no overcut)
     overcut_length_identifiers = list(default = list('OvercutLength', 'Ol'))
 
@@ -470,8 +477,9 @@ class MyConfig(object):
 
         self.update_config()
 
-        # The following settings won't be modified after a change in the configuration window.
-        # If a setting need to be updated when the configuration changes, move it to the update_config() function
+        # The canvas backend is fixed at startup. Machine type and tolerances
+        # describe the active drawing; explicit configuration edits are applied
+        # by MainWindow through the corresponding drawing reload workflows.
         self.mode3d = self.vars.General['mode3d']
 
         self.machine_type = self.vars.General['machine_type']
@@ -539,6 +547,8 @@ class MyConfig(object):
             self.var_dict['Depth_Coordinates'][key] = float(self.var_dict['Depth_Coordinates'][key]) * scale
         for key in self.var_dict['Feed_Rates']:
             self.var_dict['Feed_Rates'][key] = float(self.var_dict['Feed_Rates'][key]) * scale
+        for key in ('ramp_in_length', 'swivel_depth', 'lead_out_length', 'alignment_length'):
+            self.var_dict['Drag_Knife_Options'][key] *= scale
         for tool in self.var_dict['Tool_Parameters']:
             self.var_dict['Tool_Parameters'][tool]['diameter'] = float(self.var_dict['Tool_Parameters'][tool]['diameter']) * scale
             if 'lead_radius' in self.var_dict['Tool_Parameters'][tool]:
@@ -556,6 +566,7 @@ class MyConfig(object):
 
     def load_config(self):
         """Load Config File"""
+        migrated = False
         
         logger.info(self.filename)
         
@@ -580,6 +591,8 @@ class MyConfig(object):
                 # defined per tool (see the tools table). The old options of
                 # the [Lead_In_Out] section are removed.
                 self._migrate_lead_in_out()
+                old_knife = self.var_dict.get('Drag_Knife_Options', {})
+                old_planned = Validator().check('boolean', old_knife.pop('planned_passes', False))
                 _vdt = Validator()
                 result = self.var_dict.validate(_vdt, preserve_errors=True)
                 validate_errors = flatten_errors(self.var_dict, result)
@@ -611,6 +624,9 @@ class MyConfig(object):
                     if fileversion not in  SUPPORTED_CONFIGS:
                         raise VersionMismatchError(fileversion, SUPPORTED_CONFIGS)
                     else:
+                        if fileversion < 9.18:
+                            self._migrate_knife_depths(old_planned)
+                            migrated = True
                         self.var_dict['Version']['config_version']=CONFIG_VERSION
 
                     #if fileversion != CONFIG_VERSION:
@@ -650,6 +666,20 @@ class MyConfig(object):
             logger.debug(self.tr("created default varspace '%s'") % self.filename)
 
         self.var_dict.main.interpolation = False  # avoid ConfigObj getting too clever
+        if migrated and not self.version_mismatch:
+            self.file_store.write(self.var_dict, self.filename)
+
+    def _migrate_knife_depths(self, already_planned):
+        """Give legacy knife depths their new meaning exactly once."""
+        if already_planned or self.var_dict['General']['machine_type'] != 'drag_knife':
+            return
+        depth = self.var_dict['Depth_Coordinates']
+        self.var_dict['Drag_Knife_Options'].update(dict(
+            swivel_depth=depth['axis3_slice_depth'], extra_pass=False,
+            alternate=False, entry_mode='fixed', return_to_start=False,
+            alignment_length=0.0))
+        depth['axis3_slice_depth'] = -(abs(depth['axis3_mill_depth'] - depth['axis3_start_mill_depth']) or abs(depth['axis3_slice_depth']) or 1.0)
+        self.var_dict['Lead_In_Out'].update(dict(lead_in_mode='off', lead_out_mode='off'))
 
     def _migrate_lead_in_out(self):
         """
@@ -798,6 +828,8 @@ class MyConfig(object):
                 self.vars.Tool_Parameters[tool]['lead_length'] *= scale
                 self.vars.Tool_Parameters[tool]['milling_offset'] *= scale
                 self.vars.Tool_Parameters[tool]['overcut_length'] *= scale
+            for key in ('ramp_in_length', 'swivel_depth', 'lead_out_length', 'alignment_length'):
+                self.vars.Drag_Knife_Options[key] *= scale
         self.tool_units_metric = self.metric
 
 

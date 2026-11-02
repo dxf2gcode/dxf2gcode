@@ -1,6 +1,9 @@
 """Plan prepared drag-knife tip paths and the ramp into the workpiece."""
 
-from math import sqrt
+from math import acos, ceil, hypot, sqrt
+
+from dxf2gcode.domain.toolpath.knife_geometry import part
+from dxf2gcode.domain.toolpath.messages import QT_TRANSLATE_NOOP
 
 from dxf2gcode.domain.toolpath.movements import MovementPlan
 
@@ -41,58 +44,48 @@ class DragKnifeStrategy:
         return plan.finish()
 
     def _ramp_path(self, plan, path, start_z, settings):
-        remaining = settings.drag_ramp_length
-        finished = drag = False
+        """Keep the legacy path, but ramp continuously and retain each tail."""
+        length = settings.drag_ramp_length
+        if min(settings.feed_xy, settings.feed_depth) <= 0:
+            raise ValueError(QT_TRANSLATE_NOOP('Shape', 'Invalid drag-knife settings or contour.'))
+        if sum(g.length for g in path if not (g.kind == 'arc' and g.drag)) < length - 1e-9:
+            raise ValueError(QT_TRANSLATE_NOOP('Shape', 'The drag-knife ramp is longer than the available cutting path.'))
+        covered, z = 0.0, start_z
         for geo in path:
             is_drag = geo.kind == "arc" and geo.drag
-            if not finished and remaining > 0 and not is_drag:
-                remaining = self._ramp_geometry(
-                    plan, geo, remaining, settings.drag_ramp_length,
-                    start_z, settings.final_depth)
-                if remaining > 0:
-                    continue
-                finished = True
+            if is_drag:
+                lifted = max(z, settings.slice_depth)
+                plan.add("feed", settings.feed_depth)
+                plan.add("linear_z", lifted, role="drag_swivel")
+                plan.add("feed", settings.feed_xy)
+                plan.cut_geometry(geo, role="drag_swivel")
+                plan.add("feed", settings.feed_depth)
+                plan.add("linear_z", z, role="drag_swivel")
                 plan.add("feed", settings.feed_xy)
                 continue
-            if is_drag:
-                finished = True
-                plan.add("feed", settings.feed_depth)
-                plan.add("linear_z", settings.slice_depth, role="drag_swivel")
+            used = min(geo.length, max(0.0, length - covered))
+            if used > 1e-12:
+                head = part(geo, 0, used / geo.length)
+                count = 1
+                if head.kind == "arc":
+                    ratio = min(1.0, max(1e-12, plan.request.capabilities.fitting_tolerance / head.radius))
+                    count = max(1, int(ceil(abs(head.sweep) / (2 * acos(1 - ratio)))))
+                previous = head.start
+                for index in range(1, count + 1):
+                    fraction = index / count
+                    point = head.end if index == count else head.arc_point(head.start_angle + head.sweep * fraction)
+                    target = start_z + (settings.final_depth - start_z) * min(1.0, (covered + used * fraction) / length)
+                    xy, dz = hypot(point[0]-previous[0], point[1]-previous[1]), abs(target-z)
+                    duration = max(xy/settings.feed_xy, dz/settings.feed_depth)
+                    plan.add("feed", sqrt(xy*xy+dz*dz)/duration)
+                    if plan.request.capabilities.output_type == 'g-code':
+                        plan.add("linear_xyz", previous, point, z, target, role="ramp")
+                    else:
+                        # Non-G-code profiles retain their own XY/Z templates.
+                        plan.add('linear_z', target, role='ramp')
+                        plan.add('linear_xy', previous, point, role='ramp')
+                    previous, z = point, target
                 plan.add("feed", settings.feed_xy)
-                drag = True
-            elif drag:
-                plan.add("feed", settings.feed_depth)
-                plan.add("linear_z", settings.final_depth, role="drag_swivel")
-                plan.add("feed", settings.feed_xy)
-                drag = False
-            plan.cut_geometry(geo, role="drag_swivel" if is_drag else "cut")
-
-    @staticmethod
-    def _ramp_geometry(plan, geo, remaining, ramp_length, start_z, end_z):
-        if geo.length <= 0:
-            return remaining
-        used = min(geo.length, remaining)
-        steps = max(2, int(round(used)))
-        if geo.kind == "line":
-            factor = used / geo.length
-            end = tuple(a + (b - a) * factor for a, b in zip(geo.start, geo.end))
-            points = [
-                tuple(a + (b - a) * (float(index) / steps)
-                      for a, b in zip(geo.start, end))
-                for index in range(steps + 1)]
-        elif geo.kind == "arc":
-            end_angle = geo.start_angle + geo.sweep * (used / geo.length)
-            points = [
-                geo.arc_point(geo.start_angle +
-                              (end_angle - geo.start_angle) * (float(index) / steps))
-                for index in range(steps + 1)]
-        else:
-            return remaining
-        previous, covered = points[0], 0.0
-        for point in points[1:]:
-            covered += sqrt(sum((a - b) ** 2 for a, b in zip(previous, point)))
-            z = start_z + (end_z - start_z) * (covered / ramp_length)
-            plan.add("linear_z", z, role="ramp")
-            plan.add("linear_xy", previous, point, role="ramp")
-            previous = point
-        return remaining - used
+            if used < geo.length - 1e-12:
+                plan.cut_geometry(part(geo, used / geo.length, 1))
+            covered += geo.length

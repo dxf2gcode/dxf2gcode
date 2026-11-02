@@ -111,6 +111,8 @@ SOURCES += \
     dxf2gcode/presentation/qt/canvas3d.py \
     dxf2gcode/presentation/qt/configuration_widgets.py \
     dxf2gcode/presentation/qt/configuration_help.py \
+    dxf2gcode/domain/toolpath/knife_geometry.py \
+    dxf2gcode/domain/toolpath/strategies/knife_passes.py \
     dxf2gcode/presentation/qt/toolpath_labels.py \
     dxf2gcode/presentation/qt/configwindow.py \
     dxf2gcode/presentation/qt/messagebox.py \

@@ -27,6 +27,10 @@ class MovementPlan:
             else:
                 self.z_word = z - self.last_z
                 self.last_z = z
+        elif kind == "linear_xyz":
+            z = args[3]
+            self.z_word = z if self.request.capabilities.absolute_coordinates else z - self.last_z
+            self.last_z = z
 
     def geometry(self, geo, role="cut"):
         if geo.kind == "rapid":
@@ -81,6 +85,18 @@ class MovementPlan:
 
     def _arc(self, geo, role):
         caps = self.request.capabilities
+        if (self.request.settings.machine_type == 'drag_knife' and geo.sweep < 0
+                and caps.counterclockwise_arcs_only):
+            # A passive knife cannot follow an arc with swapped endpoints.
+            from math import acos, ceil
+            tolerance = min(geo.radius, max(1e-12, caps.fitting_tolerance))
+            count = max(1, int(ceil(abs(geo.sweep) / (2 * acos(1-tolerance/geo.radius)))))
+            start = geo.start
+            for index in range(1, count+1):
+                end = geo.end if index == count else geo.arc_point(geo.start_angle+geo.sweep*index/count)
+                self.add('linear_xy', start, end, role=role)
+                start = end
+            return
         if geo.radius > caps.max_arc_radius:
             self.add("linear_xy", geo.start, geo.end, role=role)
             return
@@ -121,8 +137,11 @@ class MovementPlan:
                 has_approach = True
             elif action.kind in ("linear_z", "drill"):
                 depth = action.args[0]
-            elif action.kind in ("linear_xy", "arc"):
-                if action.kind == "linear_xy":
+            elif action.kind in ("linear_xy", "linear_xyz", "arc"):
+                if action.kind == "linear_xyz":
+                    depth = action.args[3]
+                    move = ToolpathMove("linear_xy", action.args[0], action.args[1])
+                elif action.kind == "linear_xy":
                     move = ToolpathMove("linear_xy", *action.args)
                 else:
                     args = action.args
@@ -140,6 +159,6 @@ class MovementPlan:
             safe_margin=settings.safe_margin, retract_depth=settings.retract_depth,
             feed_depth=settings.feed_depth, feed_xy=settings.feed_xy,
             actions=tuple(self.actions), tool_radius=settings.tool_radius,
-            compensation_space=("programmed" if settings.machine_compensation
+            compensation_space=("programmed" if settings.machine_type != 'drag_knife' and settings.machine_compensation
                                 and request.compensation in (41, 42)
                                 else "tool_center"))

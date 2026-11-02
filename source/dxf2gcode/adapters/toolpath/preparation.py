@@ -46,12 +46,12 @@ def prepare_shape(shape, config=None, build_preview=True):
         for action in plan.actions:
             if action.kind == 'linear_z':
                 height = action.args[0]
-            if action.role == 'lead_out':
+            if action.role in ('lead_out', 'overcut'):
                 in_exit = True
             if in_exit and action.role == 'tab' and action.kind == 'linear_xy':
                 prepared.exit_geos.append(_existing_geometry(PathGeometry(
                     'break', action.args[0], action.args[1], height=height)))
-            if action.role != 'lead_out':
+            if action.role not in ('lead_out', 'overcut'):
                 continue
             args = action.args
             if action.kind == 'linear_xy':

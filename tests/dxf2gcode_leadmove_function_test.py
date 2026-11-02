@@ -767,6 +767,7 @@ class TestCanvasPreview(LeadMoveTestBase):
         painter = QPainter(image)
         try:
             gui.paint(painter, None)
+            gui.paint_details(painter)
         finally:
             painter.end()
 
@@ -965,6 +966,7 @@ class TestCanvasLeadColors(LeadMoveTestBase):
         painter = QPainter(image)
         try:
             gui.paint(painter, None)
+            gui.paint_details(painter)
         finally:
             painter.end()
 
@@ -1406,6 +1408,7 @@ class TestFoundProblems(LeadMoveTestBase):
             # the corner of the contour), so it is shifted into the image.
             painter.translate(100, 100)
             gui.paint(painter, None)
+            gui.paint_details(painter)
         finally:
             painter.end()
         # The marker is really drawn (red pixels at the start of the path).

@@ -263,6 +263,26 @@ test/build must be proposed and authorized separately; this plan authorizes none
   `application/shapes.py:SetShapeBreakPass`, `adapters/postprocessor/breaks.py`,
   drag-knife strategy, lathe formatting in `dialect.py`; inspect breaks-pass,
   slices and drag-knife tests/goldens.
+- **Additional drag-knife tutorial (added 2026-11-02):** Erich Styger,
+  [Optimized Vinyl Cutting G-Code Tool Path with DXF2GCODE](https://mcuoneclipse.com/2021/07/06/optimized-g-code-tool-path-for-vinyl-cutting-with-dxf2gcode/),
+  MCU on Eclipse, 2021-07-06. Use as a reference and further-reading link for
+  the future Drag Knife section: blade offset, corner swivels, tool assignment,
+  cutting depth and feed, and a practical star-shaped vinyl-cutting example.
+  Recheck its historical UI instructions and especially the diameter versus
+  blade-offset convention against the current implementation. Shapeoko/Carbide
+  Motion postprocessor changes are machine-specific examples, not defaults.
+  The comment reporting an incomplete cut at the contour closure also provides
+  historical context for D1; it does not establish the current cause. Draft
+  current instructions from verified behavior; reuse of article text, images
+  or example files requires a separate rights review.
+- **Existing regression reference (added 2026-11-02):**
+  [Dragknife issue, May 2022](https://www.ltspiceusers.ch/threads/dragknife-issue.1126/)
+  and local `dxf/drag_knive_test.dxf`, added by the thread's linked commit
+  `0178408`. The historically fixed issue concerns lifting to swivel depth
+  before the final swivel, with the corresponding Z/XY feed changes. Use the
+  [D1/D2 test plan](../drag-knife-plan.md#vorhandene-forums-testdatei-abschließender-messerschwenk)
+  for current verification; do not present the historical defect as current
+  or publish the fixture merely because it is available as a local test.
 - **Media/examples:** own tab-height/pass diagram and simple mode examples;
   missing `Spant.png` stays an explicit gap until replacement is approved.
 - **Questions:** default vs explicit per-pass tabs, sign/depth meaning, lathe

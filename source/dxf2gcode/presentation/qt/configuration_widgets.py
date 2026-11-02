@@ -14,6 +14,7 @@ from dxf2gcode.presentation.qt.configwindow import (
     CfgDoubleSpinBox,
     CfgLineEdit,
     CfgListEdit,
+    CfgNote,
     CfgSpinBox,
     CfgSubtitle,
     CfgTableCustomActions,
@@ -32,7 +33,7 @@ def build_application_config_widgets(config):
         "WARNING": tr(QT_TRANSLATE_NOOP('MyConfig', "Warning")), "ERROR": tr(QT_TRANSLATE_NOOP('MyConfig', "Error")),
         "CRITICAL": tr(QT_TRANSLATE_NOOP('MyConfig', "Critical")),
     }
-    return OrderedDict([
+    widgets = OrderedDict([
         ("__section_title__", {
             "Tool_Parameters": tr(QT_TRANSLATE_NOOP('MyConfig', "Tools table")),
             "Custom_Actions": tr(QT_TRANSLATE_NOOP('MyConfig', "Custom actions")),
@@ -55,21 +56,22 @@ def build_application_config_widgets(config):
         ])),
         ("General", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "General settings"))),
+            ("__intro__", CfgNote(tr(QT_TRANSLATE_NOOP('MyConfig', "The controls show the loaded profile values. A new profile starts with factory defaults; it does not copy this profile.")))),
             ("mode3d", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "3D mode (requires OpenGL - restart needed)")))),
-            ("show_disabled_paths", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Display disabled paths (default)")))),
-            ("live_update_export_route", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Live update export route (default)")))),
+            ("show_disabled_paths", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show disabled paths")))),
+            ("live_update_export_route", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Update export route live")))),
             ("show_scale_bar", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show a scale bar in the canvas")))),
             ("expand_layers_on_load", CfgCheckBox(
                 QtCore.QCoreApplication.translate(
                     "MyConfig", "Expand layers when loading a drawing"))),
             ("__subtitle2__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Milling")))),
-            ("split_line_segments", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Split line segments (default)")))),
-            ("automatic_cutter_compensation", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Automatic cutter compensation (default)")))),
-            ("machine_type", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Machine type (default):")), item_labels={
+            ("split_line_segments", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Split imported line segments")))),
+            ("automatic_cutter_compensation", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Automatic cutter compensation")))),
+            ("machine_type", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Machine type:")), item_labels={
                 "milling": tr(QT_TRANSLATE_NOOP('MyConfig', "Milling")), "lathe": tr(QT_TRANSLATE_NOOP('MyConfig', "Lathe")),
                 "drag_knife": tr(QT_TRANSLATE_NOOP('MyConfig', "Drag knife")),
             })),
-            ("tool_units", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Configuration values use the unit (restart needed):")), item_labels={
+            ("tool_units", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Configuration values use the unit:")), item_labels={
                 "mm": tr(QT_TRANSLATE_NOOP('MyConfig', "Millimeters (mm)")), "in": tr(QT_TRANSLATE_NOOP('MyConfig', "Inches (in)")),
             })),
             ("__subtitle3__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Output")))),
@@ -107,31 +109,42 @@ def build_application_config_widgets(config):
         ("Cutter_Compensation", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Output settings"))),
             ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Cutter compensation")))),
-            ("done_by_machine", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Cutter compensation is done by machine (check box if machine reconizes G41 and G42 commands / uncheck otherwise. This also disables pocket milling.)")))),
+            ("done_by_machine", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Machine cutter compensation"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Cutter compensation is done by machine (check box if machine reconizes G41 and G42 commands / uncheck otherwise. This also disables pocket milling.)')))),
         ])),
         ("Pocketing", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Output settings"))),
             ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Pocket milling")))),
-            ("pocket_edge_clearance", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Pocket edge clearance (distance between cutting edge and contour, as % of tool diameter):")), " %", 0, 100, 2)),
+            ("pocket_edge_clearance", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Pocket edge clearance:")), " %", 0, 100, 2).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Pocket edge clearance (distance between cutting edge and contour, as % of tool diameter):')))),
         ])),
         ("Drag_Knife_Options", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Output settings"))),
             ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Drag Knife options")))),
-            ("drag_angle", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', 'Retract to drag depth ("Third axis slice depth") if angle exceeds:')), "°")),
-            ("drag_start_angle", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Direction the knife points to when the cut starts (0 = positive X axis):")), "°")),
-            ("ramp_in_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Ramp in length (the knife is plunged gradually over this length):")), "", None, None, 4)),
+            ("entry_mode", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Knife orientation before entry:")), item_labels={
+                'fixed': tr(QT_TRANSLATE_NOOP('MyConfig', "Assume configured start angle")),
+                'previous': tr(QT_TRANSLATE_NOOP('MyConfig', "Retain previous angle (first cut: start angle)")),
+                'unknown': tr(QT_TRANSLATE_NOOP('MyConfig', "Unknown: external settling stroke")),
+            })),
+            ("alignment_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Alignment length:")), coordinate_unit, 0, None, 4).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Settling length (verify on the actual knife and material):')))),
+            ("return_to_start", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Return knife to start angle"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Return to start angle in lead out before lifting')))),
+            ("swivel_depth", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Swivel contact Z:")), coordinate_unit, None, None, 4)),
+            ("extra_pass", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Additional cut at final depth"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'One additional complete cut at final depth')))),
+            ("alternate", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Alternate open cuts"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Alternate open cuts using external straight leads')))),
+            ("lead_out_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Knife lead out length:")), coordinate_unit, 0, None, 4).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Knife lead out length (lead in uses tool lead length):')))),
+            ("drag_angle", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', 'Lift for swivels if angle exceeds:')), "°")),
+            ("drag_start_angle", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Initial knife angle:")), "°").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Direction the knife points to when the cut starts (0 = positive X axis):')))),
+            ("ramp_in_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Ramp length (0 = vertical plunge):")), coordinate_unit, 0, None, 4)),
         ])),
         ("Lead_In_Out", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Output settings"))),
             ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Lead in / lead out")))),
             ("lead_in_mode", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Default lead in at the start of the contour:")), item_labels=lead_mode_labels())),
             ("lead_out_mode", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Default lead out at the end of the contour:")), item_labels=lead_mode_labels())),
-            ("overcut_enabled", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Overcut: continue the cut along the contour beyond the closing point (closed contours only) - the length is defined per tool in the tools table")))),
+            ("overcut_enabled", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Overcut closed contours"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Overcut: continue the cut along the contour beyond the closing point (closed contours only) - the length is defined per tool in the tools table')))),
         ])),
         ("Route_Optimisation", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Output settings"))),
             ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "TSP optimizer")))),
-            ("default_TSP", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "By default enable the TSP optimization for ordering shapes (TSP = Travelling Salesman Problem)")))),
+            ("default_TSP", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Allow optimization for new shapes")))),
             ("TSP_shape_order", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Optimizer behaviour:")), item_labels={
                 "CONSTRAIN_ORDER_ONLY": tr(QT_TRANSLATE_NOOP('MyConfig', "Keep fixed shapes in relative order")),
                 "CONSTRAIN_PLACE_AFTER": tr(QT_TRANSLATE_NOOP('MyConfig', "Place optimized shapes after fixed shapes")),
@@ -149,14 +162,15 @@ def build_application_config_widgets(config):
             ("point_tolerance", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "DXF default import point tolerance:")), "", None, None, 5)),
             ("spline_check", CfgSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "DXF import spline check:")))),
             ("fitting_tolerance", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "DXF default import fit tolerance:")), "", None, None, 5)),
-            ("insert_at_block_layer", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "insert elements which are part of a block to layer where the block is inserted")))),
+            ("insert_at_block_layer", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Import inserted entities on block layer"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'insert elements which are part of a block to layer where the block is inserted')))),
             ("exclude_ignore_layers", CfgCheckBox(QtCore.QCoreApplication.translate(
                 "MyConfig", "Do not import IGNORE layers"))),
             ("exclude_layer_zero", CfgCheckBox(QtCore.QCoreApplication.translate(
                 "MyConfig", "Do not import layer 0"))),
         ])),
         ("Layer_Options", OrderedDict([
-            ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Automatic tool config"))),
+            ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Parameter names"))),
+            ("__intro__", CfgNote(tr(QT_TRANSLATE_NOOP('MyConfig', "These names identify parameters in DXF layer names. Enter multiple names per parameter separated by commas.")))),
             ("id_float_separator", CfgLineEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Separator between identifier and value:")))),
             ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Parameters' identifiers")))),
             ("mill_depth_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Final mill depth:")), ",")),
@@ -164,20 +178,20 @@ def build_application_config_widgets(config):
             ("start_mill_depth_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Workpiece top:")), ",")),
             ("retract_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Retraction area:")), ",")),
             ("safe_margin_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Safety margin:")), ",")),
-            ("f_g1_plane_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "G1 feed rate for first and second axis (2D plane):")), ",")),
-            ("f_g1_depth_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "G1 feed rate for third axis:")), ",")),
+            ("f_g1_plane_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "XY feed rate:")), ",").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'G1 feed rate for first and second axis (2D plane):')))),
+            ("f_g1_depth_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Z feed rate:")), ",").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'G1 feed rate for third axis:')))),
             ("tool_nr_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Tool number:")), ",")),
             ("tool_diameter_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Tool diameter:")), ",")),
             ("spindle_speed_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Spindle speed:")), ",")),
-            ("start_radius_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Start radius (cutter compensation, deprecated - use the lead radius instead):")), ",")),
-            ("milling_offset_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Additional offset (finishing allowance):")), ",")),
-            ("lead_in_mode_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Lead in mode (0 = start move, 1 = off, 2 = straight, 3 = radius, 4 = configuration default):")), ",")),
-            ("lead_out_mode_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Lead out mode (0 = off, 1 = straight, 2 = radius, 3 = start move, 4 = configuration default):")), ",")),
-            ("lead_radius_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Common lead in / lead out radius at the workpiece:")), ",")),
-            ("lead_length_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Common lead in / lead out length of the straight part:")), ",")),
+            ("start_radius_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Legacy start radius:")), ",").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Start radius (cutter compensation, deprecated - use the lead radius instead):')))),
+            ("milling_offset_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Finishing allowance:")), ",").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Additional offset (finishing allowance):')))),
+            ("lead_in_mode_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Lead in mode:")), ",").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Lead in mode (0 = start move, 1 = off, 2 = straight, 3 = radius, 4 = configuration default):')))),
+            ("lead_out_mode_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Lead out mode:")), ",").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Lead out mode (0 = off, 1 = straight, 2 = radius, 3 = start move, 4 = configuration default):')))),
+            ("lead_radius_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Lead radius:")), ",").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Common lead in / lead out radius at the workpiece:')))),
+            ("lead_length_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Straight lead length:")), ",").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Common lead in / lead out length of the straight part:')))),
             ("overcut_length_identifiers", CfgListEdit(tr(QT_TRANSLATE_NOOP('MyConfig', "Overcut length:")), ",")),
         ])),
-        ("Tool_Parameters", CfgTableToolParameters(tr(QT_TRANSLATE_NOOP('MyConfig', "Define the tools here:")))),
+        ("Tool_Parameters", CfgTableToolParameters(tr(QT_TRANSLATE_NOOP('MyConfig', "Define the tools here:")), knife_offset=lambda: config.machine_type == 'drag_knife')),
         ("Custom_Actions", CfgTableCustomActions(tr(QT_TRANSLATE_NOOP('MyConfig', "Define here custom GCODE that can be inserted anywhere in the program:")))),
         ("Logging", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Software config"))),
@@ -187,6 +201,26 @@ def build_application_config_widgets(config):
             ("window_loglevel", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "For message box log messages with importance minimal to level (restart needed):")), item_labels=log_levels)),
         ])),
     ])
+    from validate import Validator
+    validator = Validator()
+    explanations = {
+        ('General', 'show_disabled_paths'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Initial visibility of disabled contours. The View menu can change visibility for the current session.')),
+        ('General', 'live_update_export_route'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Initial live display of export connections. Manual route display remains available when live updates are off.')),
+        ('General', 'split_line_segments'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Used when importing DXF line segments. Saved projects retain their own import settings.')),
+        ('General', 'automatic_cutter_compensation'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Controls automatic compensation selection for imported contours. Contour settings and saved projects are separate from this profile default.')),
+        ('General', 'machine_type'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Applies the machine type to the current drawing and saves it for new sessions. The drawing is rebuilt without restarting the application.')),
+        ('Route_Optimisation', 'default_TSP'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Initial optimization permission for new contours. Existing contour permissions are not reset by opening this dialog.')),
+    }
+    for (section, key), explanation in explanations.items():
+        control = widgets[section][key]
+        default = validator.get_default_value(config.spec[section][key])
+        if isinstance(default, bool):
+            label = tr(QT_TRANSLATE_NOOP('MyConfig', 'On')) if default else tr(QT_TRANSLATE_NOOP('MyConfig', 'Off'))
+        else:
+            label = control.item_labels.get(default, str(default))
+        control.setDescription(explanation)
+        control.setDefaultHint(tr(QT_TRANSLATE_NOOP('MyConfig', 'Default for new profiles: %s')) % label)
+    return widgets
 
 
 def build_postprocessor_config_widgets(translate):
@@ -243,6 +277,7 @@ def build_postprocessor_config_widgets(translate):
             ("rap_pos_plane", CfgLineEdit(tr(QT_TRANSLATE_NOOP('MyPostProConfig', "Rapid positioning for XY plane:")))),
             ("rap_pos_depth", CfgLineEdit(tr(QT_TRANSLATE_NOOP('MyPostProConfig', "Rapid positioning for Z plane:")))),
             ("lin_mov_plane", CfgLineEdit(tr(QT_TRANSLATE_NOOP('MyPostProConfig', "Linear feed move for XY plane:")))),
+            ("lin_mov_xyz", CfgLineEdit(tr(QT_TRANSLATE_NOOP('MyPostProConfig', "Coordinated linear XYZ move:")))),
             ("lin_mov_depth", CfgLineEdit(tr(QT_TRANSLATE_NOOP('MyPostProConfig', "Linear feed move for Z plane:")))),
             ("lin_mov_drill", CfgLineEdit(tr(QT_TRANSLATE_NOOP('MyPostProConfig', "Linear feed move for drilling:")))),
             ("lin_ret_drill", CfgLineEdit(tr(QT_TRANSLATE_NOOP('MyPostProConfig', "Linear retract move during drilling:")))),

@@ -63,7 +63,7 @@ from dxf2gcode.presentation.qt.treeview import MyStandardItemModel
 from dxf2gcode.application.text_helpers import toInt, toFloat
 
 import dxf2gcode.domain.constants as c
-from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMenu, QWidget, QAbstractItemView, QTreeView
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMenu, QWidget, QAbstractItemView, QTreeView, QLabel, QLineEdit
 from dxf2gcode.presentation.qt.qt_compat.QtCore import QItemSelectionModel, QItemSelection
 from dxf2gcode.presentation.qt.qt_compat.QtGui import QAction, QStandardItem, QIcon, QPixmap, QStandardItemModel, QPalette
 from dxf2gcode.presentation.qt.qt_compat import QtCore
@@ -161,6 +161,7 @@ class TreeHandler(QWidget):
         """
         QWidget.__init__(self)
         self.ui = ui
+        self._ensure_knife_swivel_widgets()
 
         # Used to store previous values in order to enable/disable text
         self.palette = self.ui.zRetractionArealLineEdit.palette()
@@ -1474,6 +1475,36 @@ class TreeHandler(QWidget):
                             [real_item], axis3_safe_margin=val[0])
                         self.axis3_safe_margin = real_item.axis3_safe_margin
 
+    def _ensure_knife_swivel_widgets(self):
+        if hasattr(self.ui, 'knifeSwivelLineEdit'):
+            return
+        ui = self.ui
+        ui.knifeSwivelLabel = QLabel(self.tr("Swivel contact Z"), getattr(ui, 'shapeGroupBox', self))
+        ui.knifeSwivelLineEdit = QLineEdit(getattr(ui, 'shapeGroupBox', self))
+        if hasattr(ui, 'gridLayout'):
+            row = ui.gridLayout.rowCount()
+            ui.gridLayout.addWidget(ui.knifeSwivelLabel, row, 0)
+            ui.gridLayout.addWidget(ui.knifeSwivelLineEdit, row, 1)
+        ui.knifeSwivelLineEdit.editingFinished.connect(self.knifeSwivelDepthUpdate)
+
+    def knifeSwivelDepthUpdate(self):
+        widget = self.ui.knifeSwivelLineEdit
+        if g.config.machine_type != 'drag_knife':
+            return
+        if not widget.text().strip():
+            value, valid = None, widget.isModified()
+        else:
+            value, valid = self._edited_parameter_value(widget)
+        if not valid:
+            return
+        for shape in self.display_tool_shapes:
+            if isinstance(shape, Shape):
+                UpdateShapeParameters().execute([shape], 'drag_swivel_depth', value)
+                g.window.canvas_scene.repaint_shape(shape)
+        self.prepareExportOrderUpdate()
+        self.updateToolParameters()
+        g.window.canvas_scene.update()
+
     def toolParameterzInfeedDepthUpdate(self):
         """
         Slot that updates the above tools parameter when the
@@ -1777,6 +1808,10 @@ class TreeHandler(QWidget):
         This function restore defaults for tools parameters widgets
         (disabled, default color, ...)
         """
+        self._ensure_knife_swivel_widgets()
+        knife = g.config.machine_type == 'drag_knife'
+        self.ui.knifeSwivelLabel.setVisible(knife)
+        self.ui.knifeSwivelLineEdit.setVisible(knife)
         number_of_selected_items = len(self.ui.layersShapesTreeView.selectedIndexes())
 
         if number_of_selected_items <= 2:  # 2 selections = 1 row of 2 columns
@@ -2029,6 +2064,7 @@ class TreeHandler(QWidget):
         different tools are handled correctly.
         @return the list of parameter descriptions
         """
+        self._ensure_knife_swivel_widgets()
         def config_default(section, key):
             def getter(item):
                 return float(g.config.vars[section][key])
@@ -2080,6 +2116,9 @@ class TreeHandler(QWidget):
              self.tr("Z infeed depth: maximum depth removed per pass in"
                      " Z direction. [mm] Smaller values create more"
                      " passes.")),
+            ("drag_swivel_depth", self.ui.knifeSwivelLineEdit, False,
+             config_default('Drag_Knife_Options', 'swivel_depth'),
+             self.tr("Absolute Z contact height while swiveling the knife. Clear the field to use the configuration value. Never plunges below the current cut depth.")),
             ("axis3_mill_depth", self.ui.zFinalMillDepthLineEdit, False,
              config_default("Depth_Coordinates", "axis3_mill_depth"),
              self.tr("Z final mill depth: final Z target of the milling"
@@ -2113,6 +2152,8 @@ class TreeHandler(QWidget):
                 self._mill_parameter_fields():
             if tooltip:
                 widget.setToolTip(tooltip)
+                if attribute == 'drag_swivel_depth':
+                    self.ui.knifeSwivelLabel.setToolTip(tooltip)
         self.ui.toolDiameterComboBox.setToolTip(self.tr(
             "Tool used for this layer. Diameter, speed, start radius and"
             " additional offset are defined per tool in the Tools table."))
@@ -2290,6 +2331,10 @@ class TreeHandler(QWidget):
             self._set_parameter_widget(widget, state, value, standard)
             # keep the state used by the update slots / paint routines
             setattr(self, attribute, value if state == sps.SAME else None)
+
+        knife = g.config.machine_type == 'drag_knife'
+        self.ui.knifeSwivelLabel.setVisible(knife)
+        self.ui.knifeSwivelLineEdit.setVisible(knife)
 
         # The methods of the lead in, of the lead out and the overcut are
         # settings of the shape (each contour has its own). The combobox shows

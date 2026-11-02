@@ -109,6 +109,7 @@ class Shape(ContourGeometry):
         self.f_g1_plane = g.config.vars.Feed_Rates['f_g1_plane']
         self.f_g1_depth = g.config.vars.Feed_Rates['f_g1_depth']
         # Parameters for drag knife
+        self._drag_swivel_depth = None
         self.drag_angle = radians(
             g.config.vars.Drag_Knife_Options['drag_angle'])
 
@@ -140,6 +141,15 @@ class Shape(ContourGeometry):
         self.lead_out_mode = LEAD_DEFAULT
         self.lead_in_mode_overridden = False
         self.lead_out_mode_overridden = False
+
+    @property
+    def drag_swivel_depth(self):
+        value = self._drag_swivel_depth
+        return g.config.vars.Drag_Knife_Options.swivel_depth if value is None else value
+
+    @drag_swivel_depth.setter
+    def drag_swivel_depth(self, value):
+        self._drag_swivel_depth = value
 
     def _get_lead_mode(self, attribute):
         """

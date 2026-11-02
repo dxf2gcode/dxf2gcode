@@ -237,7 +237,8 @@ class StMove(object):
             return
 
         if self.settings.machine_type == 'drag_knife':
-            self.make_swivelknife_move()
+            # The native knife planner owns leads, orientation and passes.
+            self.append(RapidPos(self.shape.geos.abs_el(0).get_start_end_points(True)))
             # All swivel knife geometries belong to the compensated toolpath
             self.pocket_geos_start = len(self.geos)
             return

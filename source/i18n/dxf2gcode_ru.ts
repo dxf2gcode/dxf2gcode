@@ -639,14 +639,22 @@ The table &quot;{0}&quot; must always contains tool number &apos;1&apos;
         <source>
 Tool {0}: the {1} is not valid: {2}
 </source>
-        <translation>Инструмент {0}: {1} недопустимо: {2}</translation>
+        <translation>
+Инструмент {0}: {1} недопустимо: {2}
+</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="1733"/>
         <source>
 Tool {0}: the {1} is at the limit: {2}
 </source>
-        <translation>Инструмент {0}: {1} на пределе: {2}</translation>
+        <translation>
+Инструмент {0}: {1} на пределе: {2}
+</translation>
+    </message>
+    <message>
+        <source>Knife offset</source>
+        <translation>Смещение ножа</translation>
     </message>
 </context>
 <context>
@@ -2134,6 +2142,44 @@ Do you want to save them before switching the profile?</source>
         <source>Shapes %s combine drilling with pocket milling or G41/G42. Their settings were preserved. Select drilling, pocket milling or cutter compensation in the context menu to resolve each conflict. Affected shapes cannot be exported until then.</source>
         <translation>Фигуры %s совмещают сверление с фрезерованием карманов или G41/G42. Их настройки сохранены. Выберите сверление, фрезерование карманов или компенсацию радиуса инструмента в контекстном меню для устранения каждого конфликта. До этого соответствующие фигуры не могут быть экспортированы.</translation>
     </message>
+    <message>
+        <source>3D display</source>
+        <translation>Трёхмерное отображение</translation>
+    </message>
+    <message>
+        <source>Machine type</source>
+        <translation type="obsolete">Тип станка</translation>
+    </message>
+    <message>
+        <source>Import tolerances</source>
+        <translation type="obsolete">Допуски импорта</translation>
+    </message>
+    <message>
+        <source>Logging</source>
+        <translation>Ведение журнала</translation>
+    </message>
+    <message>
+        <source>Restart required</source>
+        <translation>Требуется перезапуск</translation>
+    </message>
+    <message>
+        <source>Restart failed</source>
+        <translation>Не удалось перезапустить</translation>
+    </message>
+    <message>
+        <source>These saved changes require a restart:
+{0}
+
+After you close the configuration window, DXF2GCODE will restart with an empty window. The current drawing and unsaved machining changes will not be restored.</source>
+        <translation>Эти сохранённые изменения требуют перезапуска:
+{0}
+
+После закрытия окна конфигурации DXF2GCODE перезапустится с пустым окном. Текущий чертёж и несохранённые изменения обработки не будут восстановлены.</translation>
+    </message>
+    <message>
+        <source>DXF2GCODE could not be restarted. The current window remains open. You can restart the application manually.</source>
+        <translation>Не удалось перезапустить DXF2GCODE. Текущее окно остаётся открытым. Вы можете перезапустить приложение вручную.</translation>
+    </message>
 </context>
 <context>
     <name>MessageBox</name>
@@ -2282,7 +2328,7 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
     </message>
     <message>
         <source>Configuration values use the unit (restart needed):</source>
-        <translation>Единицы измерений в конфигурации (нужен перезапуск):</translation>
+        <translation type="obsolete">Единицы измерений в конфигурации (нужен перезапуск):</translation>
     </message>
     <message>
         <source>Output</source>
@@ -2675,6 +2721,226 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
     <message>
         <source>Nearest neighbor</source>
         <translation>Ближайший сосед</translation>
+    </message>
+    <message>
+        <source>Use planned knife cuts (slice depth = infeed per cut)</source>
+        <translation type="obsolete">Планировать проходы ножа (глубина прохода = врезание за проход)</translation>
+    </message>
+    <message>
+        <source>Swivel contact Z (planned cuts only):</source>
+        <translation type="obsolete">Контактная высота Z поворота (только планируемые проходы):</translation>
+    </message>
+    <message>
+        <source>One additional complete cut at final depth</source>
+        <translation>Один дополнительный полный проход на конечной глубине</translation>
+    </message>
+    <message>
+        <source>Alternate open cuts using external straight leads</source>
+        <translation>Чередовать направление открытых проходов с внешними прямыми подводами</translation>
+    </message>
+    <message>
+        <source>Knife lead out length (lead in uses tool lead length):</source>
+        <translation>Длина отвода ножа (подвод использует длину из таблицы инструментов):</translation>
+    </message>
+    <message>
+        <source>Lift for swivels if angle exceeds:</source>
+        <translation>Приподнимать для поворота, если угол превышает:</translation>
+    </message>
+    <message>
+        <source>Ramp length (0 = vertical plunge):</source>
+        <translation>Длина наклонного врезания (0 = вертикальное врезание):</translation>
+    </message>
+    <message>
+        <source>Knife orientation before entry:</source>
+        <translation>Ориентация ножа перед входом:</translation>
+    </message>
+    <message>
+        <source>Assume configured start angle</source>
+        <translation>Использовать заданный начальный угол</translation>
+    </message>
+    <message>
+        <source>Retain previous angle (first cut: start angle)</source>
+        <translation>Сохранять предыдущий угол (первый рез: начальный угол)</translation>
+    </message>
+    <message>
+        <source>Unknown: external settling stroke</source>
+        <translation>Неизвестна: внешний участок ориентации</translation>
+    </message>
+    <message>
+        <source>Settling length (verify on the actual knife and material):</source>
+        <translation>Длина ориентации (проверить на используемом ноже и материале):</translation>
+    </message>
+    <message>
+        <source>Return to start angle in lead out before lifting</source>
+        <translation>Вернуть начальный угол на отводе перед подъёмом</translation>
+    </message>
+    <message>
+        <source>Parameter names</source>
+        <translation>Имена параметров</translation>
+    </message>
+    <message>
+        <source>These names identify parameters in DXF layer names. Enter multiple names per parameter separated by commas.</source>
+        <translation>Эти имена обозначают параметры в названиях слоёв DXF. Для каждого параметра можно указать несколько имён через запятую.</translation>
+    </message>
+    <message>
+        <source>Machine cutter compensation</source>
+        <translation>Коррекция радиуса на станке</translation>
+    </message>
+    <message>
+        <source>Overcut closed contours</source>
+        <translation>Перерез замкнутых контуров</translation>
+    </message>
+    <message>
+        <source>Pocket edge clearance:</source>
+        <translation>Отступ от края кармана:</translation>
+    </message>
+    <message>
+        <source>Planned knife depth passes</source>
+        <translation type="obsolete">Планируемые проходы ножа</translation>
+    </message>
+    <message>
+        <source>Alignment length:</source>
+        <translation>Длина ориентации:</translation>
+    </message>
+    <message>
+        <source>Return knife to start angle</source>
+        <translation>Вернуть начальный угол ножа</translation>
+    </message>
+    <message>
+        <source>Swivel contact Z:</source>
+        <translation>Контактная высота Z поворота:</translation>
+    </message>
+    <message>
+        <source>Additional cut at final depth</source>
+        <translation>Дополнительный рез на конечной глубине</translation>
+    </message>
+    <message>
+        <source>Alternate open cuts</source>
+        <translation>Чередовать направление открытых резов</translation>
+    </message>
+    <message>
+        <source>Knife lead out length:</source>
+        <translation>Длина отвода ножа:</translation>
+    </message>
+    <message>
+        <source>Initial knife angle:</source>
+        <translation>Начальный угол ножа:</translation>
+    </message>
+    <message>
+        <source>Optimize shape order by default</source>
+        <translation>Оптимизировать порядок по умолчанию</translation>
+    </message>
+    <message>
+        <source>Import inserted entities on block layer</source>
+        <translation>Импортировать вставленные элементы на слой блока</translation>
+    </message>
+    <message>
+        <source>Legacy start radius:</source>
+        <translation>Начальный радиус (устаревший):</translation>
+    </message>
+    <message>
+        <source>Finishing allowance:</source>
+        <translation>Припуск на чистовую обработку:</translation>
+    </message>
+    <message>
+        <source>Lead in mode:</source>
+        <translation>Режим подвода:</translation>
+    </message>
+    <message>
+        <source>Lead out mode:</source>
+        <translation>Режим отвода:</translation>
+    </message>
+    <message>
+        <source>Lead radius:</source>
+        <translation>Радиус подвода/отвода:</translation>
+    </message>
+    <message>
+        <source>Straight lead length:</source>
+        <translation>Длина прямого подвода/отвода:</translation>
+    </message>
+    <message>
+        <source>XY feed rate:</source>
+        <translation>Подача XY:</translation>
+    </message>
+    <message>
+        <source>Z feed rate:</source>
+        <translation>Подача Z:</translation>
+    </message>
+    <message>
+        <source>The controls show the loaded profile values. A new profile starts with factory defaults; it does not copy this profile.</source>
+        <translation>Поля показывают значения загруженного профиля. Новый профиль использует заводские настройки, а не копию этого профиля.</translation>
+    </message>
+    <message>
+        <source>Show disabled paths</source>
+        <translation>Показывать отключённые контуры</translation>
+    </message>
+    <message>
+        <source>Update export route live</source>
+        <translation>Обновлять маршрут экспорта в реальном времени</translation>
+    </message>
+    <message>
+        <source>Split imported line segments</source>
+        <translation>Разделять импортируемые отрезки</translation>
+    </message>
+    <message>
+        <source>Automatic cutter compensation</source>
+        <translation>Автоматическая коррекция радиуса</translation>
+    </message>
+    <message>
+        <source>Machine type at startup:</source>
+        <translation type="obsolete">Тип станка при запуске:</translation>
+    </message>
+    <message>
+        <source>Allow optimization for new shapes</source>
+        <translation>Разрешать оптимизацию новых контуров</translation>
+    </message>
+    <message>
+        <source>Initial visibility of disabled contours. The View menu can change visibility for the current session.</source>
+        <translation>Начальная видимость отключённых контуров. Её можно изменить для текущего сеанса в меню «Вид».</translation>
+    </message>
+    <message>
+        <source>Initial live display of export connections. Manual route display remains available when live updates are off.</source>
+        <translation>Начальное обновление связей экспорта в реальном времени. При отключённом обновлении маршрут можно показывать вручную.</translation>
+    </message>
+    <message>
+        <source>Used when importing DXF line segments. Saved projects retain their own import settings.</source>
+        <translation>Применяется при импорте отрезков DXF. Сохранённые проекты сохраняют собственные настройки импорта.</translation>
+    </message>
+    <message>
+        <source>Controls automatic compensation selection for imported contours. Contour settings and saved projects are separate from this profile default.</source>
+        <translation>Управляет автоматическим выбором коррекции для импортируемых контуров. Параметры контуров и сохранённые проекты отделены от этого значения профиля.</translation>
+    </message>
+    <message>
+        <source>Startup machine type. The machine menu or a loaded project can select a different mode for the current drawing.</source>
+        <translation type="obsolete">Тип станка при запуске. Меню станка или загруженный проект может выбрать другой режим для текущего чертежа.</translation>
+    </message>
+    <message>
+        <source>Initial optimization permission for new contours. Existing contour permissions are not reset by opening this dialog.</source>
+        <translation>Начальное разрешение оптимизации новых контуров. Открытие этого окна не сбрасывает разрешения существующих контуров.</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation>Вкл.</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Выкл.</translation>
+    </message>
+    <message>
+        <source>Default for new profiles: %s</source>
+        <translation>Заводское значение для новых профилей: %s</translation>
+    </message>
+    <message>
+        <source>Configuration values use the unit:</source>
+        <translation>Единицы значений конфигурации:</translation>
+    </message>
+    <message>
+        <source>Machine type:</source>
+        <translation>Тип станка:</translation>
+    </message>
+    <message>
+        <source>Applies the machine type to the current drawing and saves it for new sessions. The drawing is rebuilt without restarting the application.</source>
+        <translation>Применяет тип станка к текущему чертежу и сохраняет его для новых сеансов. Чертёж перестраивается без перезапуска приложения.</translation>
     </message>
 </context>
 <context>
@@ -3097,6 +3363,10 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <source>Explicit tool-to-offset mapping</source>
         <translation>Явное соответствие инструмента и коррекции</translation>
     </message>
+    <message>
+        <source>Coordinated linear XYZ move:</source>
+        <translation>Согласованное линейное перемещение XYZ:</translation>
+    </message>
 </context>
 <context>
     <name>MyPostProcessor</name>
@@ -3463,6 +3733,30 @@ Skipped Geometries</source>
         <source>Shape %i: drilling cannot be combined with pocket milling or G41/G42. Select a machining mode before exporting.</source>
         <translation>Фигура %i: сверление нельзя совмещать с фрезерованием карманов или G41/G42. Перед экспортом выберите режим обработки.</translation>
     </message>
+    <message>
+        <source>Invalid drag-knife settings or contour.</source>
+        <translation>Недопустимые параметры флюгерного ножа или контур.</translation>
+    </message>
+    <message>
+        <source>The drag-knife ramp is longer than the available cutting path.</source>
+        <translation>Длина наклонного врезания ножа превышает доступную траекторию реза.</translation>
+    </message>
+    <message>
+        <source>The drag-knife lead is too short for external alignment.</source>
+        <translation>Подвод ножа слишком короткий для внешней ориентации.</translation>
+    </message>
+    <message>
+        <source>Alternating drag-knife cuts require straight lead in and lead out.</source>
+        <translation>Чередование направления реза ножа требует прямых подводов и отводов.</translation>
+    </message>
+    <message>
+        <source>Unknown knife orientation requires an external lead and an alignment length of at least twice the knife offset.</source>
+        <translation>Для неизвестной ориентации ножа нужен внешний подвод и участок ориентации длиной не менее двух смещений ножа.</translation>
+    </message>
+    <message>
+        <source>Knife return alignment requires a lead out.</source>
+        <translation>Для возврата ориентации ножа требуется отвод.</translation>
+    </message>
 </context>
 <context>
     <name>ShapeToolpathCommandBuilder</name>
@@ -3790,6 +4084,14 @@ Skipped Geometries</source>
         <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="2077"/>
         <source>Length of the overcut, measured along the contour. [mm] Defined in the Tools table.</source>
         <translation>Длина перереза, измеренная вдоль контура. [мм] Задаётся в таблице инструментов.</translation>
+    </message>
+    <message>
+        <source>Swivel contact Z</source>
+        <translation>Z контакта при повороте</translation>
+    </message>
+    <message>
+        <source>Absolute Z contact height while swiveling the knife. Clear the field to use the configuration value. Never plunges below the current cut depth.</source>
+        <translation>Абсолютная высота Z контакта при повороте ножа. Очистите поле для использования значения конфигурации. Нож не опускается ниже текущей глубины реза.</translation>
     </message>
 </context>
 <context>
@@ -4250,29 +4552,29 @@ Skipped Geometries</source>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.</source>
-        <translation>Для использования в имени слоя DXF. Подробнее см. в вики DXF2GCODE.</translation>
+        <translation type="obsolete">Для использования в имени слоя DXF. Подробнее см. в вики DXF2GCODE.</translation>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
  The common length of the straight lead in and of the straight lead out</source>
-        <translation>Для имени слоя DXF. Общая длина прямых участков подвода и отвода; подробнее в вики DXF2GCODE.</translation>
+        <translation type="obsolete">Для имени слоя DXF. Общая длина прямых участков подвода и отвода; подробнее в вики DXF2GCODE.</translation>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
  The common radius at the workpiece of the lead in and of the lead out</source>
-        <translation>Для имени слоя DXF. Общий радиус подвода и отвода у заготовки; подробнее в вики DXF2GCODE.</translation>
+        <translation type="obsolete">Для имени слоя DXF. Общий радиус подвода и отвода у заготовки; подробнее в вики DXF2GCODE.</translation>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
  The mode of the lead in: 0 = start move, 1 = off, 2 = straight, 3 = radius,
  4 = the default of the configuration file</source>
-        <translation>Для имени слоя DXF. Способ подвода: 0 = startmove, 1 = off, 2 = straight, 3 = radius, 4 = настройка конфигурации. Подробнее в вики DXF2GCODE.</translation>
+        <translation type="obsolete">Для имени слоя DXF. Способ подвода: 0 = startmove, 1 = off, 2 = straight, 3 = radius, 4 = настройка конфигурации. Подробнее в вики DXF2GCODE.</translation>
     </message>
     <message>
         <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
  The mode of the lead out: 0 = off, 1 = straight, 2 = radius, 3 = start
  move, 4 = the default of the configuration file</source>
-        <translation>Для имени слоя DXF. Способ отвода: 0 = off, 1 = straight, 2 = radius, 3 = startmove, 4 = настройка конфигурации. Подробнее в вики DXF2GCODE.</translation>
+        <translation type="obsolete">Для имени слоя DXF. Способ отвода: 0 = off, 1 = straight, 2 = radius, 3 = startmove, 4 = настройка конфигурации. Подробнее в вики DXF2GCODE.</translation>
     </message>
     <message>
         <source>Tolerance at which similar points will be interpreted as similar</source>
@@ -4315,7 +4617,7 @@ Skipped Geometries</source>
     <message>
         <source>drag_angle: if angle of movement exceeds this angle (in degrees), the tool retracts to dragDepth (The dragDepth is given by axis3_slice_depth parameter).
  This parameter depends on the knife that you are using. A bigger knife cannot make small corners like a smaller knife. You will simply break your knife or destroy your working piece. Now, if the angle your knife has to make is bigger than this angle it will move to a different depth (a less deep position) such that the knife will experience less resistance but still has some (otherwise it will not change its angle at all, whence DRAG knife).</source>
-        <translation>drag_angle: если изменение направления превышает этот угол в градусах, нож поднимается на глубину поворота axis3_slice_depth. Значение зависит от ножа: крупные ножи хуже проходят острые углы. Меньшая глубина снижает сопротивление, сохраняя достаточный контакт для самостоятельного поворота ножа.</translation>
+        <translation type="obsolete">drag_angle: если изменение направления превышает этот угол в градусах, нож поднимается на глубину поворота axis3_slice_depth. Значение зависит от ножа: крупные ножи хуже проходят острые углы. Меньшая глубина снижает сопротивление, сохраняя достаточный контакт для самостоятельного поворота ножа.</translation>
     </message>
     <message>
         <source>pstoedit is an external tool to convert PDF files to PS (postscript) files, which can be further processed by pstoedit tool.</source>
@@ -4324,6 +4626,54 @@ Skipped Geometries</source>
     <message>
         <source>pstoedit is an external tool to import *.ps (postscript) files and convert them to DXF, in order to import them in dxf2gcode.</source>
         <translation>pstoedit — внешний инструмент преобразования PS (PostScript) в DXF для импорта в DXF2GCODE.</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/</source>
+        <translation>Для имён слоёв DXF.
+Документация GitHub: https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The common length of the straight lead in and of the straight lead out</source>
+        <translation>Общая длина прямых участков подвода и отвода.
+Документация GitHub: https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The common radius at the workpiece of the lead in and of the lead out</source>
+        <translation>Общий радиус подвода и отвода у заготовки.
+Документация GitHub: https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The mode of the lead in: 0 = start move, 1 = off, 2 = straight, 3 = radius,
+ 4 = the default of the configuration file</source>
+        <translation>Режим подвода: 0 = прямая с дугой, 1 = нет, 2 = прямая, 3 = дуга, 4 = значение конфигурации.
+Документация GitHub: https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The mode of the lead out: 0 = off, 1 = straight, 2 = radius, 3 = start
+ move, 4 = the default of the configuration file</source>
+        <translation>Режим отвода: 0 = нет, 1 = прямая, 2 = дуга, 3 = прямая с дугой, 4 = значение конфигурации.
+Документация GitHub: https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Used in DXF layer names. GitHub documentation: https://dxf2gcode.github.io/dxf2gcode/
+ The length of the overcut (0 = no overcut)</source>
+        <translation>Длина перереза; 0 отключает перерез.
+Документация GitHub: https://dxf2gcode.github.io/dxf2gcode/</translation>
+    </message>
+    <message>
+        <source>Lift to the swivel contact height when the direction change exceeds this angle. The knife never plunges below the current cut depth.</source>
+        <translation>Поднимать до высоты контакта поворота, если изменение направления превышает этот угол. Нож не опускается ниже текущей глубины реза.</translation>
+    </message>
+</context>
+<context>
+    <name>CfgListEdit</name>
+    <message>
+        <source>Separate entries with '%s'.</source>
+        <translation>Разделяйте записи символом « %s ».</translation>
     </message>
 </context>
 </TS>

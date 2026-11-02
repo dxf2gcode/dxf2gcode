@@ -121,6 +121,7 @@ class Project(object):
                                    'disabled': shape.disabled,
                                    'start_mill_depth': shape.axis3_start_mill_depth,
                                    'slice_depth': shape.axis3_slice_depth,
+                                   'drag_swivel_depth': getattr(shape, '_drag_swivel_depth', None),
                                    'mill_depth': shape.axis3_mill_depth,
                                    'milling_offset': getattr(shape, 'milling_offset', 0.0),
                                    'f_g1_plane': shape.f_g1_plane,
@@ -170,6 +171,9 @@ d2g.mirrory = ''' + str(self.parent.cont_mirrory) + '''
 d2g.split_lines = ''' + str(self.parent.ui.actionSplitLineSegments.isChecked()) + '''
 d2g.aut_cut_com = ''' + str(self.parent.ui.actionAutomaticCutterCompensation.isChecked()) + '''
 d2g.machine_type = "''' + g.config.machine_type + '''"
+d2g.drag_knife = ''' + repr(dict(g.config.var_dict['Drag_Knife_Options'], units=g.config.tool_units,
+    lead_defaults={key: g.config.var_dict['Lead_In_Out'][key] for key in
+                   ('lead_in_mode', 'lead_out_mode', 'overcut_enabled')})) + '''
 d2g.layers = ''' + str(layers)
         return pyCode
 
@@ -178,6 +182,25 @@ d2g.layers = ''' + str(layers)
         version = document.version
 
         if compleet:
+            # Apply only a decoded/validated snapshot, before regenerating paths.
+            knife = document.values.get('drag_knife')
+            if knife is None:
+                if self.machine_type == 'drag_knife':
+                    g.config.var_dict['Drag_Knife_Options'].update(dict(
+                        extra_pass=False, alternate=False, return_to_start=False, entry_mode='fixed'))
+                    g.config.var_dict['Lead_In_Out'].update(dict(lead_in_mode='off', lead_out_mode='off'))
+            else:
+                factor = (1 if knife['units'] == g.config.tool_units else
+                          25.4 if knife['units'] == 'in' else 1 / 25.4)
+                for key, value in knife.items():
+                    if key in ('units', 'lead_defaults'):
+                        continue
+                    if key in ('swivel_depth', 'ramp_in_length', 'lead_out_length', 'alignment_length'):
+                        value *= factor
+                    g.config.var_dict['Drag_Knife_Options'][key] = value
+                if self.machine_type == 'drag_knife':
+                    g.config.var_dict['Lead_In_Out'].update(knife['lead_defaults'])
+            g.config.update_config()
             self.parent.filename = self.file
             g.config.point_tolerance = self.point_tol
             g.config.fitting_tolerance = self.fitting_tol
@@ -294,6 +317,7 @@ d2g.layers = ''' + str(layers)
                         shape.disabled = parent_shape['disabled']
                         shape.axis3_start_mill_depth = parent_shape['start_mill_depth']
                         shape.axis3_slice_depth = parent_shape['slice_depth']
+                        shape.drag_swivel_depth = parent_shape.get('drag_swivel_depth')
                         shape.axis3_mill_depth = parent_shape['mill_depth']
                         # Older project files do not contain the additional
                         # offset; fall back to the neutral value.

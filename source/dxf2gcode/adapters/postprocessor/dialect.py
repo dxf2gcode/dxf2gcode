@@ -47,6 +47,8 @@ class ProfileDialect:
         self._force_feed = False
         self.speed = 0
         self.tool_nr = 1
+        self.knife_heading = None
+        self.knife_tool = None
         self.comment = ""
         self.abs_export = profile.General["abs_export"]
         self.Pe = Point(*start_xy)
@@ -145,6 +147,7 @@ class ProfileDialect:
         @param tool_nr: The tool_nr of the new tool
         @param speed: The speed for the tool
         """
+        self.knife_heading = self.knife_tool = None
         self.tool_nr = tool_nr
         self.speed = speed
         return self.make_print_str(self.vars.Program["tool_change"])
@@ -299,6 +302,17 @@ class ProfileDialect:
 
         return self.make_print_str(self.vars.Program["lin_ret_drill"])
 
+
+    def lin_pol_xyz(self, Ps, Pe, z_pos):
+        """Format one coordinated XYZ move, retaining profile and G90/G91 state."""
+        self.Ps = Ps
+        self.zs = self.ze
+        if self.abs_export:
+            self.Pe, self.ze = Pe, z_pos
+        else:
+            self.Pe, self.ze = Pe - self.lPe, z_pos - self.lz
+        self.lPe, self.lz = Pe, z_pos
+        return self.make_print_str(self.vars.Program["lin_mov_xyz"])
 
     def lin_pol_xy(self, Ps, Pe):
         """
