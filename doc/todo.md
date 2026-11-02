@@ -13,23 +13,24 @@ Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
 
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
-| 1 | [CI1 – Downloads](#ci1), [M1 – Paketabnahme](#m1), [A1 – Abnahmegrenzen](#a1) | Paket-/Versionsstrategie, Prüffreigabe und konkrete Abdeckungslücken |
+| 1 | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1), [A1 – Abnahmegrenzen](#a1) | Prüffreigabe und konkrete Abdeckungslücken |
 | Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | WP1 zuerst; Quellenrechte und fehlende Medien |
 | Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 
-Nächster Umsetzungsvorschlag: **CI1**. Zunächst Paket-/Versionsstrategie und
-einen konkreten Prüfablauf abstimmen; dies startet noch keine Builds.
+Nächster Vorschlag: **M1** anhand der jetzt verfügbaren CI-Pakete konkret
+abstimmen (Zielrechner und Debian-Prüfumfang); dies startet noch keinen
+zusätzlichen lokalen Build oder Debian-/SSH-Lauf.
 
 ## Bereitstellung und Abnahme
 
 <a id="ci1"></a>
 
-- [ ] **CI1 – Automatische Builds und Downloads:** Windows-ZIP/MSI und Wheel,
-  geprüfte Develop-Prereleases und stabile Releases bereitstellen. Versions-
-  und Commitbezug, MSI-Grenzen, Codesignierung und Speicherbedarf klären;
-  Testartefakte 7 Tage, letzte 10 Develop-Stände, stabile Releases dauerhaft.
-  [Zielablauf und Abnahme](planning/open-task-details.md#ci1).
+- [ ] **CI1 – Verbleibende Betriebsabnahme:** echten PR-Paketablauf und den
+  ersten bewusst freigegebenen stabilen Release nachvollziehen;
+  Codesignierung nach Zertifikatsbereitstellung ergänzen. Implementierung
+  und Develop-Aktivierung sind [abgeschlossen](archive/toolpath-refactoring-completed.md#ci1).
+  [Verbleibende Prüfpunkte](planning/open-task-details.md#ci1).
 
 <a id="m1"></a>
 

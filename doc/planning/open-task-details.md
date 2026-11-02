@@ -11,62 +11,25 @@ Stand vom 30./31.10.2026, soweit nicht ausdrücklich anders vermerkt.
 
 <a id="ci1"></a>
 
-### CI1 – Automatische Builds und Downloads auf GitHub
+### CI1 – Verbleibende Betriebsabnahme
 
-**Vereinbarter Zielablauf, 01.11.2026:** Fertige Downloads als GitHub-Release-
-Assets ablegen, nicht in der Git-Historie. Temporäre Testpakete gehören zu
-Actions-Artefakten. Als offene Umsetzung vorgemerkt; diese Todo-Ergänzung
-startet keine Builds, Veröffentlichungen oder Löschungen.
+Die Implementierung und Aktivierung sind in
+[completed](../archive/toolpath-refactoring-completed.md#ci1) dokumentiert.
+Versionsregeln, Paketprüfungen, Aufbewahrung und Betrieb stehen in der
+[Release-Pipeline](../release-pipeline.md).
 
-| Anlass | Prüfungen und Builds | Bereitstellung |
-| --- | --- | --- |
-| Lokaler Commit | Fast-Suite über den Pre-Commit-Hook | Keine Veröffentlichung |
-| Pull Request nach `develop` | Vollsuite und Paketprüfungen; Wheel und Windows-Pakete bauen | Temporäre Actions-Artefakte für 7 Tage; kein öffentliches Release aus dem PR |
-| Push auf `develop` | Vollsuite und Paketprüfungen desselben Commits | Bei Erfolg automatisch ein ausdrücklich gekennzeichnetes Develop-Prerelease |
-| Bewusst gesetzter Release-Tag | Vollsuite und Paketprüfungen | Reguläres Release mit dauerhaft aufbewahrten Downloads |
+- [ ] Bei einem echten Pull Request die temporären Pakete und die
+  Sieben-Tage-Aufbewahrung nachvollziehen; kein PR darf veröffentlichen.
+- [ ] Den ersten bewusst freigegebenen stabilen Tag `v2.0.0` einschließlich
+  dauerhaftem Download und „Latest“ real abnehmen. Dies ist noch keine
+  Freigabe, einen stabilen Tag nur für einen Test zu erzeugen.
+- [ ] Windows-Codesignierung nach Bereitstellung eines Zertifikats gesondert
+  umsetzen. Der freigegebene Erststand ist ausdrücklich unsigniert.
 
-- [ ] Als erste Downloadformate ein entpackbares Windows-x64-ZIP mit EXE und
-  allen benötigten Laufzeitdateien, einen MSI-Installer sowie ein Wheel
-  vorsehen. Windows-Pakete zunächst mit einer festgelegten Python-/Qt-
-  Kombination bauen; die breitere Testmatrix beibehalten. Ein zusätzlicher
-  EXE-Installer oder eine einzelne eigenständige EXE bleibt optional.
-- [ ] Builds und Tests eindeutig demselben Commit zuordnen. Öffentliche
-  Develop-Downloads erst nach erfolgreichen Tests und Paketprüfungen
-  aktualisieren. Bei Fehlern bleibt der letzte erfolgreich geprüfte Download
-  verfügbar. Veröffentlichungsrechte auf den dafür vorgesehenen Ablauf für
-  übernommene Develop-Stände beziehungsweise Release-Tags begrenzen.
-- [ ] Eindeutige Entwicklungsversionsnummern und Dateinamen mit Datum und
-  Commitkennung verwenden. Paketversion, eingebettete Herkunft, Infofenster
-  und Downloadbezeichnung müssen zusammenpassen. MSI-konforme Versionierung
-  einschließlich Unterscheidung mehrerer Builds am selben Tag festlegen;
-  die bisherige Ableitung `2026.10.30` ist wegen des zu großen ersten
-  MSI-Versionsfelds anzupassen.
-- [ ] Die fertigen Artefakte prüfen: Wheel in einer frischen Umgebung
-  installieren und mit `tests/verify_wheel.py` kontrollieren; Windows-Paket
-  auf Vollständigkeit, Programmstart und einen kleinen DXF-Export prüfen.
-  Generierte Qt-Dateien und alle gepflegten Übersetzungen mitliefern.
-- [ ] Unter GitHub Releases klar unterscheidbare Develop-Prereleases und
-  stabile Releases anbieten. Das stabile Release nicht durch einen
-  Entwicklungsstand als reguläres „Latest“-Release ersetzen. Downloads im
-  README verlinken und SHA-256-Prüfsummen mitliefern.
-- [ ] Aufbewahrung automatisieren: PR-/Actions-Testpakete nach **7 Tagen**
-  entfernen und nur die letzten **10 erfolgreich veröffentlichten Develop-
-  Stände** behalten. Alte Develop-Prereleases samt zugehörigen Assets gezielt
-  bereinigen; stabile Releases und deren Downloads dauerhaft erhalten.
-  Tag-Bereinigung gesondert auf die eigenen Develop-Tags begrenzen.
-- [ ] Speicherbelegung und tatsächlichen GitHub-Tarif vor Aktivierung prüfen.
-  Release-Assets, temporäre Actions-Artefakte und Caches getrennt behandeln;
-  kurzlebige CI-Kopien nicht unnötig zusätzlich zu den Releases aufbewahren.
-  Eine Codesignierung für öffentlich verteilte Windows-Pakete einplanen.
-
-**Abnahme:** Den Ablauf mit einem PR-Testpaket, einem erfolgreichen und einem
-fehlgeschlagenen Develop-Build sowie einem regulären Release nachvollziehen.
-Dateinamen, Commitbezug, Installierbarkeit und Downloads prüfen. Die
-Aufbewahrungslogik zunächst mit kontrollierten Testdaten beziehungsweise
-Vorschau der Löschkandidaten prüfen: Die letzten zehn Develop-Stände und alle
-stabilen Releases müssen erhalten bleiben. M1 bleibt die gesonderte
-Paket-/Debian-Abnahme; die Existenz eines erfolgreichen CI-Builds ersetzt sie
-nicht automatisch.
+Die Bereinigungslogik wurde mit kontrollierten Daten geprüft (13 eigene
+Develop-Releases, zehn bleiben; Stable, Drafts und fremde Previews bleiben
+unangetastet). Ein realer Löschlauf wird erst bei mehr als zehn eigenen
+veröffentlichten Develop-Ständen notwendig. M1 bleibt eine eigene Abnahme.
 
 <a id="m1"></a>
 

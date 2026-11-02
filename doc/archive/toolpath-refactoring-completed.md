@@ -13,6 +13,57 @@ Insbesondere liegen die Vollsuite-Ergebnisse mit 775 Tests vor der späteren
 Darstellungskorrektur; diese wurde anschließend mit jeweils 21 gezielten
 Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 
+<a id="ci1"></a>
+
+## CI1 – Paketpipeline implementiert und aktiviert (02.11.2026)
+
+Der am 01.11.2026 vereinbarte Download-Ablauf ist implementiert. Am
+02.11.2026 wurden SemVer mit Ziel **2.0.0**, Windows x64 mit Python 3.11 /
+PyQt5 ohne Signatur sowie die Aktivierung auf GitHub freigegeben.
+`CI_RELEASES_ENABLED=true` ist gesetzt; die Änderungen sind auf `develop`.
+
+- Quellarchiv und Wheel entstehen außerhalb des Checkouts aus dem getesteten
+  Commit; Windows-ZIP und benutzerbezogener MSI aus genau diesem Quellarchiv.
+  Herkunft, Übersetzungen und beide Qt-Varianten werden mitgeliefert.
+- `2.0.0.devN` und `v2.0.0` sind getrennte Kanäle. MSI nutzt gültige Zahlen,
+  eigene Upgrade-IDs und getrennte Installationsordner. Datum und Commit stehen
+  in Dateinamen beziehungsweise Wheel-Build-Tag und im Release-Manifest.
+- Veröffentlichung erst nach Tests und Paketprüfungen über einen vollständig
+  hochgeladenen Draft mit SHA-256-Prüfsummen. Develop ersetzt kein stabiles
+  „Latest“. Fehlgeschlagene und überholte Builds veröffentlichen nichts.
+- Temporäre Testpakete verfallen nach sieben Tagen. Nach Veröffentlichung
+  werden die doppelten Actions-Kopien dieses Runs entfernt. Bereinigung
+  begrenzt sich auf die letzten zehn eigenen Develop-Releases und deren
+  verifizierte Tags; Stable, fremde Previews und Drafts bleiben erhalten.
+- Tarif und Speicher vor Aktivierung geprüft; keine Build-Caches. Windows ist
+  ausdrücklich unsigniert. Regeln und Bedienhinweise stehen in der
+  [Release-Pipeline](../release-pipeline.md) und den
+  [Dokumentationsnotizen](../documentation-notes/downloads-and-versions.md).
+
+**Nachweis:** [GitHub-Lauf 41499754219](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41499754219)
+für Commit `5b348ec` ist vollständig erfolgreich: Python-/Qt-Vollmatrix,
+Wheel in frischen Qt5-/Qt6-Umgebungen einschließlich DXF-Export,
+Windows-ZIP sowie real installierter MSI mit GUI-Start und DXF-Export.
+Das [Develop-Prerelease 2.0.0.dev10](https://github.com/dxf2gcode/dxf2gcode/releases/tag/develop-ci-41499754219)
+wurde veröffentlicht; temporäre Paketkopien wurden danach entfernt.
+Lokal bestanden **206 Fast-Tests über den Commit-Hook**, acht gezielte
+Release-Regressionen und die Actionlint-Prüfung. Keine lokale Vollsuite,
+Release-/MSI-Installation oder Debian-/SSH-Abnahme gestartet.
+
+Die ersten GitHub-Läufe blockierten die Veröffentlichung bei Test- und
+Paketprüffehlern wie vorgesehen. Veraltete Testannahmen wurden an das aktuelle
+Projektformat, den Vorschau-Vordergrund und die Schleppmesser-Exit-Vorschau
+angepasst. Staging erhält die Build-Werkzeuge; der gemischte Qt-Build wählt
+explizit den Qt6-Compiler. Die Windows-Prüfung kontrolliert den bestehenden
+G-Code-Kopf mit Version und Commitdatum und die vollständige Commitkennung
+in den Paket-Metadaten.
+
+**Grenzen:** PR-Artefakte und der erste stabile Tag sind noch nicht real
+abgenommen; für diesen Auftrag wurde kein stabiler Tag erzeugt. Retention
+ist mit kontrollierten Daten einschließlich Schutz stabiler Releases geprüft.
+Codesignierung, M1 und physische Maschinenabnahmen bleiben separat offen.
+Die [aktive Todo](../todo.md#ci1) enthält ausschließlich diese Restarbeiten.
+
 ## Überblick
 
 | Abgeschlossen | Inhalt |

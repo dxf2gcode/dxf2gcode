@@ -9,6 +9,7 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 
 | Thema | Geplantes Inhaltspaket | Material |
 | --- | --- | --- |
+| [Downloads und Versionen](downloads-and-versions.md) | WP2 sowie WP11–WP12 | GitHub-Pakete, 2.0.0-Entwicklerversionen, MSI und Herkunft |
 | [Schleppmesser](drag-knife.md) | WP6: Tabs and Machine Modes | Tiefen, Messerstellung, Leads, Migration und Referenzen |
 | [Konfiguration und Vorschau](configuration-and-preview.md) | WP3 sowie WP8–WP10 | Profilwerte, Parameternamen, unmittelbare Änderungen und Neustart |
 | [Werkzeugwechsel und Export](tool-change-and-export.md) | WP4 sowie WP8–WP10 | Reihenfolge, Optimierung, Werkzeugwechselprofile und LinuxCNC |
