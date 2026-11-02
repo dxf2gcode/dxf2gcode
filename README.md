@@ -13,7 +13,8 @@ for installation, startup and an introduction to the workflow.
 
 **Development status:** the `develop` branch on GitHub is being actively
 modernized and restructured. It does not automatically represent a stable
-release. For previously published releases, visit the
+release. [Develop downloads](https://github.com/dxf2gcode/dxf2gcode/releases?q=develop-ci-&include_prereleases=1)
+are published after tests and package checks pass. For historical releases, visit the
 [SourceForge downloads](https://sourceforge.net/projects/dxf2gcode/files/).
 The download archive also contains development builds and release candidates;
 check the selected version's description before installing.
@@ -36,9 +37,24 @@ runtime requirements and build details.
 
 ### Published releases
 
-Choose a release from [SourceForge](https://sourceforge.net/projects/dxf2gcode/files/)
-and follow the instructions supplied with that release. Older releases can
-have different dependencies and installation procedures from this branch.
+Choose a [stable GitHub release](https://github.com/dxf2gcode/dxf2gcode/releases/latest)
+when available, or a clearly marked
+[Develop preview](https://github.com/dxf2gcode/dxf2gcode/releases?q=develop-ci-&include_prereleases=1).
+The next stable target is **2.0.0**; a Develop package such as `2.0.0.dev123`
+is a preview. Downloads include a Python wheel, source archive, Windows x64
+portable ZIP and MSI. Windows packages initially use Python 3.11 / PyQt5 and
+are **unsigned**. Verify files against the supplied `SHA256SUMS`.
+
+Extract the entire Windows ZIP before starting `dxf2gcode.exe`, or install
+the MSI for the current user. Develop and stable MSI installations use separate
+directories. For Python, install the downloaded wheel with `python -m pip install
+<wheel-file>` in a virtual environment. When replacing an old date-versioned
+installation, use a fresh environment or explicitly install the chosen wheel:
+the old date version sorts above `2.0.0`.
+
+[Historical SourceForge downloads](https://sourceforge.net/projects/dxf2gcode/files/)
+can have different requirements. See the [release pipeline](doc/release-pipeline.md)
+for version mapping, verification and retention rules.
 
 ### Run the development checkout
 

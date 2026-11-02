@@ -17,17 +17,18 @@ PROJECT_DIR = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_DIR))
 # Keep cx_Freeze's distribution metadata separate from the Python wheel
 # project. Otherwise setuptools replaces the dotted MSI version with the
-# date-based Python package version from pyproject.toml.
+# full Python package version (including .devN) from pyproject.toml.
 WINDOWS_BUILD_DIR = PROJECT_DIR / "build" / "windows-config"
 WINDOWS_BUILD_DIR.mkdir(parents=True, exist_ok=True)
 os.chdir(WINDOWS_BUILD_DIR)
 
 from dxf2gcode import __version__
 from dxf2gcode.bootstrap.version_metadata import METADATA_FILE, write_build_metadata
+from tools.build.release_metadata import msi_version
 
 VERSION = __version__
-VERSION_DOTTED = "%s.%s.%s" % (
-    VERSION[:4], VERSION[4:6], VERSION[6:8])
+VERSION_DOTTED = msi_version(VERSION)
+DEVELOPMENT = '.dev' in VERSION
 
 
 def include_opengl():
@@ -67,16 +68,23 @@ icon_path = (PROJECT_DIR / "dxf2gcode" / "presentation" / "qt" /
 base = "gui" if sys.platform == "win32" else "console"
 
 setup(
-    name="dxf2gcode",
+    name="dxf2gcode-develop" if DEVELOPMENT else "dxf2gcode",
     version=VERSION_DOTTED,
     description="2D drawings to CNC machine compatible G-Code converter.",
     options={
         "build": {"build_base": str(PROJECT_DIR / "build")},
-        "bdist_msi": {"dist_dir": str(PROJECT_DIR / "dist")},
+        "bdist_msi": {
+            "dist_dir": str(PROJECT_DIR / "dist"),
+            "all_users": False,
+            "initial_target_dir": r"[LocalAppDataFolder]Programs\DXF2GCODE" + ('-Develop' if DEVELOPMENT else ''),
+            "upgrade_code": ('{9C5806D0-245A-4406-BB90-5F3E1BA14716}' if DEVELOPMENT else
+                             '{3B441874-5895-4D12-8FCE-99CDA29D602F}'),
+        },
         "build_exe": {
             # The launcher enters the GUI through runpy, so these imports are
             # not visible to cx_Freeze's static module scanner.
             "packages": ["dxf2gcode", "PyQt5", "OpenGL", "configobj"],
+            "include_msvcr": True,
             "include_files": include_files,
             "zip_includes": include_opengl(),
         }
@@ -87,7 +95,7 @@ setup(
             base=base,
             icon=str(icon_path),
             target_name="dxf2gcode.exe",
-            shortcut_name="DXF to G-Code Converter",
+            shortcut_name="DXF2GCODE Develop" if DEVELOPMENT else "DXF2GCODE",
             shortcut_dir="ProgramMenuFolder",
         )
     ],

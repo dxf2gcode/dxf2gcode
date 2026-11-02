@@ -1,0 +1,8 @@
+# Packaging baseline; the broader regression matrix remains independent.
+build==1.6.1
+setuptools==84.2.1
+wheel==0.48.0
+PyQt5==5.15.8
+PyQt5-Qt5==5.15.2
+PyOpenGL==3.1.6
+configobj==5.0.8

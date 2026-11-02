@@ -23,7 +23,7 @@ dependencies = [
 qt6 = ["PyQt6"]
 
 [project.urls]
-Homepage = "https://sourceforge.net/p/dxf2gcode/wiki/Home/"
+Homepage = "https://dxf2gcode.github.io/dxf2gcode/"
 
 [project.scripts]
 dxf2gcode = "dxf2gcode.bootstrap.launcher:main"

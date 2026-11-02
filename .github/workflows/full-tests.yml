@@ -3,12 +3,17 @@ name: Full regression tests
 on:
   push:
     branches: [develop]
+    tags: ['v*']
   pull_request:
     branches: [develop]
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: packages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   full:
@@ -86,3 +91,149 @@ jobs:
 
       - name: Run full regression tests
         run: python tests/run_tests.py full
+
+  wheel:
+    name: Build and verify Python packages
+    needs: full
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set isolated packaging paths
+        run: |
+          echo "RELEASE_STAGE=$RUNNER_TEMP/release-source" >> "$GITHUB_ENV"
+          echo "RELEASE_OUT=$RUNNER_TEMP/release-wheel" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Install build baseline and Qt compilers
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libgl1 libegl1 libopengl0 qttools5-dev-tools qt6-base-dev-tools
+          python -m pip install -r requirements-release.txt PyQt6==6.12.0
+      - name: Stage the exact tested commit and provenance
+        id: stage
+        run: python tools/prepare_release.py "$RELEASE_STAGE"
+      - name: Prepare both UI variants and translations
+        run: |
+          DXF2GCODE_QT=5 python "$RELEASE_STAGE/source/tools/build/qt_assets.py"
+          DXF2GCODE_QT=6 python "$RELEASE_STAGE/source/tools/build/qt_assets.py"
+          DXF2GCODE_QT=5 python "$RELEASE_STAGE/source/tools/build/translations.py" --no-pylupdate
+      - name: Build source archive and wheel from that archive without Git
+        run: |
+          mkdir -p "$RELEASE_OUT"
+          python -m build --sdist --outdir "$RELEASE_OUT" "$RELEASE_STAGE/source"
+          python -m pip wheel --no-deps --wheel-dir "$RELEASE_OUT" "$RELEASE_OUT"/*.tar.gz
+          python -m wheel tags --build '${{ steps.stage.outputs.wheel_build }}' --remove "$RELEASE_OUT"/*.whl
+          cp "$RELEASE_STAGE/release-manifest.json" "$RELEASE_OUT/"
+      - name: Verify the wheel in fresh Qt5 and Qt6 environments
+        run: |
+          for qt in 5 6; do
+            target="$RUNNER_TEMP/installed-qt$qt"
+            python -m venv "$target"
+            "$target/bin/python" -m pip install "$RELEASE_OUT"/*.whl
+            if [ "$qt" = 6 ]; then "$target/bin/python" -m pip install PyQt6==6.12.0; fi
+            python tests/verify_wheel.py "$RELEASE_OUT"/*.whl --python "$target/bin/python" --qt "$qt"
+          done
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-wheel
+          path: ${{ runner.temp }}/release-wheel/*
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+          compression-level: 0
+
+  windows:
+    name: Build and verify Windows x64 ZIP and MSI
+    needs: wheel
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      DXF2GCODE_QT: '5'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set isolated packaging paths
+        run: |
+          "RELEASE_INPUT=$env:RUNNER_TEMP/python-packages" >> $env:GITHUB_ENV
+          "RELEASE_UNPACK=$env:RUNNER_TEMP/release-source" >> $env:GITHUB_ENV
+          "RELEASE_OUT=$env:RUNNER_TEMP/release-windows" >> $env:GITHUB_ENV
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-wheel
+          path: ${{ runner.temp }}/python-packages
+      - name: Install the fixed Windows build baseline
+        run: python -m pip install -r requirements-release.txt cx-Freeze==8.7.4
+      - name: Unpack the tested source archive
+        id: source
+        shell: pwsh
+        run: |
+          @'
+          import os, pathlib, tarfile
+          root = pathlib.Path(os.environ['RELEASE_UNPACK'])
+          root.mkdir()
+          archives = list(pathlib.Path(os.environ['RELEASE_INPUT']).glob('*.tar.gz'))
+          assert len(archives) == 1
+          with tarfile.open(archives[0]) as archive:
+              archive.extractall(root, filter='data')
+          folders = list(root.iterdir())
+          assert len(folders) == 1 and folders[0].is_dir()
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as stream:
+              stream.write('path=' + str(folders[0]) + '\n')
+          '@ | python
+      - name: Freeze application and build unsigned per-user MSI
+        run: python '${{ steps.source.outputs.path }}/tools/build/windows.py' build_exe bdist_msi
+      - name: Package portable ZIP and name the MSI
+        run: python tools/package_windows.py '${{ steps.source.outputs.path }}' "$env:RELEASE_INPUT/release-manifest.json" "$env:RELEASE_OUT"
+      - name: Verify ZIP and installed MSI including GUI and DXF export
+        run: python tests/verify_windows.py "$env:RELEASE_OUT" "$env:RELEASE_INPUT/release-manifest.json" --fixture dxf/test.dxf
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-windows
+          path: ${{ runner.temp }}/release-windows/*
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+          compression-level: 0
+
+  publish:
+    name: Publish verified downloads and retain ten Develop releases
+    needs: [full, wheel, windows]
+    if: >-
+      github.repository == 'dxf2gcode/dxf2gcode' &&
+      vars.CI_RELEASES_ENABLED == 'true' && github.event_name == 'push' &&
+      (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/publish
+      - name: Create checksums for the exact downloaded files
+        env:
+          RELEASE_OUT: ${{ runner.temp }}/publish
+        run: |
+          PYTHONPATH=tools python - <<'PY'
+          import os
+          from release_policy import write_checksums
+          write_checksums(os.environ['RELEASE_OUT'])
+          PY
+      - name: Publish complete draft and clean owned previews only after success
+        run: python tools/publish_release.py '${{ runner.temp }}/publish'
