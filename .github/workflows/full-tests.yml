@@ -119,7 +119,7 @@ jobs:
       - name: Prepare both UI variants and translations
         run: |
           DXF2GCODE_QT=5 python "$RELEASE_STAGE/source/tools/build/qt_assets.py"
-          DXF2GCODE_QT=6 python "$RELEASE_STAGE/source/tools/build/qt_assets.py"
+          PATH="/usr/lib/qt6/libexec:$PATH" DXF2GCODE_QT=6 python "$RELEASE_STAGE/source/tools/build/qt_assets.py"
           DXF2GCODE_QT=5 python "$RELEASE_STAGE/source/tools/build/translations.py" --no-pylupdate
       - name: Build source archive and wheel from that archive without Git
         run: |
