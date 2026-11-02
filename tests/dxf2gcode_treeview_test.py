@@ -219,6 +219,53 @@ class TestTreeView(unittest.TestCase):
 
 
 class TestTreeExpansionAvailability(unittest.TestCase):
+    def test_real_fold_keys_affect_only_the_focused_tree(self):
+        from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QWidget, QVBoxLayout, QLineEdit
+        from importlib import import_module
+        from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
+        QTest = import_module('PyQt%d.QtTest' % PYQT_VERSION).QTest
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        views = [TreeView(host), TreeView(host)]
+        edit = QLineEdit(host)
+        layout.addWidget(edit)
+        for view in views:
+            model = QStandardItemModel(view)
+            for name in ('A', 'B'):
+                parent = QStandardItem(name)
+                child = QStandardItem('nested')
+                child.appendRow(QStandardItem('leaf'))
+                parent.appendRow(child)
+                model.appendRow(parent)
+            view.setModel(model)
+            layout.addWidget(view)
+        host.show()
+        self.addCleanup(host.close)
+        modifiers = QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier
+        for active, passive in (views, views[::-1]):
+            active.setFocus()
+            _APP.processEvents()
+            self.assertTrue(active.hasFocus())
+            QTest.keyClick(active, QtCore.Qt.Key.Key_Right, modifiers)
+            self.assertEqual(active._expansionAvailability(), (True, False))
+            self.assertEqual(passive._expansionAvailability(), (False, True))
+            QTest.keyClick(active, QtCore.Qt.Key.Key_Right, modifiers)
+            self.assertEqual(active._expansionAvailability(), (True, False))
+            active.collapse(active.model().index(0, 0))
+            self.assertEqual(active._expansionAvailability(), (True, True))
+            QTest.keyClick(active, QtCore.Qt.Key.Key_Left, modifiers)
+            self.assertEqual(active._expansionAvailability(), (False, True))
+        edit.setText('one two')
+        edit.setFocus()
+        _APP.processEvents()
+        QTest.keyClick(edit, QtCore.Qt.Key.Key_Right, modifiers)
+        self.assertTrue(all(v._expansionAvailability() == (False, True) for v in views))
+        views[0].setModel(QStandardItemModel(views[0]))
+        views[0].setFocus()
+        _APP.processEvents()
+        QTest.keyClick(views[0], QtCore.Qt.Key.Key_Left, modifiers)
+        self.assertEqual(views[0]._expansionAvailability(), (False, False))
+
     """Only offer folding actions that change visible tree branches."""
 
     def setUp(self):

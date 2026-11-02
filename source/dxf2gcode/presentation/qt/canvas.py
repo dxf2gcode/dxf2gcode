@@ -155,8 +155,16 @@ class MyDropDownMenu(QMenu):
 
         self.selectedItems = [shape for shape in canvas_scene.shapes if shape.isSelected()]
 
+        zero_action = self.addAction(self.tr("Move workpiece zero here ..."))
+        zero_action.setToolTip(self.tr("Open the workpiece zero dialog for this point. Snapping is optional in the dialog."))
+        zero_action.setEnabled(bool(canvas_scene.shapes))
+        zero_action.triggered.connect(self.moveWorkpieceZeroHere)
+
         if len(self.selectedItems) == 0:
+            self.exec(position)
             return
+
+        self.addSeparator()
 
         invertAction = self.addAction(self.tr("Invert Selection"))
         disableAction = self.addAction(self.tr("Disable Selection"))
@@ -241,6 +249,12 @@ class MyDropDownMenu(QMenu):
         """
         return str(QtCore.QCoreApplication.translate('MyDropDownMenu',
                                                            string_to_translate))
+
+    def moveWorkpieceZeroHere(self):
+        point = self.clicked
+        if self.offset is not None:
+            point = self.canvas_scene.determineSelectedPosition(self.clicked, 0.0, self.offset)
+        g.window.moveWorkpieceZero(point=point)
 
     def calcMenuDir(self):
         """

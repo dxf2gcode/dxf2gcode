@@ -256,15 +256,23 @@ class Shape(ContourGeometry):
             logger.debug(self.tr("Had to reverse the shape to be CW"))
         self.cw = True
 
+    def start_point_candidates(self):
+        """Return transformed start-point candidates without changing the contour."""
+        if not self.geos:
+            return ()
+        if self.closed:
+            return tuple(geo.get_start_end_points(True) for geo in self.geos.abs_iter())
+        return (self.geos.abs_el(0).get_start_end_points(True),
+                self.geos.abs_el(-1).get_start_end_points(False))
+
     def setNearestStPoint(self, stPoint):
         if self.closed:
             logger.debug(self.tr("Clicked Point: %s" % stPoint))
             start = self.get_start_end_points(True)
             logger.debug(self.tr("Old Start Point: %s" % start))
 
-            min_geo_nr, _ = min(enumerate(self.geos.abs_iter()),
-                                key=lambda geo:
-                                geo[1].get_start_end_points(True).distance(stPoint))
+            min_geo_nr, _ = min(enumerate(self.start_point_candidates()),
+                                key=lambda item: item[1].distance(stPoint))
 
             # Overwrite the geometries in changed order.
             self.geos = Geos(self.geos[min_geo_nr:] + self.geos[:min_geo_nr])
@@ -273,8 +281,9 @@ class Shape(ContourGeometry):
             logger.debug(self.tr("New Start Point: %s" % start))
         elif len (self.geos) > 0:
             # if shape is not closed, we can just select between start and end points
-            dist1 = self.geos.abs_el(0).get_start_end_points(True).distance(stPoint)
-            dist2 = self.geos.abs_el(-1).get_start_end_points(False).distance(stPoint)
+            first, last = self.start_point_candidates()
+            dist1 = first.distance(stPoint)
+            dist2 = last.distance(stPoint)
             if dist2 < dist1:
                 self.reverse()
 

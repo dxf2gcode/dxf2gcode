@@ -39,6 +39,7 @@ class TestLayerTreeStartupConfig(unittest.TestCase):
     def test_new_profiles_expand_layers_by_default(self):
         config = MyConfig()
         self.assertIs(config.vars.General.expand_layers_on_load, True)
+        self.assertIs(config.vars.General.show_tool_circle, True)
         self.assertIs(config.vars.Import_Parameters.exclude_ignore_layers, False)
         self.assertIs(config.vars.Import_Parameters.exclude_layer_zero, False)
 
@@ -50,6 +51,7 @@ class TestLayerTreeStartupConfig(unittest.TestCase):
                                    interpolation=False, _inspec=True)
                 values.validate(Validator(), copy=True)
                 del values["General"]["expand_layers_on_load"]
+                del values["General"]["show_tool_circle"]
                 del values["Import_Parameters"]["exclude_ignore_layers"]
                 del values["Import_Parameters"]["exclude_layer_zero"]
                 values["General"]["live_update_export_route"] = True
@@ -58,6 +60,7 @@ class TestLayerTreeStartupConfig(unittest.TestCase):
                 values.write()
                 loaded = MyConfig()
                 self.assertIs(loaded.vars.General.expand_layers_on_load, True)
+                self.assertIs(loaded.vars.General.show_tool_circle, True)
                 self.assertTrue(loaded.vars.General.live_update_export_route)
                 self.assertIs(loaded.vars.Import_Parameters.exclude_ignore_layers, False)
                 self.assertIs(loaded.vars.Import_Parameters.exclude_layer_zero, False)
@@ -70,9 +73,11 @@ class TestLayerTreeStartupConfig(unittest.TestCase):
         for expand in (False, True):
             with self.subTest(expand=expand):
                 config.var_dict["General"]["expand_layers_on_load"] = expand
+                config.var_dict["General"]["show_tool_circle"] = not expand
                 config.save_varspace()
                 config = MyConfig()
                 self.assertIs(config.vars.General.expand_layers_on_load, expand)
+                self.assertIs(config.vars.General.show_tool_circle, not expand)
 
     def test_import_filters_survive_save_reload_independently(self):
         config = MyConfig()

@@ -995,7 +995,7 @@ class MainWindow(QMainWindow):
 
         self.d2g.small_reload()
 
-    def moveWorkpieceZero(self):
+    def moveWorkpieceZero(self, checked=False, point=None):
         """
         This function is called when the Option=>Move WP Zero Menu is clicked.
         """
@@ -1004,8 +1004,20 @@ class MainWindow(QMainWindow):
         label = [self.tr("Offset %s axis %s:") % (g.config.vars.Axis_letters['ax1_letter'], units),
                  self.tr("Offset %s axis %s:") % (g.config.vars.Axis_letters['ax2_letter'], units)]
         value = [self.cont_dx, self.cont_dy]
+        if point is not None:
+            # The click is already in transformed drawing coordinates, so
+            # subtract it from the existing translation, not from the source DXF.
+            value = [self.cont_dx - point.x, self.cont_dy - point.y]
+        selected = [shape for shape in self.shapes if shape.isSelected()]
+        candidates = selected[0].start_point_candidates() if len(selected) == 1 else ()
+        def snapped_offsets(offsets):
+            target = Point(self.cont_dx-float(offsets[0]), self.cont_dy-float(offsets[1]))
+            nearest = min(candidates, key=lambda candidate: candidate.distance(target))
+            return [self.cont_dx-nearest.x, self.cont_dy-nearest.y]
         wtype = ["lineEdit","lineEdit"]
-        MoveWpzDialog = PopUpDialog(title, label, value, wtype, True)
+        MoveWpzDialog = PopUpDialog(title, label, value, wtype, True,
+                                   decimals=3 if g.config.metric else 5,
+                                   snap=snapped_offsets if candidates else None)
 
         if MoveWpzDialog.result is None:
             return
@@ -1361,6 +1373,10 @@ class MainWindow(QMainWindow):
         update = getattr(canvas, 'updateScaleBar', None)
         if callable(update):
             update()
+
+        refresh = getattr(getattr(self, 'canvas_scene', None), 'updateToolCircleVisibility', None)
+        if callable(refresh):
+            refresh()
 
     def updateConfiguration(self, result):
         """

@@ -2741,6 +2741,14 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
         <source>Applies the machine type to the current drawing and saves it for new sessions. The drawing is rebuilt without restarting the application.</source>
         <translation>Übernimmt den Maschinentyp für die aktuelle Zeichnung und speichert ihn für neue Sitzungen. Die Zeichnung wird ohne Programmneustart neu aufgebaut.</translation>
     </message>
+    <message>
+        <source>Show tool circle at entry (2D)</source>
+        <translation>Werkzeugkreis am Einstieg anzeigen (2D)</translation>
+    </message>
+    <message>
+        <source>Show the tool circle at the planned entry, even without a lead in. With machine compensation, the actual cutter position is approximate. This display does not change the toolpath.</source>
+        <translation>Zeigt den Werkzeugkreis am geplanten Einstieg, auch ohne Einfahrt. Bei Maschinenkompensation ist die tatsächliche Fräserposition nur angenähert. Die Anzeige verändert den Werkzeugweg nicht.</translation>
+    </message>
 </context>
 <context>
     <name>MyDropDownMenu</name>
@@ -2859,6 +2867,18 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
         <location filename="../dxf2gcode/presentation/qt/canvas.py" line="489"/>
         <source>Set to %s for G73 Drill, for shape: %i</source>
         <translation>Setze auf %s für G73 Bohren von Shape: %i</translation>
+    </message>
+    <message>
+        <source>Move workpiece zero here ...</source>
+        <translation>Werkstücknullpunkt hierher verschieben …</translation>
+    </message>
+    <message>
+        <source>Open the workpiece zero dialog with offsets for this point. No point snapping is applied.</source>
+        <translation type="obsolete">Öffnet den Dialog zum Verschieben des Werkstücknullpunkts mit den Offsets für diesen Punkt. Es erfolgt kein Fangen auf Geometriepunkte.</translation>
+    </message>
+    <message>
+        <source>Open the workpiece zero dialog for this point. Snapping is optional in the dialog.</source>
+        <translation>Öffnet den Nullpunktdialog für diesen Punkt. Im Dialog kann optional gefangen werden.</translation>
     </message>
 </context>
 <context>
@@ -3351,6 +3371,14 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
         <location filename="../dxf2gcode/presentation/qt/popupdialog.py" line="108"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Snap to nearest contour point</source>
+        <translation>Fangen: nächster Konturpunkt</translation>
+    </message>
+    <message>
+        <source>Use a start-point candidate of the selected contour without changing its start point or direction.</source>
+        <translation>Verwendet einen möglichen Startpunkt der ausgewählten Kontur, ohne deren Startpunkt oder Richtung zu ändern.</translation>
     </message>
 </context>
 <context>
@@ -3887,6 +3915,14 @@ Die Länge muss größer der Toleranz sein.
         <source>Absolute Z contact height while swiveling the knife. Clear the field to use the configuration value. Never plunges below the current cut depth.</source>
         <translation>Absolute Z-Kontakthöhe beim Schwenken des Messers. Feld leeren, um den Konfigurationswert zu verwenden. Taucht nie tiefer als die aktuelle Schnitttiefe ein.</translation>
     </message>
+    <message>
+        <source>Expand the active tree (Ctrl+Shift+Right when the tree has focus)</source>
+        <translation>Aktiven Baum ausklappen (Strg+Umschalt+Rechts bei Fokus im Baum)</translation>
+    </message>
+    <message>
+        <source>Collapse the active tree (Ctrl+Shift+Left when the tree has focus)</source>
+        <translation>Aktiven Baum einklappen (Strg+Umschalt+Links bei Fokus im Baum)</translation>
+    </message>
 </context>
 <context>
     <name>g.window</name>
@@ -3990,6 +4026,10 @@ Die Länge muss größer der Toleranz sein.
     <message>
         <source>Tool center path (G40)</source>
         <translation>Werkzeugmittelpunktbahn (G40)</translation>
+    </message>
+    <message>
+        <source>The entry circle approximates the cutter position with machine compensation.</source>
+        <translation>Der Einstiegskreis zeigt bei Maschinenkompensation eine angenäherte Fräserposition.</translation>
     </message>
 </context>
 <context>

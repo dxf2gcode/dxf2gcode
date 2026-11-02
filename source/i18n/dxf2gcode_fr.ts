@@ -2711,6 +2711,14 @@ Vous devez détruire(ou éditer soigneusement) le fichier de configuration "{2}"
         <source>Applies the machine type to the current drawing and saves it for new sessions. The drawing is rebuilt without restarting the application.</source>
         <translation>Applique le type de machine au dessin actuel et l’enregistre pour les prochaines sessions. Le dessin est reconstruit sans redémarrer l’application.</translation>
     </message>
+    <message>
+        <source>Show tool circle at entry (2D)</source>
+        <translation>Afficher le cercle de l’outil à l’entrée (2D)</translation>
+    </message>
+    <message>
+        <source>Show the tool circle at the planned entry, even without a lead in. With machine compensation, the actual cutter position is approximate. This display does not change the toolpath.</source>
+        <translation>Affiche le cercle de l’outil à l’entrée prévue, même sans entrée. Avec la compensation machine, la position réelle de la fraise est approximative. Cet affichage ne modifie pas la trajectoire.</translation>
+    </message>
 </context>
 <context>
     <name>MyDropDownMenu</name>
@@ -2828,6 +2836,18 @@ Vous devez détruire(ou éditer soigneusement) le fichier de configuration "{2}"
         <location filename="../dxf2gcode/presentation/qt/canvas.py" line="489"/>
         <source>Set to %s for G73 Drill, for shape: %i</source>
         <translation>%s pour perceuse G73, sur forme: %i</translation>
+    </message>
+    <message>
+        <source>Move workpiece zero here ...</source>
+        <translation>Déplacer ici l’origine de la pièce…</translation>
+    </message>
+    <message>
+        <source>Open the workpiece zero dialog with offsets for this point. No point snapping is applied.</source>
+        <translation type="obsolete">Ouvre le dialogue de déplacement de l’origine de la pièce avec les décalages de ce point. Aucun accrochage aux points n’est appliqué.</translation>
+    </message>
+    <message>
+        <source>Open the workpiece zero dialog for this point. Snapping is optional in the dialog.</source>
+        <translation>Ouvre le dialogue d’origine pour ce point. L’accrochage est facultatif dans le dialogue.</translation>
     </message>
 </context>
 <context>
@@ -3315,6 +3335,14 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <location filename="../dxf2gcode/presentation/qt/popupdialog.py" line="108"/>
         <source>Cancel</source>
         <translation>Abandon</translation>
+    </message>
+    <message>
+        <source>Snap to nearest contour point</source>
+        <translation>Accrocher au point de contour le plus proche</translation>
+    </message>
+    <message>
+        <source>Use a start-point candidate of the selected contour without changing its start point or direction.</source>
+        <translation>Utilise un point de départ possible du contour sélectionné sans modifier son départ ni son sens.</translation>
     </message>
 </context>
 <context>
@@ -3850,6 +3878,14 @@ La longueur doit être supérieure à la tolérance</translation>
         <source>Absolute Z contact height while swiveling the knife. Clear the field to use the configuration value. Never plunges below the current cut depth.</source>
         <translation>Hauteur Z absolue de contact lors du pivotement du couteau. Vider le champ pour utiliser la valeur de configuration. Ne descend jamais sous la profondeur de coupe actuelle.</translation>
     </message>
+    <message>
+        <source>Expand the active tree (Ctrl+Shift+Right when the tree has focus)</source>
+        <translation>Développer l’arbre actif (Ctrl+Maj+Droite lorsque l’arbre a le focus)</translation>
+    </message>
+    <message>
+        <source>Collapse the active tree (Ctrl+Shift+Left when the tree has focus)</source>
+        <translation>Replier l’arbre actif (Ctrl+Maj+Gauche lorsque l’arbre a le focus)</translation>
+    </message>
 </context>
 <context>
     <name>g.window</name>
@@ -3953,6 +3989,10 @@ La longueur doit être supérieure à la tolérance</translation>
     <message>
         <source>Tool center path (G40)</source>
         <translation>Trajectoire du centre de l’outil (G40)</translation>
+    </message>
+    <message>
+        <source>The entry circle approximates the cutter position with machine compensation.</source>
+        <translation>Avec la compensation machine, le cercle d’entrée indique une position approximative de la fraise.</translation>
     </message>
 </context>
 <context>

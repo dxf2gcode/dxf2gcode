@@ -17,6 +17,18 @@
 - Before each local commit, run the fast suite through the pre-commit hook.
   Do not run it a second time manually when the hook has already passed.
 
+## Efficient completion
+
+- Keep work proportional to the requested change. Read only relevant file
+  sections and keep progress messages brief and informative.
+- Ask only about unresolved decisions that materially block implementation.
+- Run the appropriate focused checks once. Repeat or broaden them only after
+  a new change, a failure or a concrete unresolved risk warrants it.
+- Update Todo, completion records and documentation notes in one closing pass,
+  then finish. Do not add speculative checks or extra polishing rounds.
+- Required translation checks and the pre-commit hook still apply; do not
+  duplicate checks that have already passed without a concrete reason.
+
 ## GUI translations
 
 - When adding or changing GUI text, update all maintained translation catalogs

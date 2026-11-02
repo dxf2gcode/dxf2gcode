@@ -15,6 +15,15 @@ _REPO_DIR = os.path.dirname(_TEST_DIR)
 class TestMainWindowWorkflow(unittest.TestCase):
     """Exercise load, canvas plot, tree edit, preview, and export together."""
 
+    def test_context_zero_prefills_existing_dialog_and_preserves_cancel(self):
+        with tempfile.TemporaryDirectory(prefix='d2g_context_zero_') as folder:
+            env = os.environ.copy()
+            env.update(QT_QPA_PLATFORM='offscreen', D2G_WORKFLOW_TEMP=folder)
+            result = subprocess.run([sys.executable, __file__, '--worker', '--zero-worker'],
+                cwd=folder, env=env, capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stdout.decode('utf-8', errors='replace') +
+                             result.stderr.decode('utf-8', errors='replace'))
+
     def test_machine_and_tolerance_config_changes_reload_without_restart(self):
         with tempfile.TemporaryDirectory(prefix='d2g_live_config_') as folder:
             env = os.environ.copy()
@@ -153,6 +162,7 @@ def _run_mainwindow_workflow():
     profile_worker = '--profile-default-worker' in sys.argv
     restart_worker = '--restart-worker' in sys.argv
     live_config_worker = '--live-config-worker' in sys.argv
+    zero_worker = '--zero-worker' in sys.argv
     if fold_worker:
         import faulthandler
         faulthandler.dump_traceback_later(4, repeat=True)
@@ -189,6 +199,99 @@ def _run_mainwindow_workflow():
     app = QApplication([])
     window = app_module.MainWindow(app)
     g.window = window
+    if zero_worker:
+        from unittest.mock import patch
+        from math import hypot
+        from dxf2gcode.presentation.qt.canvas import MyDropDownMenu
+        from dxf2gcode.domain.project.project import Project
+        from dxf2gcode.adapters.project.legacy_d2g import decode_d2g
+        from dxf2gcode_stmove_gcode_test import make_plan_service, make_postpro
+        window.filename = os.path.join(_REPO_DIR, 'dxf', 'drag_knive_test.dxf')
+        assert window.load()
+        window.cont_dx, window.cont_dy = 7, -11
+        window.cont_scale, window.cont_rotate = 1.3, .4
+        window.cont_mirrorx = True
+        window.d2g.small_reload()
+        def vertices():
+            return [geo.get_start_end_points(True) for shape in window.shapes
+                    for geo in shape.geos.abs_iter()]
+        for metric in (1, 0):
+            window.setMeasurementUnits(metric)
+            clicked = vertices()[0]
+            expected = [window.cont_dx-clicked.x, window.cont_dy-clicked.y]
+            with patch.object(MyDropDownMenu, 'exec'):
+                menu = MyDropDownMenu(window.canvas_scene, QtCore.QPoint(), clicked)
+            assert not menu.selectedItems
+            action = menu.actions()[0]
+            assert action.isEnabled()
+            before = Project(window).export(compleet=False)
+            with patch.object(app_module, 'PopUpDialog', return_value=SimpleNamespace(result=None)) as dialog:
+                action.trigger()
+                assert dialog.call_args.args[2] == expected
+                assert dialog.call_args.kwargs['decimals'] == (3 if metric else 5)
+                assert ('[mm]' if metric else '[in]') in dialog.call_args.args[1][0]
+                assert Project(window).export(compleet=False) == before
+            with patch.object(app_module, 'PopUpDialog', return_value=SimpleNamespace(result=[str(v) for v in expected])):
+                action.trigger()
+            assert (window.cont_dx, window.cont_dy) == tuple(expected)
+            assert any(hypot(p.x, p.y) < 1e-7 for p in vertices())
+            assert not window.canvas_scene.routearrows
+            shape = window.shapes[0]
+            exported = make_plan_service().execute_result(shape, make_postpro())
+            assert not exported.has_errors
+            assert exported.plan == window.canvas_scene.graphics_items[id(shape)].stmove_item.plan
+            # At the origin, repeating the same action must not accumulate drift.
+            zero = min(vertices(), key=lambda p: hypot(p.x, p.y))
+            with patch.object(MyDropDownMenu, 'exec'):
+                menu = MyDropDownMenu(window.canvas_scene, QtCore.QPoint(), zero)
+            with patch.object(app_module, 'PopUpDialog', return_value=SimpleNamespace(result=None)) as dialog:
+                menu.actions()[0].trigger()
+                assert all(abs(a-b) < 1e-7 for a,b in zip(dialog.call_args.args[2], expected))
+            # Edited offsets are honored, and the normal menu still uses them.
+            edited = [expected[0]+1, expected[1]+2]
+            with patch.object(app_module, 'PopUpDialog', return_value=SimpleNamespace(result=[str(v) for v in edited])):
+                menu.actions()[0].trigger()
+            assert (window.cont_dx, window.cont_dy) == tuple(edited)
+            with patch.object(app_module, 'PopUpDialog', return_value=SimpleNamespace(result=None)) as dialog:
+                window.ui.actionMoveWorkpieceZero.trigger()
+                assert dialog.call_args.args[2] == edited
+            content = Project(window).export(compleet=False)
+            values = decode_d2g(content).values
+            assert [values['wpzero_x'], values['wpzero_y']] == edited
+            Project(window).load(content)
+            assert (window.cont_dx, window.cont_dy) == tuple(edited)
+        shape = window.shapes[0]
+        shape.setSelected(True)
+        for closed in (True, False):
+            shape.closed = closed
+            if not closed:
+                from dxf2gcode.domain.geometry.collections import Geos
+                shape.geos = Geos(shape.geos[:-1])
+            candidates = shape.start_point_candidates()
+            assert len(candidates) == (len(shape.geos) if closed else 2)
+            before_order = tuple(shape.geos)
+            before_offset = (window.cont_dx, window.cont_dy)
+            near = candidates[0] + app_module.Point(.0001, .0001)
+            def inspect_snap(*args, **kwargs):
+                snap = kwargs['snap']
+                assert callable(snap)
+                assert snap(args[2]) == [window.cont_dx-candidates[0].x, window.cont_dy-candidates[0].y]
+                # Snapping uses the current dialog offsets, not only the
+                # original click, and never changes the contour start.
+                other = [window.cont_dx-candidates[-1].x, window.cont_dy-candidates[-1].y]
+                assert snap(other) == other
+                assert tuple(shape.geos) == before_order
+                return SimpleNamespace(result=None)
+            with patch.object(app_module, 'PopUpDialog', side_effect=inspect_snap):
+                window.moveWorkpieceZero(point=near)
+            assert before_offset == (window.cont_dx, window.cont_dy)
+            assert tuple(shape.geos) == before_order
+        window.shapes[1].setSelected(True)
+        with patch.object(app_module, 'PopUpDialog', return_value=SimpleNamespace(result=None)) as dialog:
+            window.moveWorkpieceZero()
+            assert dialog.call_args.kwargs['snap'] is None
+        window.close()
+        return
     if live_config_worker:
         from unittest.mock import patch
         window.filename = os.path.join(_REPO_DIR, 'dxf', 'drag_knive_test.dxf')

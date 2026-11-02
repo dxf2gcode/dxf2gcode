@@ -544,6 +544,16 @@ class TreeView(QTreeView):
         print("\033[31;1mkeyPressEvent() key = {0}\033[m".format(keyEvent.key()))
         """
 
+        modifiers = QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier
+        if (self.hasFocus() and keyEvent.modifiers() == modifiers and
+                keyEvent.key() in (QtCore.Qt.Key.Key_Right, QtCore.Qt.Key.Key_Left)):
+            can_collapse, can_expand = self._expansionAvailability()
+            if keyEvent.key() == QtCore.Qt.Key.Key_Right and can_expand:
+                self.expandAll()
+            elif keyEvent.key() == QtCore.Qt.Key.Key_Left and can_collapse:
+                self.collapseAll()
+            keyEvent.accept()
+            return
         if self.keyPressEventcallback and not self.signals_blocked:
             if not self.keyPressEventcallback(keyEvent):
                 # key not accepted => send it back to the parent

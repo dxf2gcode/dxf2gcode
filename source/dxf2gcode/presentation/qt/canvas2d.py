@@ -361,6 +361,13 @@ class MyGraphicsScene(QGraphicsScene):
                 item.paint_details(painter)
                 painter.restore()
 
+    def updateToolCircleVisibility(self):
+        for item in self.items():
+            if isinstance(item, StMoveGUI):
+                item.prepareGeometryChange()
+                item.update()
+        self.update()
+
     def __init__(self):
         QGraphicsScene.__init__(self)
 
@@ -956,6 +963,9 @@ class StMoveGUI(QGraphicsItem):
             if self.plan is not None and self.plan.compensation_space == 'programmed'
             else QtCore.QCoreApplication.translate(
                 'ToolpathPreview', 'Tool center path (G40)'))
+        if self.plan is not None and self.plan.compensation_space == 'programmed':
+            description += '\n' + QtCore.QCoreApplication.translate(
+                'ToolpathPreview', 'The entry circle approximates the cutter position with machine compensation.')
         self.setToolTip(self._warning() or description)
         positions = {}
         for segment in plan_preview_segments(self.plan, dimensions=2):
@@ -974,24 +984,11 @@ class StMoveGUI(QGraphicsItem):
             positions[id(target)] = end
 
     def _lead_in_dive_point(self):
-        """
-        Return the actual dive point (tool center position at plunge) for the
-        lead-in preview tool circle.
+        """Use the shared plan's entry; do not calculate another offset path."""
+        return Point(*self.plan.approach_xy) if self.plan is not None else None
 
-        For machine compensation (G41/G42) the first geometry is a RapidPos at
-        the compensated start. For software compensation it's also a RapidPos
-        at the tool-center start. In both cases self.geos[0] is the correct
-        dive point when a lead-in exists.
-        """
-        try:
-            if not self.lead_in_geos:
-                return None
-            first = self.geos.abs_el(0)
-            if hasattr(first, 'x') and hasattr(first, 'y'):
-                return Point(first.x, first.y)
-        except Exception:
-            pass
-        return None
+    def _show_tool_circle(self):
+        return bool(getattr(g.config.vars.General, 'show_tool_circle', True))
 
     def setSelected(self, flag=True, blockSignals=True):
         """
@@ -1159,11 +1156,9 @@ class StMoveGUI(QGraphicsItem):
         if not self._lead_in_path.isEmpty():
             painter.setPen(self.PEN_LEAD_IN_LINE)
             painter.drawPath(self._lead_in_path)
-            # Draw the tool at the actual dive point (tool center position
-            # at plunge) so that the relation between the lead in moves and
-            # the geometry becomes visible. The tool is drawn in the lead in
-            # colour, one pixel wide and dashed; the circle is in scene units,
-            # so it scales with the zoom like the geometry.
+        # The entry circle is independent of lead selection and scales in
+        # scene units together with the geometry.
+        if self._show_tool_circle():
             tool_radius = self._tool_radius()
             if tool_radius > 0.0:
                 dive = self._lead_in_dive_point()
@@ -1223,8 +1218,8 @@ class StMoveGUI(QGraphicsItem):
         br = br.united(self._lead_in_path.boundingRect())
         br = br.united(self._exit_path.boundingRect())
         br = br.united(self._tab_path.boundingRect())
-        # The tool circle at the actual dive point of the lead in.
-        if not self._lead_in_path.isEmpty():
+        # The same planned entry and visibility control drawing and bounds.
+        if self._show_tool_circle():
             radius = self._tool_radius()
             if radius > 0.0:
                 dive = self._lead_in_dive_point()

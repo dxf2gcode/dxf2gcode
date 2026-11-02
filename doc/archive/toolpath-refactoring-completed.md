@@ -21,6 +21,7 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 | Etappe 5a | Shape-spezifische Werkzeugzuordnung einschließlich Persistenz und Anzeige |
 | Darstellungskorrektur | Originalgeometrie bleibt Grunddarstellung und Auswahlfläche; Werkzeugweg erscheint zusätzlich bei Auswahl in den bestehenden Farben |
 | Importreihenfolge | Rückwärts importierte Kurvenketten behalten die korrekte Reihenfolge ihrer Teilstücke; rote Kontur und G40-Plan sind zusammenhängend |
+| V1 / U3 / U5 | Unabhängiger 2D-Werkzeugkreis, vorbelegter Nullpunktdialog im Kontextmenü und Tastenkürzel für beide Bäume |
 | U1 / U2 | Werkzeugauswahl ausrichten; Klappbuttons nach Baumzustand und Hänger-Nachbesserung |
 | U4 / I2 | Konfigurierbarer Startzustand des Layerbaums; optionale Importfilter |
 | R1a | Drag-and-drop-Absturzpfade und Qt5-/Qt6-Kompatibilität |
@@ -46,6 +47,73 @@ LinuxCNC-Profil samt Referenzausgaben; `4d061fc` enthält Übersetzungen,
 GUI-Branding und den Dokumentationslink. Vor jedem Commit läuft die Fast-Suite
 über den Pre-Commit-Hook: jeweils **156 Tests bestanden**. Zusätzlich bestanden
 zehn gezielte Qt6-Tests für Programmstart, Konfiguration und Infofenster.
+
+<a id="v1-u3-u5"></a>
+
+## V1/U3/U5 – Bedienung (02.11.2026)
+
+### V1 – Werkzeugkreis unabhängig vom Lead-in
+
+Abgestimmt und umgesetzt zunächst für 2D, standardmäßig eingeschaltet und über
+„Werkzeugkreis am Einstieg anzeigen (2D)“ ausschaltbar. Konfigurationsversion
+9.19 ergänzt die persistierte Option; frühere Profile erhalten den eingeschalteten
+Standard. Zeichenposition und Bounding-Box verwenden denselben Einstiegspunkt
+des gemeinsamen Werkzeugwegplans, auch ohne Lead-in. Effektive Konturwerkzeuge,
+Transformationen und Szenenskalierung bleiben maßgeblich. Bei Maschinenkompensation
+kennzeichnet der Tooltip die nur angenäherte Fräserposition. Ein ungültiger Plan
+erhält keinen erfundenen Einstiegspunkt; bestehende Fehler bleiben sichtbar.
+Die Anzeige verändert weder Plan noch G-Code. Mehrere resultierende Teilkonturen
+bleiben Teil der gesondert zurückgestellten Erweiterung, keine neu implementierte
+Bedienmöglichkeit.
+
+### U3 – Werkstücknullpunkt am angeklickten Punkt
+
+„Werkstücknullpunkt hierher verschieben …“ öffnet den bestehenden Verschiebungsdialog
+mit den berechneten Offsets. Standardmäßig wird nicht gefangen; es geht um den
+Werkstück-/Zeichnungsnullpunkt, nicht um die Maschinenreferenz. Die Aktion ist bei
+geladener Geometrie auch ohne Konturauswahl verfügbar. Sie verwendet die aktuelle
+Translation und den bereits transformierten Klickpunkt. Abbrechen verändert nichts;
+Bestätigen oder Bearbeiten nutzt denselben Neuladeablauf wie das Optionen-Menü.
+Der normale numerische Menüweg und der Projekt-Roundtrip bleiben erhalten.
+Der Dialog zeigt maximal drei Nachkommastellen bei mm und fünf bei inch.
+Unveränderte Felder behalten beim Bestätigen ihren exakten internen Wert.
+Die Hauptbuttons stehen als **OK – Auto – Abbrechen**, mit OK als Standard
+für Enter. Bei genau einer ausgewählten Kontur ist zusätzlich
+„Fangen: nächster Konturpunkt“ verfügbar. Geschlossene Konturen verwenden
+Segmentanfänge, offene nur Anfang und Ende, wie die vorhandene Startpunktaktion.
+Fangen berücksichtigt die aktuellen Dialogwerte, verändert aber zunächst nur
+die Felder und nicht Konturstart, Richtung, Reihenfolge oder Nullpunkt.
+Erst OK übernimmt die Verschiebung; Abbrechen verwirft auch einen Fang.
+Der gemeinsame 3D-Menüweg projiziert den Klick auf die Zeichnungsebene Z=0;
+eine praktische GPU-/3D-Abnahme war nicht Teil dieser Änderung.
+
+### U5 – Baum über Tastenkürzel vollständig ein-/ausklappen
+
+**Strg+Umschalt+Rechts** klappt den gesamten fokussierten Baum aus,
+**Strg+Umschalt+Links** klappt ihn ein. Dies gilt für Layer und Entities,
+unabhängig von einer Gruppenauswahl. Es werden dieselben vollständigen
+Klappaktionen und Verfügbarkeitsregeln wie bei den Buttons verwendet. In
+Eingabefeldern oder bei Canvas-Fokus wird kein Baum über diese Kürzel verändert.
+Die Buttons erläutern die Kürzel in übersetzten Tooltips.
+
+### Prüfung und Dokumentationsmaterial
+
+Je **64 fokussierte Tests unter Qt5 und Qt6 bestanden**: Lead an/aus,
+G40/G41/G42 einschließlich ungültigem fehlendem Maschinen-Lead, Konturwerkzeug,
+Transformationen, Kreis/BBox, unveränderte Exportausgabe, alte Profile und
+Speichern/Laden der Anzeigeoption. Echte Qt-Tastenevents prüfen leere, gemischte
+und vollständig geklappte Bäume sowie Eingabefokus. Der Hauptfensterablauf prüft
+Nullpunkt-Dialogwerte, Abbrechen, Bestätigen, Bearbeiten, wiederholte Verschiebung,
+Rotation/Skalierung/Spiegelung, mm/in, Projekt-Roundtrip und gleichen Vorschau-/Exportplan.
+Zusätzliche Dialogtests prüfen die mm-/inch-Anzeige, exakte unangetastete Werte,
+Enter auf OK, Buttonreihenfolge, optionalen Fang, ungültige Fang-Eingaben und
+Abbrechen nach einem Fang. Die bestehenden Startpunktprüfungen bleiben erhalten.
+DE/FR/RU-Kataloge sind gepflegt, kompiliert und mit echten Translatoren geprüft.
+Werkzeugkreis ohne Lead-in und vorbelegter Nullpunktdialog wurden zusätzlich
+bei 125 % unter Qt6 gerendert und geprüft. Keine Vollsuite, Paket- oder
+Maschinenabnahme wurde gestartet.
+Hinweise für die spätere Anleitung stehen in den
+[Dokumentationsnotizen](../documentation-notes/configuration-and-preview.md#bedienung-v1-u3-u5).
 
 <a id="d1-d2"></a>
 
@@ -914,7 +982,8 @@ Nachbesserung; das vorhandene Wheel enthält sie noch nicht.
 Das Ticket wünscht unter anderem zuklappte Layer als wählbaren Startzustand.
 Die Nutzerfestlegung für diese Umsetzung lautet: **Standard weiterhin
 aufgeklappt.** Der zusätzliche Importfilterwunsch I2 ist ebenfalls umgesetzt;
-das Tastenkürzel U5 bleibt offen.
+das Tastenkürzel U5 war zu diesem Prüfstand noch offen; der spätere
+Abschluss ist im Abschnitt V1/U3/U5 dokumentiert.
 Alphanumerische Sortierung (R4) und Segmentmarkierung (I1) sind nach
 ausdrücklicher Nutzerfestlegung vom 30.10.2026 ausgeschlossen; sie sollen
 nicht umgesetzt werden. U4 erledigt nicht die übrigen offenen Ticketwünsche.

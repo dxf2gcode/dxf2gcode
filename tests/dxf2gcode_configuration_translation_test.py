@@ -28,6 +28,42 @@ from dxf2gcode.presentation.qt.configuration_help import HELP_SOURCES
 
 
 class TestConfigurationTranslations(unittest.TestCase):
+    def test_usability_controls_and_help_are_translated(self):
+        entries = {
+            'MyConfig': ('Show tool circle at entry (2D)',),
+            'MyDropDownMenu': ('Move workpiece zero here ...',
+                'Open the workpiece zero dialog for this point. Snapping is optional in the dialog.'),
+            'PopUpDialog': ('Snap to nearest contour point',
+                'Use a start-point candidate of the selected contour without changing its start point or direction.'),
+            'TreeHandler': ('Expand the active tree (Ctrl+Shift+Right when the tree has focus)',
+                'Collapse the active tree (Ctrl+Shift+Left when the tree has focus)'),
+            'ToolpathPreview': ('The entry circle approximates the cutter position with machine compensation.',),
+        }
+        for language in ('de', 'fr', 'ru'):
+            translator = QtCore.QTranslator()
+            self.assertTrue(translator.load(str(ROOT / 'source/i18n' / ('dxf2gcode_'+language+'.qm'))))
+            for context, sources in entries.items():
+                for source in sources:
+                    result = translator.translate(context, source)
+                    self.assertTrue(result, (language, context, source))
+                    self.assertNotEqual(result, source)
+            self.app.installTranslator(translator)
+            try:
+                with tempfile.TemporaryDirectory() as folder, patch.object(g, 'folder', folder):
+                    config = MyConfig()
+                    definitions = config.makeConfigWidgets()
+                    form = ConfigWindow(definitions, config.var_dict, config.var_dict.configspec)
+                    option = definitions['General']['show_tool_circle']
+                    self.assertTrue(option.getValue())
+                    self.assertEqual(option.checkbox.text(), translator.translate('MyConfig', entries['MyConfig'][0]))
+                    self.assertTrue(option.checkbox.toolTip())
+                    self.assertNotIn('Show the tool circle', option.checkbox.toolTip())
+                    option.setValue(False)
+                    self.assertFalse(option.getValue())
+                    form.close()
+            finally:
+                self.app.removeTranslator(translator)
+
     def test_restart_notices_and_unit_label_are_translated(self):
         notice = ('These saved changes require a restart:\n{0}\n\n'
                   'After you close the configuration window, DXF2GCODE will restart '

@@ -13,36 +13,13 @@ Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
 
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
-| 1 | [V1 – Werkzeugkreis](#v1), danach [U3 – Nullpunkt](#u3) und [U5 – Tastenkürzel](#u5) | Bezugspunkt und 3D-Umfang, Nullpunktbegriff, Tastenkombination/Fokus |
-| 2 | [CI1 – Downloads](#ci1), [M1 – Paketabnahme](#m1), [A1 – Abnahmegrenzen](#a1) | Paket-/Versionsstrategie, Prüffreigabe und konkrete Abdeckungslücken |
+| 1 | [CI1 – Downloads](#ci1), [M1 – Paketabnahme](#m1), [A1 – Abnahmegrenzen](#a1) | Paket-/Versionsstrategie, Prüffreigabe und konkrete Abdeckungslücken |
 | Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | WP1 zuerst; Quellenrechte und fehlende Medien |
 | Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 
-Nächster Umsetzungsvorschlag bleibt **V1**. Seine offenen Entscheidungen sind
-vor der Implementierung gemeinsam abzustimmen.
-
-## Bedienung
-
-<a id="v1"></a>
-
-- [ ] **V1 – Werkzeugkreis unabhängig vom Lead-in:** Anzeigeoption, tatsächlichen
-  Mittelpunkt am Einstieg und gewünschten 3D-Umfang abstimmen; Anzeige ohne
-  Änderung von Plan oder Export umsetzen.
-  [Anforderungen und Abnahme](planning/open-task-details.md#v1).
-
-<a id="u3"></a>
-
-- [ ] **U3 – Nullpunkt im Kontextmenü:** vorhandenen Verschiebungsdialog mit
-  Klickkoordinaten vorbelegen. Werkstück-/Zeichnungsnullpunkt eindeutig vom
-  Maschinenreferenzpunkt unterscheiden; Bestätigen und Abbrechen absichern.
-  [Anforderungen und Abnahme](planning/open-task-details.md#u3).
-
-<a id="u5"></a>
-
-- [ ] **U5 – Tastenkürzel zum Ein-/Ausklappen:** Kombination, Entities-Umfang
-  und Fokusregeln mit vorhandenen Baum-/Canvas-Aktionen abstimmen.
-  [Anforderungen und Abnahme](planning/open-task-details.md#u5).
+Nächster Umsetzungsvorschlag: **CI1**. Zunächst Paket-/Versionsstrategie und
+einen konkreten Prüfablauf abstimmen; dies startet noch keine Builds.
 
 ## Bereitstellung und Abnahme
 

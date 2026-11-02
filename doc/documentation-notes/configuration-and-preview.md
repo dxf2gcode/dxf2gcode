@@ -51,7 +51,34 @@ zusammen, während 3D die Tiefenbewegungen erhält. Lead-in, Lead-out und Überf
 werden in 2D über den Konturbahnen gezeichnet. Eine manuell angezeigte Exportroute
 ist eine eigene Aktion und wird nicht durch eine Vorschau-Neuberechnung aktiviert.
 
-Die noch offene Aufgabe **V1** (Werkzeugkreis unabhängig vom Lead-in) nicht als
-vorhandene Anzeigeoption dokumentieren. Vor Screenshots die aktuelle Bedienung
-und Begriffe in den gepflegten Sprachen abgleichen. Prüfnachweise stehen in
-[completed](../archive/toolpath-refactoring-completed.md#configuration-restart).
+<a id="bedienung-v1-u3-u5"></a>
+
+## Bedienung V1/U3/U5
+
+- In den allgemeinen Einstellungen ist **Werkzeugkreis am Einstieg anzeigen (2D)**
+  standardmäßig eingeschaltet. Der Kreis erscheint beim geplanten Einstieg auch
+  ohne Lead-in. Ausschalten betrifft nur den Kreis; Leads und Werkzeugbahnen
+  bleiben sichtbar. Bei Maschinenkompensation ist die Fräserposition angenähert
+  und entsprechend im Tooltip beschrieben. In 3D wurde keine neue Kreisanzeige
+  ergänzt. Konfiguration 9.19 speichert die Option.
+- Im Zeichnungskontextmenü öffnet **Werkstücknullpunkt hierher verschieben …**
+  den bestehenden Dialog mit den Offsets für den angeklickten Punkt. Werte
+  können geändert oder unverändert übernommen werden. Standardmäßig wird nicht
+  gefangen; erst Bestätigen verändert die Zeichnung. Die Aktion benötigt geladene
+  Geometrie, aber keine ausgewählte Kontur. Den Werkstücknullpunkt klar von der
+  Maschinenreferenz unterscheiden. Der normale numerische Menüeintrag bleibt.
+- Der Nullpunktdialog zeigt maximal **3 Nachkommastellen bei mm**, **5 bei inch**.
+  Reines Bestätigen erhält die exakten Werte unangetasteter Felder. Die Buttons
+  stehen als **OK – Auto – Abbrechen**; Enter verwendet standardmäßig OK.
+  Bei genau einer ausgewählten Kontur kann **Fangen: nächster Konturpunkt**
+  die Felder auf dieselben Kandidaten wie die Startpunktaktion setzen:
+  geschlossene Konturen auf Segmentanfänge, offene auf Anfang oder Ende.
+  Der Fang ändert weder Konturstart noch Richtung und wird erst mit OK angewendet.
+- Bei Fokus im Layer- oder Entities-Baum klappt **Strg+Umschalt+Rechts** den
+  gesamten aktiven Baum aus, **Strg+Umschalt+Links** ihn ein. Dies betrifft alle
+  Gruppen des Baums; in Texteingaben und im Canvas greifen diese Baumkürzel nicht.
+
+Für Abbildungen Kreis mit/ohne Lead-in, vorbefüllten Nullpunktdialog und
+Baum-Tooltips zeigen. Vor Screenshots die aktuelle Bedienung und Begriffe in den
+gepflegten Sprachen abgleichen. Prüfnachweise stehen in
+[completed](../archive/toolpath-refactoring-completed.md#v1-u3-u5).

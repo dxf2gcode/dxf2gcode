@@ -26,6 +26,86 @@ from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 
 
 class TestToolpathSlices(GoldenTestBase):
+    def test_entry_circle_renders_without_a_lead_and_scales_with_the_scene(self):
+        from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene, StMoveGUI
+        from dxf2gcode.presentation.qt.qt_compat.QtCore import QRectF
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QImage, QPainter
+        shape, _ = build_shape(cut_cor=40, layer_settings=dict(lead_in_mode='off', lead_out_mode='off'))
+        overlay = StMoveGUI(shape)
+        scene = MyGraphicsScene()
+        scene.addItem(overlay)
+        center = overlay._lead_in_dive_point()
+        radius = overlay._tool_radius()
+        source = QRectF(center.x-1.2*radius, -center.y-1.2*radius, 2.4*radius, 2.4*radius)
+        g.config.vars.General['show_tool_circle'] = True
+        for size in (120, 240):
+            image = QImage(size, size, QImage.Format.Format_ARGB32)
+            image.fill(0xffffffff)
+            painter = QPainter(image)
+            try:
+                scene.render(painter, QRectF(0, 0, size, size), source)
+            finally:
+                painter.end()
+            xs = [x for x in range(size) for y in range(size)
+                  if image.pixelColor(x, y) == overlay.PEN_LEAD_IN_TOOL.color()]
+            self.assertTrue(xs)
+            self.assertAlmostEqual(max(xs)-min(xs), size/1.2, delta=4)
+        g.config.vars.General['show_tool_circle'] = False
+        scene.updateToolCircleVisibility()
+        image.fill(0xffffffff)
+        painter = QPainter(image)
+        try:
+            scene.render(painter, QRectF(0, 0, size, size), source)
+        finally:
+            painter.end()
+        self.assertFalse(any(image.pixelColor(x, y) == overlay.PEN_LEAD_IN_TOOL.color()
+                             for x in range(size) for y in range(size)))
+
+    def test_entry_circle_uses_plan_with_and_without_leads_and_never_changes_export(self):
+        from unittest.mock import Mock
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
+        from dxf2gcode.domain.project.tool_settings import ToolSettings
+        from dxf2gcode.domain.project.entitycontent import EntityContent
+        for machine in (False, True):
+            for side in (40, 41, 42):
+                for lead in ('off', 'startmove'):
+                    with self.subTest(machine=machine, side=side, lead=lead):
+                        shape, _ = build_shape(cut_cor=side, done_by_machine=machine,
+                            layer_settings=dict(lead_in_mode=lead, lead_out_mode='off'))
+                        shape.tool_override = ToolSettings(1, 6, 1000, 1, 20, 3, 0)
+                        root = EntityContent(nr=0, name='Root', parent=None,
+                            p0=Point(7, 11), pb=Point(), sca=[1.5]*3, rot=.3)
+                        shape.parentEntity = root
+                        for geo in shape.geos:
+                            geo.make_abs_geo(root)
+                        shape.stmove = prepare_shape(shape)
+                        if machine and side != 40 and lead == 'off':
+                            result = make_plan_service().execute_result(shape, make_postpro())
+                            self.assertTrue(result.has_errors)
+                            self.assertIsNone(StMoveGUI(shape)._lead_in_dive_point())
+                            continue
+                        plan, code = self.plan_and_export(shape)
+                        g.config.vars.General['show_tool_circle'] = True
+                        gui = StMoveGUI(shape, plan=plan)
+                        painter = Mock()
+                        gui.paint_details(painter)
+                        painter.drawEllipse.assert_called_once()
+                        center, rx, ry = painter.drawEllipse.call_args.args
+                        self.assertEqual((center.x(), -center.y()), plan.approach_xy)
+                        self.assertEqual((rx, ry), (3, 3))
+                        br = gui.boundingRect()
+                        self.assertLessEqual(br.left(), center.x()-rx+1e-9)
+                        self.assertGreaterEqual(br.right(), center.x()+rx-1e-9)
+                        self.assertLessEqual(br.top(), center.y()-ry+1e-9)
+                        self.assertGreaterEqual(br.bottom(), center.y()+ry-1e-9)
+                        g.config.vars.General['show_tool_circle'] = False
+                        painter = Mock()
+                        gui.paint_details(painter)
+                        painter.drawEllipse.assert_not_called()
+                        after, after_code = self.plan_and_export(shape)
+                        self.assertEqual(plan, after)
+                        self.assertEqual(code, after_code)
+
     def test_knife_overcut_uses_exit_overlay_even_without_a_lead_out(self):
         from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape, _ = build_shape(cut_cor=40, machine_type='drag_knife', layer_settings=dict(

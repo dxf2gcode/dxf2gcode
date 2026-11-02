@@ -2942,6 +2942,14 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <source>Applies the machine type to the current drawing and saves it for new sessions. The drawing is rebuilt without restarting the application.</source>
         <translation>Применяет тип станка к текущему чертежу и сохраняет его для новых сеансов. Чертёж перестраивается без перезапуска приложения.</translation>
     </message>
+    <message>
+        <source>Show tool circle at entry (2D)</source>
+        <translation>Показывать окружность инструмента на входе (2D)</translation>
+    </message>
+    <message>
+        <source>Show the tool circle at the planned entry, even without a lead in. With machine compensation, the actual cutter position is approximate. This display does not change the toolpath.</source>
+        <translation>Показывает окружность инструмента в запланированной точке входа даже без захода. При компенсации на станке фактическое положение фрезы приблизительное. Отображение не меняет траекторию.</translation>
+    </message>
 </context>
 <context>
     <name>MyDropDownMenu</name>
@@ -3039,6 +3047,18 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <location filename="../dxf2gcode/presentation/qt/canvas.py" line="489"/>
         <source>Set to %s for G73 Drill, for shape: %i</source>
         <translation>Установлено в %s для сверления G73 контура: %i</translation>
+    </message>
+    <message>
+        <source>Move workpiece zero here ...</source>
+        <translation>Перенести ноль заготовки сюда…</translation>
+    </message>
+    <message>
+        <source>Open the workpiece zero dialog with offsets for this point. No point snapping is applied.</source>
+        <translation type="obsolete">Открывает диалог переноса нуля заготовки со смещениями для этой точки. Привязка к точкам геометрии не применяется.</translation>
+    </message>
+    <message>
+        <source>Open the workpiece zero dialog for this point. Snapping is optional in the dialog.</source>
+        <translation>Открывает диалог нулевой точки для этого положения. В диалоге можно включить привязку.</translation>
     </message>
 </context>
 <context>
@@ -3539,6 +3559,14 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <location filename="../dxf2gcode/presentation/qt/popupdialog.py" line="108"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>Snap to nearest contour point</source>
+        <translation>Привязать к ближайшей точке контура</translation>
+    </message>
+    <message>
+        <source>Use a start-point candidate of the selected contour without changing its start point or direction.</source>
+        <translation>Использует возможную начальную точку выбранного контура, не меняя его начало и направление.</translation>
     </message>
 </context>
 <context>
@@ -4093,6 +4121,14 @@ Skipped Geometries</source>
         <source>Absolute Z contact height while swiveling the knife. Clear the field to use the configuration value. Never plunges below the current cut depth.</source>
         <translation>Абсолютная высота Z контакта при повороте ножа. Очистите поле для использования значения конфигурации. Нож не опускается ниже текущей глубины реза.</translation>
     </message>
+    <message>
+        <source>Expand the active tree (Ctrl+Shift+Right when the tree has focus)</source>
+        <translation>Развернуть активное дерево (Ctrl+Shift+Вправо при фокусе в дереве)</translation>
+    </message>
+    <message>
+        <source>Collapse the active tree (Ctrl+Shift+Left when the tree has focus)</source>
+        <translation>Свернуть активное дерево (Ctrl+Shift+Влево при фокусе в дереве)</translation>
+    </message>
 </context>
 <context>
     <name>Validator</name>
@@ -4209,6 +4245,10 @@ Skipped Geometries</source>
     <message>
         <source>Tool center path (G40)</source>
         <translation>Траектория центра инструмента (G40)</translation>
+    </message>
+    <message>
+        <source>The entry circle approximates the cutter position with machine compensation.</source>
+        <translation>При компенсации на станке окружность входа показывает приблизительное положение фрезы.</translation>
     </message>
 </context>
 <context>

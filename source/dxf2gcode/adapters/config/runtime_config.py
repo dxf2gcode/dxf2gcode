@@ -47,7 +47,7 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 logger = logging.getLogger("Core.Config")
 
-SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14, 9.15, 9.16, 9.17, 9.18]
+SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14, 9.15, 9.16, 9.17, 9.18, 9.19]
 CONFIG_VERSION = SUPPORTED_CONFIGS[-1]
 """
 version tag - increment this each time you edit CONFIG_SPEC
@@ -173,6 +173,7 @@ CONFIG_SPEC = str('''
     live_update_export_route = boolean(default = False)
     # When enabled, a scale bar is drawn in the bottom right corner of the canvas. It shows the physical size of the imported geometry.
     show_scale_bar = boolean(default = False)
+    show_tool_circle = boolean(default = True)
 
     expand_layers_on_load = boolean(default = True)
     # Divide the lines in 2 parts, in order to start the cutting in the middle of a line (usefull for cutter compensation)

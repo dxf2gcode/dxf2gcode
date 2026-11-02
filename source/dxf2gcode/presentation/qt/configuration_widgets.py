@@ -61,6 +61,7 @@ def build_application_config_widgets(config):
             ("show_disabled_paths", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show disabled paths")))),
             ("live_update_export_route", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Update export route live")))),
             ("show_scale_bar", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show a scale bar in the canvas")))),
+            ("show_tool_circle", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show tool circle at entry (2D)"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', "Show the tool circle at the planned entry, even without a lead in. With machine compensation, the actual cutter position is approximate. This display does not change the toolpath.")))),
             ("expand_layers_on_load", CfgCheckBox(
                 QtCore.QCoreApplication.translate(
                     "MyConfig", "Expand layers when loading a drawing"))),

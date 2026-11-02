@@ -415,6 +415,8 @@ class TreeHandler(QWidget):
 
     def _connectExpansionButtons(self, view, collapse_button, expand_button):
         """Use the same complete-folding contract for both tree views."""
+        expand_button.setToolTip(self.tr("Expand the active tree (Ctrl+Shift+Right when the tree has focus)"))
+        collapse_button.setToolTip(self.tr("Collapse the active tree (Ctrl+Shift+Left when the tree has focus)"))
         def update_buttons(can_collapse, can_expand):
             collapse_button.setEnabled(can_collapse)
             expand_button.setEnabled(can_expand)
