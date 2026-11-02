@@ -81,9 +81,10 @@ Die Hauptbuttons stehen als **OK – Auto – Abbrechen**, mit OK als Standard
 für Enter. Bei genau einer ausgewählten Kontur ist zusätzlich
 „Fangen: nächster Konturpunkt“ verfügbar. Geschlossene Konturen verwenden
 Segmentanfänge, offene nur Anfang und Ende, wie die vorhandene Startpunktaktion.
-Fangen berücksichtigt die aktuellen Dialogwerte, verändert aber zunächst nur
-die Felder und nicht Konturstart, Richtung, Reihenfolge oder Nullpunkt.
-Erst OK übernimmt die Verschiebung; Abbrechen verwirft auch einen Fang.
+Fangen berücksichtigt die aktuellen Dialogwerte und übernimmt die exakten
+Fangkoordinaten unmittelbar beim Schließen des Dialogs. Ein zusätzliches OK
+ist nicht erforderlich. Konturstart, Richtung und Reihenfolge bleiben erhalten;
+Abbrechen ohne Fang verändert den Nullpunkt nicht.
 Der gemeinsame 3D-Menüweg projiziert den Klick auf die Zeichnungsebene Z=0;
 eine praktische GPU-/3D-Abnahme war nicht Teil dieser Änderung.
 
@@ -107,7 +108,9 @@ Nullpunkt-Dialogwerte, Abbrechen, Bestätigen, Bearbeiten, wiederholte Verschieb
 Rotation/Skalierung/Spiegelung, mm/in, Projekt-Roundtrip und gleichen Vorschau-/Exportplan.
 Zusätzliche Dialogtests prüfen die mm-/inch-Anzeige, exakte unangetastete Werte,
 Enter auf OK, Buttonreihenfolge, optionalen Fang, ungültige Fang-Eingaben und
-Abbrechen nach einem Fang. Die bestehenden Startpunktprüfungen bleiben erhalten.
+Abbrechen ohne Fang. Die Fang-Nachbesserung schließt und bestätigt den Dialog
+direkt, ohne die intern übernommenen Koordinaten zu runden.
+Die bestehenden Startpunktprüfungen bleiben erhalten.
 DE/FR/RU-Kataloge sind gepflegt, kompiliert und mit echten Translatoren geprüft.
 Werkzeugkreis ohne Lead-in und vorbelegter Nullpunktdialog wurden zusätzlich
 bei 125 % unter Qt6 gerendert und geprüft. Keine Vollsuite, Paket- oder

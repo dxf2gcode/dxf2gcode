@@ -190,12 +190,8 @@ class PopUpDialog(QDialog):
     def cbSnap(self):
         if self.snap is None or not self.snapButton.isEnabled():
             return
-        values = self.snap(self._current_values())
-        for element, value in zip(self.lineElement, values):
-            text = self._display_value(value)
-            element.setText(text)
-            element._original_popup_text = text
-            element._original_popup_value = value
+        self.result = self.snap(self._current_values())
+        self.close()
 
     def cbCancel(self):
         logger.debug('Cancel')

@@ -64,7 +64,7 @@ ist eine eigene Aktion und wird nicht durch eine Vorschau-Neuberechnung aktivier
 - Im Zeichnungskontextmenü öffnet **Werkstücknullpunkt hierher verschieben …**
   den bestehenden Dialog mit den Offsets für den angeklickten Punkt. Werte
   können geändert oder unverändert übernommen werden. Standardmäßig wird nicht
-  gefangen; erst Bestätigen verändert die Zeichnung. Die Aktion benötigt geladene
+  gefangen; OK oder der Fang-Button übernehmen die Verschiebung. Die Aktion benötigt geladene
   Geometrie, aber keine ausgewählte Kontur. Den Werkstücknullpunkt klar von der
   Maschinenreferenz unterscheiden. Der normale numerische Menüeintrag bleibt.
 - Der Nullpunktdialog zeigt maximal **3 Nachkommastellen bei mm**, **5 bei inch**.
@@ -73,7 +73,8 @@ ist eine eigene Aktion und wird nicht durch eine Vorschau-Neuberechnung aktivier
   Bei genau einer ausgewählten Kontur kann **Fangen: nächster Konturpunkt**
   die Felder auf dieselben Kandidaten wie die Startpunktaktion setzen:
   geschlossene Konturen auf Segmentanfänge, offene auf Anfang oder Ende.
-  Der Fang ändert weder Konturstart noch Richtung und wird erst mit OK angewendet.
+  Der Fang ändert weder Konturstart noch Richtung. Er übernimmt die exakten
+  Fangkoordinaten sofort und schließt den Dialog; ein zusätzliches OK entfällt.
 - Bei Fokus im Layer- oder Entities-Baum klappt **Strg+Umschalt+Rechts** den
   gesamten aktiven Baum aus, **Strg+Umschalt+Links** ihn ein. Dies betrifft alle
   Gruppen des Baums; in Texteingaben und im Canvas greifen diese Baumkürzel nicht.

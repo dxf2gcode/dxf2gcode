@@ -61,21 +61,18 @@ class TestPopupPrecision(unittest.TestCase):
         self.assertIsNone(dialog.result)
         self.assertEqual(dialog.value, original)
 
-    def test_optional_snap_updates_fields_but_retains_exact_values_until_ok(self):
+    def test_optional_snap_accepts_exact_values_and_closes_immediately(self):
         from unittest.mock import Mock
         snapped = [1.234567891234, -3.456789123456]
         callback = Mock(return_value=snapped)
         dialog, original = self.dialog(3, callback)
         dialog.snapButton.click()
         callback.assert_called_once_with(original)
-        self.assertEqual([e.text() for e in dialog.lineElement], ['1.235', '-3.457'])
-        self.assertTrue(dialog.isVisible())
-        self.assertTrue(dialog.okButton.isDefault())
+        self.assertFalse(dialog.isVisible())
         self.assertEqual(dialog.value, original)
-        dialog.okButton.click()
         self.assertEqual(dialog.result, snapped)
 
-    def test_snap_does_not_apply_on_cancel_and_invalid_input_disables_it(self):
+    def test_invalid_input_disables_snap_and_cancel_does_not_apply(self):
         from unittest.mock import Mock
         callback = Mock(return_value=[1.234567, 3.456789])
         dialog, original = self.dialog(5, callback)
@@ -84,7 +81,7 @@ class TestPopupPrecision(unittest.TestCase):
         dialog.snapButton.click()
         callback.assert_not_called()
         dialog.lineElement[0].setText('1.25')
-        dialog.snapButton.click()
+        self.assertTrue(dialog.snapButton.isEnabled())
         dialog.cancelButton.click()
         self.assertIsNone(dialog.result)
         self.assertEqual(dialog.value, original)
