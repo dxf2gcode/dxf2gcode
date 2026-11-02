@@ -6,6 +6,9 @@ Aktuelle Arbeitsdokumente liegen direkt in diesem Ordner:
 | --- | --- |
 | [Architektur](architecture.md) | Paketstruktur und geltende Verträge für Geometrie, Planung, Vorschau und Export |
 | [Todo](todo.md) | Offene Aufgaben, Prioritäten und noch zu klärende Entscheidungen |
+| [Offene Detailpläne](planning/open-task-details.md) | Anforderungen und Abnahmekriterien der offenen Themen |
+| [Dokumentationsnotizen](documentation-notes/README.md) | Fach- und Quellenmaterial für spätere Anwenderanleitungen |
+| [Arbeits- und Prüfregeln](working-agreements.md) | Vorgehen und Grenzen lokaler Prüfungen; verbindliche Repository-Regeln in AGENTS.md |
 | [Referenzen](references/) | Wissenschaftliche Veröffentlichungen und DXF-Spezifikationen |
 | [Archiv](archive/) | Abgeschlossene Arbeiten, frühere Entwürfe und damalige Prüfergebnisse |
 | [Ältere Unterlagen](legacy/) | Frühere Word-Dokumentationen, Präsentation, Importskript und archivierte Python-Beispiele |
@@ -46,6 +49,11 @@ wurde nicht geprüft.
 ## Ablageregel
 
 Aktuelle Architektur und offene Aufgaben hier pflegen, abgeschlossene
-Umsetzungshistorie ins Archiv übernehmen. Ältere Unterlagen gelten nicht
+Umsetzungshistorie unmittelbar in [completed](archive/toolpath-refactoring-completed.md)
+übernehmen und aus der Todo entfernen. Die Todo bleibt eine kurze Übersicht;
+Detailanforderungen und spätere Anleitungshinweise in den oben verlinkten
+Dateien getrennt pflegen. Diese Regel gilt dauerhaft, siehe
+[AGENTS.md](../AGENTS.md#task-tracking-and-documentation).
+Ältere Unterlagen gelten nicht
 automatisch als aktuelle Bedienungsanleitung. Externe Referenzen und
 Originaldateien erhalten; bei Verschiebungen die relativen Links anpassen.

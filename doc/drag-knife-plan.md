@@ -4,6 +4,11 @@ Stand: **02.11.2026**, mit dem Nutzer abgestimmter Zielablauf.
 Der Plan ist lokal softwareseitig umgesetzt und gezielt geprüft. Die praktische
 Materialabnahme bleibt beim Anwender. Bedienung und Kompatibilität stehen in der
 [begleitenden Anleitung](drag-knife-usage.md).
+Der gemeinsame Umfang ist im lokalen Commit `fa8335b` abgeschlossen;
+[completed](archive/toolpath-refactoring-completed.md#d1-d2) enthält den
+abschließenden Prüfnachweis. Die einzelnen Prüfstände unten bleiben historisch
+erhalten. Material für die spätere Anleitung steht in den
+[Dokumentationsnotizen](documentation-notes/drag-knife.md).
 D1 untersucht und korrigiert Rampen und Konturschluss; D2 ergänzt darauf
 aufbauend Tiefenzustellungen und einen optionalen zusätzlichen Durchgang.
 
@@ -35,7 +40,8 @@ MainWindow-Workflow bestanden. Dialoge wurden bei 125 % gerendert und geprüft.
 Geprüft sind auch Winkelübernahme, Werkzeugwechsel-/Custom-G-Code-Grenzen,
 unbekannte Stellung, optionale Rückausrichtung und scrollbar erreichbare Felder.
 Keine Vollsuite, Debian-/SSH-Prüfung, Paket-/MSI-Erstellung oder Maschinenprüfung
-wurde gestartet; es wurde kein neuer Commit erstellt.
+wurde zu diesem früheren Prüfstand gestartet; der spätere Commitabschluss ist
+oben verlinkt.
 
 ## Bestehende Einstellungen wiederverwenden
 

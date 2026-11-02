@@ -1,0 +1,361 @@
+# Offene Aufgaben: Anforderungen und Abnahmekriterien
+
+Stand: **02.11.2026**.
+
+Diese Datei bewahrt die Detailanforderungen der [aktiven Todo](../todo.md).
+Priorität und Auswahl stehen dort; hieraus entsteht kein zusätzlicher
+Umsetzungs- oder Prüfauftrag. Codebefunde behalten ihren ursprünglichen
+Stand vom 30./31.10.2026, soweit nicht ausdrücklich anders vermerkt.
+
+## Bedienung
+
+<a id="v1"></a>
+
+### V1 – Werkzeugkreis am Start unabhängig vom Lead-in anzeigen
+
+**Codebefund:** `StMoveGUI` in `canvas2d.py` zeichnet den Kreis nur innerhalb
+der Prüfung auf einen nicht leeren Lead-in-Pfad.
+`_lead_in_dive_point` und `boundingRect` haben ebenfalls diese Bindung.
+Eine eigene Konfigurationsoption für die Sichtbarkeit fehlt.
+
+- [ ] Den Werkzeugdurchmesser auch ohne Lead-in am zugehörigen Startpunkt
+  darstellen; Zeichnen und Bounding-Box gemeinsam von der Lead-Auswahl lösen.
+- [ ] Eine persistierte Anzeigeoption mit verständlichem Text in allen drei
+  Sprachen ergänzen. **Vorschlag zur Freigabe:** standardmäßig eingeschaltet;
+  Ausschalten verbirgt nur den Werkzeugkreis, nicht Leads oder Werkzeugbahnen.
+- [ ] Vor Umsetzung den Bezugspunkt eindeutig vereinbaren. **Vorschlag:**
+  tatsächlicher Werkzeugmittelpunkt am Einstieg des geplanten Schnitts;
+  mit Lead-in dessen vorhandener Eintauchpunkt, ohne Lead-in der entsprechende
+  Bahnanfang. Bei Softwarekompensation den kompensierten Punkt verwenden;
+  bei Maschinenkompensation eine nur angenäherte Darstellung gegebenenfalls
+  kenntlich machen. Kein zweiter Offset-/Lead-Algorithmus in der Ansicht.
+- [ ] Effektive Shape-Werkzeuge, Transformationen, Zoom und mehrere
+  Teilkonturen aus der zurückgestellten Erweiterung berücksichtigen.
+  Zunächst betrifft der Befund 2D; den gewünschten Umfang in 3D vor Umsetzung
+  festlegen und mit dem [abgeschlossenen Vorschauvertrag](../archive/toolpath-refactoring-completed.md#5-vorschau-und-gemeinsame-planquelle-abschließen) abstimmen.
+
+**Abnahme und Tests:** Anzeige an/aus mit Lead-in an/aus, G40/G41/G42,
+Shape-Werkzeugoverride und transformierter Geometrie prüfen. Mittelpunkt,
+Radius und Bounding-Box gezielt testen; die Anzeigeoption darf den Plan oder
+G-Code nicht verändern. Bestehende Startpunkt-/Lead- und Vorschautests ergänzen.
+
+<a id="u3"></a>
+
+### U3 – Nullpunkt über einen Punkt im Kontextmenü festlegen
+
+**Gewünschter Ablauf:** An der gewünschten Position in der Zeichnungsansicht
+das Kontextmenü öffnen und „Nullpunkt hierher verschieben …“ wählen.
+Anschließend öffnet sich der bestehende Eingabedialog aus dem Menü mit den
+aus diesem Punkt berechneten Verschiebungswerten. Diese lassen sich vor dem
+Übernehmen bearbeiten oder unverändert bestätigen.
+
+**Codebefund:** `MainWindow.moveWorkpieceZero` in
+`presentation/qt/application.py` öffnet bereits den Dialog für die beiden
+Achsenwerte (`cont_dx`, `cont_dy`) und übernimmt die Verschiebung nach
+Bestätigung. `MyDropDownMenu` in `canvas.py` erhält die angeklickte Position
+bereits als `clicked`. Diese Eingänge sollten denselben Anwendungsablauf
+verwenden, statt eine zweite Nullpunktberechnung in der GUI einzuführen.
+
+- [ ] Den Kontextmenüeintrag ergänzen und den beim Öffnen gewählten Punkt
+  als Ausgangspunkt verwenden. Die berechneten Werte im bestehenden Dialog
+  vorbelegen; sie bleiben editierbar. Der normale Menüaufruf für die rein
+  numerische Eingabe bleibt erhalten.
+- [ ] Erst beim Bestätigen die Verschiebung anwenden. Abbrechen verändert
+  weder Nullpunkt noch Geometrie, Projektzustand oder Werkzeugweg.
+- [ ] Klickkoordinaten korrekt in die vorhandene Nullpunktverschiebung
+  umrechnen: aktuelle Verschiebung, Transformationen, Bildschirm-Y-Richtung
+  und aktive Einheit berücksichtigen. Bei unveränderter Bestätigung soll der
+  gewählte Zeichnungspunkt im resultierenden System bei X=0/Y=0 liegen.
+- [ ] Vorschau, Plan und Export gemeinsam aktualisieren; die bestätigten
+  Werte müssen beim erneuten Öffnen des numerischen Dialogs erscheinen und
+  über die bestehende Projektpersistenz erhalten bleiben.
+- [ ] **Begriff vor Umsetzung abstimmen:** Die vorhandene Funktion verschiebt
+  den Werkstück-/Zeichnungsnullpunkt. Der vom Nutzer genannte
+  „Maschinennullpunkt“ darf nicht versehentlich als Änderung des physischen
+  Maschinenreferenzpunkts oder als neuer Steuerungsbefehl umgesetzt werden.
+  Ein optionales Fangen auf Geometriepunkte ist gesondert festzulegen; eine
+  zusätzliche Fangfunktion ist mit diesem TODO noch nicht beschlossen.
+- [ ] Neue Menü-/Hilfetexte gemeinsam in Deutsch, Französisch und Russisch
+  pflegen.
+
+**Abnahme und Tests:** Klickpunkt → vorbelegter Dialog → Bestätigen sowie
+Bearbeiten und Abbrechen gezielt testen. Bestehenden numerischen Menüweg,
+wiederholtes Setzen ohne Verschiebungsdrift, bereits verschobene/transformierte
+Zeichnungen, mm/in und Projekt-Roundtrip einbeziehen. Vorschau und exportierte
+Koordinaten müssen dieselbe bestätigte Verschiebung verwenden. Die Umsetzung
+bleibt bis zur Auswahl dieses Punkts zurückgestellt.
+
+<a id="u5"></a>
+
+### U5 – Ticket #157: Tastenkürzel zum Ein-/Ausklappen
+
+- [ ] Tastenkürzel für die Layer-Klappaktionen vorsehen. Vor Umsetzung
+  festlegen, ob der gesamte Baum oder die ausgewählte Gruppe gemeint ist
+  und ob dieselbe Bedienung auch für Entities gelten soll.
+- [ ] Mit vorhandenen Baum-/Canvas-Tasten und deren Fokusregeln abstimmen;
+  dieselben Aktionen und Verfügbarkeitsregeln wie die U2-Buttons verwenden.
+
+**Abnahme und Tests:** Echte Tastenevents im aktiven Baum prüfen, einschließlich
+leerem, vollständig ein-/ausgeklapptem und gemischtem Baum. Keine Auslösung
+bei Texteingabe oder unbeabsichtigte Änderung des Canvas-Zooms.
+
+## Bereitstellung und Abnahme
+
+<a id="ci1"></a>
+
+### CI1 – Automatische Builds und Downloads auf GitHub
+
+**Vereinbarter Zielablauf, 01.11.2026:** Fertige Downloads als GitHub-Release-
+Assets ablegen, nicht in der Git-Historie. Temporäre Testpakete gehören zu
+Actions-Artefakten. Als offene Umsetzung vorgemerkt; diese Todo-Ergänzung
+startet keine Builds, Veröffentlichungen oder Löschungen.
+
+| Anlass | Prüfungen und Builds | Bereitstellung |
+| --- | --- | --- |
+| Lokaler Commit | Fast-Suite über den Pre-Commit-Hook | Keine Veröffentlichung |
+| Pull Request nach `develop` | Vollsuite und Paketprüfungen; Wheel und Windows-Pakete bauen | Temporäre Actions-Artefakte für 7 Tage; kein öffentliches Release aus dem PR |
+| Push auf `develop` | Vollsuite und Paketprüfungen desselben Commits | Bei Erfolg automatisch ein ausdrücklich gekennzeichnetes Develop-Prerelease |
+| Bewusst gesetzter Release-Tag | Vollsuite und Paketprüfungen | Reguläres Release mit dauerhaft aufbewahrten Downloads |
+
+- [ ] Als erste Downloadformate ein entpackbares Windows-x64-ZIP mit EXE und
+  allen benötigten Laufzeitdateien, einen MSI-Installer sowie ein Wheel
+  vorsehen. Windows-Pakete zunächst mit einer festgelegten Python-/Qt-
+  Kombination bauen; die breitere Testmatrix beibehalten. Ein zusätzlicher
+  EXE-Installer oder eine einzelne eigenständige EXE bleibt optional.
+- [ ] Builds und Tests eindeutig demselben Commit zuordnen. Öffentliche
+  Develop-Downloads erst nach erfolgreichen Tests und Paketprüfungen
+  aktualisieren. Bei Fehlern bleibt der letzte erfolgreich geprüfte Download
+  verfügbar. Veröffentlichungsrechte auf den dafür vorgesehenen Ablauf für
+  übernommene Develop-Stände beziehungsweise Release-Tags begrenzen.
+- [ ] Eindeutige Entwicklungsversionsnummern und Dateinamen mit Datum und
+  Commitkennung verwenden. Paketversion, eingebettete Herkunft, Infofenster
+  und Downloadbezeichnung müssen zusammenpassen. MSI-konforme Versionierung
+  einschließlich Unterscheidung mehrerer Builds am selben Tag festlegen;
+  die bisherige Ableitung `2026.10.30` ist wegen des zu großen ersten
+  MSI-Versionsfelds anzupassen.
+- [ ] Die fertigen Artefakte prüfen: Wheel in einer frischen Umgebung
+  installieren und mit `tests/verify_wheel.py` kontrollieren; Windows-Paket
+  auf Vollständigkeit, Programmstart und einen kleinen DXF-Export prüfen.
+  Generierte Qt-Dateien und alle gepflegten Übersetzungen mitliefern.
+- [ ] Unter GitHub Releases klar unterscheidbare Develop-Prereleases und
+  stabile Releases anbieten. Das stabile Release nicht durch einen
+  Entwicklungsstand als reguläres „Latest“-Release ersetzen. Downloads im
+  README verlinken und SHA-256-Prüfsummen mitliefern.
+- [ ] Aufbewahrung automatisieren: PR-/Actions-Testpakete nach **7 Tagen**
+  entfernen und nur die letzten **10 erfolgreich veröffentlichten Develop-
+  Stände** behalten. Alte Develop-Prereleases samt zugehörigen Assets gezielt
+  bereinigen; stabile Releases und deren Downloads dauerhaft erhalten.
+  Tag-Bereinigung gesondert auf die eigenen Develop-Tags begrenzen.
+- [ ] Speicherbelegung und tatsächlichen GitHub-Tarif vor Aktivierung prüfen.
+  Release-Assets, temporäre Actions-Artefakte und Caches getrennt behandeln;
+  kurzlebige CI-Kopien nicht unnötig zusätzlich zu den Releases aufbewahren.
+  Eine Codesignierung für öffentlich verteilte Windows-Pakete einplanen.
+
+**Abnahme:** Den Ablauf mit einem PR-Testpaket, einem erfolgreichen und einem
+fehlgeschlagenen Develop-Build sowie einem regulären Release nachvollziehen.
+Dateinamen, Commitbezug, Installierbarkeit und Downloads prüfen. Die
+Aufbewahrungslogik zunächst mit kontrollierten Testdaten beziehungsweise
+Vorschau der Löschkandidaten prüfen: Die letzten zehn Develop-Stände und alle
+stabilen Releases müssen erhalten bleiben. M1 bleibt die gesonderte
+Paket-/Debian-Abnahme; die Existenz eines erfolgreichen CI-Builds ersetzt sie
+nicht automatisch.
+
+<a id="m1"></a>
+
+### M1 – Noch offene Paket-/Debian-Abnahme
+
+- [ ] Nach gesonderter Freigabe ein aktuelles Wheel/Quellarchiv und die
+  Windows-Artefakte bauen und ihre mitgelieferten Metadaten prüfen.
+- [ ] Wheel aus dem Quellarchiv ohne Git bauen; Herkunft und Zeitstempel
+  müssen aus dem Archiv stammen. Installierte Anwendung ohne Git starten.
+- [ ] Das freigegebene Wheel im isolierten Debian-Testworkflow prüfen:
+  Infofenster zeigt die Paketversion und Build-Herkunft des tatsächlich
+  installierten Artefakts, nicht einen vorherigen Quellstand oder den
+  lokalen Branch der VM. Ergebnisse einschließlich Paketidentität festhalten.
+- [ ] Paket-/Quellstart und G-Code-Kopf gegen dieselbe Herkunft abgleichen;
+  Bewegungsausgabe bleibt gegenüber den bestehenden Golden-Fällen erhalten.
+
+**Freigabegrenze:** M1 ist vorgemerkt, nicht mit der Dokumentbereinigung
+beauftragt. Vollständige Release-/MSI-Builds, Debian-/SSH-Läufe und Änderungen
+an installierten Testumgebungen erfolgen erst auf ausdrücklichen Auftrag
+oder nach angenommenem konkretem Vorschlag.
+
+Der dokumentierte Debian-Lauf mit 775 Tests prüfte einen Quell-/Testsnapshot
+in einer isolierten Umgebung, kein neu gebautes und installiertes Release-
+Artefakt. Er schließt M1 deshalb nicht ab. Die spätere Darstellungskorrektur
+wurde gezielt mit je 21 Tests unter Qt5/Qt6 geprüft. Keine erneuten langen
+Läufe allein wegen dieser Dokumentbereinigung starten.
+
+<a id="a1"></a>
+
+### A1 – Verbleibende Grenzen der Architekturabnahme klären
+
+Die früheren allgemeinen Abnahmetore sind im
+[Erledigt-Dokument eingeordnet](../archive/toolpath-refactoring-completed.md#einordnung-der-früheren-abnahmetore).
+Bereits nachgewiesene Kriterien sind keine neue Implementierungsserie.
+
+- [ ] Über die gezielten B1/B2-Nachweise hinaus weitere relevante Maschinen-,
+  Kompensations- und Profilfälle nur bei einer benannten Abdeckungslücke
+  festlegen; aus der früher pauschalen Matrix keine neue Vollprüfung ableiten.
+- [ ] Die Reichweite des früher pauschal auf „Domain und Application“
+  bezogenen Import-Abnahmetors klären. Importfreiheit ist für alle Module
+  unter `domain/geometry` und `domain/toolpath` nachgewiesen, nicht für alle
+  übrigen Projektmodelle oder die GUI-/Datei-Exportfassade. Eine darüber
+  hinausgehende Entkopplung wäre gesondert zu beschließen und zu planen.
+
+## Zurückgestelltes Bedienmodell
+
+Diese Themen bleiben zurückgestellt. Weder die abgeschlossenen
+Refactoring-Etappen noch die Neuordnung dieser Liste geben ihre Umsetzung
+frei. Zuerst R3 und R1b gemeinsam entwerfen; das Datenmodell der
+Teilkontur-Erweiterung dabei berücksichtigen und anschließend abstimmen.
+
+<a id="r3"></a>
+
+### R3 – Geometrie und Bearbeitung im Bedienmodell trennen
+
+**Umfang für die spätere Planung:** Den zurückgestellten Layerwechsel R1b
+gemeinsam mit diesem Bedienkonzept behandeln; aktuell keine separate
+Implementierung im bestehenden Layerbaum vornehmen.
+
+**Vorschlag zur Diskussion, noch keine Architekturentscheidung:** Importierte
+DXF-Layer beschreiben die Zeichnung; die gewünschte CNC-Bearbeitung beschreibt
+eine davon unabhängige Reihenfolge von Arbeitsgängen. Diese Aufgaben sollten
+langfristig getrennt sichtbar sein, statt weitere Bedeutung in denselben
+Layerbegriff zu packen.
+
+```text
+Geometrie                         Bearbeitung (Export von oben nach unten)
+  DXF-Layer / Entities             1. Taschen – Werkzeug 2
+    Originalkonturen                  Operation → referenzierte Kontur(en)
+                                   2. Innenkonturen – Werkzeug 1
+                                      Operation → referenzierte Kontur(en)
+                                   3. Außenkonturen – Werkzeug 1
+                                      Operation → referenzierte Kontur(en)
+```
+
+- [ ] Einen Tab „Geometrie“ für Herkunft, Sichtbarkeit und Auswahl sowie einen
+  Tab „Bearbeitung“ für geordnete Gruppen/Operationen entwerfen. Die Auswahl
+  in Baum und Vorschau bleibt gekoppelt. Die ursprüngliche DXF-Zuordnung
+  bleibt als Herkunft erhalten, auch wenn Arbeitsgänge umsortiert werden.
+- [ ] Bearbeitungsgruppen anlegen/benennen, Werkzeug und Vorgaben zuweisen,
+  Operationen per Drag-and-drop umsortieren oder in andere Gruppen verschieben.
+  Zusätzliche Aktionen „Nach oben/unten“ und „In Gruppe verschieben …“ machen
+  die Planung auch ohne präzises Ziehen bedienbar.
+- [ ] Dieselbe Originalkontur über explizit angelegte Referenzen später in
+  mehreren Arbeitsgängen nutzen können, etwa Tasche und anschließendes
+  Schlichten. B1 gilt je Operation; zwei getrennte Operationen dürfen dieselbe
+  Geometrie unterschiedlich bearbeiten. Verschieben und bewusstes Erzeugen
+  einer weiteren Operation müssen in der Bedienung unterscheidbar sein.
+- [ ] Jede Operation besitzt eine stabile Identität und klare effektive
+  Werkzeug-/Bearbeitungswerte. Entstehende Teilkonturen können später eigene
+  Startpunkte und Leads erhalten, wie in der Teilkontur-Erweiterung beschrieben;
+  Tiefenpässe sind keine separat zu sortierenden Geometrieobjekte.
+- [ ] Reihenfolge und Optimierungsfreigabe im Bearbeitungsbaum sichtbar halten.
+  Optimierung erfolgt innerhalb ausdrücklich freigegebener Grenzen und
+  verändert niemals die fachlich geplante Gruppenreihenfolge.
+- [ ] Projektpersistenz und Übernahme bestehender Layerprojekte gesondert
+  planen. **Offene Entscheidung:** zunächst eine Bearbeitungsgruppe je
+  bestehendem Layer als verlustfreie Ausgangssicht? Speicherformat und
+  Kompatibilitätsweg vor Implementierung klären.
+
+**Weiteres Vorgehen:** R1a sichert den bestehenden Baum ab. R2 hat den
+Reihenfolgevertrag unabhängig vom Layerwechsel abgesichert. R1b wird erst
+gemeinsam mit R3 anhand von Bedienabläufen und einem Modell-/Speicherentwurf
+geplant und zur Freigabe vorgelegt. R1b und R3 bleiben ebenso wie die
+Teilkontur-Erweiterung zunächst zurückgestellt.
+
+<a id="r1b"></a>
+
+### R1b – Layerwechsel gemeinsam mit R3
+
+**Zurückgestellt durch Nutzerfestlegung:** Aktuell keine Shapes in einen
+anderen Layer verschieben. Diese Erweiterung später gemeinsam mit dem
+Bedienkonzept R3 planen; sie ist keine Voraussetzung für R2.
+
+Ein rein optisches Umhängen im Baum reicht nicht: Mitgliedschaft in
+`real_layer.shapes`, `parentLayer`, Exportreihenfolge und die beim
+Projekt-Neuimport wiederhergestellte Zuordnung müssen zusammenpassen.
+
+- [ ] Gültige Shapes in einen anderen Bearbeitungslayer verschieben;
+  das bestehende Umordnen von Layern und Shapes innerhalb ihrer Ebene
+  erhalten. Auswahl mehrerer Shapes und eindeutige Drop-Markierung
+  beim Umhängen beziehungsweise Einfügen berücksichtigen.
+- [ ] Einen Anwendungsfall für die atomare Änderung von Quell-/Ziellisten,
+  `parentLayer`, Reihenfolge und Planinvalidierung verwenden. Baum, Modell,
+  Vorschau und Export anschließend aus demselben Zustand aktualisieren;
+  Identität und Gesamtzahl der Shapes erhalten.
+- [ ] **Vor R1b abstimmen:** Beim Verschieben explizite Shape-Werte behalten
+  und geerbte Werte aus dem Ziel übernehmen? Das ist der Vorschlag für
+  Werkzeug, Tiefe und Leads; die wirksamen Änderungen müssen erkennbar sein.
+  Sonderlayer, Breaks und benutzerdefinierter G-Code benötigen klare Regeln.
+- [ ] Speichern/Laden nach dem Verschieben prüfen. Ein notwendiger Ausbau
+  der Projektzuordnung ist als eigener Kompatibilitätsschritt zu planen;
+  bestehende `.d2g`-Versionen 1.1–1.3 bleiben lesbar. Keine unbemerkte
+  Formatänderung als Nebenwirkung des GUI-Fixes.
+
+**Abnahme bei späterer Umsetzung:** Quell-/Ziellayer, Hin-/Zurückverschieben,
+Mehrfachauswahl, Reihenfolge, unveränderte Identitäten und Overrides sowie
+Projekt-Roundtrip und tatsächlichen Export der neuen Zuordnung prüfen.
+Die Absturzabsicherung R1a ist bereits abgeschlossen und dokumentiert im
+[Erledigt-Dokument](../archive/toolpath-refactoring-completed.md#r1a).
+
+
+<a id="teilkonturen"></a>
+
+### Teilkontur-Erweiterung – mehrere Konturen einer Operation
+
+**Priorität:** zurückgestellt. Auf dem abgeschlossenen Refactoring
+aufbauen und das Datenmodell mit R3/R1b abstimmen; noch keine Funktion implementieren.
+
+Wenn eine Pocket- oder Shape-Operation zwei oder mehr getrennte Inseln bzw.
+Bearbeitungskonturen erzeugt, sollen diese einzeln behandelt werden können:
+
+- [ ] Lead-in, Lead-out und Overcut je entstandener Teilkontur unabhängig
+  planen und einstellen können.
+- [ ] Die Startpunkte dieser Teilkonturen in der GUI einzeln auswählen und
+  festlegen können, auch wenn sie zur selben ursprünglichen Shape bzw.
+  Operation gehören.
+- [ ] Die Zuordnung der Startpunkte und Einstellungen zu den Teilkonturen bei
+  Neuberechnung sowie Speichern/Laden eines Projekts nachvollziehbar erhalten;
+  das genaue Zuordnungs- und Speicherverfahren später ausarbeiten.
+- [ ] Vorschau und Export verwenden dieselben Teilkonturen samt ihren
+  Startpunkten, Leads und Overcuts. Mehrere Tiefenpässe und Verbindungsbewegungen
+  dürfen diese Zuordnung nicht vermischen.
+
+**Architekturleitlinie:** Ursprungs-Shape, Operation, resultierende Teilkontur
+und Tiefenpass müssen unterscheidbar bleiben. Datenmodell und Schnittstellen
+dürfen nicht dauerhaft genau einen Startpunkt oder genau ein Lead-/Overcut-Paar
+pro Shape voraussetzen. Identifizierbare Teilkonturen müssen später als
+Untergliederung eines Werkzeugwegplans ergänzt werden können. Die konkrete
+Modellierung und GUI-Bedienung werden erst beim Aufgreifen dieser Erweiterung
+entschieden; sie ist kein Abnahmetor für das aktuelle Refactoring.
+
+## Optionale Qt-Bindung
+
+<a id="q1"></a>
+
+### Q1 – PySide6 als zusätzliche Qt-Bindung
+
+**Optional und zurückgestellt (31.10.2026):** Aktuell werden PyQt5 und PyQt6
+unterstützt; PySide6-Kompatibilität ist nicht zugesichert. Vorhandene
+PySide6-Dateien aus Designer-/Ressourcenwerkzeugen sind kein Nachweis einer
+funktionsfähigen PySide6-Anwendung. Kein aktueller Umsetzungsauftrag.
+
+- [ ] Eine ausdrückliche Bindungsauswahl für PySide6 ergänzen; den bisherigen
+  Standard und die PyQt5-/PyQt6-Unterstützung beibehalten. Qt-Version und
+  Python-Bindung in `qt_compat` getrennt behandeln.
+- [ ] Unterschiede bei Signalen, Slots, Properties, Versionsinformationen und
+  den QVariant-/Shape-Referenzen im Baum zentral kapseln beziehungsweise
+  prüfen. Innerhalb eines Prozesses nur eine Qt-Bindung verwenden.
+- [ ] UI-/Ressourcenerzeugung, Übersetzungswerkzeuge und optionale
+  Paketabhängigkeiten für PySide6 ergänzen; passende generierte Module laden.
+- [ ] Bei Umsetzung zunächst gezielt Hauptfenster, Baum/Drag-and-drop,
+  Auswahl und Werkzeugwegvorschau, Übersetzungen und Export prüfen.
+  3D/OpenGL gesondert absichern; größere Test-/Paketläufe erst nach der
+  bestehenden Freigaberegel einplanen.
+
+Die Erweiterung bei konkretem Nutzungsbedarf als eigenen Schritt umsetzen;
+der zusätzliche dauerhafte Prüfaufwand für eine weitere Bindung ist bei
+der Priorisierung zu berücksichtigen.
+

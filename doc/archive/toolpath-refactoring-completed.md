@@ -26,6 +26,8 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 | R1a | Drag-and-drop-Absturzpfade und Qt5-/Qt6-Kompatibilität |
 | R2 | Sichtbare Exportreihenfolge, Treeview-Synchronisierung und gemeinsame GUI-/CLI-Optimierungsmodi |
 | K1 | Stabile Konfigurations-Übersetzungskontexte, Hilfetexte, Auswahlanzeigen und Maschinenmenüs in DE/FR/RU |
+| D1 / D2 | Gemeinsamer Schleppmesser-Ablauf, Migration alter Tiefenwerte, bearbeitbare Schwenktiefe je Kontur und geprüfte Vorschau/Export-Verträge |
+| DOC1 Phase 1 | Dokumentationsprototyp, Integration, Veröffentlichung, Branding und vorbereitete Migrationsmatrix |
 | K2 | Geladene Profilwerte von Werkseinstellungen unterscheiden, schemaabhängige Tooltip-Vorgaben und GitHub-Dokumentationsverweise |
 | P1 | Verwaltete Werkzeugwechsel plus vereinbarter manueller LinuxCNC-Ablauf, Standard-Abgleich und G90-/G91-Referenzen; Maschinenprüfung beim Anwender |
 | K3 | Vierstellige Längeneingabe und Erhaltung genauer Originalwerte bis zur bewussten Bearbeitung; Profilformatierung bleibt maßgeblich |
@@ -44,6 +46,112 @@ LinuxCNC-Profil samt Referenzausgaben; `4d061fc` enthält Übersetzungen,
 GUI-Branding und den Dokumentationslink. Vor jedem Commit läuft die Fast-Suite
 über den Pre-Commit-Hook: jeweils **156 Tests bestanden**. Zusätzlich bestanden
 zehn gezielte Qt6-Tests für Programmstart, Konfiguration und Infofenster.
+
+<a id="d1-d2"></a>
+
+## D1/D2 – Gemeinsamer Schleppmesser-Ablauf (02.11.2026)
+
+Offene und geschlossene Konturen erreichen die Endtiefe über Slice-Zustellungen.
+Geschlossene Umläufe bleiben ohne Zwischenrückzug kontinuierlich; nur der erste
+Einstieg verwendet die externe Ausrichtung und den Lead-in. Rampenausgleich,
+Überfahrt und optional genau ein zusätzlicher vollständiger Endtiefenschnitt
+sind getrennte Funktionen. Offene Konturen unterstützen Rückkehr oder die
+externe Umkehr über gerade Leads. Messerstellung und Rückausrichtung sind
+auswählbar; auch eine unbekannte Stellung mit externer Ausrichtstrecke ist
+berücksichtigt.
+
+Ein gemeinsamer Plan steuert Vorschau und Export einschließlich XYZ-Rampen.
+Der Freischalter „Geplante Messerschnitte“ entfällt. Konfiguration 9.18 und
+Projektformat 1.5 migrieren alte Schwenktiefen; abweichende Werte bleiben je
+Kontur bearbeitbar. Werkzeugtabellenprüfung, Übersetzungen und 2D-Ebenenfolge
+sind nachgebessert. Der [abgestimmte Plan](../drag-knife-plan.md) bewahrt
+Entscheidungen und historische Regressionsergebnisse, die
+[Bedienungsgrundlage](../drag-knife-usage.md) die aktuellen Einstellungen.
+
+Lokaler Abschluss mit `fa8335b`: **189 Tests im Pre-Commit-Hook** sowie
+**43 fokussierte Qt6-Prüfungen** bestanden. Frühere Teilprüfungen bleiben mit
+ihrem jeweiligen Stand dokumentiert. Es erfolgte keine praktische Material-,
+Maschinen- oder Paketabnahme. Insbesondere garantiert die Ausrichtstrecke
+keine gemessene Messerstellung; ihre Länge ist am konkreten Aufbau zu prüfen.
+
+<a id="doc1-phase1"></a>
+
+## DOC1 – Abgeschlossene Dokumentationsgrundlage und Phase 1
+
+Aus der aktiven Todo übernommen am **02.11.2026**. Die folgenden Nachweise
+sind historische Abschlüsse, keine neue Live- oder CI-Prüfung. Die noch offene
+Inhaltsmigration und zusätzliche Abnahmen stehen ausschließlich in der
+[aktiven Todo](../todo.md#doc1). Der ausführliche
+[Übergabebericht](../migration/zensical-prototype.md) bewahrt Herkunft,
+Commitbezüge und Wiederaufnahmebefehle.
+
+- [x] Technische Abnahme: Strict-Build, 167 lokale Verweise ohne Fehler,
+  vier Sitemap-Adressen unter `/dxf2gcode/`, 18 Suchindexeinträge.
+
+- [x] Visuelle Inhaltsabnahme der vier Seiten durch den Nutzer abgeschlossen.
+
+- [x] 15 Wiki-Seiten gesichert, 23 von 24 Medien/Anhängen vorhanden;
+  Herkunftsverzeichnis und Rechteprüfung dokumentiert. Rohsicherung ignoriert.
+
+- [x] Neue versionsfreie Wortmarken-/Symbolquellen und abgeleitete
+  Windows-/Linux-/ICNS-Symbole lokal eingebunden und unter Qt5/Qt6 geprüft.
+
+- [x] Programm-/Test-/CI-/Infofensteränderungen auf `origin/develop` veröffentlicht;
+  ursprüngliche Commits `5017e16` und `a982969` unverändert erhalten.
+
+- [x] Werkzeugwechsel-Testisolation und zusätzliche Qt-/CI-Testfixturefehler
+  korrigiert; keine dafür notwendige Änderung des produktiven Exportcodes.
+
+- [x] GitHub-Volltestmatrix für `e2ceed4` bestanden: Python 3.11/3.12/3.13
+  mit PyQt5 und Python 3.11 mit PyQt6; siehe Lauf 41327575137 im Übergabebericht.
+
+- [x] Dokumentation (`e2ba4b5`), Branding (`bbc8354`) und Dokumentationsworkflows
+  (`6831a0b`) getrennt committed und nach erfolgreicher Develop-CI auf
+  `origin/docs/zensical-prototype` veröffentlicht. Dokumentationscheck
+  [41328175268](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41328175268)
+  bestanden; Status-/Wiederaufnahmebericht als eigener Abschluss aktualisiert.
+
+- [x] Dokumentationsbranch einschließlich Branding/Ressourcen/Workflows ohne
+  History-Rewrite nach `develop` integriert; README-/Publishing-Anpassung
+  [e4beb1e](https://github.com/dxf2gcode/dxf2gcode/commit/e4beb1e).
+
+- [x] Erneute Integrations-Volltestmatrix
+  [41329328147](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329328147)
+  und Dokumentationscheck
+  [41329328253](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329328253)
+  bestanden.
+
+- [x] GitHub Pages mit Actions aktiviert und
+  [Deployment 41329699445](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329699445)
+  erfolgreich: <https://dxf2gcode.github.io/dxf2gcode/>. Vier Seiten, 159 Live-
+  Verweise, Bilder/Favicon, Sitemap und echte Suche geprüft. Veröffentlichung
+  war zunächst manuell; inzwischen veröffentlicht der Workflow Änderungen an
+  Website-Dateien auf `develop` nach erfolgreichem Strict-Build automatisch.
+  Freigabevariable und Environment bleiben erhalten (`b0e5127`).
+
+- [x] Leeres GitHub-Wiki vor und nach Veröffentlichung geprüft, anschließend
+  deaktiviert; keine eigenen Seiten zu sichern. Repository-Website und README
+  verlinken die neue Dokumentation; SourceForge bleibt unverändert.
+
+- [x] [Migrationsmatrix für alle 15 Wiki-Seiten, Zielnavigation und priorisierte
+  Arbeitspakete](../migration/wiki-migration-plan.md) vorhanden.
+
+- [x] Neue Logos laut Nutzer selbst gestaltet, GPT-unterstützt, ohne fremde
+  Gestaltungsbestandteile; öffentliche Projektverwendung beauftragt. Erklärung
+  und Hashes in RIGHTS.md dokumentiert; keine pauschale Rechtegarantie oder
+  neue allgemeine Asset-Lizenz daraus ableiten.
+
+- [x] Pages-Ziel, Environment und ausdrückliche Deployment-Freigabe geklärt;
+  `DOCS_PREVIEW_PUBLISH_APPROVED=true`. Änderungen an den Website-Dateien auf
+  `develop` werden automatisch nach erfolgreichem Strict-Build veröffentlicht;
+  der manuelle Workflow bleibt zusätzlich verfügbar.
+
+- [x] Infofenster verlinkt die GitHub-Pages-Dokumentation ausdrücklich als
+  Dokumentation im Aufbau; Deutsch, Französisch und Russisch sind gepflegt.
+
+Die vier englischen Seiten sind weiterhin ein technischer Prototyp und keine
+abgeschlossene vollständige Anwenderdokumentation. Rechte ungeklärter
+Fremdinhalte und fehlende Medien bleiben eigenständige offene Themen.
 
 <a id="gui-branding"></a>
 
@@ -104,7 +212,8 @@ zusätzlich bei 125 % gerendert und geprüft.
 Der ergänzte Hauptfenster-Test prüft Maschinenwechsel und Toleranzen ohne
 Neustart, geänderte Vorschau und Menüanzeigen, erhaltene Konturtiefen und
 genau einen Neuladevorgang bei gleichzeitigen Änderungen. Die Fast-Suite läuft
-vor dem abschließenden lokalen Commit über den Pre-Commit-Hook.
+vor dem lokalen Commit `fa8335b` über den Pre-Commit-Hook: **189 Tests bestanden**.
+Zusätzlich bestanden 43 fokussierte Qt6-Prüfungen.
 
 <a id="k1"></a>
 
@@ -166,6 +275,15 @@ jeweiligen Maschinen übernehmen die Anwender. Die vorher implementierte
 Makro-Erweiterung wird für diesen vereinbarten Umfang durch einen
 [offiziell belegten LinuxCNC-Abgleich](../linuxcnc-manual-tool-change.md) ergänzt.
 
+Die optionale Makro-Erweiterung ist ebenfalls implementiert. Manueller Wechsel
+und ATC verwenden weiterhin `Program.tool_change`; Wechselparameter,
+erklärter Rückkehrzustand, H-Zuordnungen und G91-Wiederaufnahme sind verfügbar.
+Alte Profile behalten ihre bisherige Ausgabe. Die
+[Makro-Anleitung](../tool-change-macros.md) und der
+[Werkzeugwechsel-Vorschlag](../tool-change-proposal.md) bewahren Einrichtung,
+Herleitung und Grenzen. Der verwaltete Ablauf ist auf die dort beschriebenen
+Fräsfälle begrenzt; Controller- und Maschinenabnahmen erfolgen beim Anwender.
+
 Das separat ladbare `doc/examples/linuxcnc-manual.cfg.example` verwendet
 manuelles M6 mit vorbereiteter Werkzeugtabelle, danach G43 ohne H=T-Annahme,
 Z-Positionierung vor XY und einen erklärten Rückkehrzustand. Vollständige
@@ -179,7 +297,8 @@ bleiben erhalten und sind gesondert geprüft.
 drei Versions-/Katalogprüfungen sowie MainWindow-Workflow und 18 bestehende
 Leadmove-Goldens. Dies sind Code-/Ausgabeprüfungen, kein
 LinuxCNC-Interpreterlauf oder Maschinenfreigaben. Keine Vollsuite, Debian-
-Prüfung oder Paket-/MSI-Erstellung wurde gestartet. D1 folgt als eigener Schritt.
+Prüfung oder Paket-/MSI-Erstellung wurde damals gestartet. Der spätere
+D1/D2-Abschluss ist oben separat dokumentiert.
 
 <a id="r2"></a>
 

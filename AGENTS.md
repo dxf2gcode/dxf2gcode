@@ -24,6 +24,23 @@
 - Regenerate the corresponding QM files and verify the changed translations.
   Generated files remain subject to the repository's ignore rules.
 
+## Task tracking and documentation
+
+- Keep `doc/todo.md` concise and limited to genuinely open work, including
+  unresolved decisions and explicitly deferred tasks. Link detailed plans
+  instead of keeping implementation history or completed checklists there.
+- When work is completed, move its outcome, validation evidence and remaining
+  acceptance limits to `doc/archive/toolpath-refactoring-completed.md` in the
+  same change. Do not leave completed items in the active Todo.
+- Preserve useful material for future user documentation in topic files under
+  `doc/documentation-notes/`, with links to authoritative guides, examples and
+  sources. Keep these notes separate from open tasks and completion history.
+- Retain task identifiers, decisions, source attribution and working relative
+  links when reorganizing documents. Software completion must not imply a
+  package, platform or physical-machine acceptance that has not occurred.
+- Apply these rules during ongoing work, not only when explicitly asked to
+  clean up the Todo. Update the documentation index when adding topic files.
+
 ## Commit messages
 
 - Write commit messages in English, following the repository's Conventional
