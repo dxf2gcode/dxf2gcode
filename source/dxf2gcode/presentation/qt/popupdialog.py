@@ -29,7 +29,7 @@ import logging
 
 import dxf2gcode.domain.constants as c
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QDialog, QVBoxLayout, QFrame, QGridLayout, QLabel, QLineEdit, QPushButton, QCheckBox
-from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon, QPixmap
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 
@@ -125,9 +125,7 @@ class PopUpDialog(QDialog):
 
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
         self.setWindowTitle(self.title)
-        iconWT = QIcon()
-        iconWT.addPixmap(QPixmap(":images/dxf2gcode.ico"), QIcon.Mode.Normal, QIcon.State.Off)
-        self.setWindowIcon(QIcon(iconWT))
+        self.setWindowIcon(QIcon(":images/dxf2gcode.ico"))
 
         self.exec()
 

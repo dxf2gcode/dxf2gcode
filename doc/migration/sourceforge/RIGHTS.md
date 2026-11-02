@@ -161,12 +161,15 @@ editable SVG; the PNGs contain the rendered lettering. No external images or
 fonts were fetched. Logo PNG widths are 492 (About/README), 1024, 2048 and
 4096 pixels; corresponding heights are 178, 371, 743 and 1485 pixels.
 
-Square symbol PNG sizes are 16, 24, 32, 48, 64, 128, 256, 512 and 1024 pixels.
+Square symbol PNG sizes are 16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80,
+96, 128, 256, 512 and 1024 pixels. The additional sizes provide native-size
+Windows title/taskbar icons at common display scaling settings.
 The 512-pixel PNG retains the stable `dxf2gcode-symbol.png` filename; other
 sizes have a pixel-size suffix. The symbol is centered without distortion.
 The Linux `dxf2gcode.svg` uses the same geometry on a square canvas. Windows
-ICO contains 16 through 256-pixel frames; macOS ICNS contains 16 through
-1024-pixel PNG representations, including Retina representations.
+ICO contains all 15 listed sizes from 16 through 256 pixels; macOS ICNS
+contains 16 through 1024-pixel PNG representations, including Retina
+representations.
 
 The documentation PNG copies and Qt application resources use this same
 branding. Earlier filenames and hashes above remain historical provenance

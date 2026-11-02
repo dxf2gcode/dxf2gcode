@@ -231,7 +231,7 @@ class TestVersionPresentation(unittest.TestCase):
                         and node.func.attr == "tr" and node.args
                         and isinstance(node.args[0], ast.Constant)
                         and isinstance(node.args[0].value, str)
-                        and node.args[0].value.startswith("<html><body><center><img"))
+                        and node.args[0].value.startswith("<html><h2>Version:"))
 
         for language in ("de", "fr", "ru"):
             with self.subTest(language=language):
@@ -240,9 +240,12 @@ class TestVersionPresentation(unittest.TestCase):
                 self.assertTrue(translator.load(str(catalog.with_suffix(".qm"))))
                 about = translator.translate("MainWindow", template)
                 self.assertTrue(about, "Updated About template is untranslated")
-                self.assertTrue(about.startswith("<html><body><center><img"))
-                self.assertEqual(translator.translate("MainWindow", "XF2GCODE"),
-                                 "XF2GCODE")
+                self.assertTrue(about.startswith("<html><h2>"))
+                self.assertNotIn("<img", about)
+                self.assertIn("href='https://dxf2gcode.github.io/dxf2gcode/'", about)
+                self.assertNotIn("Documentation (under development)", about)
+                self.assertEqual(translator.translate("MainWindow", "Dxf2gcode"),
+                                 "Dxf2gcode")
                 self.assertEqual(about.count("%s"), 1)
                 tree = ET.parse(catalog.with_suffix(".ts"))
                 context = next(c for c in tree.getroot().findall("context")

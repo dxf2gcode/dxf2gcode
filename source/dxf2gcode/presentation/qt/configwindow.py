@@ -98,7 +98,7 @@ class ConfigWindow(QDialog):
     Applied = QDialog.DialogCode.Accepted + QDialog.DialogCode.Rejected + 1 #Define a result code that is different from accepted and rejected
 
     """Main Class"""
-    def __init__(self, definition_dict, config = None, configspec = None, parent = None, title = "Configuration"):
+    def __init__(self, definition_dict, config = None, configspec = None, parent = None, title = None):
         """
         Initialization of the Configuration window. ConfigObj must be instanciated before this one.
         @param definition_dict: the dict that describes our window
@@ -106,10 +106,8 @@ class ConfigWindow(QDialog):
         @param configspec: specifications of the configfile. This variable is created by ConfigObj module.
         """
         QDialog.__init__(self, parent)
-        self.setWindowTitle(title)
-        iconWT = QIcon()
-        iconWT.addPixmap(QPixmap(":images/dxf2gcode.ico"), QIcon.Mode.Normal, QIcon.State.Off)
-        self.setWindowIcon(QIcon(iconWT))
+        self.setWindowTitle(self.tr("Configuration") if title is None else title)
+        self.setWindowIcon(QIcon(":images/dxf2gcode.ico"))
 
         self.edition_mode = False #No editing in progress for now
 
@@ -140,6 +138,9 @@ class ConfigWindow(QDialog):
         apply_button.clicked.connect(self.applyChanges) #Apply button
         discard_button = self.button_box.button(QDialogButtonBox.StandardButton.Discard)
         discard_button.clicked.connect(self.discardChanges) #Discard button
+        discard_button.setText(self.tr("Discard"))
+        apply_button.setText(self.tr("Apply"))
+        self.button_box.button(QDialogButtonBox.StandardButton.Close).setText(self.tr("Close"))
 
         #Layout
         list_widget = QListWidget(parent)
@@ -147,6 +148,10 @@ class ConfigWindow(QDialog):
         for label, widget in self.list_items.items():
             list_widget.addItem(label)
             self.tab_window.addWidget(widget)
+        # Translated section names must remain readable in the splitter.
+        list_widget.setMinimumWidth(
+            max(0, list_widget.sizeHintForColumn(0)) + 2 * list_widget.frameWidth()
+            + list_widget.verticalScrollBar().sizeHint().width())
 
         list_widget.currentTextChanged.connect(self.selectionChanged)
 
@@ -621,7 +626,8 @@ class ConfigWindow(QDialog):
         result['minimum'] = minimum
         result['maximum'] = maximum
         result['string_list'] = string_list
-        result['comment'] = comments_string
+        from dxf2gcode.presentation.qt.configuration_help import translate_config_help
+        result['comment'] = translate_config_help(comments_string)
         return result
 
     def handle_type_config_entries(self, minimum, maximum, string_list, type_converter):

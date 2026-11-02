@@ -23,14 +23,31 @@
 #
 ############################################################################
 
-import dxf2gcode.domain.constants as c
-from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QTextBrowser
-from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon, QPixmap, QTextCursor
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QWidget
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon, QPainter, QPixmap, QTextCursor
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 import logging
 
 logger = logging.getLogger("Gui.AboutDialog")
+
+
+class AboutLogo(QWidget):
+    """Draw the original image smoothly at the current screen's pixel density."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(320, 116)
+        self.pixmap = QPixmap(":images/dxf2gcode-logo-1024.png")
+
+    def paintEvent(self, event):
+        size = self.pixmap.size().scaled(
+            self.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        target = QtCore.QRect(QtCore.QPoint(), size)
+        target.moveCenter(self.rect().center())
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        painter.drawPixmap(target, self.pixmap)
 
 
 class AboutDialog(QDialog):
@@ -48,8 +65,9 @@ class AboutDialog(QDialog):
         """
 
         vbox = QVBoxLayout(self)
-        grid1 = QGridLayout()
-        grid1.setSpacing(10)
+        self.logo = AboutLogo(self)
+        vbox.addWidget(self.logo, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
+        vbox.addSpacing(12)
 
         self.text = QTextBrowser()
         self.text.setReadOnly(True)
@@ -65,9 +83,6 @@ class AboutDialog(QDialog):
         self.resize(550, 600)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
         self.setWindowTitle(self.title)
-        iconWT = QIcon()
-        iconWT.addPixmap(QPixmap(":images/dxf2gcode.ico"),
-                         QIcon.Mode.Normal, QIcon.State.Off)
-        self.setWindowIcon(QIcon(iconWT))
+        self.setWindowIcon(QIcon(":images/dxf2gcode.ico"))
 
         self.exec()

@@ -110,6 +110,7 @@ SOURCES += \
     dxf2gcode/presentation/qt/canvas2d.py \
     dxf2gcode/presentation/qt/canvas3d.py \
     dxf2gcode/presentation/qt/configuration_widgets.py \
+    dxf2gcode/presentation/qt/configuration_help.py \
     dxf2gcode/presentation/qt/toolpath_labels.py \
     dxf2gcode/presentation/qt/configwindow.py \
     dxf2gcode/presentation/qt/messagebox.py \

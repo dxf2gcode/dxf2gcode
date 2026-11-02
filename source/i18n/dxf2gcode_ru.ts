@@ -4,699 +4,556 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="23"/>
         <source> mm</source>
-        <translation type="unfinished"> мм</translation>
+        <translation type="obsolete"> мм</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="23"/>
         <source> in</source>
-        <translation type="unfinished"> дюйм</translation>
+        <translation type="obsolete"> дюйм</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="24"/>
         <source> mm/min</source>
-        <translation type="unfinished"> мм/мин</translation>
+        <translation type="obsolete"> мм/мин</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="24"/>
         <source> IPS</source>
-        <translation type="unfinished"> дюйм/мин</translation>
+        <translation type="obsolete"> дюйм/мин</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Tools table</source>
-        <translation type="unfinished">Список инструментов</translation>
+        <translation type="obsolete">Список инструментов</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Custom actions</source>
-        <translation type="unfinished">Специальные действия</translation>
+        <translation type="obsolete">Специальные действия</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
-        <source>Software config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>By default look for DXF files in:</source>
-        <translation type="unfinished">Начальный каталог для DXF файлов:</translation>
+        <translation type="obsolete">Начальный каталог для DXF файлов:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>By default export generated G-Code to:</source>
-        <translation type="unfinished">Каталог для создаваемого G-кода:</translation>
+        <translation type="obsolete">Каталог для создаваемого G-кода:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>By default save Project files to:</source>
-        <translation type="unfinished">По умолчанию сохранять файлы проекта в:</translation>
+        <translation type="obsolete">По умолчанию сохранять файлы проекта в:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Update paths with last used path: </source>
-        <translation type="unfinished">Обновлять пути последним использованным путём: </translation>
+        <translation type="obsolete">Обновлять пути последним использованным путём: </translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Location of executable:</source>
-        <translation type="unfinished">Путь к программе:</translation>
+        <translation type="obsolete">Путь к программе:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Command-line options:</source>
-        <translation type="unfinished">Опции командной строки:</translation>
+        <translation type="obsolete">Опции командной строки:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>General settings</source>
-        <translation type="unfinished">Общие настройки</translation>
+        <translation type="obsolete">Общие настройки</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>3D mode (requires OpenGL - restart needed)</source>
-        <translation type="unfinished">Режим 3D (требует OpenGL - требуется перезапуск)</translation>
+        <translation type="obsolete">Режим 3D (требует OpenGL - требуется перезапуск)</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Display disabled paths (default)</source>
-        <translation type="unfinished">Отображать выключенные фигуры</translation>
+        <translation type="obsolete">Отображать выключенные фигуры</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Live update export route (default)</source>
-        <translation type="unfinished">Постоянный экспорт маршрута</translation>
+        <translation type="obsolete">Постоянный экспорт маршрута</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Show a scale bar in the canvas</source>
-        <translation type="unfinished">Показывать масштабную линейку в области рисования</translation>
+        <translation type="obsolete">Показывать масштабную линейку в области рисования</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Milling</source>
-        <translation type="unfinished">Фрезерная</translation>
+        <translation type="obsolete">Фрезерная</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Split line segments (default)</source>
-        <translation type="unfinished">Делить линии на сегменты</translation>
+        <translation type="obsolete">Делить линии на сегменты</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Automatic cutter compensation (default)</source>
-        <translation type="unfinished">Автокомпенсация инструмента</translation>
+        <translation type="obsolete">Автокомпенсация инструмента</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Machine type (default):</source>
-        <translation type="unfinished">Тип машины:</translation>
+        <translation type="obsolete">Тип машины:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Configuration values use the unit (restart needed):</source>
-        <translation type="unfinished">Единицы измерений в конфигурации (нужен перезапуск):</translation>
+        <translation type="obsolete">Единицы измерений в конфигурации (нужен перезапуск):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Output</source>
-        <translation type="unfinished">Результат</translation>
+        <translation type="obsolete">Результат</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Export the G-Code to stdout (instead of a file)</source>
-        <translation type="unfinished">Экспорт G-кода на стандартный вывод (вместо файла)</translation>
+        <translation type="obsolete">Экспорт G-кода на стандартный вывод (вместо файла)</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Machine config</source>
-        <translation type="unfinished">Конфигурация станка</translation>
+        <translation type="obsolete">Конфигурация станка</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
-        <source>Axes&apos; identifiers</source>
-        <translation type="unfinished">Идентификаторы осей</translation>
+        <source>Axes' identifiers</source>
+        <translation type="obsolete">Идентификаторы осей</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>First axis:</source>
-        <translation type="unfinished">Первая ось:</translation>
+        <translation type="obsolete">Первая ось:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Second axis:</source>
-        <translation type="unfinished">Вторая ось:</translation>
+        <translation type="obsolete">Вторая ось:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Third axis:</source>
-        <translation type="unfinished">Третья ось:</translation>
+        <translation type="obsolete">Третья ось:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
-        <source>Start and end&apos;s coordinate and scaling standard multiplier</source>
-        <translation type="unfinished">Стандартный множитель координат начала/конца и масштаба</translation>
+        <source>Start and end's coordinate and scaling standard multiplier</source>
+        <translation type="obsolete">Стандартный множитель координат начала/конца и масштаба</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>First axis start/end coordiante:</source>
-        <translation type="unfinished">Координата начала/конца первой оси:</translation>
+        <translation type="obsolete">Координата начала/конца первой оси:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Second axis start/end coordinate:</source>
-        <translation type="unfinished">Координата начала/конца второй оси:</translation>
+        <translation type="obsolete">Координата начала/конца второй оси:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Scale first and second axis:</source>
-        <translation type="unfinished">Масштаб первой и второй оси:</translation>
+        <translation type="obsolete">Масштаб первой и второй оси:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
-        <source>Third axis&apos; defaults</source>
-        <translation type="unfinished">Настройки третьей оси</translation>
+        <source>Third axis' defaults</source>
+        <translation type="obsolete">Настройки третьей оси</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Retraction coordinate:</source>
-        <translation type="unfinished">Координата возврата:</translation>
+        <translation type="obsolete">Координата возврата:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Safety margin:</source>
-        <translation type="unfinished">Граница безопасности:</translation>
+        <translation type="obsolete">Граница безопасности:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Workpiece origin coordinate:</source>
-        <translation type="unfinished">Начало координат заготовки:</translation>
+        <translation type="obsolete">Начало координат заготовки:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Slice depth:</source>
-        <translation type="unfinished">Глубина слоя:</translation>
+        <translation type="obsolete">Глубина слоя:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Final mill depth:</source>
-        <translation type="unfinished">Конечная глубина реза:</translation>
+        <translation type="obsolete">Конечная глубина реза:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>G1 feed rates</source>
-        <translation type="unfinished">Подача G1</translation>
+        <translation type="obsolete">Подача G1</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>First and second axis (2D plane):</source>
-        <translation type="unfinished">Первая и вторая ось (плоскость 2D):</translation>
+        <translation type="obsolete">Первая и вторая ось (плоскость 2D):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Output settings</source>
-        <translation type="unfinished">Настройка результата</translation>
+        <translation type="obsolete">Настройка результата</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Cutter compensation</source>
-        <translation type="unfinished">Компенсация реза</translation>
+        <translation type="obsolete">Компенсация реза</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Cutter compensation is done by machine (check box if machine reconizes G41 and G42 commands / uncheck otherwise. This also disables pocket milling.)</source>
-        <translation type="unfinished">Компенсация инструмента выполняется станком (установите флажок, если станок понимает команды G41 и G42 / снимите в противном случае. Это также отключает карманное фрезерование.)</translation>
+        <translation type="obsolete">Компенсация инструмента выполняется станком (установите флажок, если станок понимает команды G41 и G42 / снимите в противном случае. Это также отключает карманное фрезерование.)</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Pocket milling</source>
-        <translation type="unfinished">Карманное фрезерование</translation>
+        <translation type="obsolete">Карманное фрезерование</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Pocket edge clearance (distance between cutting edge and contour, as % of tool diameter):</source>
-        <translation type="unfinished">Боковой зазор кармана (расстояние между режущей кромкой и контуром, в % от диаметра инструмента):</translation>
+        <translation type="obsolete">Боковой зазор кармана (расстояние между режущей кромкой и контуром, в % от диаметра инструмента):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Drag Knife options</source>
-        <translation type="unfinished">Настройки флюгерного ножа</translation>
+        <translation type="obsolete">Настройки флюгерного ножа</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
-        <source>Retract to drag depth (&quot;Third axis slice depth&quot;) if angle exceeds:</source>
-        <translation type="unfinished">Вернуться на глубину реза (&quot;Глубина слоя по третьей оси&quot;) если угол превышает:</translation>
+        <source>Retract to drag depth ("Third axis slice depth") if angle exceeds:</source>
+        <translation type="obsolete">Вернуться на глубину реза ("Глубина слоя по третьей оси") если угол превышает:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Direction the knife points to when the cut starts (0 = positive X axis):</source>
-        <translation type="unfinished">Направление, в котором нож смотрит в начале реза (0 = положительная ось X):</translation>
+        <translation type="obsolete">Направление, в котором нож смотрит в начале реза (0 = положительная ось X):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Ramp in length (the knife is plunged gradually over this length):</source>
-        <translation type="unfinished">Длина плавного входа (нож постепенно погружается на этой длине):</translation>
+        <translation type="obsolete">Длина плавного входа (нож постепенно погружается на этой длине):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Lead in / lead out</source>
-        <translation type="unfinished">Вход / выход</translation>
+        <translation type="obsolete">Вход / выход</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Default lead in at the start of the contour:</source>
-        <translation type="unfinished">Вход по умолчанию в начале контура:</translation>
+        <translation type="obsolete">Вход по умолчанию в начале контура:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Default lead out at the end of the contour:</source>
-        <translation type="unfinished">Выход по умолчанию в конце контура:</translation>
+        <translation type="obsolete">Выход по умолчанию в конце контура:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Overcut: continue the cut along the contour beyond the closing point (closed contours only) - the length is defined per tool in the tools table</source>
-        <translation type="unfinished">Перерез: продолжить фрезерование по контуру за точкой замыкания (только для замкнутых контуров) - длина задаётся для каждого инструмента в таблице инструментов</translation>
+        <translation type="obsolete">Перерез: продолжить фрезерование по контуру за точкой замыкания (только для замкнутых контуров) - длина задаётся для каждого инструмента в таблице инструментов</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>TSP optimizer</source>
-        <translation type="unfinished">Оптимизатор ЗК</translation>
+        <translation type="obsolete">Оптимизатор ЗК</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>By default enable the TSP optimization for ordering shapes (TSP = Travelling Salesman Problem)</source>
-        <translation type="unfinished">Включить оптимизацию ЗК для упорядочения контуров (ЗК = задача коммивояжёра)</translation>
+        <translation type="obsolete">Включить оптимизацию ЗК для упорядочения контуров (ЗК = задача коммивояжёра)</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Optimizer behaviour:</source>
-        <translation type="unfinished">Поведение оптимизатора:</translation>
+        <translation type="obsolete">Поведение оптимизатора:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Mutation rate:</source>
-        <translation type="unfinished">Скорость мутаций:</translation>
+        <translation type="obsolete">Скорость мутаций:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Max population:</source>
-        <translation type="unfinished">Макс. население:</translation>
+        <translation type="obsolete">Макс. население:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Max iterations:</source>
-        <translation type="unfinished">Макс. итераций:</translation>
+        <translation type="obsolete">Макс. итераций:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Starting point:</source>
-        <translation type="unfinished">Точка старта:</translation>
+        <translation type="obsolete">Точка старта:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>DXF default import point tolerance:</source>
-        <translation type="unfinished">Допуск координат при импорте DXF:</translation>
+        <translation type="obsolete">Допуск координат при импорте DXF:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>DXF import spline check:</source>
-        <translation type="unfinished">Проверка кривых при импорте DXF:</translation>
+        <translation type="obsolete">Проверка кривых при импорте DXF:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>DXF default import fit tolerance:</source>
-        <translation type="unfinished">Допуск по умолчанию при импорте DXF:</translation>
+        <translation type="obsolete">Допуск по умолчанию при импорте DXF:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>insert elements which are part of a block to layer where the block is inserted</source>
-        <translation type="unfinished">расщепить блоки на составные элементы</translation>
+        <translation type="obsolete">расщепить блоки на составные элементы</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Automatic tool config</source>
-        <translation type="unfinished">Автоконфигурация инструмента</translation>
+        <translation type="obsolete">Автоконфигурация инструмента</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Separator between identifier and value:</source>
-        <translation type="unfinished">Разделитель идентификатора и значения:</translation>
+        <translation type="obsolete">Разделитель идентификатора и значения:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
-        <source>Parameters&apos; identifiers</source>
-        <translation type="unfinished">Идентификаторы параметров</translation>
+        <source>Parameters' identifiers</source>
+        <translation type="obsolete">Идентификаторы параметров</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Infeed depth:</source>
-        <translation type="unfinished">Глубина погружения:</translation>
+        <translation type="obsolete">Глубина погружения:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Workpiece top:</source>
-        <translation type="unfinished">Верх заготовки:</translation>
+        <translation type="obsolete">Верх заготовки:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Retraction area:</source>
-        <translation type="unfinished">Область отвода:</translation>
+        <translation type="obsolete">Область отвода:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>G1 feed rate for first and second axis (2D plane):</source>
-        <translation type="unfinished">Подача G1 для первых двух осей (плоскость 2D):</translation>
+        <translation type="obsolete">Подача G1 для первых двух осей (плоскость 2D):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>G1 feed rate for third axis:</source>
-        <translation type="unfinished">Подача G1 для третьей оси:</translation>
+        <translation type="obsolete">Подача G1 для третьей оси:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Tool number:</source>
-        <translation type="unfinished">Номер инструмента:</translation>
+        <translation type="obsolete">Номер инструмента:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Tool diameter:</source>
-        <translation type="unfinished">Диаметр инструмента:</translation>
+        <translation type="obsolete">Диаметр инструмента:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Spindle speed:</source>
-        <translation type="unfinished">Скорость шпинделя:</translation>
+        <translation type="obsolete">Скорость шпинделя:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Start radius (cutter compensation, deprecated - use the lead radius instead):</source>
-        <translation type="unfinished">Начальный радиус (компенсация резчика, устарело - используйте радиус на заготовке):</translation>
+        <translation type="obsolete">Начальный радиус (компенсация резчика, устарело - используйте радиус на заготовке):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Additional offset (finishing allowance):</source>
-        <translation type="unfinished">Дополнительный отступ (припуск на чистовую обработку):</translation>
+        <translation type="obsolete">Дополнительный отступ (припуск на чистовую обработку):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Lead in mode (0 = start move, 1 = off, 2 = straight, 3 = radius, 4 = configuration default):</source>
-        <translation type="unfinished">Режим входа (0 = начальное движение, 1 = выкл., 2 = прямой, 3 = радиус, 4 = по умолчанию (конфигурация)):</translation>
+        <translation type="obsolete">Режим входа (0 = начальное движение, 1 = выкл., 2 = прямой, 3 = радиус, 4 = по умолчанию (конфигурация)):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Lead out mode (0 = off, 1 = straight, 2 = radius, 3 = start move, 4 = configuration default):</source>
-        <translation type="unfinished">Режим выхода (0 = выкл., 1 = прямой, 2 = радиус, 3 = начальное движение, 4 = по умолчанию (конфигурация)):</translation>
+        <translation type="obsolete">Режим выхода (0 = выкл., 1 = прямой, 2 = радиус, 3 = начальное движение, 4 = по умолчанию (конфигурация)):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Common lead in / lead out radius at the workpiece:</source>
-        <translation type="unfinished">Общий радиус входа и выхода на заготовке:</translation>
+        <translation type="obsolete">Общий радиус входа и выхода на заготовке:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Common lead in / lead out length of the straight part:</source>
-        <translation type="unfinished">Общая длина прямой части входа и выхода:</translation>
+        <translation type="obsolete">Общая длина прямой части входа и выхода:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Overcut length:</source>
-        <translation type="unfinished">Длина перекрытия:</translation>
+        <translation type="obsolete">Длина перекрытия:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>Define the tools here:</source>
-        <translation type="unfinished">Список инструментов:</translation>
+        <translation type="obsolete">Список инструментов:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Define here custom GCODE that can be inserted anywhere in the program:</source>
-        <translation type="unfinished">Задать фрагменты G-кода, которые можно вставлять в программу:</translation>
+        <translation type="obsolete">Задать фрагменты G-кода, которые можно вставлять в программу:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>File used for logging (restart needed):</source>
-        <translation type="unfinished">Файл журнала (требуется перезапуск):</translation>
+        <translation type="obsolete">Файл журнала (требуется перезапуск):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>On stderr console log messages with importance minimal to level (restart needed):</source>
-        <translation type="unfinished">Макс. важность сообщения для вывода на stderr (требуется рестарт):</translation>
+        <translation type="obsolete">Макс. важность сообщения для вывода на stderr (требуется рестарт):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>For log-file log messages with importance minimal to level (restart needed):</source>
-        <translation type="unfinished">Макс. важность сообщений для записи в файл журнала (требуется рестарт):</translation>
+        <translation type="obsolete">Макс. важность сообщений для записи в файл журнала (требуется рестарт):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="25"/>
         <source>For message box log messages with importance minimal to level (restart needed):</source>
-        <translation type="unfinished">Макс. важность сообщений для вывода окна с сообщением (требуется рестарт):</translation>
+        <translation type="obsolete">Макс. важность сообщений для вывода окна с сообщением (требуется рестарт):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Custom GCode</source>
-        <translation type="unfinished">Пользовательский G-код</translation>
+        <translation type="obsolete">Пользовательский G-код</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Output specifications</source>
-        <translation type="unfinished">Спецификация результата</translation>
+        <translation type="obsolete">Спецификация результата</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Output format description (should be unique):</source>
-        <translation type="unfinished">Описание формата вывода (должно быть уникальным):</translation>
+        <translation type="obsolete">Описание формата вывода (должно быть уникальным):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Output file extension:</source>
-        <translation type="unfinished">Расширение файла:</translation>
+        <translation type="obsolete">Расширение файла:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Output type:</source>
-        <translation type="unfinished">Тип результата:</translation>
+        <translation type="obsolete">Тип результата:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Output options</source>
-        <translation type="unfinished">Опции</translation>
+        <translation type="obsolete">Опции</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Export absolute coordinates</source>
-        <translation type="unfinished">Использовать абсолютные координаты</translation>
+        <translation type="obsolete">Использовать абсолютные координаты</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Cancel cutter compensation at each slice</source>
-        <translation type="unfinished">Сброс компенсации инструмента на каждом слое</translation>
+        <translation type="obsolete">Сброс компенсации инструмента на каждом слое</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Perform cutter compensation outside the piece</source>
-        <translation type="unfinished">Выполнять компенсацию инструмента по внешнему контуру</translation>
+        <translation type="obsolete">Выполнять компенсацию инструмента по внешнему контуру</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Export only counter clockwise arcs</source>
-        <translation type="unfinished">Дуги всегда против часовой стрелки</translation>
+        <translation type="obsolete">Дуги всегда против часовой стрелки</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Maximum arc radius:</source>
-        <translation type="unfinished">Максимальный радиус дуги:</translation>
+        <translation type="obsolete">Максимальный радиус дуги:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Export all arcs as line seg</source>
-        <translation type="unfinished">Апроксимация дуг линейными сегментами</translation>
+        <translation type="obsolete">Апроксимация дуг линейными сегментами</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Repeat Drill move for slices (only use wit abs coordinates)</source>
-        <translation type="unfinished">Повторять движение сверления для слоёв (использовать только с абсолютными координатами)</translation>
+        <translation type="obsolete">Повторять движение сверления для слоёв (использовать только с абсолютными координатами)</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>G-code constants</source>
-        <translation type="unfinished">Константы для G-кода</translation>
+        <translation type="obsolete">Константы для G-кода</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Units in millimeters:</source>
-        <translation type="unfinished">Единицы измерения в миллиметрах:</translation>
+        <translation type="obsolete">Единицы измерения в миллиметрах:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Units in inch:</source>
-        <translation type="unfinished">Единицы измерения в дюймах:</translation>
+        <translation type="obsolete">Единицы измерения в дюймах:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Absolute programming:</source>
-        <translation type="unfinished">Команды в абсолютных координатах:</translation>
+        <translation type="obsolete">Команды в абсолютных координатах:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Incremental programming:</source>
-        <translation type="unfinished">Команды в относительных координатах:</translation>
+        <translation type="obsolete">Команды в относительных координатах:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Startup:</source>
-        <translation type="unfinished">Инициализация:</translation>
+        <translation type="obsolete">Инициализация:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>End:</source>
-        <translation type="unfinished">Завершение:</translation>
+        <translation type="obsolete">Завершение:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Output formatting</source>
-        <translation type="unfinished">Форматирование результата</translation>
+        <translation type="obsolete">Форматирование результата</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Windows line-endings</source>
-        <translation type="unfinished">Окончания строк Уиндоус</translation>
+        <translation type="obsolete">Окончания строк Уиндоус</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
-        <source>Prepend numbers with the &apos;+&apos; sign for positive values</source>
-        <translation type="unfinished">Записывать положительные числа со знаком '+'</translation>
+        <source>Prepend numbers with the '+' sign for positive values</source>
+        <translation type="obsolete">Записывать положительные числа со знаком '+'</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Number of digits before the decimal separator:</source>
-        <translation type="unfinished">Количество цифр до десятичной точки:</translation>
+        <translation type="obsolete">Количество цифр до десятичной точки:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
-        <source>Padding with &apos;0&apos; digit before the decimal separator</source>
-        <translation type="unfinished">Дополнять нулями до десятичной точки</translation>
+        <source>Padding with '0' digit before the decimal separator</source>
+        <translation type="obsolete">Дополнять нулями до десятичной точки</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Number of digits after the decimal separator:</source>
-        <translation type="unfinished">Количество цифр после десятичной точки:</translation>
+        <translation type="obsolete">Количество цифр после десятичной точки:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
-        <source>Padding with &apos;0&apos; digit after the decimal separator</source>
-        <translation type="unfinished">Дополнять нулями после десятичной точки</translation>
+        <source>Padding with '0' digit after the decimal separator</source>
+        <translation type="obsolete">Дополнять нулями после десятичной точки</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Decimal separator:</source>
-        <translation type="unfinished">Десятичная точка:</translation>
+        <translation type="obsolete">Десятичная точка:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Line numbers</source>
-        <translation type="unfinished">Номера строк</translation>
+        <translation type="obsolete">Номера строк</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Export line numbers</source>
-        <translation type="unfinished">Экспортировать номера строк</translation>
+        <translation type="obsolete">Экспортировать номера строк</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Line number starts at:</source>
-        <translation type="unfinished">Нумерация начинается с:</translation>
+        <translation type="obsolete">Нумерация начинается с:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Line number step:</source>
-        <translation type="unfinished">Шаг нумерации строк:</translation>
+        <translation type="obsolete">Шаг нумерации строк:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>G-code codes</source>
-        <translation type="unfinished">Коды G-кода</translation>
+        <translation type="obsolete">Коды G-кода</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Tool change:</source>
-        <translation type="unfinished">Смена инструмента:</translation>
+        <translation type="obsolete">Смена инструмента:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Feed rate change:</source>
-        <translation type="unfinished">Смена подачи:</translation>
+        <translation type="obsolete">Смена подачи:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Rapid positioning for XY plane:</source>
-        <translation type="unfinished">Позиционирование в плоскости XY:</translation>
+        <translation type="obsolete">Позиционирование в плоскости XY:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Rapid positioning for Z plane:</source>
-        <translation type="unfinished">Позиционирование в плоскости Z:</translation>
+        <translation type="obsolete">Позиционирование в плоскости Z:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Linear feed move for XY plane:</source>
-        <translation type="unfinished">Рез в плоскости XY:</translation>
+        <translation type="obsolete">Рез в плоскости XY:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Linear feed move for Z plane:</source>
-        <translation type="unfinished">Рез в плоскости Z:</translation>
+        <translation type="obsolete">Рез в плоскости Z:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Linear feed move for drilling:</source>
-        <translation type="unfinished">Линейное движение подачи при сверлении:</translation>
+        <translation type="obsolete">Линейное движение подачи при сверлении:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Linear retract move during drilling:</source>
-        <translation type="unfinished">Линейное движение отвода при сверлении:</translation>
+        <translation type="obsolete">Линейное движение отвода при сверлении:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Clockwise feed move:</source>
-        <translation type="unfinished">Подача по часовой стрелке:</translation>
+        <translation type="obsolete">Подача по часовой стрелке:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Counter clockwise feed move:</source>
-        <translation type="unfinished">Подача против часовой стрелки:</translation>
+        <translation type="obsolete">Подача против часовой стрелки:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Disable cutter compensation:</source>
-        <translation type="unfinished">Отключение компенсации инструмента:</translation>
+        <translation type="obsolete">Отключение компенсации инструмента:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Left cutter compensation:</source>
-        <translation type="unfinished">Компенсация слева:</translation>
+        <translation type="obsolete">Компенсация слева:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Right cutter compensation:</source>
-        <translation type="unfinished">Компенсация справа:</translation>
+        <translation type="obsolete">Компенсация справа:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Placed in front of any shape:</source>
-        <translation type="unfinished">Перед любой фигурой:</translation>
+        <translation type="obsolete">Перед любой фигурой:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Placed after any shape:</source>
-        <translation type="unfinished">После любой фигуры:</translation>
+        <translation type="obsolete">После любой фигуры:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configuration_widgets.py" line="168"/>
         <source>Comment for current shape:</source>
-        <translation type="unfinished">Коментарий к текущей фигуре:</translation>
+        <translation type="obsolete">Коментарий к текущей фигуре:</translation>
     </message>
 </context>
 <context>
@@ -880,76 +737,92 @@ Not enough chars (expected {0}, found {1}) for the field &quot;{2}&quot;
 <context>
     <name>ConfigWindow</name>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="278"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="278" />
         <source>Please correct the following error(s):
 </source>
         <translation>Пожалуйста, исправьте следующие ошибки:
 </translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="279"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="279" />
         <source>Invalid changes</source>
         <translation>Ошибочные изменения</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="304"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="304" />
         <source>Duplicate the current post-processor</source>
         <translation>Дублировать выбранный пост-процессор</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="306"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="306" />
         <source>Add a new post-processor with default values</source>
         <translation>Новый пост-процессор со значениями по умолчанию</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="308"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="308" />
         <source>Remove the current post-processor</source>
         <translation>Удалить выбранный пост-процессор</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="348"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="348" />
         <source>Duplicate a configuration file</source>
         <translation>Дублировать файл конфигурации</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="349"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="349" />
         <source>Enter a new filename (without extension):</source>
         <translation>Новое имя файла (без расширения):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="367"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="367" />
         <source>Add a configuration file</source>
         <translation>Добавить файл конфигурации</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="368"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="368" />
         <source>Enter filename (without extension):</source>
         <translation>Имя файла (без расширения):</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="385"/>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="385" />
         <source>Delete configuration file?</source>
         <translation>Удалить файл конфигурации?</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="358"/>
-        <source>An error occured while duplicating the file &quot;{0}&quot;. Check that it doesn&apos;t already exists for example</source>
-        <translation>Ошибка создания дубликата файла &quot;{0}&quot;. Проверьте, например, не существует ли он</translation>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="358" />
+        <source>An error occured while duplicating the file "{0}". Check that it doesn't already exists for example</source>
+        <translation>Ошибка создания дубликата файла "{0}". Проверьте, например, не существует ли он</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="376"/>
-        <source>An error occured while creating the file &quot;{0}&quot;. Check that it doesn&apos;t already exists for example</source>
-        <translation>При создании файла &quot;{0}&quot; произошла ошибка. Проверьте, например, не существует ли он</translation>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="376" />
+        <source>An error occured while creating the file "{0}". Check that it doesn't already exists for example</source>
+        <translation>При создании файла "{0}" произошла ошибка. Проверьте, например, не существует ли он</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="385"/>
-        <source>Are you sure you want to permanently remove the file &quot;{0}&quot;</source>
-        <translation>Вы уверены, что хотите удалить файл &quot;{0}&quot;</translation>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="385" />
+        <source>Are you sure you want to permanently remove the file "{0}"</source>
+        <translation>Вы уверены, что хотите удалить файл "{0}"</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="390"/>
-        <source>An error occured while removing the file &quot;{0}&quot;. Remove it manually</source>
-        <translation>При удалении файла &quot;{0}&quot; возникла ошибка. Удалите его сами</translation>
+        <location filename="../dxf2gcode/presentation/qt/configwindow.py" line="390" />
+        <source>An error occured while removing the file "{0}". Remove it manually</source>
+        <translation>При удалении файла "{0}" возникла ошибка. Удалите его сами</translation>
+    </message>
+    <message>
+        <source>Configuration</source>
+        <translation>Конфигурация</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation>Отменить</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Применить</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрыть</translation>
     </message>
 </context>
 <context>
@@ -1213,8 +1086,8 @@ Not enough chars (expected {0}, found {1}) for the field &quot;{2}&quot;
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/application.py" line="880" />
-        <source>&lt;html&gt;&lt;body&gt;&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;For more information and updates, please visit &lt;a href='https://github.com/dxf2gcode/dxf2gcode'&gt;https://github.com/dxf2gcode/dxf2gcode&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href='https://github.com/dxf2gcode/dxf2gcode/issues'&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;body&gt;&lt;center&gt;&lt;img src=':images/dxf2gcode_logo.png' border='1' color='white'&gt;&lt;/center&gt;&lt;/body&gt;&lt;h2&gt;Версия:&lt;/h2&gt;&lt;body&gt;%s&lt;/body&gt;&lt;h2&gt;Где получить помощь:&lt;/h2&gt;Для информации и обновлений, посетите &lt;a href='https://github.com/dxf2gcode/dxf2gcode'&gt;https://github.com/dxf2gcode/dxf2gcode&lt;/a&gt;&lt;br&gt;Для вопросов по использованию dxf2gcode используйте &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;Для сообщений об ошибках, или для идей по новым функциям используйте &lt;a href='https://github.com/dxf2gcode/dxf2gcode/issues'&gt;систему отслеживания заявок&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Лицензия и авторское право:&lt;/h2&gt;&lt;body&gt;Эта программа написана на Питоне и распространяется на условиях &lt;a href='http://www.gnu.org/licenses/'&gt;общественной лицензии GNU GPLv3.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;h2&gt;Version:&lt;/h2&gt;&lt;body&gt;%s&lt;/body&gt;&lt;h2&gt;Where to get help:&lt;/h2&gt;&lt;a href='https://dxf2gcode.github.io/dxf2gcode/'&gt;Documentation (under development)&lt;/a&gt;&lt;br&gt;For more information and updates, please visit &lt;a href='https://github.com/dxf2gcode/dxf2gcode'&gt;https://github.com/dxf2gcode/dxf2gcode&lt;/a&gt;&lt;br&gt;For any questions on how to use dxf2gcode please use the &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;To log bugs, or request features please use the &lt;a href='https://github.com/dxf2gcode/dxf2gcode/issues'&gt;issue tracking system&lt;/a&gt;&lt;br&gt;&lt;h2&gt;License and copyright:&lt;/h2&gt;&lt;body&gt;This program is written in Python and is published under the &lt;a href='http://www.gnu.org/licenses/'&gt;GNU GPLv3 license.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;h2&gt;Версия:&lt;/h2&gt;&lt;body&gt;%s&lt;/body&gt;&lt;h2&gt;Где получить помощь:&lt;/h2&gt;&lt;a href='https://dxf2gcode.github.io/dxf2gcode/'&gt;Документация (в разработке)&lt;/a&gt;&lt;br&gt;Для информации и обновлений, посетите &lt;a href='https://github.com/dxf2gcode/dxf2gcode'&gt;https://github.com/dxf2gcode/dxf2gcode&lt;/a&gt;&lt;br&gt;Для вопросов по использованию dxf2gcode используйте &lt;a href='https://www.ltspiceusers.ch/forums/english-section.67/'&gt;https://www.ltspiceusers.ch/forums/english-section.67/&lt;/a&gt;&lt;br&gt;Для сообщений об ошибках, или для идей по новым функциям используйте &lt;a href='https://github.com/dxf2gcode/dxf2gcode/issues'&gt;систему отслеживания заявок&lt;/a&gt;&lt;br&gt;&lt;h2&gt;Лицензия и авторское право:&lt;/h2&gt;&lt;body&gt;Эта программа написана на Питоне и распространяется на условиях &lt;a href='http://www.gnu.org/licenses/'&gt;общественной лицензии GNU GPLv3.&lt;/a&gt;&lt;br&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/application.py" line="882"/>
@@ -1432,8 +1305,8 @@ returned error code: {1}</source>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="17"/>
-        <source>XF2GCODE</source>
-        <translation>XF2GCODE</translation>
+        <source>Dxf2gcode</source>
+        <translation>Dxf2gcode</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="60"/>
@@ -2288,319 +2161,312 @@ Do you want to save them before switching the profile?</source>
 <context>
     <name>MyConfig</name>
     <message>
-        <location filename="../dxf2gcode/adapters/config/runtime_config.py" line="596"/>
         <source>errors reading %s:</source>
         <translation>ошибки чтения %s:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/config/runtime_config.py" line="606"/>
         <source>Missing value or section.</source>
         <translation>Отсутствует значение или раздел.</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/config/runtime_config.py" line="626"/>
-        <source>The configuration file version ({0}) doesn&apos;t match any of the software expected version ({1}).
+        <source>The configuration file version ({0}) doesn't match any of the software expected version ({1}).
 
-You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to solve the problem.</source>
+You have to delete (or carefully edit) the configuration file "{2}" to solve the problem.</source>
         <translation>Версия файла конфигурации ({0}) не соответствует ни одной из ожидаемых версий ({1}).
 
-Для решения проблемы Вам придётся удалить (или внимательно отредактировать) файл &quot;{2}&quot;.</translation>
+Для решения проблемы Вам придётся удалить (или внимательно отредактировать) файл "{2}".</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/config/runtime_config.py" line="632"/>
         <source>trying to rename bad cfg %s to %s</source>
         <translation>попытка переименовать ошибочной настройки %s в %s</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/config/runtime_config.py" line="639"/>
         <source>rename(%s,%s) failed: %s</source>
         <translation>ошибка переименования (%s -&gt; %s): %s</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/config/runtime_config.py" line="642"/>
-        <source>renamed bad varspace %s to &apos;%s&apos;</source>
+        <source>renamed bad varspace %s to '%s'</source>
         <translation>переименовано ошибочное пространство переменных '%s' в '%s'</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/config/runtime_config.py" line="654"/>
-        <source>created default varspace &apos;%s&apos;</source>
+        <source>created default varspace '%s'</source>
         <translation>создано пространство переменных по умолчанию '%s'</translation>
     </message>
     <message>
         <source> mm</source>
-        <translation type="obsolete"> мм</translation>
+        <translation> мм</translation>
     </message>
     <message>
         <source> in</source>
-        <translation type="obsolete"> дюйм</translation>
+        <translation> дюйм</translation>
     </message>
     <message>
         <source> mm/min</source>
-        <translation type="obsolete"> мм/мин</translation>
+        <translation> мм/мин</translation>
     </message>
     <message>
         <source> IPS</source>
-        <translation type="obsolete"> дюйм/мин</translation>
+        <translation> дюйм/мин</translation>
     </message>
     <message>
         <source>Tools table</source>
-        <translation type="obsolete">Список инструментов</translation>
+        <translation>Список инструментов</translation>
     </message>
     <message>
         <source>Custom actions</source>
-        <translation type="obsolete">Специальные действия</translation>
+        <translation>Специальные действия</translation>
     </message>
     <message>
         <source>Software config</source>
-        <translation type="obsolete">Настройка программы</translation>
+        <translation>Настройка программы</translation>
     </message>
     <message>
         <source>By default look for DXF files in:</source>
-        <translation type="obsolete">Начальный каталог для DXF файлов:</translation>
+        <translation>Начальный каталог для DXF файлов:</translation>
     </message>
     <message>
         <source>By default export generated G-Code to:</source>
-        <translation type="obsolete">Каталог для создаваемого G-кода:</translation>
+        <translation>Каталог для создаваемого G-кода:</translation>
     </message>
     <message>
         <source>By default save Project files to:</source>
-        <translation type="obsolete">По умолчанию сохранять файлы проекта в:</translation>
+        <translation>По умолчанию сохранять файлы проекта в:</translation>
     </message>
     <message>
         <source>Update paths with last used path: </source>
-        <translation type="obsolete">Обновлять пути последним использованным путём: </translation>
+        <translation>Обновлять пути последним использованным путём: </translation>
     </message>
     <message>
         <source>Location of executable:</source>
-        <translation type="obsolete">Путь к программе:</translation>
+        <translation>Путь к программе:</translation>
     </message>
     <message>
         <source>Command-line options:</source>
-        <translation type="obsolete">Опции командной строки:</translation>
+        <translation>Опции командной строки:</translation>
     </message>
     <message>
         <source>General settings</source>
-        <translation type="obsolete">Общие настройки</translation>
+        <translation>Общие настройки</translation>
     </message>
     <message>
         <source>3D mode (requires OpenGL - restart needed)</source>
-        <translation type="obsolete">Режим 3D (требует OpenGL - требуется перезапуск)</translation>
+        <translation>Режим 3D (требует OpenGL - требуется перезапуск)</translation>
     </message>
     <message>
         <source>Display disabled paths (default)</source>
-        <translation type="obsolete">Отображать выключенные фигуры</translation>
+        <translation>Отображать выключенные фигуры</translation>
     </message>
     <message>
         <source>Live update export route (default)</source>
-        <translation type="obsolete">Постоянный экспорт маршрута</translation>
+        <translation>Постоянный экспорт маршрута</translation>
     </message>
     <message>
         <source>Show a scale bar in the canvas</source>
-        <translation type="obsolete">Показывать масштабную линейку в области рисования</translation>
+        <translation>Показывать масштабную линейку в области рисования</translation>
     </message>
     <message>
         <source>Milling</source>
-        <translation type="obsolete">Фрезерная</translation>
+        <translation>Фрезерная</translation>
     </message>
     <message>
         <source>Split line segments (default)</source>
-        <translation type="obsolete">Делить линии на сегменты</translation>
+        <translation>Делить линии на сегменты</translation>
     </message>
     <message>
         <source>Automatic cutter compensation (default)</source>
-        <translation type="obsolete">Автокомпенсация инструмента</translation>
+        <translation>Автокомпенсация инструмента</translation>
     </message>
     <message>
         <source>Machine type (default):</source>
-        <translation type="obsolete">Тип машины:</translation>
+        <translation>Тип машины:</translation>
     </message>
     <message>
         <source>Configuration values use the unit (restart needed):</source>
-        <translation type="obsolete">Единицы измерений в конфигурации (нужен перезапуск):</translation>
+        <translation>Единицы измерений в конфигурации (нужен перезапуск):</translation>
     </message>
     <message>
         <source>Output</source>
-        <translation type="obsolete">Результат</translation>
+        <translation>Результат</translation>
     </message>
     <message>
         <source>Export the G-Code to stdout (instead of a file)</source>
-        <translation type="obsolete">Экспорт G-кода на стандартный вывод (вместо файла)</translation>
+        <translation>Экспорт G-кода на стандартный вывод (вместо файла)</translation>
     </message>
     <message>
         <source>Machine config</source>
-        <translation type="obsolete">Конфигурация станка</translation>
+        <translation>Конфигурация станка</translation>
     </message>
     <message>
-        <source>Axes&apos; identifiers</source>
-        <translation type="obsolete">Идентификаторы осей</translation>
+        <source>Axes' identifiers</source>
+        <translation>Идентификаторы осей</translation>
     </message>
     <message>
         <source>First axis:</source>
-        <translation type="obsolete">Первая ось:</translation>
+        <translation>Первая ось:</translation>
     </message>
     <message>
         <source>Second axis:</source>
-        <translation type="obsolete">Вторая ось:</translation>
+        <translation>Вторая ось:</translation>
     </message>
     <message>
         <source>Third axis:</source>
-        <translation type="obsolete">Третья ось:</translation>
+        <translation>Третья ось:</translation>
     </message>
     <message>
-        <source>Start and end&apos;s coordinate and scaling standard multiplier</source>
-        <translation type="obsolete">Стандартный множитель координат начала/конца и масштаба</translation>
+        <source>Start and end's coordinate and scaling standard multiplier</source>
+        <translation>Стандартный множитель координат начала/конца и масштаба</translation>
     </message>
     <message>
         <source>First axis start/end coordiante:</source>
-        <translation type="obsolete">Координата начала/конца первой оси:</translation>
+        <translation>Координата начала/конца первой оси:</translation>
     </message>
     <message>
         <source>Second axis start/end coordinate:</source>
-        <translation type="obsolete">Координата начала/конца второй оси:</translation>
+        <translation>Координата начала/конца второй оси:</translation>
     </message>
     <message>
         <source>Scale first and second axis:</source>
-        <translation type="obsolete">Масштаб первой и второй оси:</translation>
+        <translation>Масштаб первой и второй оси:</translation>
     </message>
     <message>
-        <source>Third axis&apos; defaults</source>
-        <translation type="obsolete">Настройки третьей оси</translation>
+        <source>Third axis' defaults</source>
+        <translation>Настройки третьей оси</translation>
     </message>
     <message>
         <source>Retraction coordinate:</source>
-        <translation type="obsolete">Координата возврата:</translation>
+        <translation>Координата возврата:</translation>
     </message>
     <message>
         <source>Safety margin:</source>
-        <translation type="obsolete">Граница безопасности:</translation>
+        <translation>Граница безопасности:</translation>
     </message>
     <message>
         <source>Workpiece origin coordinate:</source>
-        <translation type="obsolete">Начало координат заготовки:</translation>
+        <translation>Начало координат заготовки:</translation>
     </message>
     <message>
         <source>Slice depth:</source>
-        <translation type="obsolete">Глубина слоя:</translation>
+        <translation>Глубина слоя:</translation>
     </message>
     <message>
         <source>Final mill depth:</source>
-        <translation type="obsolete">Конечная глубина реза:</translation>
+        <translation>Конечная глубина реза:</translation>
     </message>
     <message>
         <source>G1 feed rates</source>
-        <translation type="obsolete">Подача G1</translation>
+        <translation>Подача G1</translation>
     </message>
     <message>
         <source>First and second axis (2D plane):</source>
-        <translation type="obsolete">Первая и вторая ось (плоскость 2D):</translation>
+        <translation>Первая и вторая ось (плоскость 2D):</translation>
     </message>
     <message>
         <source>Output settings</source>
-        <translation type="obsolete">Настройка результата</translation>
+        <translation>Настройка результата</translation>
     </message>
     <message>
         <source>Cutter compensation</source>
-        <translation type="obsolete">Компенсация реза</translation>
+        <translation>Компенсация реза</translation>
     </message>
     <message>
         <source>Cutter compensation is done by machine (check box if machine reconizes G41 and G42 commands / uncheck otherwise. This also disables pocket milling.)</source>
-        <translation type="obsolete">Компенсация инструмента выполняется станком (установите флажок, если станок понимает команды G41 и G42 / снимите в противном случае. Это также отключает карманное фрезерование.)</translation>
+        <translation>Компенсация инструмента выполняется станком (установите флажок, если станок понимает команды G41 и G42 / снимите в противном случае. Это также отключает карманное фрезерование.)</translation>
     </message>
     <message>
         <source>Drag Knife options</source>
-        <translation type="obsolete">Настройки флюгерного ножа</translation>
+        <translation>Настройки флюгерного ножа</translation>
     </message>
     <message>
-        <source>Retract to drag depth (&quot;Third axis slice depth&quot;) if angle exceeds:</source>
-        <translation type="obsolete">Вернуться на глубину реза (&quot;Глубина слоя по третьей оси&quot;) если угол превышает:</translation>
+        <source>Retract to drag depth ("Third axis slice depth") if angle exceeds:</source>
+        <translation>Вернуться на глубину реза ("Глубина слоя по третьей оси") если угол превышает:</translation>
     </message>
     <message>
         <source>By default enable the TSP optimization for ordering shapes (TSP = Travelling Salesman Problem)</source>
-        <translation type="obsolete">Включить оптимизацию ЗК для упорядочения контуров (ЗК = задача коммивояжёра)</translation>
+        <translation>Включить оптимизацию ЗК для упорядочения контуров (ЗК = задача коммивояжёра)</translation>
     </message>
     <message>
         <source>TSP optimizer</source>
-        <translation type="obsolete">Оптимизатор ЗК</translation>
+        <translation>Оптимизатор ЗК</translation>
     </message>
     <message>
         <source>Optimizer behaviour:</source>
-        <translation type="obsolete">Поведение оптимизатора:</translation>
+        <translation>Поведение оптимизатора:</translation>
     </message>
     <message>
         <source>Mutation rate:</source>
-        <translation type="obsolete">Скорость мутаций:</translation>
+        <translation>Скорость мутаций:</translation>
     </message>
     <message>
         <source>Max population:</source>
-        <translation type="obsolete">Макс. население:</translation>
+        <translation>Макс. население:</translation>
     </message>
     <message>
         <source>Max iterations:</source>
-        <translation type="obsolete">Макс. итераций:</translation>
+        <translation>Макс. итераций:</translation>
     </message>
     <message>
         <source>Starting point:</source>
-        <translation type="obsolete">Точка старта:</translation>
+        <translation>Точка старта:</translation>
     </message>
     <message>
         <source>DXF default import point tolerance:</source>
-        <translation type="obsolete">Допуск координат при импорте DXF:</translation>
+        <translation>Допуск координат при импорте DXF:</translation>
     </message>
     <message>
         <source>DXF import spline check:</source>
-        <translation type="obsolete">Проверка кривых при импорте DXF:</translation>
+        <translation>Проверка кривых при импорте DXF:</translation>
     </message>
     <message>
         <source>DXF default import fit tolerance:</source>
-        <translation type="obsolete">Допуск по умолчанию при импорте DXF:</translation>
+        <translation>Допуск по умолчанию при импорте DXF:</translation>
     </message>
     <message>
         <source>insert elements which are part of a block to layer where the block is inserted</source>
-        <translation type="obsolete">расщепить блоки на составные элементы</translation>
+        <translation>расщепить блоки на составные элементы</translation>
     </message>
     <message>
         <source>Automatic tool config</source>
-        <translation type="obsolete">Автоконфигурация инструмента</translation>
+        <translation>Автоконфигурация инструмента</translation>
     </message>
     <message>
         <source>Separator between identifier and value:</source>
-        <translation type="obsolete">Разделитель идентификатора и значения:</translation>
+        <translation>Разделитель идентификатора и значения:</translation>
     </message>
     <message>
-        <source>Parameters&apos; identifiers</source>
-        <translation type="obsolete">Идентификаторы параметров</translation>
+        <source>Parameters' identifiers</source>
+        <translation>Идентификаторы параметров</translation>
     </message>
     <message>
         <source>Infeed depth:</source>
-        <translation type="obsolete">Глубина погружения:</translation>
+        <translation>Глубина погружения:</translation>
     </message>
     <message>
         <source>Workpiece top:</source>
-        <translation type="obsolete">Верх заготовки:</translation>
+        <translation>Верх заготовки:</translation>
     </message>
     <message>
         <source>Retraction area:</source>
-        <translation type="obsolete">Область отвода:</translation>
+        <translation>Область отвода:</translation>
     </message>
     <message>
         <source>G1 feed rate for first and second axis (2D plane):</source>
-        <translation type="obsolete">Подача G1 для первых двух осей (плоскость 2D):</translation>
+        <translation>Подача G1 для первых двух осей (плоскость 2D):</translation>
     </message>
     <message>
         <source>G1 feed rate for third axis:</source>
-        <translation type="obsolete">Подача G1 для третьей оси:</translation>
+        <translation>Подача G1 для третьей оси:</translation>
     </message>
     <message>
         <source>Tool number:</source>
-        <translation type="obsolete">Номер инструмента:</translation>
+        <translation>Номер инструмента:</translation>
     </message>
     <message>
         <source>Tool diameter:</source>
-        <translation type="obsolete">Диаметр инструмента:</translation>
+        <translation>Диаметр инструмента:</translation>
     </message>
     <message>
         <source>Spindle speed:</source>
-        <translation type="obsolete">Скорость шпинделя:</translation>
+        <translation>Скорость шпинделя:</translation>
     </message>
     <message>
         <source>Start radius (cutter compensation):</source>
@@ -2608,70 +2474,67 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     </message>
     <message>
         <source>Define the tools here:</source>
-        <translation type="obsolete">Список инструментов:</translation>
+        <translation>Список инструментов:</translation>
     </message>
     <message>
         <source>Define here custom GCODE that can be inserted anywhere in the program:</source>
-        <translation type="obsolete">Задать фрагменты G-кода, которые можно вставлять в программу:</translation>
+        <translation>Задать фрагменты G-кода, которые можно вставлять в программу:</translation>
     </message>
     <message>
         <source>File used for logging (restart needed):</source>
-        <translation type="obsolete">Файл журнала (требуется перезапуск):</translation>
+        <translation>Файл журнала (требуется перезапуск):</translation>
     </message>
     <message>
         <source>On stderr console log messages with importance minimal to level (restart needed):</source>
-        <translation type="obsolete">Макс. важность сообщения для вывода на stderr (требуется рестарт):</translation>
+        <translation>Макс. важность сообщения для вывода на stderr (требуется рестарт):</translation>
     </message>
     <message>
         <source>For log-file log messages with importance minimal to level (restart needed):</source>
-        <translation type="obsolete">Макс. важность сообщений для записи в файл журнала (требуется рестарт):</translation>
+        <translation>Макс. важность сообщений для записи в файл журнала (требуется рестарт):</translation>
     </message>
     <message>
         <source>For message box log messages with importance minimal to level (restart needed):</source>
-        <translation type="obsolete">Макс. важность сообщений для вывода окна с сообщением (требуется рестарт):</translation>
+        <translation>Макс. важность сообщений для вывода окна с сообщением (требуется рестарт):</translation>
     </message>
     <message>
-        <location filename="." line="3014757"/>
-        <source>The configuration file version ({0}) doesn&apos;t match the software expected version ({1}).
+        <source>The configuration file version ({0}) doesn't match the software expected version ({1}).
 
-You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to solve the problem.</source>
+You have to delete (or carefully edit) the configuration file "{2}" to solve the problem.</source>
         <translation type="obsolete">Файл конфгиурации версии ({0}) не соответствует ожидаемой версии ({1}).
 
-Для решения проблемы Вам придётся удалить (или внимательно отредактировать) файл &quot;{2}&quot;.</translation>
+Для решения проблемы Вам придётся удалить (или внимательно отредактировать) файл "{2}".</translation>
     </message>
     <message>
-        <location filename="." line="3014757"/>
-        <source>Start and end&apos;s coordinate</source>
+        <source>Start and end's coordinate</source>
         <translation type="obsolete">Начало и конец координат</translation>
     </message>
     <message>
-        <location filename="." line="3014757"/>
         <source>Cutter compensation is done by machine (check box if machine reconizes G41 and G42 commands / uncheck otherwise). This also disables pocket milling.</source>
         <translation type="obsolete">Компенсацию инструмента делает станок (выберите только если машина поддерживает команды G41 и G42)</translation>
     </message>
     <message>
         <source>Pocket milling</source>
-        <translation type="obsolete">Карманное фрезерование</translation>
+        <translation>Карманное фрезерование</translation>
     </message>
     <message>
         <source>Pocket edge clearance (distance between cutting edge and contour, as % of tool diameter):</source>
-        <translation type="obsolete">Боковой зазор кармана (расстояние между режущей кромкой и контуром, в % от диаметра инструмента):</translation>
+        <translation>Боковой зазор кармана (расстояние между режущей кромкой и контуром, в % от диаметра инструмента):</translation>
     </message>
     <message>
         <source>Additional offset (finishing allowance):</source>
-        <translation type="obsolete">Дополнительный отступ (припуск на чистовую обработку):</translation>
+        <translation>Дополнительный отступ (припуск на чистовую обработку):</translation>
     </message>
     <message>
         <source>Direction the knife points to when the cut starts (0 = positive X axis):</source>
-        <translation type="obsolete">Направление, в котором нож смотрит в начале реза (0 = положительная ось X):</translation>
+        <translation>Направление, в котором нож смотрит в начале реза (0 = положительная ось X):</translation>
     </message>
     <message>
         <source>Ramp in length (the knife is plunged gradually over this length):</source>
-        <translation type="obsolete">Длина плавного входа (нож постепенно погружается на этой длине):</translation>
+        <translation>Длина плавного входа (нож постепенно погружается на этой длине):</translation>
     </message>
     <message>
         <source>Lead in / lead out</source>
-        <translation type="obsolete">Вход / выход</translation>
+        <translation>Вход / выход</translation>
     </message>
     <message>
         <source>Lead in at the start of the contour:</source>
@@ -2707,7 +2570,7 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     </message>
     <message>
         <source>Overcut length:</source>
-        <translation type="obsolete">Длина перекрытия:</translation>
+        <translation>Длина перекрытия:</translation>
     </message>
     <message>
         <source>Lead in mode (0 = start move, 1 = off, 2 = straight, 3 = radius):</source>
@@ -2715,35 +2578,35 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     </message>
     <message>
         <source>Default lead in at the start of the contour:</source>
-        <translation type="obsolete">Вход по умолчанию в начале контура:</translation>
+        <translation>Вход по умолчанию в начале контура:</translation>
     </message>
     <message>
         <source>Default lead out at the end of the contour:</source>
-        <translation type="obsolete">Выход по умолчанию в конце контура:</translation>
+        <translation>Выход по умолчанию в конце контура:</translation>
     </message>
     <message>
         <source>Start radius (cutter compensation, deprecated - use the lead radius instead):</source>
-        <translation type="obsolete">Начальный радиус (компенсация резчика, устарело - используйте радиус на заготовке):</translation>
+        <translation>Начальный радиус (компенсация резчика, устарело - используйте радиус на заготовке):</translation>
     </message>
     <message>
         <source>Lead in mode (0 = start move, 1 = off, 2 = straight, 3 = radius, 4 = configuration default):</source>
-        <translation type="obsolete">Режим входа (0 = начальное движение, 1 = выкл., 2 = прямой, 3 = радиус, 4 = по умолчанию (конфигурация)):</translation>
+        <translation>Режим входа (0 = начальное движение, 1 = выкл., 2 = прямой, 3 = радиус, 4 = по умолчанию (конфигурация)):</translation>
     </message>
     <message>
         <source>Lead out mode (0 = off, 1 = straight, 2 = radius, 3 = start move, 4 = configuration default):</source>
-        <translation type="obsolete">Режим выхода (0 = выкл., 1 = прямой, 2 = радиус, 3 = начальное движение, 4 = по умолчанию (конфигурация)):</translation>
+        <translation>Режим выхода (0 = выкл., 1 = прямой, 2 = радиус, 3 = начальное движение, 4 = по умолчанию (конфигурация)):</translation>
     </message>
     <message>
         <source>Common lead in / lead out radius at the workpiece:</source>
-        <translation type="obsolete">Общий радиус входа и выхода на заготовке:</translation>
+        <translation>Общий радиус входа и выхода на заготовке:</translation>
     </message>
     <message>
         <source>Common lead in / lead out length of the straight part:</source>
-        <translation type="obsolete">Общая длина прямой части входа и выхода:</translation>
+        <translation>Общая длина прямой части входа и выхода:</translation>
     </message>
     <message>
         <source>Overcut: continue the cut along the contour beyond the closing point (closed contours only) - the length is defined per tool in the tools table</source>
-        <translation type="obsolete">Перерез: продолжить фрезерование по контуру за точкой замыкания (только для замкнутых контуров) - длина задаётся для каждого инструмента в таблице инструментов</translation>
+        <translation>Перерез: продолжить фрезерование по контуру за точкой замыкания (только для замкнутых контуров) - длина задаётся для каждого инструмента в таблице инструментов</translation>
     </message>
     <message>
         <source>Expand layers when loading a drawing</source>
@@ -2756,6 +2619,62 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
     <message>
         <source>Do not import layer 0</source>
         <translation>Не импортировать слой 0</translation>
+    </message>
+    <message>
+        <source>Debug</source>
+        <translation>Отладка</translation>
+    </message>
+    <message>
+        <source>Information</source>
+        <translation>Информация</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>Предупреждение</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Ошибка</translation>
+    </message>
+    <message>
+        <source>Critical</source>
+        <translation>Критическая ошибка</translation>
+    </message>
+    <message>
+        <source>Lathe</source>
+        <translation>Токарный станок</translation>
+    </message>
+    <message>
+        <source>Drag knife</source>
+        <translation>Флюгерный нож</translation>
+    </message>
+    <message>
+        <source>Millimeters (mm)</source>
+        <translation>Миллиметры (mm)</translation>
+    </message>
+    <message>
+        <source>Inches (in)</source>
+        <translation>Дюймы (in)</translation>
+    </message>
+    <message>
+        <source>Keep fixed shapes in relative order</source>
+        <translation>Сохранять относительный порядок фиксированных контуров</translation>
+    </message>
+    <message>
+        <source>Place optimized shapes after fixed shapes</source>
+        <translation>Оптимизированные контуры после фиксированных</translation>
+    </message>
+    <message>
+        <source>Current order</source>
+        <translation>Текущий порядок</translation>
+    </message>
+    <message>
+        <source>Random</source>
+        <translation>Случайный</translation>
+    </message>
+    <message>
+        <source>Nearest neighbor</source>
+        <translation>Ближайший сосед</translation>
     </message>
 </context>
 <context>
@@ -2874,278 +2793,309 @@ You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to
 </context>
 <context>
     <name>MyPostProConfig</name>
-    <message><source>Tool change macro</source><translation>Макрос смены инструмента</translation></message>
-    <message><source>Declared return position:</source><translation>Заданная позиция возврата:</translation></message>
-    <message><source>Distance mode at macro end:</source><translation>Режим координат в конце макроса:</translation></message>
-    <message><source>Work coordinate system after change:</source><translation>Система координат детали после смены:</translation></message>
-    <message><source>Tool length offset selection:</source><translation>Выбор коррекции длины инструмента:</translation></message>
-    <message><source>Tool-to-offset mapping (1:1,4:8):</source><translation>Соответствие инструмента и коррекции (1:1,4:8):</translation></message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="196"/>
+        <source>Tool change macro</source>
+        <translation>Макрос смены инструмента</translation>
+    </message>
+    <message>
+        <source>Declared return position:</source>
+        <translation>Заданная позиция возврата:</translation>
+    </message>
+    <message>
+        <source>Distance mode at macro end:</source>
+        <translation>Режим координат в конце макроса:</translation>
+    </message>
+    <message>
+        <source>Work coordinate system after change:</source>
+        <translation>Система координат детали после смены:</translation>
+    </message>
+    <message>
+        <source>Tool length offset selection:</source>
+        <translation>Выбор коррекции длины инструмента:</translation>
+    </message>
+    <message>
+        <source>Tool-to-offset mapping (1:1,4:8):</source>
+        <translation>Соответствие инструмента и коррекции (1:1,4:8):</translation>
+    </message>
+    <message>
         <source>errors reading %s:</source>
         <translation>ошибки чтения %s:</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="205"/>
         <source>Missing value or section.</source>
         <translation>Отсутствует значение или раздел.</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="209"/>
         <source>syntax errors in postpro_config file</source>
         <translation>синтаксическая ошибка в фале postpro_config</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="225"/>
-        <source>The postprocessor configuration file version ({0}) doesn&apos;t match any of the software expected version ({1}).
+        <source>The postprocessor configuration file version ({0}) doesn't match any of the software expected version ({1}).
 
-You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to solve the problem.</source>
+You have to delete (or carefully edit) the configuration file "{2}" to solve the problem.</source>
         <translation>Версия файла конфигурации пост-процессора ({0}) не соответствует ни одной из ожидаемых версий ({1}).
 
-Для решения проблемы Вам придётся удалить (или внимательно отредактировать) файл &quot;{2}&quot;.</translation>
+Для решения проблемы Вам придётся удалить (или внимательно отредактировать) файл "{2}".</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="231"/>
         <source>trying to rename bad cfg %s to %s</source>
         <translation>попытка переименовать ошибочной настройки %s в %s</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="235"/>
         <source>rename(%s,%s) failed: %s</source>
-        <translation>ошибка переименования rename(%s, %s): %s</translation>
+        <translation>ошибка переименования (%s -&gt; %s): %s</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="238"/>
-        <source>renamed bad varspace %s to &apos;%s&apos;</source>
+        <source>renamed bad varspace %s to '%s'</source>
         <translation>переименовано ошибочное пространство переменных '%s' в '%s'</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="241"/>
-        <source>created default varspace &apos;%s&apos;</source>
+        <source>created default varspace '%s'</source>
         <translation>создано пространство переменных по умолчанию '%s'</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/adapters/postprocessor/postprocessorconfig.py" line="244"/>
-        <source>read existing varspace &apos;%s&apos;</source>
+        <source>read existing varspace '%s'</source>
         <translation>чтение существующего пространства переменных '%s'</translation>
     </message>
     <message>
         <source>Custom GCode</source>
-        <translation type="obsolete">Пользовательский G-код</translation>
+        <translation>Пользовательский G-код</translation>
     </message>
     <message>
         <source>Software config</source>
-        <translation type="obsolete">Конфигурация ПО</translation>
+        <translation>Настройка программы</translation>
     </message>
     <message>
         <source>Output specifications</source>
-        <translation type="obsolete">Спецификация результата</translation>
+        <translation>Спецификация результата</translation>
     </message>
     <message>
         <source>Output format description (should be unique):</source>
-        <translation type="obsolete">Описание формата вывода (должно быть уникальным):</translation>
+        <translation>Описание формата вывода (должно быть уникальным):</translation>
     </message>
     <message>
         <source>Output file extension:</source>
-        <translation type="obsolete">Расширение файла:</translation>
+        <translation>Расширение файла:</translation>
     </message>
     <message>
         <source>Output type:</source>
-        <translation type="obsolete">Тип результата:</translation>
+        <translation>Тип результата:</translation>
     </message>
     <message>
         <source>Output options</source>
-        <translation type="obsolete">Опции</translation>
+        <translation>Опции</translation>
     </message>
     <message>
         <source>Export absolute coordinates</source>
-        <translation type="obsolete">Использовать абсолютные координаты</translation>
+        <translation>Использовать абсолютные координаты</translation>
     </message>
     <message>
         <source>Cancel cutter compensation at each slice</source>
-        <translation type="obsolete">Сброс компенсации инструмента на каждом слое</translation>
+        <translation>Сброс компенсации инструмента на каждом слое</translation>
     </message>
     <message>
         <source>Perform cutter compensation outside the piece</source>
-        <translation type="obsolete">Выполнять компенсацию инструмента по внешнему контуру</translation>
+        <translation>Выполнять компенсацию инструмента по внешнему контуру</translation>
     </message>
     <message>
         <source>Export only counter clockwise arcs</source>
-        <translation type="obsolete">Дуги всегда против часовой стрелки</translation>
+        <translation>Дуги всегда против часовой стрелки</translation>
     </message>
     <message>
         <source>Maximum arc radius:</source>
-        <translation type="obsolete">Максимальный радиус дуги:</translation>
+        <translation>Максимальный радиус дуги:</translation>
     </message>
     <message>
         <source>Export all arcs as line seg</source>
-        <translation type="obsolete">Апроксимация дуг линейными сегментами</translation>
+        <translation>Апроксимация дуг линейными сегментами</translation>
     </message>
     <message>
         <source>Repeat Drill move for slices (only use wit abs coordinates)</source>
-        <translation type="obsolete">Повторять движение сверления для слоёв (использовать только с абсолютными координатами)</translation>
+        <translation>Повторять движение сверления для слоёв (использовать только с абсолютными координатами)</translation>
     </message>
     <message>
         <source>G-code constants</source>
-        <translation type="obsolete">Константы для G-кода</translation>
+        <translation>Константы для G-кода</translation>
     </message>
     <message>
         <source>Units in millimeters:</source>
-        <translation type="obsolete">Единицы измерения в миллиметрах:</translation>
+        <translation>Единицы измерения в миллиметрах:</translation>
     </message>
     <message>
         <source>Units in inch:</source>
-        <translation type="obsolete">Единицы измерения в дюймах:</translation>
+        <translation>Единицы измерения в дюймах:</translation>
     </message>
     <message>
         <source>Absolute programming:</source>
-        <translation type="obsolete">Команды в абсолютных координатах:</translation>
+        <translation>Команды в абсолютных координатах:</translation>
     </message>
     <message>
         <source>Incremental programming:</source>
-        <translation type="obsolete">Команды в относительных координатах:</translation>
+        <translation>Команды в относительных координатах:</translation>
     </message>
     <message>
         <source>Startup:</source>
-        <translation type="obsolete">Инициализация:</translation>
+        <translation>Инициализация:</translation>
     </message>
     <message>
         <source>End:</source>
-        <translation type="obsolete">Завершение:</translation>
+        <translation>Завершение:</translation>
     </message>
     <message>
         <source>Output formatting</source>
-        <translation type="obsolete">Форматирование результата</translation>
+        <translation>Форматирование результата</translation>
     </message>
     <message>
         <source>Windows line-endings</source>
-        <translation type="obsolete">Окончания строк Уиндоус</translation>
+        <translation>Окончания строк Уиндоус</translation>
     </message>
     <message>
-        <source>Prepend numbers with the &apos;+&apos; sign for positive values</source>
-        <translation type="obsolete">Записывать положительные числа со знаком '+'</translation>
+        <source>Prepend numbers with the '+' sign for positive values</source>
+        <translation>Записывать положительные числа со знаком '+'</translation>
     </message>
     <message>
         <source>Number of digits before the decimal separator:</source>
-        <translation type="obsolete">Количество цифр до десятичной точки:</translation>
+        <translation>Количество цифр до десятичной точки:</translation>
     </message>
     <message>
-        <source>Padding with &apos;0&apos; digit before the decimal separator</source>
-        <translation type="obsolete">Дополнять нулями до десятичной точки</translation>
+        <source>Padding with '0' digit before the decimal separator</source>
+        <translation>Дополнять нулями до десятичной точки</translation>
     </message>
     <message>
         <source>Number of digits after the decimal separator:</source>
-        <translation type="obsolete">Количество цифр после десятичной точки:</translation>
+        <translation>Количество цифр после десятичной точки:</translation>
     </message>
     <message>
-        <source>Padding with &apos;0&apos; digit after the decimal separator</source>
-        <translation type="obsolete">Дополнять нулями после десятичной точки</translation>
+        <source>Padding with '0' digit after the decimal separator</source>
+        <translation>Дополнять нулями после десятичной точки</translation>
     </message>
     <message>
         <source>Decimal separator:</source>
-        <translation type="obsolete">Десятичная точка:</translation>
+        <translation>Десятичная точка:</translation>
     </message>
     <message>
         <source>Line numbers</source>
-        <translation type="obsolete">Номера строк</translation>
+        <translation>Номера строк</translation>
     </message>
     <message>
         <source>Export line numbers</source>
-        <translation type="obsolete">Экспортировать номера строк</translation>
+        <translation>Экспортировать номера строк</translation>
     </message>
     <message>
         <source>Line number starts at:</source>
-        <translation type="obsolete">Нумерация начинается с:</translation>
+        <translation>Нумерация начинается с:</translation>
     </message>
     <message>
         <source>Line number step:</source>
-        <translation type="obsolete">Шаг нумерации строк:</translation>
+        <translation>Шаг нумерации строк:</translation>
     </message>
     <message>
         <source>G-code codes</source>
-        <translation type="obsolete">Коды G-кода</translation>
+        <translation>Коды G-кода</translation>
     </message>
     <message>
         <source>Tool change:</source>
-        <translation type="obsolete">Смена инструмента:</translation>
+        <translation>Смена инструмента:</translation>
     </message>
     <message>
         <source>Feed rate change:</source>
-        <translation type="obsolete">Смена подачи:</translation>
+        <translation>Смена подачи:</translation>
     </message>
     <message>
         <source>Rapid positioning for XY plane:</source>
-        <translation type="obsolete">Позиционирование в плоскости XY:</translation>
+        <translation>Позиционирование в плоскости XY:</translation>
     </message>
     <message>
         <source>Rapid positioning for Z plane:</source>
-        <translation type="obsolete">Позиционирование в плоскости Z:</translation>
+        <translation>Позиционирование в плоскости Z:</translation>
     </message>
     <message>
         <source>Linear feed move for XY plane:</source>
-        <translation type="obsolete">Рез в плоскости XY:</translation>
+        <translation>Рез в плоскости XY:</translation>
     </message>
     <message>
         <source>Linear feed move for Z plane:</source>
-        <translation type="obsolete">Рез в плоскости Z:</translation>
+        <translation>Рез в плоскости Z:</translation>
     </message>
     <message>
         <source>Linear feed move for drilling:</source>
-        <translation type="obsolete">Линейное движение подачи при сверлении:</translation>
+        <translation>Линейное движение подачи при сверлении:</translation>
     </message>
     <message>
         <source>Linear retract move during drilling:</source>
-        <translation type="obsolete">Линейное движение отвода при сверлении:</translation>
+        <translation>Линейное движение отвода при сверлении:</translation>
     </message>
     <message>
         <source>Clockwise feed move:</source>
-        <translation type="obsolete">Подача по часовой стрелке:</translation>
+        <translation>Подача по часовой стрелке:</translation>
     </message>
     <message>
         <source>Counter clockwise feed move:</source>
-        <translation type="obsolete">Подача против часовой стрелки:</translation>
+        <translation>Подача против часовой стрелки:</translation>
     </message>
     <message>
         <source>Disable cutter compensation:</source>
-        <translation type="obsolete">Отключение компенсации инструмента:</translation>
+        <translation>Отключение компенсации инструмента:</translation>
     </message>
     <message>
         <source>Left cutter compensation:</source>
-        <translation type="obsolete">Компенсация слева:</translation>
+        <translation>Компенсация слева:</translation>
     </message>
     <message>
         <source>Right cutter compensation:</source>
-        <translation type="obsolete">Компенсация справа:</translation>
+        <translation>Компенсация справа:</translation>
     </message>
     <message>
         <source>Placed in front of any shape:</source>
-        <translation type="obsolete">Перед любой фигурой:</translation>
+        <translation>Перед любой фигурой:</translation>
     </message>
     <message>
         <source>Placed after any shape:</source>
-        <translation type="obsolete">После любой фигуры:</translation>
+        <translation>После любой фигуры:</translation>
     </message>
     <message>
         <source>Comment for current shape:</source>
-        <translation type="obsolete">Коментарий к текущей фигуре:</translation>
+        <translation>Коментарий к текущей фигуре:</translation>
     </message>
     <message>
         <source>Define here custom GCODE that can be inserted anywhere in the program:</source>
-        <translation type="obsolete">Задать фрагменты G-кода, которые можно вставлять в программу:</translation>
+        <translation>Задать фрагменты G-кода, которые можно вставлять в программу:</translation>
     </message>
     <message>
-        <location filename="." line="3014757"/>
-        <source>The postprocessor configuration file version ({0}) doesn&apos;t match the software expected version ({1}).
+        <source>The postprocessor configuration file version ({0}) doesn't match the software expected version ({1}).
 
-You have to delete (or carefully edit) the configuration file &quot;{2}&quot; to solve the problem.</source>
+You have to delete (or carefully edit) the configuration file "{2}" to solve the problem.</source>
         <translation type="obsolete">Файл конфигурации пост-процессора ({0}) не соответствует ожидаемой версии ({1}).
 
-Для решения проблемы Вам придётся удалить (или внимательно отредактировать) файл &quot;{2}&quot;.</translation>
+Для решения проблемы Вам придётся удалить (или внимательно отредактировать) файл "{2}".</translation>
     </message>
     <message>
-        <location filename="." line="3014757"/>
         <source>Output format description:</source>
         <translation type="obsolete">Описание формата:</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <translation>Текст</translation>
+    </message>
+    <message>
+        <source>Legacy (unchanged output)</source>
+        <translation>Прежний режим (без изменения вывода)</translation>
+    </message>
+    <message>
+        <source>Next start at retract height</source>
+        <translation>Следующая начальная точка на высоте отвода</translation>
+    </message>
+    <message>
+        <source>Handled by the macro</source>
+        <translation>Управляется макросом</translation>
+    </message>
+    <message>
+        <source>Offset number equals tool number</source>
+        <translation>Номер коррекции совпадает с номером инструмента</translation>
+    </message>
+    <message>
+        <source>Explicit tool-to-offset mapping</source>
+        <translation>Явное соответствие инструмента и коррекции</translation>
     </message>
 </context>
 <context>
@@ -3957,6 +3907,423 @@ Skipped Geometries</source>
     <message>
         <source>Tool center path (G40)</source>
         <translation>Траектория центра инструмента (G40)</translation>
+    </message>
+</context>
+<context>
+    <name>ConfigurationHelp</name>
+    <message>
+        <source>Automatic save last path to config file. Therefore open with last path</source>
+        <translation>Автоматически сохранять последний путь и использовать его при следующем открытии.</translation>
+    </message>
+    <message>
+        <source>Automatically enable cutter compensation for all the shapes (G41 &amp; G42)</source>
+        <translation>Автоматически включать коррекцию радиуса фрезы для всех контуров (G41 и G42).</translation>
+    </message>
+    <message>
+        <source>By default look for DXF files in this directory.</source>
+        <translation>По умолчанию искать файлы DXF в этом каталоге.</translation>
+    </message>
+    <message>
+        <source>Called for the first tool and whenever the effective tool number changes.</source>
+        <translation>Вызывается для первого инструмента и при каждом изменении фактического номера инструмента.</translation>
+    </message>
+    <message>
+        <source>Defines comments' format. Comments are written at some places during the export in order to make the g-code better readable.</source>
+        <translation>Формат комментариев, добавляемых при экспорте для удобства чтения G-кода.</translation>
+    </message>
+    <message>
+        <source>Different methods to initialize the population for the TSP optimizer.
+ - Ordered will start with the defined one in the listbox
+ - Random just random
+ - Heuristic will search the nearest neighbors and starts with the resulting order.</source>
+        <translation>Начальная популяция оптимизатора TSP:
+- ordered: текущий порядок списка
+- random: случайный порядок
+- heuristic: порядок ближайших соседей.</translation>
+    </message>
+    <message>
+        <source>Divide the lines in 2 parts, in order to start the cutting in the middle of a line (usefull for cutter compensation)</source>
+        <translation>Делить линии пополам, чтобы начинать резание с середины линии, например при коррекции радиуса фрезы.</translation>
+    </message>
+    <message>
+        <source>Enable 3D representation of the piece (requires PyQt5 and OpenGL)</source>
+        <translation>Включить трёхмерное отображение детали (необходимы Qt и OpenGL).</translation>
+    </message>
+    <message>
+        <source>Enables line numbers into the exported G-Code file.</source>
+        <translation>Добавлять номера строк в экспортируемый файл G-кода.</translation>
+    </message>
+    <message>
+        <source>Export generated gcode by default to this directory.</source>
+        <translation>По умолчанию экспортировать созданный G-код в этот каталог.</translation>
+    </message>
+    <message>
+        <source>Generally set to G40%nl</source>
+        <translation>Обычно G40%nl.</translation>
+    </message>
+    <message>
+        <source>Generally set to G41%nl</source>
+        <translation>Обычно G41%nl.</translation>
+    </message>
+    <message>
+        <source>Generally set to G42%nl</source>
+        <translation>Обычно G42%nl.</translation>
+    </message>
+    <message>
+        <source>Give the separator which is used in the exported values (e.g. '.' or ',').</source>
+        <translation>Десятичный разделитель выводимых значений, например '.' или ','.</translation>
+    </message>
+    <message>
+        <source>Gives the accuracy of the output after which it will be rounded.</source>
+        <translation>Точность округления выводимых значений.</translation>
+    </message>
+    <message>
+        <source>Gives the indentation for the values.</source>
+        <translation>Ширина числовых полей перед десятичным разделителем.</translation>
+    </message>
+    <message>
+        <source>If True 1.000 will be written as +1.000</source>
+        <translation>При включении, например, 1.000 записывается как +1.000.</translation>
+    </message>
+    <message>
+        <source>If an arc's radius exceeds this value, then it will be exported as a line.</source>
+        <translation>Дуги с радиусом больше этого значения экспортируются как прямые.</translation>
+    </message>
+    <message>
+        <source>If checked, the elements (shape, ...) which are part of a block will be inserted on the layer that belongs to the block (even though the elements might be defined on a different layers)</source>
+        <translation>Помещать элементы блока на слой вставки блока, даже если внутри блока они заданы на других слоях.</translation>
+    </message>
+    <message>
+        <source>If cutter compensation is used (G41-G42) this will apply the cutter compensation outside the piece (i.e. it is applied before it is at milling depth).</source>
+        <translation>Включать коррекцию радиуса фрезы (G41/G42) вне детали, до достижения глубины фрезерования.</translation>
+    </message>
+    <message>
+        <source>If cutter compensation is used, e.g. G41 or G42, this option cancels the compensation when there is a momevement on the 3rd-axis, and enables the compensation again afterwards.</source>
+        <translation>Отключать коррекцию радиуса при движениях по третьей оси и включать её после них.</translation>
+    </message>
+    <message>
+        <source>If enabled, it will by default check the TSP for all the shapes in the treeview.
+ If disabled and no shape is checked for TSP optimisation in the listbox, the export order will be as defined in the listbox.</source>
+        <translation>По умолчанию разрешать оптимизацию TSP для всех контуров дерева. Если параметр выключен и ни один контур не разрешён для оптимизации, экспорт сохраняет порядок списка.</translation>
+    </message>
+    <message>
+        <source>If false e.g. 1.000 will be given as 1 only.</source>
+        <translation>При отключении, например, 1.000 выводится просто как 1.</translation>
+    </message>
+    <message>
+        <source>If not checked, DXF2GCODE will create a virtual path for G41 and G42 command. And output will be set to G40; i.e. it will create the path that normally your machine would create with it's cutter compensation.</source>
+        <translation>Если выключено, DXF2GCODE сам рассчитывает траекторию для G41/G42 и выводит G40, выполняя коррекцию радиуса вместо станка.</translation>
+    </message>
+    <message>
+        <source>If true all values will be padded with zeros up to pre_decimals (e.g. 0001.000).</source>
+        <translation>Дополнять числа ведущими нулями до pre_decimals разрядов перед десятичным разделителем, например 0001.000.</translation>
+    </message>
+    <message>
+        <source>If you want to repeat the Drill Move for each slice depth set this to True, for false it will be only be performed onece</source>
+        <translation>Повторять движение сверления на каждом проходе по глубине; иначе выполнять только один раз.</translation>
+    </message>
+    <message>
+        <source>Legacy preserves existing output; managed macros declare their return state.</source>
+        <translation>Режим Legacy сохраняет прежний вывод; управляемые макросы объявляют состояние возврата.</translation>
+    </message>
+    <message>
+        <source>Log levels are, in increasing importance: DEBUG; INFO; WARNING; ERROR; CRITICAL
+ Log events with importance &gt;= loglevel are logged to the corresponding output</source>
+        <translation>Уровни журнала по возрастанию важности: DEBUG, INFO, WARNING, ERROR, CRITICAL. Выводятся сообщения с важностью не ниже выбранной.</translation>
+    </message>
+    <message>
+        <source>Logging level for the message window</source>
+        <translation>Уровень журнала окна сообщений.</translation>
+    </message>
+    <message>
+        <source>Logging to textfile is disabled by default</source>
+        <translation>Запись журнала в текстовый файл по умолчанию отключена.</translation>
+    </message>
+    <message>
+        <source>Machine types supported: milling; lathe; drag_knife</source>
+        <translation>Поддерживаемые типы станков: milling (фрезерный), lathe (токарный), drag_knife (флюгерный нож).</translation>
+    </message>
+    <message>
+        <source>Maximum number of iterations that will be done. This is internally also calculated, based on the number of shapes to optimize.
+ Values higher than 10000 can take really long to solve the TSP and are not recommended.</source>
+        <translation>Максимальное число итераций; дополнительное внутреннее ограничение зависит от числа контуров. Значения выше 10000 могут рассчитываться очень долго и не рекомендуются.</translation>
+    </message>
+    <message>
+        <source>Number of people the population has for path optimization (values higher than 200 can make everything slow).</source>
+        <translation>Размер популяции при оптимизации траектории. Значения выше 200 могут значительно замедлить расчёт.</translation>
+    </message>
+    <message>
+        <source>Path optimizer behaviour:
+ - CONSTRAIN_ORDER_ONLY: fixed Shapes and optimized Shapes can be mixed. Only order of fixed shapes is kept
+ - CONSTRAIN_PLACE_AFTER: optimized Shapes are always placed after any fixed Shape</source>
+        <translation>Режим оптимизатора:
+- CONSTRAIN_ORDER_ONLY: разрешено смешивать фиксированные и оптимизируемые контуры с сохранением относительного порядка фиксированных.
+- CONSTRAIN_PLACE_AFTER: все оптимизируемые контуры располагаются после фиксированных.</translation>
+    </message>
+    <message>
+        <source>Pocket milling keeps the cutter center at (cutter radius + edge clearance)
+ away from the contour, so the cutting edge stops this far from the
+ unmachined contour. This is the "Pocketing edge clearance" and is given
+ here as a percentage of the cutter diameter.
+ - 0   : the cutting edge just touches the contour (no material left).
+ - The value is applied for every compensation direction (G40/G41/G42)
+   and to inner and outer contour features alike; the cutter radius is
+   only counted once.
+ The default reproduces the historical behaviour (center stand-off of
+ cutter radius / 0.7 for G42 pocketing).</source>
+        <translation>При обработке кармана центр инструмента отстоит от контура на радиус инструмента плюс отступ от края. Отступ задаётся в процентах диаметра инструмента.
+- 0: режущая кромка касается контура, припуска нет.
+- Действует для G40/G41/G42, внутренних и внешних элементов контура. Радиус инструмента учитывается один раз.
+Значение по умолчанию воспроизводит прежний отступ центра радиус / 0,7 для карманов G42.</translation>
+    </message>
+    <message>
+        <source>Relative depth for each cut (third axis' coordinate will be decreased by this value at each step).</source>
+        <translation>Относительная глубина каждого прохода; координата третьей оси уменьшается на это значение на каждом шаге.</translation>
+    </message>
+    <message>
+        <source>Relative final third axis' depth.</source>
+        <translation>Относительная конечная глубина третьей оси.</translation>
+    </message>
+    <message>
+        <source>Save project files by default to this directory.</source>
+        <translation>По умолчанию сохранять проекты в этом каталоге.</translation>
+    </message>
+    <message>
+        <source>Set this to true if you want to export als arcs as line segment</source>
+        <translation>Экспортировать все дуги как отрезки прямых.</translation>
+    </message>
+    <message>
+        <source>The default method of the lead in at the start of a contour. Every layer
+ can use this default or its own method (see the "Lead in" / "Lead out"
+ of the mill settings).
+ - off     : no lead in at all (not possible with G41/G42: the machine
+             can only build the compensation with a movement in the XY
+             plane)
+ - straight: the contour is extended backwards along its tangent, so the
+             tool enters the material tangentially (the common length is
+             used)
+ - radius  : a quarter arc which is tangent to the contour (the common
+             radius is used). The movement which builds up the cutter
+             compensation is added automatically: with G41/G42 the
+             machine can only build the compensation with a movement in
+             the XY plane. It is not an additional lead in segment, its
+             length is derived from the tool radius.
+ - startmove: the start move of the program is used: a straight line (the
+             common length) and a quarter arc (the common radius). This
+             is only done with G41/G42 - with the internal cutter
+             compensation and for the drag knife there is no lead in.
+
+ The 'radius' method is not selectable for the lead in any more: with
+ the internal cutter compensation (and with G40) it is the same as the
+ 'startmove' method, so both are merged into the 'startmove'. The
+ 'radius' method is only selectable for the lead out (where the build up
+ movement is not needed).</source>
+        <translation>Способ подвода по умолчанию в начале контура; слой может использовать его или собственный способ.
+- off: без подвода; невозможно с G41/G42, которым для включения коррекции нужно движение в XY.
+- straight: продолжение касательной назад на общую длину.
+- radius: касательная четверть окружности общего радиуса; движение включения G41/G42 добавляется по радиусу инструмента.
+- startmove: прямая и четверть окружности общей длины и радиуса, только с G41/G42; при внутренней коррекции и флюгерном ноже такого подвода нет.
+Для подвода radius объединён со startmove, поскольку при внутренней коррекции/G40 они одинаковы. radius остаётся доступным для отвода.</translation>
+    </message>
+    <message>
+        <source>The default method of the lead out at the end of a contour. It is
+ independent of the lead in.
+ - off     : no lead out (previous behaviour)
+ - straight: the cut is continued along the tangent of the contour (the
+             common length is used)
+ - radius  : a quarter arc which leaves the contour tangentially (the
+             common radius is used). The cutter compensation is already
+             active here, so no build up movement is needed.
+ - startmove: the cut is continued along the tangent of the contour (the
+             common length) and it leaves the contour with a quarter arc
+             (the common radius)</source>
+        <translation>Способ отвода по умолчанию, независимый от подвода.
+- off: без отвода (прежнее поведение).
+- straight: продолжение касательной на общую длину.
+- radius: касательная четверть окружности общего радиуса; коррекция уже включена, дополнительный ввод не нужен.
+- startmove: касательная прямая и следующая четверть окружности общей длины и радиуса.</translation>
+    </message>
+    <message>
+        <source>The direction the knife points to when the cut starts (in degrees,
+ 0 = positive X axis). The knife is swung to the direction of the first
+ contour segment before the first cut.</source>
+        <translation>Начальное направление ножа в градусах, 0 = положительная ось X. Перед первым резом нож поворачивается в направлении первого сегмента контура.</translation>
+    </message>
+    <message>
+        <source>The length of the overcut (0 = no overcut)</source>
+        <translation>Длина перереза; 0 отключает перерез.</translation>
+    </message>
+    <message>
+        <source>The length of the ramp in: the knife is plunged gradually over this
+ length (measured along the tip path). 0 = the knife is plunged at once
+ (previous behaviour).</source>
+        <translation>Длина плавного врезания вдоль траектории кончика ножа. При 0 нож погружается сразу (прежнее поведение).</translation>
+    </message>
+    <message>
+        <source>The overcut continues the cut along the existing contour beyond the
+ closing point of a closed contour. It is independent of the lead in and
+ the lead out and only possible for closed contours.
+
+ This is the standard: every shape uses it, unless the shape has its own
+ overcut setting (the "Overcut" of the mill settings, see the tree of
+ the shapes). A change of the standard is therefore applied to all the
+ shapes which use it, but not to the shapes which have their own setting.
+ The length of the overcut is defined per tool (see the tools table).</source>
+        <translation>Перерез продолжает рез по существующему замкнутому контуру за точку замыкания. Он независим от подвода и отвода и возможен только для замкнутых контуров.
+Эта настройка действует для контуров без собственного значения; индивидуальные значения сохраняются при изменении настройки по умолчанию. Длина задаётся для каждого инструмента в таблице инструментов.</translation>
+    </message>
+    <message>
+        <source>The top third axis' coordinate of the workpiece.</source>
+        <translation>Координата верхней поверхности заготовки по третьей оси.</translation>
+    </message>
+    <message>
+        <source>The unit used for all values in this file</source>
+        <translation>Единица измерения всех значений в этом файле.</translation>
+    </message>
+    <message>
+        <source>Third axis' coordinate at which it can do rapid move.</source>
+        <translation>Координата третьей оси, на которой разрешено быстрое перемещение.</translation>
+    </message>
+    <message>
+        <source>Third axis' margin for which it needs to do a slow move.</source>
+        <translation>Безопасный отступ по третьей оси, в пределах которого требуется медленный подвод.</translation>
+    </message>
+    <message>
+        <source>This extension is used in the save file export dialog.</source>
+        <translation>Расширение файла, используемое в диалоге экспорта.</translation>
+    </message>
+    <message>
+        <source>This is a value of how much it should deviate the order with each iteration. The higher the value the more you allow alterations.</source>
+        <translation>Степень изменения порядка на каждой итерации. Большие значения допускают более сильные изменения.</translation>
+    </message>
+    <message>
+        <source>This is code which will be written at the beginning of the exported file.</source>
+        <translation>G-код, записываемый в начале экспортируемого файла.</translation>
+    </message>
+    <message>
+        <source>This is code which will be written at the end of the exported file.</source>
+        <translation>G-код, записываемый в конце экспортируемого файла.</translation>
+    </message>
+    <message>
+        <source>This is the tolerance which is used to fit the converted lines and arc segments to the converted NURBS.</source>
+        <translation>Допуск приближения исходной NURBS-кривой полученными при преобразовании отрезками и дугами.</translation>
+    </message>
+    <message>
+        <source>This really goes to stderr</source>
+        <translation>Эти сообщения действительно выводятся в stderr.</translation>
+    </message>
+    <message>
+        <source>This title is shown in the export dialog and is used by the user to differentiate between the possible different postprocessor configurations.</source>
+        <translation>Описание в диалоге экспорта для различения профилей постпроцессора.</translation>
+    </message>
+    <message>
+        <source>This type defines the output format used in the export dialog.</source>
+        <translation>Определяет формат вывода в диалоге экспорта.</translation>
+    </message>
+    <message>
+        <source>This will be done after cutting a shape or a contour.</source>
+        <translation>Выполняется после резания контура.</translation>
+    </message>
+    <message>
+        <source>This will be done after each change between cutting in plane or cutting in depth.</source>
+        <translation>Выполняется при каждом переходе между движением в плоскости и движением по глубине.</translation>
+    </message>
+    <message>
+        <source>This will be done before starting to cut a shape or a contour.</source>
+        <translation>Выполняется перед началом резания контура.</translation>
+    </message>
+    <message>
+        <source>This will be done between each shape to cut.</source>
+        <translation>Выполняется между обрабатываемыми контурами.</translation>
+    </message>
+    <message>
+        <source>This will be used for shape cutting.</source>
+        <translation>Используется для резания контуров.</translation>
+    </message>
+    <message>
+        <source>This will be used to do the drilling of Dill Geometry (for each slice depth)</source>
+        <translation>Движение сверления для сверлильной геометрии на каждом проходе по глубине.</translation>
+    </message>
+    <message>
+        <source>This will be used to retract while drilling operation (after each slice depth)</source>
+        <translation>Отвод при сверлении после каждого прохода по глубине.</translation>
+    </message>
+    <message>
+        <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.</source>
+        <translation>Для использования в имени слоя DXF. Подробнее см. в вики DXF2GCODE.</translation>
+    </message>
+    <message>
+        <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+ The common length of the straight lead in and of the straight lead out</source>
+        <translation>Для имени слоя DXF. Общая длина прямых участков подвода и отвода; подробнее в вики DXF2GCODE.</translation>
+    </message>
+    <message>
+        <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+ The common radius at the workpiece of the lead in and of the lead out</source>
+        <translation>Для имени слоя DXF. Общий радиус подвода и отвода у заготовки; подробнее в вики DXF2GCODE.</translation>
+    </message>
+    <message>
+        <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+ The mode of the lead in: 0 = start move, 1 = off, 2 = straight, 3 = radius,
+ 4 = the default of the configuration file</source>
+        <translation>Для имени слоя DXF. Способ подвода: 0 = startmove, 1 = off, 2 = straight, 3 = radius, 4 = настройка конфигурации. Подробнее в вики DXF2GCODE.</translation>
+    </message>
+    <message>
+        <source>To be used in the DXF layer name. See DXF2GCODE' wiki for more information.
+ The mode of the lead out: 0 = off, 1 = straight, 2 = radius, 3 = start
+ move, 4 = the default of the configuration file</source>
+        <translation>Для имени слоя DXF. Способ отвода: 0 = off, 1 = straight, 2 = radius, 3 = startmove, 4 = настройка конфигурации. Подробнее в вики DXF2GCODE.</translation>
+    </message>
+    <message>
+        <source>Tolerance at which similar points will be interpreted as similar</source>
+        <translation>Допуск, в пределах которого близкие точки считаются совпадающими.</translation>
+    </message>
+    <message>
+        <source>Types of check performed during spline conversion:
+ 1: Checking for Nurbs degree (polygon degree) and similar knots consistence
+ 2: Checking for Nurbs degree (polygon degree) and similar control points
+ 3: Performes check 1 and check 2</source>
+        <translation>Проверки при преобразовании сплайнов:
+1: степень NURBS и согласованность близких узлов.
+2: степень NURBS и близкие управляющие точки.
+3: обе проверки.</translation>
+    </message>
+    <message>
+        <source>Used for dxfs which only support arcs that are in counterclockwise direction. Turning this on for normal G-Code will result in unintended output.</source>
+        <translation>Для вывода DXF, поддерживающего только дуги против часовой стрелки. Для обычного G-кода параметр может дать нежелательный результат.</translation>
+    </message>
+    <message>
+        <source>Used to switch between absolute (G90) and relative/incremental coordinates (G91).</source>
+        <translation>Переключение между абсолютными (G90) и относительными/инкрементальными координатами (G91).</translation>
+    </message>
+    <message>
+        <source>When enabled, a scale bar is drawn in the bottom right corner of the canvas. It shows the physical size of the imported geometry.</source>
+        <translation>Показывать масштабную линейку в правом нижнем углу, отражающую физический размер импортированной геометрии.</translation>
+    </message>
+    <message>
+        <source>When enabled, export path is live updated on the graphic view.</source>
+        <translation>Обновлять маршрут экспорта в графическом окне в реальном времени.</translation>
+    </message>
+    <message>
+        <source>When enabled, the shapes that are disabled are still shown on the graphic view.</source>
+        <translation>Продолжать показывать отключённые контуры в графическом окне.</translation>
+    </message>
+    <message>
+        <source>Write output to stdout (console), instead of a file. May be used to interface directly with Linux CNC, for example.</source>
+        <translation>Выводить в stdout (консоль) вместо файла, например для прямой связи с LinuxCNC.</translation>
+    </message>
+    <message>
+        <source>drag_angle: if angle of movement exceeds this angle (in degrees), the tool retracts to dragDepth (The dragDepth is given by axis3_slice_depth parameter).
+ This parameter depends on the knife that you are using. A bigger knife cannot make small corners like a smaller knife. You will simply break your knife or destroy your working piece. Now, if the angle your knife has to make is bigger than this angle it will move to a different depth (a less deep position) such that the knife will experience less resistance but still has some (otherwise it will not change its angle at all, whence DRAG knife).</source>
+        <translation>drag_angle: если изменение направления превышает этот угол в градусах, нож поднимается на глубину поворота axis3_slice_depth. Значение зависит от ножа: крупные ножи хуже проходят острые углы. Меньшая глубина снижает сопротивление, сохраняя достаточный контакт для самостоятельного поворота ножа.</translation>
+    </message>
+    <message>
+        <source>pstoedit is an external tool to convert PDF files to PS (postscript) files, which can be further processed by pstoedit tool.</source>
+        <translation>Внешний инструмент для преобразования PDF в PS (PostScript) с последующей обработкой через pstoedit.</translation>
+    </message>
+    <message>
+        <source>pstoedit is an external tool to import *.ps (postscript) files and convert them to DXF, in order to import them in dxf2gcode.</source>
+        <translation>pstoedit — внешний инструмент преобразования PS (PostScript) в DXF для импорта в DXF2GCODE.</translation>
     </message>
 </context>
 </TS>

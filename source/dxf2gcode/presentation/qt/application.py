@@ -68,7 +68,7 @@ from dxf2gcode.adapters.postprocessor.postprocessorconfig import MyPostProConfig
 
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMenu, QMessageBox
 from dxf2gcode.presentation.qt.qt_compat.QtGui import QActionGroup
-from dxf2gcode.presentation.qt.qt_compat.QtGui import QSurfaceFormat
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon, QSurfaceFormat
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
 
@@ -277,6 +277,8 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
 
         self.ui.setupUi(self)
+        # pyuic turns the UI's ICO into a single QPixmap; retain all ICO sizes.
+        self.setWindowIcon(QIcon(":images/dxf2gcode.ico"))
         self.showMaximized()
 
         self.canvas = self.ui.canvas
@@ -872,11 +874,10 @@ class MainWindow(QMainWindow):
         """
 
         message = self.tr("<html>"
-                          "<body>"
-                          "<center><img src=':images/dxf2gcode_logo.png' border='1' color='white'></center></body>"
                           "<h2>Version:</h2>"
                           "<body>%s</body>"
                           "<h2>Where to get help:</h2>"
+                          "<a href='https://dxf2gcode.github.io/dxf2gcode/'>Documentation (under development)</a><br>"
                           "For more information and updates, "
                           "please visit "
                           "<a href='https://github.com/dxf2gcode/dxf2gcode'>https://github.com/dxf2gcode/dxf2gcode</a><br>"
@@ -1163,7 +1164,7 @@ class MainWindow(QMainWindow):
                 return False  # cancelled
 
         self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
-        self.setWindowTitle("XF2GCODE - [%s]" % self.filename)
+        self.setWindowTitle("Dxf2gcode - [%s]" % self.filename)
         self.canvas.resetAll()
         self.app.processEvents()
 
@@ -1609,6 +1610,8 @@ if __name__ == "__main__":
         from dxf2gcode.presentation.qt.generated.dxf2gcode_ui5 import Ui_MainWindow
     else:
         from dxf2gcode.presentation.qt.generated.dxf2gcode_ui6 import Ui_MainWindow
+
+    app.setWindowIcon(QIcon(":images/dxf2gcode.ico"))
 
     from dxf2gcode.domain.project.shape import Shape
 

@@ -15,6 +15,17 @@ _REPO_DIR = os.path.dirname(_TEST_DIR)
 class TestMainWindowWorkflow(unittest.TestCase):
     """Exercise load, canvas plot, tree edit, preview, and export together."""
 
+    def test_translated_machine_menu_keeps_the_correct_actions(self):
+        with tempfile.TemporaryDirectory(prefix="d2g_translated_menu_") as temp_dir:
+            env = os.environ.copy()
+            env.update(QT_QPA_PLATFORM="offscreen", D2G_WORKFLOW_TEMP=temp_dir)
+            result = subprocess.run(
+                [sys.executable, __file__, "--worker", "--translation-worker"],
+                cwd=temp_dir, env=env, capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 0,
+                             result.stdout.decode("utf-8", errors="replace") +
+                             result.stderr.decode("utf-8", errors="replace"))
+
     def test_startpoint_actions_respect_manual_route_display(self):
         with tempfile.TemporaryDirectory(prefix="d2g_startpoint_route_") as temp_dir:
             env = os.environ.copy()
@@ -111,6 +122,7 @@ def _run_mainwindow_workflow():
     from types import SimpleNamespace
     fold_worker = "--fold-worker" in sys.argv
     startpoint_worker = "--startpoint-worker" in sys.argv
+    translation_worker = "--translation-worker" in sys.argv
     if fold_worker:
         import faulthandler
         faulthandler.dump_traceback_later(4, repeat=True)
@@ -147,6 +159,35 @@ def _run_mainwindow_workflow():
     app = QApplication([])
     window = app_module.MainWindow(app)
     g.window = window
+    assert window.windowTitle() == "Dxf2gcode"
+    required_icon_sizes = {16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80, 96, 128, 256}
+    for widget in (window, window.config_window):
+        assert required_icon_sizes.issubset(
+            {size.width() for size in widget.windowIcon().availableSizes()})
+    if translation_worker:
+        from unittest.mock import patch
+        for language, labels in (
+            ("de", ("&Fräsen", "&Drehmaschine", "&Schleppmesser")),
+            ("fr", ("&Fraisage", "&Tour", "&Couteau traînant")),
+            ("ru", ("&Фрезерная", "&Токарная", "&Флюгерный нож")),
+        ):
+            translator = QtCore.QTranslator()
+            assert translator.load(os.path.join(
+                _REPO_DIR, "source", "i18n", "dxf2gcode_" + language + ".qm"))
+            app.installTranslator(translator)
+            window.ui.retranslateUi(window)
+            with patch.object(window.d2g, "small_reload"):
+                for action, value, label in zip(
+                    (window.ui.actionMilling, window.ui.actionLathe, window.ui.actionDragKnife),
+                    ("milling", "lathe", "drag_knife"), labels,
+                ):
+                    assert action.text() == label, (language, action.text())
+                    action.trigger()
+                    app.processEvents()
+                    assert g.config.machine_type == value
+            app.removeTranslator(translator)
+        window.close()
+        return
     assert window.config_window.cfg_window_def["General"][
         "expand_layers_on_load"].getValue() is True
     window.settings = QtCore.QSettings(

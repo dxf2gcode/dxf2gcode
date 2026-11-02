@@ -52,7 +52,10 @@ def main(argv=None):
                 subprocess.check_call([updater, str(ROOT / "dxf2gcode.pro")],
                                       cwd=ROOT)
             else:
-                sources = sorted(str(p) for p in (ROOT / "dxf2gcode").rglob("*.py"))
+                package = ROOT / "dxf2gcode"
+                sources = sorted(str(p) for p in package.rglob("*.py")
+                                 if "generated" not in p.relative_to(package).parts)
+                sources += sorted(str(p) for p in package.rglob("*.ui"))
                 for catalog in catalogs:
                     subprocess.check_call([updater, "--ts", str(catalog)] + sources,
                                           cwd=ROOT)
