@@ -63,6 +63,63 @@ class TestToolChange(unittest.TestCase):
             self.pp.exportShapes('macro.dxf', str(path), self.layers)
         return path.read_text() if path.exists() else None
 
+    def load_linuxcnc_manual_example(self):
+        from dxf2gcode.adapters.postprocessor.postprocessorconfig import MyPostProConfig
+        path = TEST_DIR.parent / 'doc/examples/linuxcnc-manual.cfg.example'
+        original = path.read_bytes()
+        profile = MyPostProConfig(str(path))
+        profile.load_config()
+        self.assertFalse(profile.version_mismatch)
+        self.assertEqual(path.read_bytes(), original)
+        profile.update_config()
+        self.pp.vars = profile.vars
+        self.settings = self.pp.vars.Tool_Change
+
+    def test_linuxcnc_manual_example_g90_and_g91_complete_sequences(self):
+        for absolute in (True, False):
+            with self.subTest(absolute=absolute):
+                self.load_linuxcnc_manual_example()
+                self.pp.vars.General.abs_export = absolute
+                code = self.export()
+                self.assertFalse(self.pp.export_errors)
+                normalized = ''.join(line.rstrip() + '\n' for line in code.splitlines())
+                mode = 'absolute' if absolute else 'incremental'
+                expected = TEST_DIR / 'golden' / ('tool_change_linuxcnc_manual_' + mode + '.ngc')
+                self.assertEqual(normalized, expected.read_text())
+                lines = [line.strip() for line in code.splitlines()]
+                self.assertEqual([line for line in lines if line.endswith(' M6')],
+                                 ['T1 M6', 'T2 M6'])
+                for tool, retract in ((1, 5), (2, 7)):
+                    change = lines.index('T%d M6' % tool)
+                    self.assertEqual(lines[change - 2:change], ['M5', 'M9'])
+                    self.assertEqual(lines[change + 1:change + 3], ['G90 G21 G54', 'G43'])
+                    self.assertEqual(float(lines[change + 3].split('Z')[1]), retract)
+                    self.assertTrue(lines[change + 4].startswith('G0 X'))
+                self.assertNotIn('G28', code)
+                self.assertNotIn('M0\n', code)
+                self.assertNotIn('G43 H', code)
+
+    def test_standard_linuxcnc_profile_keeps_legacy_no_length_offset_output(self):
+        from dxf2gcode.adapters.postprocessor.postprocessorconfig import POSTPRO_SPEC
+        from configobj import ConfigObj
+        from validate import Validator
+        defaults = ConfigObj(configspec=POSTPRO_SPEC, interpolation=False)
+        self.assertIs(defaults.validate(Validator(), copy=True), True)
+        self.settings.return_state = 'legacy'
+        self.pp.vars.Program.tool_change = defaults['Program']['tool_change']
+        for absolute in (True, False):
+            with self.subTest(absolute=absolute):
+                self.pp.vars.General.abs_export = absolute
+                code = self.export()
+                lines = [line.strip() for line in code.splitlines()]
+                self.assertEqual([line for line in lines if line.endswith(' M6')],
+                                 ['T1 M6', 'T2 M6'])
+                self.assertTrue(any(line.startswith('G0 Z')
+                                    for line in lines[:lines.index('T1 M6')]))
+                self.assertNotIn('G43', code)
+                self.assertNotIn('G28', code)
+                self.assertFalse(self.pp.export_errors)
+
     def test_atc_sequence_uses_next_layer_retract_and_plans_once(self):
         service = self.pp._get_shape_export_use_case()
         with patch.object(service, 'prepare', wraps=service.prepare) as prepare:

@@ -4,6 +4,12 @@ Implementiert am **01.11.2026**, Postprozessor-Konfigurationsversion **8.2**.
 Die Versionen 8 und 8.1 bleiben lesbar. Alte Profile erhalten automatisch
 `return_state = legacy` und behalten ihre bisherige Ausgabe.
 
+Ergänzt am **02.11.2026**: ein dokumentierter
+[manueller LinuxCNC-Ablauf mit ladbarem Beispielprofil](linuxcnc-manual-tool-change.md).
+Er verwendet vorbereitet vermessene Werkzeuge, M6 und danach G43 ohne
+H=T-Annahme. Der bisherige Standard bleibt ein Legacy-Profil ohne automatisch
+aktivierte Werkzeuglängenkorrektur.
+
 ## Einrichtung
 
 In der Postprozessor-Konfiguration bleibt das Feld **Werkzeugwechsel** unter

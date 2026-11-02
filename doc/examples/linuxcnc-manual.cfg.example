@@ -1,0 +1,22 @@
+# LinuxCNC manual M6 with premeasured tools in the LinuxCNC tool table.
+# Copy as linuxcnc-manual.cfg into your DXF2GCODE postpro_config directory.
+# Requires an enabled manual M6 handshake, known tool lengths, and a global
+# initial retract coordinate that is safe at every tool-change location.
+# G43 uses the tool actually loaded by Tn M6; no H=T assumption or probing.
+# Review the matching documentation before use on a machine.
+
+[Version]
+config_version = 8.2
+
+[General]
+output_text = LinuxCNC - manual tool change with tool table
+
+[Tool_Change]
+return_state = next_start_at_retract
+end_distance_mode = G90
+work_offset = G54
+length_offset_mode = none
+length_offset_mapping = ""
+
+[Program]
+tool_change = "G90 %units_code %work_offset%nlG0 Z%initial_retract_z%nlM5%nlM9%nlT%tool_nr M6%nlG90 %units_code %work_offset%nlG43%nlG0 Z%retract_z%nlG0 X%next_start_x Y%next_start_y%nlS%speed%nl"
