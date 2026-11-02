@@ -17,8 +17,17 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 
 ## CI1 – Paketpipeline implementiert und aktiviert (02.11.2026)
 
+**Ergänzung – getrennte Workflows:** **Tests and package checks** prüft Pushes
+auf `develop` und PRs nach `develop` automatisch. **Publish release** startet
+Develop-Veröffentlichungen manuell und Stable-Veröffentlichungen per Tag.
+Beide nutzen dieselben Tests und Paketprüfungen über einen gemeinsamen
+`workflow_call`-Ablauf. Lokal bleibt der Fast-Hook vor Commits erhalten.
+Die Release-Workflow-Datei und ihre Kennung bleiben für fortlaufende
+Buildnummern erhalten. Die drei Workflow-Dateien wurden mit Actionlint geprüft;
+ein manueller Release wurde durch diesen Umbau nicht gestartet.
+
 **Ergänzung – manuelle Develop-Veröffentlichung:** Develop-Releases werden
-jetzt ausschließlich über **Actions → Full regression tests → Run workflow →
+jetzt ausschließlich über **Actions → Publish release → Run workflow →
 develop** gestartet. Pushes und PRs behalten automatische Tests und
 Paketprüfungen, veröffentlichen aber nicht. Stabile Releases bleiben an
 passende Versionstags gebunden; Hauptschalter, Draft-Prüfung und Aufbewahrung

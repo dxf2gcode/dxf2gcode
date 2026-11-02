@@ -9,7 +9,15 @@ Veröffentlichung aus einem Develop-Push.
 
 ## Ablauf
 
-`.github/workflows/full-tests.yml` führt die bestehende Vollsuite mit Python
+**Lokal vor einem Commit** läuft die Fast-Suite über den Pre-Commit-Hook.
+Nach einem **Push auf `develop` oder einem PR nach `develop`** startet
+**Tests and package checks** (`.github/workflows/checks.yml`) automatisch.
+**Publish release** (`.github/workflows/full-tests.yml`) ist der gesonderte
+Veröffentlichungsablauf: manuell für Develop, per Versionstag für Stable.
+Er führt vor der Veröffentlichung dieselben Prüfungen erneut aus.
+
+Beide verwenden `.github/workflows/package-checks.yml` als gemeinsamen,
+nicht direkt startbaren Prüfablauf. Dieser führt die Vollsuite mit Python
 3.11/3.12/3.13 und PyQt5 sowie Python 3.11 und PyQt6 aus. Danach entstehen aus
 demselben Commit Quellarchiv und Wheel. Die Quellen werden außerhalb des
 Checkouts bereitgestellt; nur dort wird die Paketversion eingesetzt. Das
@@ -35,11 +43,16 @@ Veröffentlichungsrechte bestehen nur im abschließenden Job und nur im
 Hauptrepository. Ein bereits überholter Develop-Commit wird nicht mehr
 veröffentlicht.
 
-**Develop-Release starten:** Im Hauptrepository **Actions → Full regression
-tests → Run workflow** öffnen, Branch **develop** wählen und **Run workflow**
+**Develop-Release starten:** Im Hauptrepository **Actions → Publish release →
+Run workflow** öffnen, Branch **develop** wählen und **Run workflow**
 bestätigen. Der Lauf prüft und baut diesen Stand erneut; erst nach Erfolg
 erscheint der Download. Manuelle Starts auf anderen Branches veröffentlichen
 nichts. Es ist kein zusätzlicher Develop-Tag erforderlich.
+
+Der Veröffentlichungsablauf behält intern den bisherigen Dateinamen
+`full-tests.yml` und seine Workflow-Kennung. Dadurch wird der bestehende
+Release-Buildzähler weitergeführt, statt die Versionierung mit einem neuen
+Workflow bei `dev1` beginnen zu lassen.
 
 Zunächst entsteht ein Draft. Erst wenn alle Dateien hochgeladen und deren
 Namen, Größen sowie verfügbare GitHub-Prüfsummen geprüft sind, wird er sichtbar.

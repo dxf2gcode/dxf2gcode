@@ -21,7 +21,7 @@ Versionsregeln, Paketprüfungen, Aufbewahrung und Betrieb stehen in der
 - [ ] Bei einem echten Pull Request die temporären Pakete und die
   Sieben-Tage-Aufbewahrung nachvollziehen; kein PR darf veröffentlichen.
 - [ ] Den ersten bewusst manuell gestarteten Develop-Release über **Actions →
-  Full regression tests → Run workflow → develop** real nachvollziehen.
+  Publish release → Run workflow → develop** real nachvollziehen.
 - [ ] Den ersten bewusst freigegebenen stabilen Tag `v2.0.0` einschließlich
   dauerhaftem Download und „Latest“ real abnehmen. Dies ist noch keine
   Freigabe, einen stabilen Tag nur für einen Test zu erzeugen.

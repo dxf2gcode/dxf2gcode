@@ -8,10 +8,13 @@ Die Anwenderanleitung soll vor allem diese Entscheidungen erklären:
 
 - Stabile GitHub-Releases und ausdrücklich gekennzeichnete Develop-Previews
   unterscheiden. `2.0.0.devN` ist eine Entwicklerversion, kein fertiges 2.0.0.
-- Develop-Releases werden bewusst manuell über **Actions → Full regression
-  tests → Run workflow → develop** gestartet. Normale Pushes und PRs prüfen
+- Develop-Releases werden bewusst manuell über **Actions → Publish release →
+  Run workflow → develop** gestartet. Normale Pushes und PRs prüfen
   weiterhin automatisch, veröffentlichen aber kein Release. Stabile Releases
   bleiben an passende Versionstags gebunden.
+- **Tests and package checks** ist die automatische GitHub-Prüfung nach Push
+  oder PR. Vor einem lokalen Commit läuft die Fast-Suite, nicht die Vollsuite.
+  **Publish release** prüft den gewählten Stand vor Veröffentlichung erneut.
 - Release-Beschreibungen enthalten eine kurze Zusammenfassung der jeweiligen
   Versionslinie statt einer Commitliste. Die gepflegten Texte unter
   `doc/release-notes/` vor künftigen Veröffentlichungen aktualisieren.
