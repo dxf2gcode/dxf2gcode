@@ -95,6 +95,41 @@ ist mit kontrollierten Daten einschließlich Schutz stabiler Releases geprüft.
 Codesignierung, M1 und physische Maschinenabnahmen bleiben separat offen.
 Die [aktive Todo](../todo.md#ci1) enthält ausschließlich diese Restarbeiten.
 
+## GitHub-Organisationsseite und Logo-DXF (02.11.2026)
+
+Die Organisationsseite <https://github.com/dxf2gcode> ist veröffentlicht.
+Das neue öffentliche Repository [dxf2gcode/.github](https://github.com/dxf2gcode/.github)
+enthält die englische Profil-README mit unverändertem Projektlogo, Links zu
+Downloads/Dokumentation/Quellcode/Issues, drei aktuellen Anwendungsbildern und
+dem Hinweis auf die Entwicklung Richtung 2.0. Commit:
+`980beb53772ef9c22a1e72c92548d85dd707892b`.
+Der Organisations-Website-Link führt jetzt auf die GitHub-Dokumentation.
+
+Das Hauptbild zeigt das eigene Logo als DXF im aktuellen Programm. Weitere
+Bilder zeigen Taschenfräsen und Schleppmesser mit eigenen kleinen Beispielen.
+Die Aufnahmen stammen vom realen MainWindow unter PyQt5 mit isolierten
+Profilen. Schriftarten, Logo-Clipping und tatsächlicher Maschinentyp wurden
+bei der Bildprüfung berücksichtigt; die veröffentlichten Bilder enthalten
+keine persönlichen Konfigurationspfade.
+
+Die Logo-DXF ist zusätzlich unter `dxf/dxf2gcode-logo.dxf` als Test-/Beispiel
+gespeichert: mm, 180-mm-SVG-Zeichenfläche, 46 geschlossene Konturen auf sechs
+Ebenen. Text ist als Kontur enthalten; Kurven sind durch Polylinien angenähert.
+Herkunft und Grenzen stehen in der zugehörigen README. Eine Download-Kopie
+und die weiteren Beispiele sind im Profil-Repository veröffentlicht.
+
+**Prüfung:** Alle drei Zeichnungen wurden über den realen Import-/MainWindow-
+Ablauf geladen (46/1/1 Konturen); die Bilder wurden visuell kontrolliert.
+Die öffentliche Organisationsseite enthält die neuen Texte und alle drei
+Bildverweise. Bild-URLs und Organisations-Website-Link sind erreichbar.
+Kein Release-/MSI-Build oder Debian-Lauf wurde gestartet.
+
+**Abschluss:** Hauptprojekt `dxf2gcode` und der zusätzliche Installationsweg
+`dxf2gcode_installer` sind beide auf der Organisationsseite angeheftet.
+Die öffentliche GitHub-API bestätigt beide Einträge. Der bisherige offene
+Todo-Punkt ist damit erledigt. Herkunft und Pflege stehen in den
+[Dokumentationsnotizen](../documentation-notes/organization-profile.md).
+
 ## Überblick
 
 | Abgeschlossen | Inhalt |
