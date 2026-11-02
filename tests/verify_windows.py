@@ -35,7 +35,9 @@ def check_executable(executable, manifest, fixture, directory):
                     str(fixture)], cwd=directory, env=environment, check=True, timeout=90)
     text = output.read_text(encoding='utf-8')
     assert 'G1 X' in text and 'M2' in text
-    assert manifest['version'] in text and manifest['revision'][:7] in text
+    # The existing G-code header reports the version and source date. The
+    # full revision is verified against the shipped metadata above.
+    assert manifest['version'] in text and provenance['commit_date'] in text, text[:1500]
     # Test the normal GUI entry point as well, without introducing a product
     # test flag. Only inspect and close the child process started here.
     process = subprocess.Popen([str(executable), '--cfg', 'package_test'], cwd=directory, env=environment)
