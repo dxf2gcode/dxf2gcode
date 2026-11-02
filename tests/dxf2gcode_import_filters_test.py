@@ -216,10 +216,16 @@ class TestImportLayerFilters(unittest.TestCase):
         documents = {}
         for version in (1.1, 1.2, 1.3):
             with patch.object(Project, "version", version):
-                documents[version] = Project(source).export()
+                # These old formats predate the drag-knife settings block.
+                documents[version] = '\n'.join(
+                    line for line in Project(source).export().splitlines()
+                    if not line.startswith('d2g.drag_knife ='))
 
         self.config.vars.Import_Parameters.exclude_ignore_layers = True
         self.config.vars.Import_Parameters.exclude_layer_zero = True
+        # Project loading rebuilds the runtime view from the saved profile.
+        self.config.var_dict['Import_Parameters'].update(dict(
+            exclude_ignore_layers=True, exclude_layer_zero=True))
         for version, content in documents.items():
             with self.subTest(version=version):
                 target = _HeadlessProjectSession(self.config, source.project_filename)

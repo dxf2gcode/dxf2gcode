@@ -67,6 +67,7 @@ class TestSharedPreview(GoldenTestBase):
         item = StMoveGUI(shape)
         painter = Mock()
         item.paint(painter, None)
+        item.paint_details(painter)
         pens = [call.args[0] for call in painter.setPen.call_args_list]
         self.assertEqual(pens[0], StMoveGUI.PEN_COMP_LINE)
         self.assertIn(StMoveGUI.PEN_LEAD_IN_LINE, pens)

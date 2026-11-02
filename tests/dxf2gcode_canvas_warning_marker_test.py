@@ -67,13 +67,14 @@ class TestWarningMarker(unittest.TestCase):
         @param zoom: the zoom level of the view
         @return: the rendered image
         """
-        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
+        from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene, StMoveGUI
         shape, layer = build_shape(
             closed=True, cut_cor=41,
             layer_settings=dict(lead_in_mode=LEAD_RADIUS, lead_radius=1.0))
         self.assertTrue(shape.stmove.start_move_error)
 
-        scene = QGraphicsScene()
+        # Auxiliary details are drawn by the production scene foreground.
+        scene = MyGraphicsScene()
         item = StMoveGUI(shape)
         scene.addItem(item)
         view = QGraphicsView(scene)

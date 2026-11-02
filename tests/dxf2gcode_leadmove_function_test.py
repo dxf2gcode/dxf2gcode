@@ -771,14 +771,11 @@ class TestCanvasPreview(LeadMoveTestBase):
         finally:
             painter.end()
 
-    def test_no_preview_for_the_drag_knife(self):
-        # The drag knife has no lead out and its overcut is inserted into the
-        # contour before the tip offset is applied: the preview of the exit
-        # geometry is not possible (documented limitation).
-        shape, layer = build_shape(
+    def test_drag_knife_exit_preview_matches_export(self):
+        # The common knife plan now supplies both the preview and export.
+        self._check_preview_matches_export(
             closed=True, cut_cor=40, machine_type='drag_knife',
             layer_settings=dict(overcut_enabled=True, overcut_length=50.0))
-        self.assertIsNone(self._preview_end(shape))
 
     def test_a_change_of_the_layer_settings_rebuilds_the_preview(self):
         from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
