@@ -8,7 +8,25 @@ from pathlib import Path
 import subprocess
 from urllib.parse import quote
 
-from release_policy import release_marker, retention_candidates, verify_checksums
+from release_policy import publication_channel, release_marker, retention_candidates, verify_checksums
+
+
+def release_description(manifest, marker):
+    base = manifest['version'].split('.dev', 1)[0]
+    notes = Path(__file__).resolve().parents[1] / 'doc/release-notes' / (base+'.md')
+    summary = notes.read_text(encoding='utf-8').strip()
+    if not summary:
+        raise ValueError('A concise release summary is required')
+    channel = ('Development preview for the planned %s release.' % base
+               if manifest['kind'] == 'develop' else 'Stable release %s.' % base)
+    return ('%s\n\n%s\n\n'
+            'Downloads: Windows x64 ZIP (extract fully), per-user MSI, Python wheel and source archive.\n'
+            'Windows signing: **%s**. Verify downloads with `SHA256SUMS`.\n\n'
+            '<details>\n<summary>Build details</summary>\n\n'
+            'Package version: `%s`\n\nCommit: `%s`\n\nMSI ProductVersion: `%s`\n\n'
+            '</details>\n\n%s') % (channel, summary, manifest['windows_signing'],
+                                     manifest['version'], manifest['revision'],
+                                     manifest['msi_version'], marker)
 
 
 def gh(*arguments, payload=None):
@@ -33,12 +51,11 @@ def publish(folder, repository, revision, ref):
     for suffix in ('.whl', '.tar.gz', '.zip', '.msi'):
         if len(list(folder.glob('*'+suffix))) != 1:
             raise ValueError('Expected exactly one release package of type '+suffix)
-    if manifest['revision'] != revision or os.environ.get('GITHUB_EVENT_NAME') != 'push':
-        raise ValueError('Only tested push commits may publish')
     kind, tag = manifest['kind'], manifest['tag']
-    if ((kind == 'develop' and ref != 'refs/heads/develop') or
-            (kind == 'stable' and ref != 'refs/tags/'+tag) or kind not in ('develop', 'stable')):
-        raise ValueError('Release channel does not match the triggering ref')
+    channel = publication_channel(os.environ.get('GITHUB_EVENT_NAME'), ref)
+    if (manifest['revision'] != revision or channel is None or kind != channel or
+            (kind == 'stable' and ref != 'refs/tags/'+tag)):
+        raise ValueError('Publication requires a manual develop run or a matching stable tag push')
     if kind == 'develop':
         tip = gh('api', 'repos/%s/git/ref/heads/develop' % repository)
         if tip['object']['sha'] != revision:
@@ -56,9 +73,7 @@ def publish(folder, repository, revision, ref):
             print('This tested release is already published; leaving it unchanged.')
             return
     else:
-        body = ('Commit: `%s`\n\nPackage version: `%s`\n\nMSI ProductVersion: `%s`\n\n'
-                'Windows signing: `%s`. Verify downloads with `SHA256SUMS`.\n\n%s') % (
-                    revision, manifest['version'], manifest['msi_version'], manifest['windows_signing'], marker)
+        body = release_description(manifest, marker)
         release = gh('api', 'repos/%s/releases' % repository, '--method', 'POST', '--input', '-',
                      payload=dict(tag_name=tag, target_commitish=revision,
                                   name='DXF2GCODE %s%s' % ('Develop ' if kind == 'develop' else '', manifest['version']),

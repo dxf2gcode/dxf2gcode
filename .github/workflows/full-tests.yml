@@ -207,8 +207,9 @@ jobs:
     needs: [full, wheel, windows]
     if: >-
       github.repository == 'dxf2gcode/dxf2gcode' &&
-      vars.CI_RELEASES_ENABLED == 'true' && github.event_name == 'push' &&
-      (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/v'))
+      vars.CI_RELEASES_ENABLED == 'true' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/develop') ||
+       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

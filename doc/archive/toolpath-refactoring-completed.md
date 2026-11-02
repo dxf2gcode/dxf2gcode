@@ -17,6 +17,28 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 
 ## CI1 – Paketpipeline implementiert und aktiviert (02.11.2026)
 
+**Ergänzung – manuelle Develop-Veröffentlichung:** Develop-Releases werden
+jetzt ausschließlich über **Actions → Full regression tests → Run workflow →
+develop** gestartet. Pushes und PRs behalten automatische Tests und
+Paketprüfungen, veröffentlichen aber nicht. Stabile Releases bleiben an
+passende Versionstags gebunden; Hauptschalter, Draft-Prüfung und Aufbewahrung
+gelten weiter. Workflow, Manifest und Publisher erzwingen dieselbe Regel.
+Zehn gezielte Release-Tests sowie Actionlint bestanden. Ein neuer manueller
+Release wurde bei dieser Umstellung nicht gestartet; die früher automatisch
+veröffentlichten dev10/dev11 bleiben erhalten.
+
+**Ergänzung – Release-Texte:** Für die nächsten Veröffentlichungen ist eine
+kompakte Zusammenfassung statt einer Commitliste vorbereitet. Die Vorlage
+`doc/release-notes/2.0.0.md` bündelt die Highlights der Versionslinie; die
+Pipeline setzt Downloadhinweise und aufklappbare Build-Details darunter.
+Bestehende Releases werden dabei nicht nachträglich geändert. Die Vorlage
+und der Vorschau-/Stable-Text sind durch eine gezielte Regression geprüft.
+Die Zusammenfassung wurde anhand der Git-Historie seit Merge `f5520a8`
+(11.10.2026) um die früheren Geometrie-, Fräs-, Profil-, Werkzeugwechsel-,
+Bedienungs- und Prüfarbeiten ergänzt. Sie erklärt 2.0 als neue Entwicklungslinie
+aus Architekturumbau und erweiterter Bearbeitung, begleitet vom GitHub-Umzug;
+Migrations- und Kompatibilitätsgrenzen bleiben ausdrücklich benannt.
+
 Der am 01.11.2026 vereinbarte Download-Ablauf ist implementiert. Am
 02.11.2026 wurden SemVer mit Ziel **2.0.0**, Windows x64 mit Python 3.11 /
 PyQt5 ohne Signatur sowie die Aktivierung auf GitHub freigegeben.

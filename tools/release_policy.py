@@ -10,6 +10,15 @@ DEVELOP_PREFIX = 'develop-ci-'
 MARKER_PREFIX = '<!-- dxf2gcode-ci1:'
 
 
+def publication_channel(event, ref):
+    """Develop publication is opt-in; stable releases require a tag push."""
+    if event == 'workflow_dispatch' and ref == 'refs/heads/develop':
+        return 'develop'
+    if event == 'push' and ref.startswith('refs/tags/v'):
+        return 'stable'
+    return None
+
+
 def release_marker(revision, run_id):
     if not re.fullmatch(r'[0-9a-f]{40}', revision) or not str(run_id).isdigit():
         raise ValueError('Invalid release provenance')

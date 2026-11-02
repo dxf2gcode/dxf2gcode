@@ -25,12 +25,21 @@ aus dem ZIP als auch nach einer MSI-Installation. Die Testinstallation wird
 anschließend entfernt. Diese Prüfung gehört ausschließlich auf einen
 wegwerfbaren Runner; `tests/verify_windows.py` installiert Software.
 
-PRs liefern ausschließlich Actions-Artefakte für sieben Tage. Bei Push auf
-`develop` veröffentlicht der abschließende Job ein Prerelease, wenn alle
-Prüfungen erfolgreich waren und `CI_RELEASES_ENABLED=true` gesetzt ist.
-`workflow_dispatch` veröffentlicht nichts. Veröffentlichungsrechte bestehen
-nur im abschließenden Job und nur im Hauptrepository. Ein bereits überholter
-Develop-Commit wird nicht mehr veröffentlicht.
+Pushes auf `develop` und PRs führen weiterhin die Tests und Paketprüfungen aus
+und liefern Actions-Artefakte für sieben Tage, aber kein öffentliches Release.
+Ein Develop-Prerelease wird ausschließlich manuell über `workflow_dispatch`
+auf dem Branch `develop` gestartet. Nach erfolgreichen Prüfungen veröffentlicht
+der abschließende Job, sofern `CI_RELEASES_ENABLED=true` gesetzt ist. Stabile
+Releases werden weiterhin durch einen passenden `v*`-Tag-Push ausgelöst.
+Veröffentlichungsrechte bestehen nur im abschließenden Job und nur im
+Hauptrepository. Ein bereits überholter Develop-Commit wird nicht mehr
+veröffentlicht.
+
+**Develop-Release starten:** Im Hauptrepository **Actions → Full regression
+tests → Run workflow** öffnen, Branch **develop** wählen und **Run workflow**
+bestätigen. Der Lauf prüft und baut diesen Stand erneut; erst nach Erfolg
+erscheint der Download. Manuelle Starts auf anderen Branches veröffentlichen
+nichts. Es ist kein zusätzlicher Develop-Tag erforderlich.
 
 Zunächst entsteht ein Draft. Erst wenn alle Dateien hochgeladen und deren
 Namen, Größen sowie verfügbare GitHub-Prüfsummen geprüft sind, wird er sichtbar.
@@ -39,6 +48,14 @@ Release bleibt bei Wiederholung unverändert; ein unterbrochener eigener
 Draft kann erneut befüllt werden.
 
 ## Version und Herkunft
+
+Neue Releases beginnen mit einer kompakten, redaktionell gepflegten
+Zusammenfassung aus `doc/release-notes/<Basisversion>.md`, ohne Commitliste.
+Die Highlights beziehen sich auf die gesamte jeweilige Versionslinie;
+Develop-Stände werden ausdrücklich als Vorschau gekennzeichnet. Vor neuen
+Versionen die Zusammenfassung aktualisieren. Fehlt sie, wird nicht
+veröffentlicht. Technische Build-Angaben stehen darunter in einem
+aufklappbaren Bereich. Bereits veröffentlichte Releases bleiben unverändert.
 
 `release-manifest.json` enthält vollständigen Commit, Commitdatum,
 Workflow-Run, Paketversion, MSI-Version und Signierungsstatus. Die eingebettete

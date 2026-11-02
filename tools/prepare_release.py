@@ -16,16 +16,17 @@ sys.path.insert(0, str(ROOT / 'source'))
 from dxf2gcode.bootstrap.version_metadata import capture_build_info, write_build_metadata
 from dxf2gcode._version import __version__
 from tools.build.release_metadata import release_base, msi_version
+from release_policy import publication_channel
 
 
 def manifest_for(base, revision, epoch, run_id, run_number, event, ref):
     base = release_base(base)
     if not re.fullmatch(r'[0-9a-f]{40}', revision) or not str(run_id).isdigit() or int(run_number) < 1:
         raise ValueError('Invalid CI run or revision')
-    stable = event == 'push' and ref.startswith('refs/tags/v')
+    kind = publication_channel(event, ref) or 'test'
+    stable = kind == 'stable'
     if stable and ref != 'refs/tags/v'+base:
         raise ValueError('Stable tag must match the declared target version')
-    kind = 'stable' if stable else 'develop' if event == 'push' and ref == 'refs/heads/develop' else 'test'
     version = base if stable else base+'.dev'+str(run_number)
     date = datetime.fromtimestamp(int(epoch), timezone.utc).strftime('%Y%m%d')
     return dict(schema=1, revision=revision, source_date_epoch=int(epoch), date=date,

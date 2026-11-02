@@ -67,14 +67,29 @@ class TestReleasePolicy(unittest.TestCase):
 
 
 class TestReleasePublication(unittest.TestCase):
-    def manifest(self, event='push', ref='refs/heads/develop'):
+    def manifest(self, event=None, ref='refs/heads/develop'):
+        event = event or ('push' if ref.startswith('refs/tags/') else 'workflow_dispatch')
         return manifest_for('2.0.0.dev0', 'a'*40, 1793610000, '1234', 123, event, ref)
+
+    def test_release_description_shows_highlights_and_preserves_provenance(self):
+        manifest = self.manifest()
+        marker = release_marker(manifest['revision'], manifest['run_id'])
+        text = publish_release.release_description(manifest, marker)
+        self.assertIn('Highlights of the 2.0.0 development line', text)
+        self.assertLess(text.index('Highlights'), text.index('<details>'))
+        self.assertIn('**unsigned**', text)
+        self.assertIn(manifest['revision'], text)
+        self.assertIn(marker, text)
+        stable = self.manifest(ref='refs/tags/v2.0.0')
+        self.assertTrue(publish_release.release_description(stable, marker).startswith('Stable release 2.0.0.'))
 
     def test_semver_channels_and_msi_limits(self):
         develop = self.manifest()
         self.assertEqual((develop['version'], develop['msi_version']), ('2.0.0.dev123', '2.0.123'))
         self.assertEqual(self.manifest(ref='refs/tags/v2.0.0')['msi_version'], '2.0.0')
         self.assertEqual(self.manifest(event='pull_request', ref='refs/pull/4/merge')['kind'], 'test')
+        self.assertEqual(self.manifest(event='push')['kind'], 'test')
+        self.assertEqual(self.manifest(ref='refs/heads/feature')['kind'], 'test')
         with self.assertRaises(ValueError):
             self.manifest(ref='refs/tags/v1.0.0')
         with self.assertRaises(ValueError):
@@ -95,7 +110,7 @@ class TestReleasePublication(unittest.TestCase):
                     patch.object(prepare_release.subprocess, 'check_output',
                                  side_effect=['', 'a'*40, '1793610000']), \
                     patch.dict(os.environ, GITHUB_SHA='a'*40, GITHUB_RUN_ID='1234',
-                               GITHUB_RUN_NUMBER='123', GITHUB_EVENT_NAME='push',
+                               GITHUB_RUN_NUMBER='123', GITHUB_EVENT_NAME='workflow_dispatch',
                                GITHUB_REF='refs/heads/develop', GITHUB_OUTPUT=''):
                 prepare_release.prepare(root / 'staged')
             staged = root / 'staged/source'
@@ -112,7 +127,8 @@ class TestReleasePublication(unittest.TestCase):
             (folder / name).write_bytes(b'package')
         write_checksums(folder)
 
-    def run_publication(self, kind='develop', complete=True, event='push'):
+    def run_publication(self, kind='develop', complete=True, event=None):
+        event = event or ('workflow_dispatch' if kind == 'develop' else 'push')
         manifest = self.manifest(ref='refs/tags/v2.0.0' if kind == 'stable' else 'refs/heads/develop')
         calls = []
         with tempfile.TemporaryDirectory() as directory:
@@ -152,8 +168,12 @@ class TestReleasePublication(unittest.TestCase):
             self.run_publication(complete=False)
 
     def test_pr_cannot_publish(self):
-        with self.assertRaisesRegex(ValueError, 'push'):
+        with self.assertRaisesRegex(ValueError, 'manual develop'):
             self.run_publication(event='pull_request')
+
+    def test_develop_push_cannot_publish_even_with_a_develop_manifest(self):
+        with self.assertRaisesRegex(ValueError, 'manual develop'):
+            self.run_publication(event='push')
 
 
 if __name__ == '__main__':
