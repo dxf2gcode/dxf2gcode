@@ -54,8 +54,13 @@ def prepare(output):
     if info.revision != revision or info.dirty is not False:
         raise ValueError('Cannot capture clean source provenance')
     stage = output / 'source'
+    def ignore_outputs(directory, names):
+        ignored = shutil.ignore_patterns('__pycache__', '*.egg-info')(directory, names)
+        if Path(directory) == ROOT / 'source':
+            ignored.update({'build', 'dist'} & set(names))
+        return ignored
     shutil.copytree(ROOT / 'source', stage,
-                    ignore=shutil.ignore_patterns('build', 'dist', '__pycache__', '*.egg-info'))
+                    ignore=ignore_outputs)
     (stage / 'dxf2gcode/_version.py').write_text(
         '__version__ = %r\n' % manifest['version'], encoding='utf-8')
     info = replace(info, version=manifest['version'],

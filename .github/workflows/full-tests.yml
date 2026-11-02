@@ -124,8 +124,8 @@ jobs:
       - name: Build source archive and wheel from that archive without Git
         run: |
           mkdir -p "$RELEASE_OUT"
-          python -m build --sdist --outdir "$RELEASE_OUT" "$RELEASE_STAGE/source"
-          python -m pip wheel --no-deps --wheel-dir "$RELEASE_OUT" "$RELEASE_OUT"/*.tar.gz
+          python -m build --no-isolation --sdist --outdir "$RELEASE_OUT" "$RELEASE_STAGE/source"
+          python -m pip wheel --no-deps --no-build-isolation --wheel-dir "$RELEASE_OUT" "$RELEASE_OUT"/*.tar.gz
           python -m wheel tags --build '${{ steps.stage.outputs.wheel_build }}' --remove "$RELEASE_OUT"/*.whl
           cp "$RELEASE_STAGE/release-manifest.json" "$RELEASE_OUT/"
       - name: Verify the wheel in fresh Qt5 and Qt6 environments

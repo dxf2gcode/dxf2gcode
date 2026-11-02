@@ -12,6 +12,8 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 from release_policy import release_marker, retention_candidates, write_checksums, verify_checksums
 from prepare_release import manifest_for
+import prepare_release
+from dxf2gcode.bootstrap.version_metadata import VersionInfo
 from tools.build.release_metadata import msi_version
 import publish_release
 
@@ -77,6 +79,32 @@ class TestReleasePublication(unittest.TestCase):
             self.manifest(ref='refs/tags/v1.0.0')
         with self.assertRaises(ValueError):
             msi_version('2.0.0.dev65536')
+
+    def test_staging_keeps_build_tools_and_excludes_previous_outputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'source'
+            for relative in ('tools/build/qt_assets.py', 'build/old.exe',
+                             'dxf2gcode/_version.py', 'dxf2gcode/__pycache__/old.pyc'):
+                path = source / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('original', encoding='utf-8')
+            info = VersionInfo(version='2.0.0.dev0', revision='a'*40, dirty=False)
+            with patch.object(prepare_release, 'ROOT', root), \
+                    patch.object(prepare_release, 'capture_build_info', return_value=info), \
+                    patch.object(prepare_release.subprocess, 'check_output',
+                                 side_effect=['', 'a'*40, '1793610000']), \
+                    patch.dict(os.environ, GITHUB_SHA='a'*40, GITHUB_RUN_ID='1234',
+                               GITHUB_RUN_NUMBER='123', GITHUB_EVENT_NAME='push',
+                               GITHUB_REF='refs/heads/develop', GITHUB_OUTPUT=''):
+                prepare_release.prepare(root / 'staged')
+            staged = root / 'staged/source'
+            self.assertTrue((staged / 'tools/build/qt_assets.py').is_file())
+            self.assertFalse((staged / 'build').exists())
+            self.assertFalse((staged / 'dxf2gcode/__pycache__').exists())
+            self.assertEqual((source / 'dxf2gcode/_version.py').read_text(), 'original')
+            data = json.loads((staged / 'dxf2gcode/_build_metadata.json').read_text())
+            self.assertEqual((data['version'], data['revision']), ('2.0.0.dev123', 'a'*40))
 
     def fixture(self, folder, manifest):
         (folder / 'release-manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
