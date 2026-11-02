@@ -1,6 +1,6 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand der Dokumentbereinigung: **31.10.2026**.
+Stand: **02.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
 Dieses Dokument bewahrt abgeschlossene Implementierungen, deren dokumentierte
 Prüfergebnisse und die historische Ausgangslage. Die
@@ -25,14 +25,97 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 | U4 / I2 | Konfigurierbarer Startzustand des Layerbaums; optionale Importfilter |
 | R1a | Drag-and-drop-Absturzpfade und Qt5-/Qt6-Kompatibilität |
 | R2 | Sichtbare Exportreihenfolge, Treeview-Synchronisierung und gemeinsame GUI-/CLI-Optimierungsmodi |
+| K1 | Stabile Konfigurations-Übersetzungskontexte, Hilfetexte, Auswahlanzeigen und Maschinenmenüs in DE/FR/RU |
+| P1 | Verwaltete Werkzeugwechsel plus vereinbarter manueller LinuxCNC-Ablauf, Standard-Abgleich und G90-/G91-Referenzen; Maschinenprüfung beim Anwender |
 | K3 | Vierstellige Längeneingabe und Erhaltung genauer Originalwerte bis zur bewussten Bearbeitung; Profilformatierung bleibt maßgeblich |
 | B1 / B2 | Gemeinsame Bearbeitungszustände, sichtbare Konflikte alter Projekte und korrekte Geometrieprüfung für Bohren/Pocketing |
 | Versionsmetadaten | Provider, Build-Anbindung, Infofenster/G-Code-Kopf und Entfernung der alten Keywords; Paketabnahme M1 bleibt offen |
+| GUI-Branding | Native Windows-Symbolgrößen, Taskleistenkennung, kompakte Infofenster-Wortmarke und Dokumentationslink |
 | Bereinigung | `.kilo/` und erzeugte `.coverage` entfernt |
 
 Die weiterhin geltenden [Architekturverträge](../architecture.md#weitergeltende-architekturverträge)
 stehen in der aktuellen Architekturdokumentation. Dieses Archiv bewahrt
 Umsetzungshistorie und damalige Prüfergebnisse.
+
+Lokaler Commitabschluss am **02.11.2026**: `eda8e2a` ergänzt das manuelle
+LinuxCNC-Profil samt Referenzausgaben; `4d061fc` enthält Übersetzungen,
+GUI-Branding und den Dokumentationslink. Vor jedem Commit läuft die Fast-Suite
+über den Pre-Commit-Hook: jeweils **156 Tests bestanden**. Zusätzlich bestanden
+zehn gezielte Qt6-Tests für Programmstart, Konfiguration und Infofenster.
+
+<a id="gui-branding"></a>
+
+## GUI-Branding und Infofenster (02.11.2026)
+
+Das Windows-ICO enthält 15 native Größen von 16 bis 256 Pixeln. Fenster
+verwenden den vollständigen `QIcon` statt eines einzelnen Rasterbildes;
+der Windows-Start setzt eine stabile Anwendungskennung für die Taskleiste.
+Fenstertitel und die Breite der Bearbeitungsüberschriften sind angepasst.
+
+Die Wortmarke im Infofenster ist ein eigenes, zentriertes Bildelement mit
+320 × 116 logischen Pixeln und Abstand zum Text. Qt zeichnet die vorhandene
+1024-Pixel-Vorlage geglättet auf die jeweilige Bildschirmauflösung.
+Der Hilfebereich verlinkt die GitHub-Pages-Dokumentation als „im Aufbau“.
+Der HTML-Text und alle drei gepflegten Übersetzungen enthalten kein Logo mehr;
+die kompilierten Kataloge enthalten den neuen Dokumentationslink.
+
+Gezielte Qt5-/Qt6-Prüfungen bei 100 %, 125 % und 200 % kontrollieren Größe,
+Zentrierung, Bildquelle und die drei geladenen Übersetzungen. Der ergänzte
+Dokumentationslink wurde anschließend bei 125 % mit beiden Bindungen und
+allen drei Sprachen geprüft. Die Darstellung
+wurde anhand gerenderter Dialoge geprüft. Das sind lokale Quellprüfungen,
+keine erneute Paket-/MSI- oder Maschinenabnahme.
+
+<a id="k1"></a>
+
+## K1 – Konfigurationsübersetzungen (02.11.2026)
+
+Die ausgelagerten Widget-Texte sind durch `QT_TRANSLATE_NOOP` ausdrücklich
+den Laufzeitkontexten `MyConfig` und `MyPostProConfig` zugeordnet. Damit
+erkennen sowohl pylupdate5 als auch pylupdate6 die richtigen Kontexte.
+Vorhandene Übersetzungen wurden aus den früheren Einträgen übernommen;
+deutsche, französische und russische Kataloge sind gepflegt und kompiliert.
+
+80 Schema-Hilfetexte sind im Präsentationsmodul `configuration_help.py`
+extrahierbar. Die Übersetzung erfolgt erst für die Dialoganzeige; Profiltexte,
+Schlüssel, G-Code und gespeicherte Werte bleiben unverändert. Anzeigen für
+Maschinentyp, Einheit, Optimierungsmodus, Protokollstufe und Makrorückkehr
+verwenden weiterhin die ursprünglichen internen Auswahlwerte.
+„&Lathe“ ist im deutschen Maschinenmenü nun „&Drehmaschine“; die Maschinenmenüs
+aller drei Sprachen wurden mit den tatsächlich verbundenen Aktionen geprüft.
+Der Qt6-Extraktionsweg berücksichtigt jetzt auch die `.ui`-Datei.
+
+Fokussierte Abnahme unter Qt5 und Qt6: aufgebaute und geöffnete Anwendungs- und
+Postprozessor-Dialoge mit echten QM-Translatoren, Labels, Hilfe, Auswahlwerte,
+unveränderte Konfigurationen, Menüaktionen und erneute Extraktion nach einem
+Dateiumzug. Der Test prüft auch, dass neue Schema-Hilfetexte nicht unbemerkt
+ohne extrahierbaren Quelleintrag bleiben. K2 (fachliche Standardwerte und
+„default“-Kennzeichnung) ist eine eigene offene Aufgabe.
+
+<a id="p1-linuxcnc"></a>
+
+## P1 – Manueller LinuxCNC-Ablauf (02.11.2026)
+
+Der Nutzer hat LinuxCNC ohne ATC als Ziel benannt und den Abgleich mit
+Standard-G-Code sowie Softwaretests beauftragt. Praktische Tests an den
+jeweiligen Maschinen übernehmen die Anwender. Die vorher implementierte
+Makro-Erweiterung wird für diesen vereinbarten Umfang durch einen
+[offiziell belegten LinuxCNC-Abgleich](../linuxcnc-manual-tool-change.md) ergänzt.
+
+Das separat ladbare `doc/examples/linuxcnc-manual.cfg.example` verwendet
+manuelles M6 mit vorbereiteter Werkzeugtabelle, danach G43 ohne H=T-Annahme,
+Z-Positionierung vor XY und einen erklärten Rückkehrzustand. Vollständige
+Referenzausgaben mit zwei Werkzeugen und verschiedenen Rückzugshöhen prüfen
+G90 und G91 einschließlich inkrementeller Wiederaufnahme. Bestehende
+Standardprofile und deren Ausgabe ohne automatisch aktivierte Längenkorrektur
+bleiben erhalten und sind gesondert geprüft.
+
+53 fokussierte Tests pro Qt-Bindung bestanden: K1-Dialog-/Extraktionsprüfungen,
+19 Werkzeugwechseltests, acht Profiltests, übersetzte Maschinenmenüs und
+drei Versions-/Katalogprüfungen sowie MainWindow-Workflow und 18 bestehende
+Leadmove-Goldens. Dies sind Code-/Ausgabeprüfungen, kein
+LinuxCNC-Interpreterlauf oder Maschinenfreigaben. Keine Vollsuite, Debian-
+Prüfung oder Paket-/MSI-Erstellung wurde gestartet. D1 folgt als eigener Schritt.
 
 <a id="r2"></a>
 

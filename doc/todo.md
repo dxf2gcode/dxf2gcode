@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben und Umsetzungsreihenfolge
 
-Stand: **01.11.2026**.
+Stand: **02.11.2026**.
 
 Diese Todo enthält die verbleibenden Aufgaben. Abgeschlossene Arbeiten,
 historische Prüfergebnisse und verworfene Wünsche stehen im neuen Dokument
@@ -19,10 +19,10 @@ werden vor der jeweiligen Implementierung geklärt.
 
 | Reihenfolge | Abschnitt / Aufgaben | Grund und Voraussetzungen |
 | --- | --- | --- |
-| 1 | [Exportablauf und Werkzeugwechsel](#1-exportablauf-und-werkzeugwechsel): P1 (R2 abgeschlossen) | ATC mit konkretem Maschinenprofil spezifizieren; Reihenfolgevertrag ist abgesichert |
-| 2 | [Schleppmesser](#2-schleppmesser): D1, danach gegebenenfalls D2 | Konturschluss zuerst untersuchen; optionale Wiederholung darf einen Fehler nicht verdecken |
-| 3 | [Konfiguration und Bedienung](#3-konfiguration-und-bedienung): K1 → K2, danach V1, U3, U5 | Übersetzungskontexte vor weiteren Konfigurationstexten bereinigen; die drei Bedienwünsche sind danach unabhängig auswählbar |
-| 4 | [Paketabnahme und Abnahmegrenzen](#4-paketabnahme-und-abnahmegrenzen): CI1, M1, A1 | Automatische Build-/Download-Pipeline und Aufbewahrung einrichten; Paketabnahme und verbleibende Abnahmegrenzen berücksichtigen |
+| Abgeschlossen | [Exportablauf und Werkzeugwechsel](#1-exportablauf-und-werkzeugwechsel): P1 und R2 | P1 für den vereinbarten manuellen LinuxCNC-Ablauf softwareseitig geprüft; Praxisprüfung bleibt beim Anwender |
+| 1 | [Schleppmesser](#2-schleppmesser): D1, danach gegebenenfalls D2 | Als nächster Schritt vereinbart: Reproduktion, Spitzenbahn, dann gezielte Korrektur; D2 verdeckt keinen Konturschlussfehler |
+| 2 | [Konfiguration und Bedienung](#3-konfiguration-und-bedienung): K2, danach V1, U3, U5 (K1 abgeschlossen) | Übersetzungskontexte und Kataloge sind abgesichert; fachliche Standardwerte weiterhin separat abstimmen |
+| 3 | [Paketabnahme und Abnahmegrenzen](#4-paketabnahme-und-abnahmegrenzen): CI1, M1, A1 | Automatische Build-/Download-Pipeline und Aufbewahrung einrichten; Paketabnahme und verbleibende Abnahmegrenzen berücksichtigen |
 | Zurückgestellt | [Bedienmodell und Teilkonturen](#5-zurückgestelltes-bedienmodell-und-teilkonturen): R3 mit R1b, anschließend Teilkontur-Erweiterung abstimmen | Kein Layerwechsel vor dem gemeinsamen Bedien-/Modell-/Persistenzentwurf |
 | Optional | [Zusätzliche Qt-Bindung](#6-optionale-zusätzliche-qt-bindung): Q1 | PySide6 nur bei konkretem Bedarf als eigener Schritt |
 
@@ -31,12 +31,27 @@ markieren) und R4 (alphanumerische Layersortierung) wurden ausdrücklich
 abgewählt. Diese Punkte werden nicht erneut als offene Aufgaben geführt.
 M1 ist trotz bestandener Debian-Quelltests weiterhin eine offene Paketabnahme.
 
+**Aktueller Abschluss, 02.11.2026:** K1-Konfigurationsübersetzungen und der
+vereinbarte P1-LinuxCNC-Softwareumfang sind abgeschlossen. Zusätzlich sind
+skalierungsabhängige Windows-Symbolgrößen, eine stabile Taskleistenkennung,
+die kompakte Infofenster-Wortmarke und der Link zur
+[Dokumentation im Aufbau](https://dxf2gcode.github.io/dxf2gcode/) umgesetzt.
+Details und Prüfgrenzen stehen im
+[Erledigt-Dokument](archive/toolpath-refactoring-completed.md#gui-branding).
+
+**Nächster Umsetzungsvorschlag: D1.** Zunächst eine kleine geschlossene
+Testkontur mit reproduzierbaren Einstellungen verwenden und die tatsächliche
+Messerspitzenbahn am Konturschluss mit und ohne Überfahrt vergleichen. Erst
+aus diesem Befund eine gezielte Korrektur ableiten. D2 bleibt davon getrennt;
+mit dieser Todo-Aktualisierung ist noch keine Schleppmesseränderung umgesetzt.
+
 ## 1. Exportablauf und Werkzeugwechsel
 
 R2 betrifft das Umordnen innerhalb der bestehenden Ebenen und den Export
 ohne/mit bewusst gewählter Optimierung. Dafür keinen Layerwechsel R1b
 implementieren. P1 baut auf einem klaren Reihenfolge-/Werkzeugwechselvertrag
-auf und benötigt vor Codeänderungen das konkrete Maschinenprofil.
+auf; der Nutzer hat LinuxCNC ohne automatischen Werkzeugwechsler als Ziel
+festgelegt und die Prüfung auf der Maschine den Anwendern überlassen.
 
 ### R2 – Sichtbare Reihenfolge als Exportvertrag (abgeschlossen)
 
@@ -53,9 +68,18 @@ benutzerdefiniertem G-Code.
 
 **Nutzerentscheidung:** Bisherige Optimierungsmodi behalten; relative Reihenfolge
 nicht freigegebener Shapes genügt. GUI und CLI wenden denselben Modus an.
-P1 ist der nächste offene Schritt und benötigt das konkrete Maschinenprofil.
+P1 ist für den vereinbarten manuellen LinuxCNC-Ablauf softwareseitig geprüft.
 
-### P1 – Z-Positionierung beim automatischen Werkzeugwechsel absichern
+### P1 – Z-Positionierung beim Werkzeugwechsel (softwareseitig abgeschlossen)
+
+**Abgeschlossen für den vereinbarten Umfang, 02.11.2026:** Der Nutzer verwendet
+LinuxCNC ohne ATC und hat den Abgleich mit Standard-G-Code sowie Softwaretests
+beauftragt; die Maschinenprüfung übernehmen die Anwender. Der
+[LinuxCNC-Abgleich samt ladbarem manuellem Profil](linuxcnc-manual-tool-change.md)
+und zwei vollständige G90-/G91-Referenzausgaben sichern M6, G43, Rückzugshöhen,
+Z vor XY und die inkrementelle Wiederaufnahme ab. Der bisherige Standard bleibt
+bewusst ohne automatisch aktivierte Werkzeuglängenkorrektur. Siehe auch
+[Erledigt-Dokument](archive/toolpath-refactoring-completed.md#p1-linuxcnc).
 
 **Optionale Profilerweiterung implementiert, 01.11.2026:** Manueller Wechsel und
 ATC verwenden weiterhin `Program.tool_change`. Neue Wechselparameter, ein
@@ -67,9 +91,9 @@ prüfen unter anderem zwei vollständige Ausgabesequenzen, A–B–A, tatsächli
 Lead-Einstieg, Profilparameter, Fehlerbehandlung und geladene Übersetzungen.
 Postprozessorversionen 8/8.1 bleiben lesbar; neues Schema ist 8.2.
 
-**Verbleibend:** Ein tatsächlich eingesetztes Maschinenprofil mit Controller-
-Version, Wechselverfahren und Vermessung abstimmen und daran abnehmen. Die
-synthetischen manuellen/ATC-Testprofile sind keine Maschinenfreigaben.
+**Abnahmegrenze:** Konkrete Controller-Version, HAL-/INI-Konfiguration,
+Werkzeuglängen und freie Wechselwege prüft der jeweilige Anwender. Weder der
+Standard-Abgleich noch die manuellen/ATC-Testprofile sind Maschinenfreigaben.
 Verwalteter Export ist zunächst auf Fräsen ohne freie Custom-G-Code-Baumzeilen
 begrenzt; die Legacy-Funktionen bleiben für diese Fälle erhalten. Die folgenden
 Codebefunde beschreiben die Ausgangslage des Legacy-Exports.
@@ -98,10 +122,12 @@ Beliebige Profiltemplates können zudem Position und Modalzustand verändern,
 ohne dass `chg_tool` die intern geführten Z-/G90-/G91-Werte nachführt.
 Das ist bei einer Lösung insbesondere für inkrementellen Export zu beachten.
 
-- [ ] Einen reproduzierbaren Export mit dem betreffenden Maschinenprofil
-  und mindestens zwei Werkzeugen erstellen; tatsächliche Ausgabe gegen die
-  gewünschte Reihenfolge prüfen. Controller, Wechselmakro, H-Nummernzuordnung
-  und geltende Koordinatensysteme vor Implementierung festhalten.
+- [x] Reproduzierbare LinuxCNC-Exporte mit mindestens zwei Werkzeugen für
+  G90/G91 erstellen und die vollständige Reihenfolge prüfen. Der vereinbarte
+  Softwareumfang verwendet manuelles M6, G43 ohne H-Wort, vorbereitete
+  Werkzeugtabellen und einen ausdrücklich konfigurierten Werkstückbezug.
+  Konkrete Controller-Version und Maschinenparameter bleiben gemäß
+  Nutzerentscheidung Teil der Anwenderprüfung.
 - [x] Programmstart, Freifahren vor einem Werkzeugwechsel und Positionieren
   nach einem Werkzeugwechsel als getrennte Anforderungen beschreiben.
   Initiale Positionierung bleibt auch ohne weiteren Werkzeugwechsel oder
@@ -232,29 +258,39 @@ stabilen Übersetzungskontexten aufbauen. V1, U3 und U5 sind anschließend
 unabhängig auswählbare Erweiterungen; ihre offenen Bedienentscheidungen
 bleiben jeweils vor der Umsetzung zu klären.
 
-### K1 – Übersetzung des Konfigurationsfensters wiederherstellen
+### K1 – Übersetzung des Konfigurationsfensters (abgeschlossen)
 
-**Codebefund:** `presentation/qt/configuration_widgets.py` verwendet
+Abgeschlossen am **02.11.2026**: extrahierbare MyConfig-/MyPostProConfig-Texte,
+80 extrahierbare Hilfetexte im Kontext ConfigurationHelp, übersetzte
+Auswahlanzeigen bei unveränderten Speicherwerten, korrigierte Maschinenmenüs
+und neu kompilierte DE-/FR-/RU-Kataloge. Qt5 und Qt6 prüfen echte Dialoge,
+Menüaktionen und einen erneuten Extraktionslauf einschließlich UI-Datei.
+Einrichtung und Abnahme stehen im
+[Erledigt-Dokument](archive/toolpath-refactoring-completed.md#k1).
+Die folgenden Codebefunde beschreiben die behobene Ausgangslage.
+
+**Behobene Ausgangslage:** `presentation/qt/configuration_widgets.py` verwendet
 `config.tr`; `adapters/config/runtime_config.py:MyConfig.tr` fragt den
-Qt-Kontext `MyConfig` ab. Die untersuchten Beschriftungen stehen in allen
+Qt-Kontext `MyConfig` ab. Die untersuchten Beschriftungen standen in allen
 drei TS-Katalogen unter `@default` als `unfinished`; ihre alten Einträge unter
-`MyConfig` sind `obsolete`. Dieser Kontextbruch erklärt den englischen
-Rückfall. Der tatsächliche Dialog mit geladenen QM-Dateien ist noch zu prüfen.
+`MyConfig` waren `obsolete`. Dieser Kontextbruch verursachte den englischen
+Rückfall. Die korrigierten Dialoge sind mit geladenen QM-Dateien geprüft.
 
-**Weiterer bestätigter Übersetzungsfehler:** Im Menü „Maschinen Typ“ ist
+**Ebenfalls behoben:** Im Menü „Maschinen Typ“ war
 `&Lathe` im deutschen `MainWindow`-Katalog fälschlich als `&Hilfe` übersetzt.
 Gemeint ist „Drehmaschine“. Die Aktion ist in `application.py` korrekt mit
 `setMachineTypeToLathe` verbunden und setzt `machine_type='lathe'`; der
-Menütext ist falsch, nicht die Zuordnung der Aktion. Diesen Eintrag bei K1
-korrigieren und die Maschinenbezeichnungen in allen drei Katalogen prüfen.
+Menütext war falsch, nicht die Zuordnung der Aktion. Der Eintrag ist
+korrigiert; die Maschinenbezeichnungen und Aktionen aller drei Sprachen sind
+geprüft.
 
-- [ ] Einen eindeutigen Übersetzungskontext für die ausgelagerten
+- [x] Einen eindeutigen Übersetzungskontext für die ausgelagerten
   Widget-Definitionen festlegen und die Extraktion darauf abstimmen, damit
   spätere Übersetzungsläufe den Fehler nicht erneut erzeugen.
-- [ ] Anwendungs- und Postprozessorkonfiguration einschließlich Überschriften,
+- [x] Anwendungs- und Postprozessorkonfiguration einschließlich Überschriften,
   Hilfetexten und Auswahleinträgen prüfen. Technische Profil-/Dateischlüssel
   bleiben unabhängig von übersetzten Anzeigenamen stabil.
-- [ ] Deutsch, Französisch und Russisch gemeinsam aktualisieren, QM-Dateien
+- [x] Deutsch, Französisch und Russisch gemeinsam aktualisieren, QM-Dateien
   neu erzeugen und den geöffneten Dialog mit diesen Dateien prüfen.
 
 **Abnahme und Tests:** Kontext-/Katalogprüfung und fokussierter Qt-Test, der
@@ -700,7 +736,7 @@ erzeugen und die geänderten Übersetzungen prüfen. Kein Commit ohne Auftrag.
 
 ## DOC1 – Zensical-Dokumentation und GitHub Development Preview
 
-**Übergabestand 01.11.2026.** Maßgeblicher Bericht mit lokalen und GitHub-
+**Aktualisiert am 02.11.2026.** Historischer Übergabebericht mit lokalen und GitHub-
 Prüfergebnissen, Commitbezügen und Wiederaufnahmebefehlen:
 [Phase-1-Abnahme und Wiederaufnahme](migration/zensical-prototype.md).
 Die vier englischen Seiten bleiben ein technischer Prototyp.
@@ -739,7 +775,9 @@ Die vier englischen Seiten bleiben ein technischer Prototyp.
   [Deployment 41329699445](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41329699445)
   erfolgreich: <https://dxf2gcode.github.io/dxf2gcode/>. Vier Seiten, 159 Live-
   Verweise, Bilder/Favicon, Sitemap und echte Suche geprüft. Veröffentlichung
-  bleibt manuell, mit Freigabevariable und Environment nur für `develop`.
+  war zunächst manuell; inzwischen veröffentlicht der Workflow Änderungen an
+  Website-Dateien auf `develop` nach erfolgreichem Strict-Build automatisch.
+  Freigabevariable und Environment bleiben erhalten (`b0e5127`).
 - [x] Leeres GitHub-Wiki vor und nach Veröffentlichung geprüft, anschließend
   deaktiviert; keine eigenen Seiten zu sichern. Repository-Website und README
   verlinken die neue Dokumentation; SourceForge bleibt unverändert.
@@ -769,8 +807,11 @@ Die vier englischen Seiten bleiben ein technischer Prototyp.
 - [ ] Frische Windows-/Ubuntu-/PyQt6-Installationen bleiben getrennte Aufgaben;
   ebenso CNC-/ATC-/manuelle Maschinenabnahme und macOS-Paketabnahme.
 - [x] Pages-Ziel, Environment und ausdrückliche Deployment-Freigabe geklärt;
-  `DOCS_PREVIEW_PUBLISH_APPROVED=true`. Künftige Änderungen nach bestandenen
-  Checks bewusst per manuellem Workflow von `develop` veröffentlichen.
+  `DOCS_PREVIEW_PUBLISH_APPROVED=true`. Änderungen an den Website-Dateien auf
+  `develop` werden automatisch nach erfolgreichem Strict-Build veröffentlicht;
+  der manuelle Workflow bleibt zusätzlich verfügbar.
+- [x] Infofenster verlinkt die GitHub-Pages-Dokumentation ausdrücklich als
+  Dokumentation im Aufbau; Deutsch, Französisch und Russisch sind gepflegt.
 
 Zur Wiederaufnahme auf `develop` den aktuellen Übergabebericht,
 Status und jüngsten CI-Lauf lesen. Lokale Vorschau:
