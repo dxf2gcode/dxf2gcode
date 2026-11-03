@@ -104,6 +104,66 @@ ist mit kontrollierten Daten einschließlich Schutz stabiler Releases geprüft.
 Codesignierung, M1 und physische Maschinenabnahmen bleiben separat offen.
 Die [aktive Todo](../todo.md#ci1) enthält ausschließlich diese Restarbeiten.
 
+<a id="doc1-wp1"></a>
+
+## DOC1/WP1 – First DXF to G-code ausgearbeitet (03.11.2026)
+
+Auf dem vorgesehenen Inhaltsbranch `docs/wiki-migration` ist das englische
+Einstiegskapitel `docs/getting-started/first-dxf-to-gcode.md` erstellt und in
+Navigation, Home und Introduction verlinkt. Installation bleibt unverändert.
+Eine eigene 20 × 10-mm-DXF mit Ursprung (0,0) und zwei aktuelle MainWindow-
+Aufnahmen erklären Import, Enable/Auswahl, G40, Parameter, Vorschau und den
+normalen Export ohne Optimierung. Das frische Anwendungsprofil `wp1-demo`
+und der mitgelieferte LinuxCNC-Postprozessor sind ausdrücklich benannt.
+
+**Prüfung:** Eine geschlossene Kontur mit vier Segmenten und korrekten
+Millimetereinheiten wurde über den realen Import geladen. Der finale Export
+wurde über `actionExportShapes` / `exportShapes` / `ExportToolpath` in einem
+isolierten Profil verfolgt. G21/G90/G40, alle Rechteckpunkte und Tiefen −0,5 /
+−1 mm sowie Rückzug 15 mm / Sicherheitsabstand 3 mm sind im Ergebnis geprüft.
+Windows, Python 3.11.1, PyQt5 5.15.11, Qt 5.15.2; Anwendungsbasis `935bfc8`.
+Screenshots sind visuell geprüft; der strikte Zensical-Build bestand.
+
+**Herkunft:** Neue Texte, eigene Zeichnung und neue Widget-Aufnahmen; keine
+fremden Wiki-Texte oder Medien übernommen. Rechte und Umgebung stehen in
+`docs/assets/examples/first-dxf/README.txt`, fachliche Zusammenhänge in den
+[WP1-Notizen](../documentation-notes/first-dxf-workflow.md).
+
+**Grenzen:** Kapitel auf `docs/wiki-migration`; Commit zusammen mit WP2
+beauftragt. Noch nicht integriert oder veröffentlicht. Fachliche Sichtung und
+Publikationsfreigabe bleiben in der Todo.
+Keine reale Maschinenfahrt, kein Release-/MSI-Build, keine Debian-/SSH- oder
+Paketabnahme; der vereinbarte spätere 2.0.0-Release bleibt davon unabhängig.
+
+<a id="doc1-wp2"></a>
+
+## DOC1/WP2 – Oberfläche, Import und Projekte dokumentiert (03.11.2026)
+
+Zwei neue englische Anwenderkapitel erklären Fensterbereiche, 2D-Navigation,
+Auswahl gegenüber Aktivierung, Eingabeformate und externe Konverter sowie
+Speichern/Öffnen von D2G-Projekten. Sie verwenden WP1s eigene Rechteckzeichnung
+und den bestehenden aktuellen Screenshot. Navigation, Home und Introduction
+verlinken beide Kapitel; es werden keine fremden Wiki-Inhalte übernommen.
+
+Die Anleitung unterscheidet Geometrie, Vorbereitung und G-Code. Sie benennt
+den gespeicherten Zeichnungspfad, die manuelle Neuzuordnung fehlender Dateien,
+Reload ohne Zusage einer Einstellungserhaltung und die Grenzen des
+Geometrieabgleichs nach CAD-Änderungen. Ein Schrittbeispiel speichert die
+WP1-Vorbereitung als `rectangle-20x10-mm.d2g` und öffnet sie wieder.
+
+**Prüfung:** Aussagen gegen aktuelle Menütexte, 2D-Ereignisse, Importpfad,
+Zeichnungsmodell, Projektserialisierung/-wiederherstellung und Codec verglichen;
+vorhandene Import-/Projekt-Testverträge gelesen. Strikter Zensical-Build und
+Dokumentationslinks geprüft. Keine Anwendung geändert; keine neue Quellcode-
+oder Fast-Suite gestartet. Die Dokumentationsausnahme steht jetzt in AGENTS.md
+und den Arbeitsvereinbarungen; die persistente Git-Hook-Einstellung bleibt
+unverändert.
+
+**Grenzen:** Codegestützte Dokumentation, kein neuer GUI-Roundtrip, keine
+PDF-/PS-Konverter-, Fremdplattform- oder Maschinenabnahme. Commit beauftragt;
+Integration und Veröffentlichung bleiben offen. Fachliche Quellen und
+weitere Redaktion: [WP2-Notizen](../documentation-notes/interface-import-projects.md).
+
 ## Issue-Formulare und Anhanghinweise (03.11.2026)
 
 Bug report und Feature request sind erweitert; Documentation issue sowie

@@ -3,6 +3,9 @@
 Start with [Installation and startup](installation.md) if you have not yet
 prepared the application environment.
 
+Then follow [First DXF to G-code](getting-started/first-dxf-to-gcode.md) for a
+complete example with a 20 x 10 mm rectangle, screenshots and export checks.
+
 ## Drawings, projects and output
 
 A DXF file supplies drawing geometry. In dxf2gcode, you prepare the shapes and
@@ -24,7 +27,11 @@ The development checkout includes milling, lathe and drag-knife machine modes.
 Machine mode and postprocessor profile are separate settings. A preview does
 not establish that a profile is suitable for a particular CNC controller.
 
-Detailed operating instructions, configuration references and machine examples
+See [Interface and navigation](user-guide/interface-and-navigation.md) for
+the window controls, and [Import drawings and save projects](user-guide/import-and-projects.md)
+for supported inputs, saved preparation and reload limitations.
+
+Further operating instructions, configuration references and machine examples
 will be added after comparison with the current code. Historical wiki examples
 are not treated as validated machine profiles.
 

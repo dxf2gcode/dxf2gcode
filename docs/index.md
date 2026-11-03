@@ -7,7 +7,11 @@ postprocessors for output.
 **Development documentation prototype.** This small site describes the
 development checkout. It is not a manual for a published stable release.
 
+- Follow [First DXF to G-code](getting-started/first-dxf-to-gcode.md) for a
+  step-by-step example with a downloadable drawing.
 - Read the [introduction](introduction.md) for the basic workflow.
+- Explore [Interface and navigation](user-guide/interface-and-navigation.md)
+  and [Import drawings and save projects](user-guide/import-and-projects.md).
 - Follow [Installation and startup](installation.md) to run a development checkout.
 - See [Documentation preview](documentation-preview.md) to run this site locally.
 - Find the source code in the [GitHub repository](https://github.com/dxf2gcode/dxf2gcode).

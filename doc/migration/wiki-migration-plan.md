@@ -5,6 +5,14 @@ prototype, not the completed manual. No chapters or machine profiles below have
 been implemented by writing this plan. See [Phase-1 acceptance](zensical-prototype.md)
 for its scope and proposed commit. This plan is outside the public `docs_dir`.
 
+**Progress, 2026-11-03:** WP1 and WP2 are implemented on
+`docs/wiki-migration`: the first-export walkthrough, Interface and Navigation,
+and Import Drawings and Save Projects. WP2 reuses WP1's newly authored rectangle
+and current screenshots. See [WP1 evidence](../archive/toolpath-refactoring-completed.md#doc1-wp1)
+and [WP2 evidence](../archive/toolpath-refactoring-completed.md#doc1-wp2).
+Commit is authorized; integration and publication remain open. WP3–WP13 below
+remain plans, not implemented chapters.
+
 ## Baseline, evidence and publication gates
 
 - Source baseline: the local `docs/zensical-prototype` checkout, based on

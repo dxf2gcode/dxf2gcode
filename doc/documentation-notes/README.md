@@ -1,6 +1,6 @@
 # Material für die spätere Anwenderdokumentation
 
-Stand: **02.11.2026**.
+Stand: **03.11.2026**.
 
 Diese Notizen bündeln fachliche Hinweise aus abgeschlossenen Arbeiten. Sie sind
 Redaktionsmaterial für die GitHub-Dokumentation, keine zusätzliche Aufgabenliste.
@@ -9,6 +9,8 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 
 | Thema | Geplantes Inhaltspaket | Material |
 | --- | --- | --- |
+| [Erste DXF bis zum G-Code](first-dxf-workflow.md) | WP1, Grundlage für WP2–WP7 | Rechteck, aktuelle Screenshots, G40-Demonstrationsprofil und Exportnachweis |
+| [Oberfläche, Import und Projekte](interface-import-projects.md) | WP2, Grundlage für WP3 und WP8 | Bedienung, Formate, Zeichnungspfade, Reload und Grenzen der Projektwiederherstellung |
 | [Issue-Formulare und Anhänge](issue-reporting.md) | Support und WP8–WP12 | Englisch/Deutsch, Konfiguration, Postprozessoren und Windows-/Linux-Pfade |
 | [Organisationsseite und Beispielbilder](organization-profile.md) | WP2 und Projektvorstellung | GitHub-Profil, Logo-DXF und aktuelle Fräs-/Schleppmesser-Bilder |
 | [Downloads und Versionen](downloads-and-versions.md) | WP2 sowie WP11–WP12 | GitHub-Pakete, 2.0.0-Entwicklerversionen, MSI und Herkunft |
