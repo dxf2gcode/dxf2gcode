@@ -22,12 +22,16 @@ WP6–WP8 have now been added on the same local branch: tabs/breaking layers,
 machine modes, drag-knife cutting, command-line usage, troubleshooting,
 application settings and layer naming. See
 [WP6–WP8 evidence](../archive/toolpath-refactoring-completed.md#doc1-wp6-wp8).
-The user has authorized committing, integration and publication of WP3–WP8
-for a first review. The public Introduction prototype is removed; website
+WP3–WP8 were committed as `73d4503` and merged through
+[PR #2](https://github.com/dxf2gcode/dxf2gcode/pull/2) (`f55c550`) for the
+user-authorized first public review. The public Introduction prototype is removed; website
 maintenance instructions have moved out of the public navigation into
 `doc/documentation-notes/documentation-site-maintenance.md`. Installation and
-linked example drawings remain available. Deployment evidence is recorded in
-the completion log. WP9–WP13 below remain plans, not implemented chapters.
+linked example drawings remain available. Pages build/deploy
+[41723317919](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41723317919)
+succeeded; all fourteen chapter URLs and two DXF downloads returned HTTP 200,
+and both removed public prototype URLs returned 404. WP9–WP13 below remain
+plans, not implemented chapters.
 
 ## Baseline, evidence and publication gates
 

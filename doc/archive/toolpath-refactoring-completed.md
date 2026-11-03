@@ -270,7 +270,7 @@ separat offen; das neue Stegdiagramm übernimmt dessen Herkunft nicht.
 
 <a id="doc1-wp3-wp8-publication"></a>
 
-## DOC1/WP3–WP8 – Öffentliche Erstansicht vorbereiten (03.11.2026)
+## DOC1/WP3–WP8 – Öffentliche Erstansicht veröffentlicht (03.11.2026)
 
 Der Anwender hat die Veröffentlichung aller neuen Kapitel und das Entfernen
 der bisherigen Doku-Prototypseiten freigegeben. `docs/introduction.md` entfällt;
@@ -280,7 +280,19 @@ erhalten. Navigation, Startseite und betroffene Verweise sind umgestellt.
 Installation und die in Kapiteln verlinkten eigenen DXF-Beispiele bleiben.
 
 Die vierzehn Kapitel aus WP3–WP8, die neuen Beispiele/Abbildungen und die
-gesammelten Fach-/Prüfnotizen werden gemeinsam integriert. Diese Erstansicht
+gesammelten Fach-/Prüfnotizen sind als `73d4503` committet und über
+[PR #2](https://github.com/dxf2gcode/dxf2gcode/pull/2) nach `develop` integriert
+(`f55c550`). Lokaler strikter Build, 230 lokale Markdown-Verweise und die
+GitHub-Dokumentationsprüfung waren erfolgreich; keine lokale Fast-Suite.
+Der [Pages-Lauf 41723317919](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41723317919)
+hat Build und Deployment erfolgreich abgeschlossen. Direkt online geprüft:
+alle vierzehn Kapitelseiten mit erwarteten Titeln (HTTP 200), aktuelle
+Navigation, beide entfernten Prototypseiten (404) sowie beide neuen DXF-
+Downloads (200). Die allgemeine automatisch gestartete Quellcode-/Paketmatrix
+lief unabhängig weiter und wurde nicht als Voraussetzung für diese reine
+Dokumentationsveröffentlichung abgewartet.
+
+Diese Erstansicht
 ist eine Dokumentationsveröffentlichung; WP9–WP13 und die spätere stabile
 Softwareversion 2.0.0 bleiben davon unabhängig offen.
 
