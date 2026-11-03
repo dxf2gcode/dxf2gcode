@@ -1,6 +1,6 @@
-# Documentation preview
+# Documentation site maintenance
 
-This prototype uses [Zensical](https://zensical.org/docs/get-started/), configured
+The documentation site uses [Zensical](https://zensical.org/docs/get-started/), configured
 in `zensical.toml` at the repository root. The development website is hosted
 with GitHub Pages. A separate GitHub Actions workflow automatically publishes
 website changes pushed or merged into `develop`, after a successful strict
@@ -64,7 +64,8 @@ From the repository root:
 The generated website is written to `.tox/docs-site/`. Internal page links and
 anchors are validated during the build. The build does not publish anything.
 
-For a quick browser check, open the [introduction](introduction.md), check the
-logo on the [home page](index.md), and search for **postprocessor**. A result
-should lead to the introduction. Do not open generated HTML through `file://`;
+For a quick browser check, open [First DXF to G-code](../../docs/getting-started/first-dxf-to-gcode.md),
+check the logo on the [home page](../../docs/index.md), and search for
+**postprocessor**. Check that search results open the appropriate chapter.
+Do not open generated HTML through `file://`;
 use the local server so that search and assets load correctly.

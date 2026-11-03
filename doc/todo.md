@@ -20,11 +20,12 @@ kein neuer Ausführungsauftrag vor.
 | --- | --- | --- |
 | Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
 | Vor Umsetzung abstimmen | [A1 – Abnahmegrenzen](#a1) | Konkrete Abdeckungslücken |
-| Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | WP3 abstimmen; Quellenrechte und fehlende Medien |
+| Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | WP3–WP8 sichten/veröffentlichen; WP9 abstimmen; Quellenrechte |
 | Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 
-Als nächstes **DOC1/WP3** (Konturen, Layer und Reihenfolge) abstimmen.
+Als nächstes die fertigen **DOC1/WP3–WP8**-Kapitel sichten und Commit/Integration/
+Veröffentlichung freigeben; danach WP9 (Postprozessoren und Werkzeugwechsel) abstimmen.
 
 ## Bereitstellung und Abnahme
 
@@ -79,7 +80,11 @@ Als nächstes **DOC1/WP3** (Konturen, Layer und Reihenfolge) abstimmen.
 
 <a id="doc1"></a>
 
-- [ ] **DOC1:** User Guide (WP3–WP7), Configuration/Postprozessoren (WP8–WP10),
+- [ ] **DOC1 / WP3–WP8 – Abnahme und Veröffentlichung:** fertige Kapitel auf
+  `docs/user-guide-wp3-wp5` sichten und Commit/Integration/Veröffentlichung
+  freigeben. [WP3–WP5-Nachweise](archive/toolpath-refactoring-completed.md#doc1-wp3-wp5),
+  [WP6–WP8-Nachweise](archive/toolpath-refactoring-completed.md#doc1-wp6-wp8).
+- [ ] **DOC1:** Postprozessoren und Beispiele (WP9–WP10),
   Developer Guide (WP11–WP12) und historische Inhalte (WP13) bearbeiten.
   [Migrationsmatrix und Reihenfolge](migration/wiki-migration-plan.md).
 - [ ] Bei den jeweiligen Inhaltspaketen die

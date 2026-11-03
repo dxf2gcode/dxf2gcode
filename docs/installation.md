@@ -34,8 +34,10 @@ on Python version, operating system and architecture.
 
 Use a [Python virtual environment](https://docs.python.org/3/library/venv.html)
 to keep application packages separate from system Python and other projects.
-The application's `.venv` below is separate from the
-[documentation environment](documentation-preview.md). PySide6 is not a
+The application's `.venv` below is separate from the documentation-build
+environment. Instructions for maintaining the website are in the repository's
+[documentation notes](https://github.com/dxf2gcode/dxf2gcode/blob/develop/doc/documentation-notes/documentation-site-maintenance.md).
+PySide6 is not a
 supported runtime binding for this checkout.
 
 ## Windows PowerShell: PyQt5
@@ -211,7 +213,7 @@ See the repository's
 [technical setup and packaging documentation](https://github.com/dxf2gcode/dxf2gcode/blob/develop/source/README.md#preparing-and-building-a-release)
 for that workflow. Package build dependencies are `setuptools>=77` and `wheel`;
 they are distinct from runtime requirements. No release build is needed merely
-to run the source launcher. Return to the [introduction](introduction.md) for
+to run the source launcher. Follow [First DXF to G-code](getting-started/first-dxf-to-gcode.md) for
 the drawing-to-output workflow.
 
 ## Optional PDF / PostScript import

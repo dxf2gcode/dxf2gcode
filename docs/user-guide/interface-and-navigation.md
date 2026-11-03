@@ -50,9 +50,9 @@ In the 2D drawing view, **Ctrl + click** lets you toggle additional contours
 in the selection. Dragging a selection rectangle also selects contours.
 For an individual parameter change, select just the intended contour first.
 
-Do not infer export order from the order in which you click contours. Tree
-order, route display and optimization are separate controls; they will be
-covered in the route-order chapter.
+Do not infer export order from the order in which you click contours. See
+[tree order](shapes-layers-and-order.md) and [route optimization](route-optimization.md)
+for the separate order, display and optimization controls.
 
 ## Move around the 2D view
 

@@ -78,7 +78,7 @@ attachments are not site content or Git additions.
 Continue from the published `develop` branch. The prototype branch remains a
 historical review branch; do not recommit the old `.tox/docs-handoff/` indexes.
 Local preview and strict-build commands are unchanged (see below and
-[Documentation preview](../../docs/documentation-preview.md)). Publication
+[Documentation site maintenance](../documentation-notes/documentation-site-maintenance.md)). Publication
 evidence and request/response logs are ignored under `.tox/pages-publication/`.
 
 For a future website update: commit/review and push the docs changes to develop.
@@ -364,7 +364,7 @@ documentation-only prototype.
 ## Run the preview
 
 Full Windows commands are maintained in
-[Documentation preview](../../docs/documentation-preview.md). From the repository
+[Documentation site maintenance](../documentation-notes/documentation-site-maintenance.md). From the repository
 root, after setup:
 
 ```powershell

@@ -176,6 +176,114 @@ neue Windows-Paketabnahme abgeleitet.
 PDF-/PS-Konverter-, Fremdplattform- oder Maschinenabnahme. Fachliche Quellen und
 weitere Redaktion: [WP2-Notizen](../documentation-notes/interface-import-projects.md).
 
+<a id="doc1-wp3-wp5"></a>
+
+## DOC1/WP3–WP5 – Reihenfolge und Bearbeitung dokumentiert (03.11.2026)
+
+Sieben neue englische Seiten ergänzen den User Guide auf
+`docs/user-guide-wp3-wp5`:
+
+- **WP3:** Shapes, Layers and Tree Order; Route Optimization. Manuelle
+  Baumreihenfolge, Export, Routenanzeige und Optimierung sind einzeln erklärt.
+  Vorher-/Nachher-Tabellen zeigen beide bestehenden Constraint-Modi und
+  Custom-G-Code-Positionen bei einem ausdrücklich angenommenen Optimierergebnis.
+- **WP4:** Machining Parameters; Contours, Pockets and Drilling. Einheiten,
+  vorzeichenbehaftete Tiefen, mehrere Zustellungen, gemeinsame/gemischte Werte,
+  Werkzeugübersteuerungen und gezielte Rückkehr zu Vorgaben sind beschrieben.
+  Taschen-/Bohr-Eignung, Moduswechsel und blockierende Projektkonflikte sind
+  gegen den aktuellen Code abgeglichen.
+- **WP5:** Cutter Compensation and Lead Moves; Preview and Export; Toolpath
+  Diagnostics. Maschinen-/Softwarekompensation, Seiten/Richtung, Lead-Methoden,
+  geschlossene Überfahrt, 2D-Farben, Profilabhängigkeit und fehlende oder
+  ungültige Geometrie werden mit konkreten Einstellbeispielen erläutert.
+
+**Material:** Eigene metrische DXF mit Rechteck A, Kreis B und offener Kontur C
+sowie zwei aktuelle MainWindow-Aufnahmen. Die Kompensationsaufnahme verwendet
+WP1s Rechteck mit G41 außen, Werkzeug Ø2 mm, Lead-Radius 2 mm, geradem Anteil
+3 mm und Überfahrt 1 mm. Werkzeugvorgaben und angezeigte Werte stimmen überein.
+Herkunft: `docs/assets/examples/machining-basics/README.txt`; keine fremden
+Wiki-Texte, DXFs oder Bilder übernommen.
+
+**Prüfung:** Aktuelle Baum-/Optimierungs-, Parameter-, Modus-, Lead-, Offset-,
+Planungs- und Vorschaupfade sowie relevante bestehende Testverträge gelesen.
+Die Beispiel-DXF wurde im isolierten echten MainWindow als drei Konturen
+importiert (zwei geschlossen, eine offen); das kompensierte Rechteck besitzt
+einen Plan ohne Fehlerdiagnosen. Screenshots visuell geprüft. Windows,
+Python 3.11.1, PyQt5 5.15.11, Qt 5.15.2; Quellbasis `6c4bcc9`.
+Strikter Zensical-Build, lokale Dokumentationsverweise und Diff-Format geprüft.
+
+**Veröffentlichung:** Commit, Integration und Veröffentlichung zur ersten
+Ansicht sind jetzt beauftragt. Veröffentlichungsergebnis siehe Nachtrag unten.
+
+**Grenzen:** Kein Quellcode geändert, keine Fast-/Vollsuite, kein neuer
+G-Code-Export, keine Konverter-, Paket-, Fremdplattform- oder Maschinenabnahme.
+Die Optimierungstabellen sind eine belegte Ordnungsregel, kein Versprechen
+eines bestimmten stochastischen Suchergebnisses. Quellen und Redaktionshinweise
+stehen in den [WP3–WP5-Notizen](../documentation-notes/order-machining-and-preview.md).
+
+<a id="doc1-wp6-wp8"></a>
+
+## DOC1/WP6–WP8 – Maschinenarten, CLI und Konfiguration dokumentiert (03.11.2026)
+
+Sieben weitere englische Kapitel ergänzen den lokalen User Guide:
+
+- **WP6:** Tabs and Breaking Layers, Machine Modes und Drag-knife Cutting.
+  Eigene Haltesteg-DXF und Tiefendiagramm erklären absolute Steg-Z-Werte,
+  Last-pass/Explizit/Never und die Grenze bereits abgetragenen Materials.
+  Fräsen, der tatsächliche Dreh-Ausgabefaktor und Schleppmesser sind getrennt
+  dargestellt. Die Messeranleitung umfasst Offset, Ausrichtung, Schwenkhöhe,
+  Tiefenschnitte, XYZ-Rampen, offene Umkehr, Rampenausgleich und Überfahrt.
+- **WP7:** Command-line Usage und Troubleshooting/FAQ. Reale Flags,
+  vollständige Headless-Aufrufe, Profilpriorität, Postprozessorbeschreibung
+  statt Dateiname, aktueller Fallback bei unbekannter Beschreibung,
+  Fehlerstatus und ungespeicherte GUI-Werte sind erläutert. Support verweist
+  auf GitHub Issues, das bestehende Forum und den separaten Installer-Tracker.
+- **WP8:** Application Settings und Layer Naming Rules. Echte Seitenzuordnung,
+  Windows-/Linux-Pfade, Profile, ausgewählte 9.19-Vorgaben, Sofortwirkung/
+  Neustart, Versionsprüfung sowie `.bad`-Wiederherstellung sind erklärt.
+  Präfixe, Aliaslisten, Parameterreihenfolge, Lead-Nummerierung und
+  IGNORE-Deaktivierung gegenüber Importfilter werden unterschieden.
+
+**Prüfung:** Aussagen gegen aktuelle CLI-, Profil-, Layer-, Break-, Knife-,
+Formatierungs- und Konfigurationspfade sowie vorhandene Fachnotizen geprüft.
+`python source/dxf2gcode.py --help` ausgeführt. Die eigene DXF wurde im
+isolierten echten MainWindow als zwei geschlossene Konturen importiert;
+Frästiefe −1,5 mm, Zustellung −0,5 mm und Steg-Z −1 mm bestätigt. Das zweite
+Layernamen-Beispiel ergibt Werkzeug 1, Ø2, Radius 2, Länge 3, gerade Leads und
+Überfahrtlänge 1. Zwei echte ConfigWindow-Aufnahmen sowie das eigene SVG-
+Diagramm visuell geprüft. Strikter Zensical-Build und lokale Links geprüft.
+Windows, Python 3.11.1, PyQt5 5.15.11, Qt 5.15.2; Quellbasis `6c4bcc9`.
+
+**Quellen:** Eigene Texte und Assets; historische Messerreferenzen direkt
+geprüft und nur verlinkt, ohne deren Bilder/Dateien zu übernehmen. Herkunft und
+Umgebung stehen in `docs/assets/examples/tabs/README.txt`; Fachquellen und
+weitere Hinweise in den [WP6–WP8-Notizen](../documentation-notes/modes-cli-and-configuration.md).
+
+**Veröffentlichung:** Commit, Integration und Veröffentlichung zur ersten
+Ansicht sind jetzt beauftragt. Veröffentlichungsergebnis siehe Nachtrag unten.
+
+**Grenzen:** Keine Fast-/Vollsuite, keine
+CLI-Beispielexporte, keine Fremdplattform-, Konverter-, Paket- oder
+Maschinenabnahme. Die Drehbeschreibung belegt die vorhandene Formatierung,
+kein abgenommenes Drehprofil. Das fehlende historische `Spant.png` bleibt
+separat offen; das neue Stegdiagramm übernimmt dessen Herkunft nicht.
+
+<a id="doc1-wp3-wp8-publication"></a>
+
+## DOC1/WP3–WP8 – Öffentliche Erstansicht vorbereiten (03.11.2026)
+
+Der Anwender hat die Veröffentlichung aller neuen Kapitel und das Entfernen
+der bisherigen Doku-Prototypseiten freigegeben. `docs/introduction.md` entfällt;
+die technische Seite `docs/documentation-preview.md` ist als interne
+[Website-Pflegeanleitung](../documentation-notes/documentation-site-maintenance.md)
+erhalten. Navigation, Startseite und betroffene Verweise sind umgestellt.
+Installation und die in Kapiteln verlinkten eigenen DXF-Beispiele bleiben.
+
+Die vierzehn Kapitel aus WP3–WP8, die neuen Beispiele/Abbildungen und die
+gesammelten Fach-/Prüfnotizen werden gemeinsam integriert. Diese Erstansicht
+ist eine Dokumentationsveröffentlichung; WP9–WP13 und die spätere stabile
+Softwareversion 2.0.0 bleiben davon unabhängig offen.
+
 ## Issue-Formulare und Anhanghinweise (03.11.2026)
 
 Bug report und Feature request sind erweitert; Documentation issue sowie

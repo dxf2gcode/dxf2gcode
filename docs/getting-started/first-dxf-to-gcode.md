@@ -186,6 +186,10 @@ For a reproducible defect, use the
 [issue forms](https://github.com/dxf2gcode/dxf2gcode/issues/new/choose) and attach
 a small example and relevant profiles.
 
-Pocket milling, advanced cutter compensation, drag-knife cutting and tool-change
-configuration belong to follow-up chapters. Return to the
-[introduction](../introduction.md) for the overall workflow.
+Continue with [contours, pockets and drilling](../user-guide/contours-pockets-and-drilling.md),
+[compensation and lead moves](../user-guide/compensation-and-leads.md), or
+[preview and export](../user-guide/preview-and-export.md). For other workflows,
+see [drag-knife cutting](../user-guide/drag-knife-cutting.md) and
+[command-line usage](../user-guide/command-line-usage.md). Detailed tool-change
+configuration belongs to a later chapter. Return to the
+[project overview](../index.md) for the other available chapters.
