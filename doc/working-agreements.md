@@ -19,10 +19,14 @@ Prüfungen werden nach der Freigaberegel der Teststrategie eingeplant.
 
 Die Beschränkung umfangreicher Prüfläufe betrifft die lokale Arbeit von Codex.
 Auf GitHub läuft die Vollsuite automatisch bei Push auf `develop` und Pull
-Requests nach `develop`; ein manueller Start bleibt möglich. Vor jedem lokalen
-Commit führt der Pre-Commit-Hook die Fast-Suite aus. Dieser verpflichtende Lauf
-ersetzt keine gezielten Tests während der Bearbeitung und muss nach bestandenem
-Hook nicht zusätzlich manuell wiederholt werden.
+Requests nach `develop`; ein manueller Start bleibt möglich. Bei lokalen
+Commits mit Quellcode-, Test- oder ausführbaren Werkzeugänderungen führt der
+Pre-Commit-Hook die Fast-Suite aus. Reine Dokumentationscommits einschließlich
+Bildern, Beispielzeichnungen und Navigation benötigen nur passende
+Dokumentationsprüfungen. Nach Kontrolle der gestagten Pfade darf der derzeit
+pauschale Hook dafür ausschließlich im einzelnen Commit-Aufruf deaktiviert
+werden; die persistente Hook-Konfiguration bleibt erhalten. Ein bestandener
+Fast-Hook wird nicht zusätzlich manuell wiederholt.
 
 Bei der jeweils beauftragten Umsetzung nur die passenden Prüfungen
 festlegen. Die oben genannten Fälle sind Anforderungen an diese spätere

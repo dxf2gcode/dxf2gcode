@@ -8,6 +8,11 @@ site_dir = ".tox/docs-site"
 nav = [
   { "Home" = "index.md" },
   { "Installation and startup" = "installation.md" },
+  { "First DXF to G-code" = "getting-started/first-dxf-to-gcode.md" },
+  { "User guide" = [
+    { "Interface and navigation" = "user-guide/interface-and-navigation.md" },
+    { "Import drawings and save projects" = "user-guide/import-and-projects.md" },
+  ] },
   { "Introduction" = "introduction.md" },
   { "Documentation preview" = "documentation-preview.md" },
 ]

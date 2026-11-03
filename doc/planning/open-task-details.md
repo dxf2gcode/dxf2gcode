@@ -1,6 +1,6 @@
 # Offene Aufgaben: Anforderungen und Abnahmekriterien
 
-Stand: **02.11.2026**.
+Stand: **03.11.2026**.
 
 Diese Datei bewahrt die Detailanforderungen der [aktiven Todo](../todo.md).
 Priorität und Auswahl stehen dort; hieraus entsteht kein zusätzlicher
@@ -12,6 +12,11 @@ Stand vom 30./31.10.2026, soweit nicht ausdrücklich anders vermerkt.
 <a id="ci1"></a>
 
 ### CI1 – Verbleibende Betriebsabnahme
+
+**Entscheidung vom 03.11.2026:** Der erste manuelle Develop-Release samt
+Downloadprüfung und die anschließende M1-Abnahme werden jetzt nicht gestartet.
+Die stabile Version **2.0.0** wird erst nach Abarbeitung der gesamten Todo
+freigegeben; kein stabiler Release wird vorab nur zu Prüfzwecken veröffentlicht.
 
 Die Implementierung und Aktivierung sind in
 [completed](../archive/toolpath-refactoring-completed.md#ci1) dokumentiert.

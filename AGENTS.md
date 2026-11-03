@@ -14,8 +14,15 @@
   approvals do not authorize later lengthy builds or Debian test runs.
 - These limits apply to agent-started local validation. GitHub CI runs the
   full suite on pushes to `develop` and pull requests targeting `develop`.
-- Before each local commit, run the fast suite through the pre-commit hook.
-  Do not run it a second time manually when the hook has already passed.
+- Before local commits that change source code, tests or executable tooling,
+  run the fast suite through the pre-commit hook. Do not run it a second time
+  manually when the hook has already passed.
+- Documentation-only commits (including documentation images, example drawings,
+  site navigation and repository instructions) do not require source-code tests.
+  Check the staged paths before committing and run the relevant documentation
+  checks instead. While the hook is unconditional, disable it only for that
+  individual documentation-only commit with a command-local `core.hooksPath`
+  pointing to an empty directory; do not change the persistent Git setting.
 
 ## Efficient completion
 

@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben
 
-Stand: **02.11.2026**.
+Stand: **03.11.2026**.
 
 Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
 Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
@@ -11,16 +11,21 @@ Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
 
 ## Empfohlene Reihenfolge
 
+**Release-Freigabe:** Version **2.0.0** wird erst nach Abarbeitung der gesamten
+Todo freigegeben. Ein manueller Develop-Release samt Downloadprüfung und die
+anschließende Paket-/Debian-Abnahme sind aktuell zurückgestellt; dafür liegt
+kein neuer Ausführungsauftrag vor.
+
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
-| 1 | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1), [A1 – Abnahmegrenzen](#a1) | Prüffreigabe und konkrete Abdeckungslücken |
-| Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | WP1 zuerst; Quellenrechte und fehlende Medien |
+| Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
+| Vor Umsetzung abstimmen | [A1 – Abnahmegrenzen](#a1) | Konkrete Abdeckungslücken |
+| Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | WP1/WP2 integrieren; WP3 abstimmen; Quellenrechte und fehlende Medien |
 | Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 
-Nächster Vorschlag: **M1** anhand der jetzt verfügbaren CI-Pakete konkret
-abstimmen (Zielrechner und Debian-Prüfumfang); dies startet noch keinen
-zusätzlichen lokalen Build oder Debian-/SSH-Lauf.
+Als nächstes **DOC1/WP1 und WP2** fachlich sichten und Integration/Veröffentlichung
+freigeben. Anschließend WP3 (Konturen, Layer und Reihenfolge) abstimmen.
 
 ## Bereitstellung und Abnahme
 
@@ -75,10 +80,11 @@ zusätzlichen lokalen Build oder Debian-/SSH-Lauf.
 
 <a id="doc1"></a>
 
-- [ ] **DOC1 / WP1:** vom aktuellen `develop` einen Inhaltsbranch
-  `docs/wiki-migration` anlegen; „First DXF to G-code“ mit eigenem kleinen
-  Beispiel und ausdrücklich benannten Profilannahmen schreiben.
-- [ ] Danach User Guide (WP2–WP7), Configuration/Postprozessoren (WP8–WP10),
+- [ ] **DOC1 / WP1–WP2 – Abnahme und Veröffentlichung:** fertige Kapitel auf
+  `docs/wiki-migration` fachlich sichten, danach Integration und Veröffentlichung
+  freigeben. [WP1-Nachweise](archive/toolpath-refactoring-completed.md#doc1-wp1),
+  [WP2-Nachweise](archive/toolpath-refactoring-completed.md#doc1-wp2).
+- [ ] Danach User Guide (WP3–WP7), Configuration/Postprozessoren (WP8–WP10),
   Developer Guide (WP11–WP12) und historische Inhalte (WP13) bearbeiten.
   [Migrationsmatrix und Reihenfolge](migration/wiki-migration-plan.md).
 - [ ] Bei den jeweiligen Inhaltspaketen die
