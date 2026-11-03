@@ -1,9 +1,11 @@
 name: Feature request
 description: Propose an improvement to dxf2gcode.
+labels: [enhancement]
 body:
   - type: markdown
     attributes:
       value: |
+        You may describe your issue in English or German.
         For user questions and discussions, please use the [existing forum](https://www.ltspiceusers.ch/forums/english-section.67/).
         Check existing issues before proposing an improvement.
   - type: textarea

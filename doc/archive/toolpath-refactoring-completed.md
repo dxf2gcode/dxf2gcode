@@ -95,6 +95,33 @@ ist mit kontrollierten Daten einschließlich Schutz stabiler Releases geprüft.
 Codesignierung, M1 und physische Maschinenabnahmen bleiben separat offen.
 Die [aktive Todo](../todo.md#ci1) enthält ausschließlich diese Restarbeiten.
 
+## Issue-Formulare und Anhanghinweise (03.11.2026)
+
+Bug report und Feature request sind erweitert; Documentation issue sowie
+eine Auswahl mit Forum-/Installer-Links sind ergänzt. Formulare bleiben
+englisch und erlauben Beschreibungen auf Englisch oder Deutsch. Vorhandene
+Labels werden verwendet. Freie Issues sind für normale Nutzer deaktiviert;
+Nutzer mit Schreibrechten behalten die Option „Maintainers only“. Im Fehlerformular
+sind Installationsweg und Problembereich auswählbar; Maschinenkontext und
+Anhänge bleiben optional.
+
+Bei relevanten Konfigurations-/Exportfehlern werden `config.cfg` und die
+tatsächlich verwendete Postprozessor-`.cfg` erbeten. Der Hinweis enthält
+Windows-/Linux-Dateipfade, benannte Profile und den Link zum aktiven Ordner
+in der Meldungsleiste. Die aktuelle Windows-Konfiguration liegt ebenfalls
+unter `.config`, nicht AppData. ZIP dient zum Bündeln zusammengehöriger Dateien.
+
+**Prüfung:** Drei Formulare und die Auswahlkonfiguration sind als YAML
+eingelesen und auf eindeutige Feldkennungen, unterstützte Feldtypen,
+Auswahlwerte, Sprachnotiz und vorhandene Labels geprüft. Ordnerkonstanten
+und Profilnamensbildung sind gegen den Anwendungscode geprüft. Keine GUI-
+Texte oder Übersetzungskataloge geändert; keine Vollsuite oder Builds gestartet.
+**Abschluss:** Umsetzung und Veröffentlichung sind freigegeben. Die Vorlagen
+werden mit Veröffentlichung dieses Commits auf dem Standardbranch aktiviert;
+zur Prüfung wird kein öffentliches Test-Issue angelegt.
+Material für spätere Anleitungen steht in den
+[Supportnotizen](../documentation-notes/issue-reporting.md).
+
 ## Linux-Installer-Verweise (03.11.2026)
 
 Der freigegebene Link **Linux Installer** steht direkt nach **Downloads** auf

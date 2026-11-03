@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help / Questions
+    url: https://www.ltspiceusers.ch/forums/english-section.67/
+    about: Ask usage questions and discuss DXF2GCODE in the existing forum.
+  - name: Linux Installer problems
+    url: https://github.com/dxf2gcode/dxf2gcode_installer/issues
+    about: Report problems with the Linux installation script in the installer repository.

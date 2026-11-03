@@ -1,0 +1,34 @@
+name: Documentation issue
+description: Report missing, unclear or incorrect documentation.
+labels: [documentation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You may describe your issue in English or German.
+        For usage questions, please use the [existing forum](https://www.ltspiceusers.ch/forums/english-section.67/).
+        Check existing issues before reporting a documentation problem.
+  - type: input
+    id: page
+    attributes:
+      label: Page URL or document
+      description: Link the affected page or name the document. For missing documentation, state which topic you looked for.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is missing, unclear or incorrect?
+      description: Include the relevant section or a short example, if useful.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: Describe what would help. A complete replacement text is not required.
+  - type: input
+    id: version
+    attributes:
+      label: Version and environment (if relevant)
+      description: For installation or configuration instructions, include the DXF2GCODE version, operating system and installation method.

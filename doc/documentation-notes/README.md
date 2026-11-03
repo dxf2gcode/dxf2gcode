@@ -9,6 +9,7 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 
 | Thema | Geplantes Inhaltspaket | Material |
 | --- | --- | --- |
+| [Issue-Formulare und Anhänge](issue-reporting.md) | Support und WP8–WP12 | Englisch/Deutsch, Konfiguration, Postprozessoren und Windows-/Linux-Pfade |
 | [Organisationsseite und Beispielbilder](organization-profile.md) | WP2 und Projektvorstellung | GitHub-Profil, Logo-DXF und aktuelle Fräs-/Schleppmesser-Bilder |
 | [Downloads und Versionen](downloads-and-versions.md) | WP2 sowie WP11–WP12 | GitHub-Pakete, 2.0.0-Entwicklerversionen, MSI und Herkunft |
 | [Schleppmesser](drag-knife.md) | WP6: Tabs and Machine Modes | Tiefen, Messerstellung, Leads, Migration und Referenzen |

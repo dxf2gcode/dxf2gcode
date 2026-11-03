@@ -1,25 +1,52 @@
 name: Bug report
 description: Report a reproducible problem in dxf2gcode.
+labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
+        You may describe your issue in English or German.
         For user questions and discussions, please use the [existing forum](https://www.ltspiceusers.ch/forums/english-section.67/).
         Check existing issues before reporting a bug.
   - type: input
     id: version
     attributes:
       label: Version or commit
-      description: Include the release version or commit, and whether you use an installer, package or source checkout.
+      description: Copy the version or commit from Help -> About. Include Python and Qt versions if known.
     validations:
       required: true
   - type: input
     id: operating-system
     attributes:
       label: Operating system
-      description: Include the operating system and version; add Python and Qt versions if known.
+      description: Include the operating system and version (for example, Windows 11 or Debian 13).
     validations:
       required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method
+      options:
+        - Windows MSI
+        - Windows portable ZIP
+        - Linux Installer script
+        - Python wheel
+        - Source checkout
+        - Other / not sure
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      multiple: true
+      options:
+        - DXF import
+        - Toolpath / geometry
+        - Preview
+        - G-code export
+        - Configuration / postprocessor
+        - Interface
+        - Installation / startup
+        - Other / not sure
   - type: textarea
     id: reproduction
     attributes:
@@ -41,10 +68,36 @@ body:
     validations:
       required: true
   - type: textarea
+    id: machining-context
+    attributes:
+      label: Machine and profiles (if relevant)
+      description: Include the machine mode (milling, lathe or drag knife), controller, active configuration profile and the postprocessor filename used for the failing export.
+  - type: markdown
+    attributes:
+      value: |
+        ### Relevant configuration and postprocessor files
+
+        For configuration, toolpath or export problems, please attach the active `config.cfg` and the selected postprocessor `.cfg` if relevant.
+        Use the file actually involved, rather than an unrelated default profile. Attach them with the example files below, preferably as a ZIP archive.
+
+        The active profile folder is linked in the application's message pane at startup, below **For Configuration files refer to folder:**.
+        This is the best place to check, particularly for older versions or named profiles.
+
+        Default locations in current versions:
+
+        | File | Linux | Windows |
+        | --- | --- | --- |
+        | Configuration | `~/.config/dxf2gcode/config/config.cfg` | `%USERPROFILE%\.config\dxf2gcode\config\config.cfg` |
+        | Postprocessor | `~/.config/dxf2gcode/postpro_config/<selected-file>.cfg` | `%USERPROFILE%\.config\dxf2gcode\postpro_config\<selected-file>.cfg` |
+
+        For a named profile, replace `dxf2gcode` with `dxf2gcode.<name>` (for example, `dxf2gcode.laser`) in both paths.
+        On Windows, paste `%USERPROFILE%\.config` into the File Explorer address bar. On Linux, enable hidden files to see `.config`.
+  - type: textarea
     id: examples
     attributes:
       label: Example files and additional context
       description: |
         If the problem depends on a drawing or project, attach a small DXF or D2G example, with the referenced drawing for D2G projects.
-        Put files in a ZIP archive if GitHub does not accept their extension. Screenshots or G-code excerpts may also help.
+        Include relevant configuration and postprocessor files as described above. Put files in a ZIP archive if GitHub does not accept their extension.
+        Screenshots, logs and short G-code excerpts may also help. Attachments are optional when they are not relevant.
         Share only files you have permission to publish and remove private information.
