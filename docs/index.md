@@ -4,22 +4,34 @@ dxf2gcode converts 2D DXF drawings into G-code for CNC machines. It provides
 a Qt interface for preparing drawings and toolpaths, with configurable
 postprocessors for output.
 
-**Development documentation prototype.** This small site describes the
-development checkout. It is not a manual for a published stable release.
+**Development documentation.** These chapters describe the current development
+version toward 2.0.0. The guide is being expanded; postprocessor examples and
+developer chapters will follow.
 
 - Follow [First DXF to G-code](getting-started/first-dxf-to-gcode.md) for a
   step-by-step example with a downloadable drawing.
-- Read the [introduction](introduction.md) for the basic workflow.
 - Explore [Interface and navigation](user-guide/interface-and-navigation.md)
   and [Import drawings and save projects](user-guide/import-and-projects.md).
+- Prepare [tree order](user-guide/shapes-layers-and-order.md) and
+  [route optimization](user-guide/route-optimization.md), set
+  [machining parameters](user-guide/machining-parameters.md), and choose
+  [contours, pockets or drilling](user-guide/contours-pockets-and-drilling.md).
+- Review [compensation and leads](user-guide/compensation-and-leads.md),
+  compare [preview and export](user-guide/preview-and-export.md), and resolve
+  [toolpath diagnostics](user-guide/toolpath-diagnostics.md).
+- Add [tabs](user-guide/tabs-and-breaking-layers.md), understand
+  [machine modes](user-guide/machine-modes.md) and prepare
+  [drag-knife cuts](user-guide/drag-knife-cutting.md).
+- Use the [command line](user-guide/command-line-usage.md), consult
+  [troubleshooting](user-guide/troubleshooting.md), and configure
+  [application settings](user-guide/application-settings.md) or
+  [parameterized layer names](user-guide/layer-naming-rules.md).
 - Follow [Installation and startup](installation.md) to run a development checkout.
-- See [Documentation preview](documentation-preview.md) to run this site locally.
 - Find the source code in the [GitHub repository](https://github.com/dxf2gcode/dxf2gcode).
 - Previously published packages remain in the
   [SourceForge download archive](https://sourceforge.net/projects/dxf2gcode/files/).
   Check each package's description: the archive also contains development builds.
 
-The existing [SourceForge wiki](https://sourceforge.net/p/dxf2gcode/wiki/Home/)
-is being inventoried for migration. Its installation instructions and screenshots
-may describe older versions. They have not been copied into this prototype as
-current instructions.
+The historical [SourceForge wiki](https://sourceforge.net/p/dxf2gcode/wiki/Home/)
+may describe older versions. Use the current chapters above for the development
+interface and preparation workflow.

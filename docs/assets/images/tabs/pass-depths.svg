@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="330" viewBox="0 0 860 330" role="img" aria-labelledby="title desc">
+  <title id="title">Tab height and the final depth pass</title>
+  <desc id="desc">A side-view schematic: top Z zero, first pass minus 0.5, second pass and tab top minus 1, final cut minus 1.5 millimetres. The final path lifts across the tab. Earlier passes must not already cut below its intended top.</desc>
+  <rect width="860" height="330" fill="white"/>
+  <g font-family="Arial, sans-serif" font-size="17" fill="#12344a">
+    <text x="30" y="30" font-size="21" font-weight="bold">Tab Z is an absolute coordinate — side view, schematic</text>
+    <path d="M190 85H670 M190 135H670 M190 185H670 M190 235H670" fill="none" stroke="#c6ced4" stroke-dasharray="6 5"/>
+    <path d="M190 235H385V185H475V235H670V270H190Z" fill="#e6cba6" stroke="#88704e"/>
+    <path d="M195 235H385V185H475V235H665" fill="none" stroke="#1565c0" stroke-width="5"/>
+    <text x="30" y="91">Top: Z = 0</text>
+    <text x="30" y="141">Pass 1: −0.5 mm</text>
+    <text x="30" y="191">Pass 2: −1 mm</text>
+    <text x="30" y="241">Pass 3: −1.5 mm</text>
+    <text x="695" y="190">Tab top: −1 mm</text>
+    <text x="355" y="165">Remaining tab</text>
+    <text x="30" y="309">Blue: final-pass tool path. Earlier passes reach the tab top, not below it.</text>
+  </g>
+</svg>

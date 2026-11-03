@@ -15,7 +15,19 @@ Commit `5cee4ad` was merged into `develop` through
 authorized publication; Pages build/deploy
 [41712224311](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41712224311)
 succeeded, and both WP2 chapter URLs returned HTTP 200 with the expected titles.
-WP3–WP13 below remain plans, not implemented chapters.
+WP3–WP5 have also been authored locally on `docs/user-guide-wp3-wp5`, with
+seven pages, an original three-shape example and two current 2D captures.
+See [completion evidence](../archive/toolpath-refactoring-completed.md#doc1-wp3-wp5).
+WP6–WP8 have now been added on the same local branch: tabs/breaking layers,
+machine modes, drag-knife cutting, command-line usage, troubleshooting,
+application settings and layer naming. See
+[WP6–WP8 evidence](../archive/toolpath-refactoring-completed.md#doc1-wp6-wp8).
+The user has authorized committing, integration and publication of WP3–WP8
+for a first review. The public Introduction prototype is removed; website
+maintenance instructions have moved out of the public navigation into
+`doc/documentation-notes/documentation-site-maintenance.md`. Installation and
+linked example drawings remain available. Deployment evidence is recorded in
+the completion log. WP9–WP13 below remain plans, not implemented chapters.
 
 ## Baseline, evidence and publication gates
 

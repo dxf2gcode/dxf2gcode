@@ -12,9 +12,21 @@ nav = [
   { "User guide" = [
     { "Interface and navigation" = "user-guide/interface-and-navigation.md" },
     { "Import drawings and save projects" = "user-guide/import-and-projects.md" },
+    { "Shapes, layers and tree order" = "user-guide/shapes-layers-and-order.md" },
+    { "Route optimization" = "user-guide/route-optimization.md" },
+    { "Machining parameters" = "user-guide/machining-parameters.md" },
+    { "Contours, pockets and drilling" = "user-guide/contours-pockets-and-drilling.md" },
+    { "Cutter compensation and lead moves" = "user-guide/compensation-and-leads.md" },
+    { "Preview and export" = "user-guide/preview-and-export.md" },
+    { "Toolpath diagnostics" = "user-guide/toolpath-diagnostics.md" },
+    { "Tabs and breaking layers" = "user-guide/tabs-and-breaking-layers.md" },
+    { "Machine modes" = "user-guide/machine-modes.md" },
+    { "Drag-knife cutting" = "user-guide/drag-knife-cutting.md" },
+    { "Command-line usage" = "user-guide/command-line-usage.md" },
+    { "Troubleshooting and FAQ" = "user-guide/troubleshooting.md" },
+    { "Application settings" = "user-guide/application-settings.md" },
+    { "Layer naming rules" = "user-guide/layer-naming-rules.md" },
   ] },
-  { "Introduction" = "introduction.md" },
-  { "Documentation preview" = "documentation-preview.md" },
 ]
 
 [project.theme]

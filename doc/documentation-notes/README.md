@@ -9,8 +9,11 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 
 | Thema | Geplantes Inhaltspaket | Material |
 | --- | --- | --- |
+| [Pflege der Dokumentationswebsite](documentation-site-maintenance.md) | Veröffentlichung und spätere Developer Guide | Zensical-Umgebung, lokale Vorschau, strikter Build und Pages-Workflow; aus öffentlichem Prototyp ausgelagert |
 | [Erste DXF bis zum G-Code](first-dxf-workflow.md) | WP1, Grundlage für WP2–WP7 | Rechteck, aktuelle Screenshots, G40-Demonstrationsprofil und Exportnachweis |
 | [Oberfläche, Import und Projekte](interface-import-projects.md) | WP2, Grundlage für WP3 und WP8 | Bedienung, Formate, Zeichnungspfade, Reload und Grenzen der Projektwiederherstellung |
+| [Reihenfolge, Bearbeitung und Vorschau](order-machining-and-preview.md) | WP3–WP5, Grundlage für WP6 und WP8–WP9 | Constraint-Modi, Kontur/Tasche/Bohren, Standardwerte, Kompensation, Leads und Diagnosen |
+| [Maschinenarten, CLI und Konfiguration](modes-cli-and-configuration.md) | WP6–WP8, Grundlage für WP9 | Stege, Schleppmesser, Drehkoordinaten, echte CLI-Flags, Profile und Layerparser |
 | [Issue-Formulare und Anhänge](issue-reporting.md) | Support und WP8–WP12 | Englisch/Deutsch, Konfiguration, Postprozessoren und Windows-/Linux-Pfade |
 | [Organisationsseite und Beispielbilder](organization-profile.md) | WP2 und Projektvorstellung | GitHub-Profil, Logo-DXF und aktuelle Fräs-/Schleppmesser-Bilder |
 | [Downloads und Versionen](downloads-and-versions.md) | WP2 sowie WP11–WP12 | GitHub-Pakete, 2.0.0-Entwicklerversionen, MSI und Herkunft |
