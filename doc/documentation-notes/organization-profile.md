@@ -1,6 +1,6 @@
 # GitHub-Organisationsseite und Beispielbilder
 
-Stand: **02.11.2026**. Redaktionsmaterial für WP2 und die Projektvorstellung.
+Stand: **03.11.2026**. Redaktionsmaterial für WP2 und die Projektvorstellung.
 
 Die öffentliche Startseite unter <https://github.com/dxf2gcode> wird aus
 `profile/README.md` im separaten Repository
@@ -17,6 +17,14 @@ zunächst unsigniert gekennzeichnet. Historische SourceForge-Releases bleiben
 verlinkt. Noch nicht verfügbare stabile Releases werden nicht behauptet.
 Hauptprojekt `dxf2gcode` und der zusätzliche Installationsweg
 `dxf2gcode_installer` sind auf der Organisationsseite angeheftet.
+
+Seit 03.11.2026 steht **Linux Installer** direkt nach **Downloads** in der
+Profilnavigation. Derselbe Link steht oben und im Installationsabschnitt der
+Hauptprojekt-README. Ziel ist <https://github.com/dxf2gcode/dxf2gcode_installer>;
+der Tooltip lautet „Installation script for Debian/Ubuntu, Linux Mint and
+Arch-based systems“. Die Bezeichnung umfasst beide unterstützten
+Distributionsfamilien. Installationsbefehle und aktuelle Abdeckung weiterhin
+in der Installer-README pflegen, nicht in der Profilnavigation duplizieren.
 
 ## Herkunft der Bilder
 

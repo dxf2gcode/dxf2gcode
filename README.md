@@ -8,8 +8,11 @@ dxf2gcode is an open-source converter from 2D DXF drawings to G-code for CNC
 machines. It provides a Qt interface for preparing drawings and toolpaths,
 with configurable postprocessors for output.
 
-**[Read the development documentation](https://dxf2gcode.github.io/dxf2gcode/)**
-for installation, startup and an introduction to the workflow.
+**[Downloads](https://github.com/dxf2gcode/dxf2gcode/releases) ·
+[Linux Installer](https://github.com/dxf2gcode/dxf2gcode_installer "Installation script for Debian/Ubuntu, Linux Mint and Arch-based systems") ·
+[Documentation](https://dxf2gcode.github.io/dxf2gcode/)**
+
+See the documentation for installation, startup and an introduction to the workflow.
 
 **Development status:** the `develop` branch on GitHub is being actively
 modernized and restructured. It does not automatically represent a stable
@@ -55,6 +58,13 @@ the old date version sorts above `2.0.0`.
 [Historical SourceForge downloads](https://sourceforge.net/projects/dxf2gcode/files/)
 can have different requirements. See the [release pipeline](doc/release-pipeline.md)
 for version mapping, verification and retention rules.
+
+### Linux installer
+
+For Debian- and Arch-based distributions, including Ubuntu and Linux Mint,
+the [Linux Installer](https://github.com/dxf2gcode/dxf2gcode_installer "Installation script for Debian/Ubuntu, Linux Mint and Arch-based systems")
+provides a script-based installation path. Follow the installer repository's
+README for instructions, supported versions and the current development status.
 
 ### Run the development checkout
 

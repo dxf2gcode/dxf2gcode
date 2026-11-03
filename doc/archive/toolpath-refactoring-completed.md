@@ -1,6 +1,6 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **02.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **03.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
 Dieses Dokument bewahrt abgeschlossene Implementierungen, deren dokumentierte
 Prüfergebnisse und die historische Ausgangslage. Die
@@ -94,6 +94,22 @@ abgenommen; für diesen Auftrag wurde kein stabiler Tag erzeugt. Retention
 ist mit kontrollierten Daten einschließlich Schutz stabiler Releases geprüft.
 Codesignierung, M1 und physische Maschinenabnahmen bleiben separat offen.
 Die [aktive Todo](../todo.md#ci1) enthält ausschließlich diese Restarbeiten.
+
+## Linux-Installer-Verweise (03.11.2026)
+
+Der freigegebene Link **Linux Installer** steht direkt nach **Downloads** auf
+der Organisationsseite. Im Hauptrepository ist er oben bei den Schnelllinks
+und zusätzlich unter „Installation and startup → Linux installer“ ergänzt.
+Beide Seiten verweisen auf das Installer-Repository mit dessen Anleitung.
+Der Tooltip nennt Debian/Ubuntu, Linux Mint und Arch-basierte Systeme; die
+Bezeichnung behauptet keine Beschränkung auf Debian oder Unterstützung aller
+Linux-Distributionen. Grundlage ist die aktuelle Installer-README.
+
+Profil-Commit: `3b1262a918832a3b7b906c9860c39bdadfdf8255` im Repository
+`dxf2gcode/.github`. Änderungen sind reine Dokumentations-/Navigationsänderungen;
+keine Installer-Ausführung, Paket-/MSI-Builds oder GUI-Textänderungen.
+Die Pflegehinweise stehen in den
+[Profilnotizen](../documentation-notes/organization-profile.md).
 
 ## GitHub-Organisationsseite und Logo-DXF (02.11.2026)
 
