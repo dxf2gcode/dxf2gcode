@@ -10,8 +10,12 @@ for its scope and proposed commit. This plan is outside the public `docs_dir`.
 and Import Drawings and Save Projects. WP2 reuses WP1's newly authored rectangle
 and current screenshots. See [WP1 evidence](../archive/toolpath-refactoring-completed.md#doc1-wp1)
 and [WP2 evidence](../archive/toolpath-refactoring-completed.md#doc1-wp2).
-Commit is authorized; integration and publication remain open. WP3–WP13 below
-remain plans, not implemented chapters.
+Commit `5cee4ad` was merged into `develop` through
+[PR #1](https://github.com/dxf2gcode/dxf2gcode/pull/1) (`39351f8`). The user
+authorized publication; Pages build/deploy
+[41712224311](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41712224311)
+succeeded, and both WP2 chapter URLs returned HTTP 200 with the expected titles.
+WP3–WP13 below remain plans, not implemented chapters.
 
 ## Baseline, evidence and publication gates
 

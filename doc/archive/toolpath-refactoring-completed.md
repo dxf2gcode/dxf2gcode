@@ -129,9 +129,13 @@ fremden Wiki-Texte oder Medien übernommen. Rechte und Umgebung stehen in
 `docs/assets/examples/first-dxf/README.txt`, fachliche Zusammenhänge in den
 [WP1-Notizen](../documentation-notes/first-dxf-workflow.md).
 
-**Grenzen:** Kapitel auf `docs/wiki-migration`; Commit zusammen mit WP2
-beauftragt. Noch nicht integriert oder veröffentlicht. Fachliche Sichtung und
-Publikationsfreigabe bleiben in der Todo.
+**Veröffentlichung:** Mit WP2 als `5cee4ad` committet, vom Anwender zur
+Veröffentlichung freigegeben und über
+[PR #1](https://github.com/dxf2gcode/dxf2gcode/pull/1) nach `develop` integriert
+(`39351f8`). Der Pages-Build und das Deployment sind erfolgreich abgeschlossen;
+siehe WP2-Veröffentlichungsnachweis unten.
+
+**Grenzen:**
 Keine reale Maschinenfahrt, kein Release-/MSI-Build, keine Debian-/SSH- oder
 Paketabnahme; der vereinbarte spätere 2.0.0-Release bleibt davon unabhängig.
 
@@ -159,9 +163,17 @@ oder Fast-Suite gestartet. Die Dokumentationsausnahme steht jetzt in AGENTS.md
 und den Arbeitsvereinbarungen; die persistente Git-Hook-Einstellung bleibt
 unverändert.
 
+**Veröffentlichung:** Am 03.11.2026 vom Anwender freigegeben. PR #1 ist gemergt;
+der [Pages-Lauf 41712224311](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41712224311)
+hat Build und Deployment erfolgreich abgeschlossen. Beide WP2-Kapitelseiten
+wurden direkt abgerufen (HTTP 200, erwartete Überschriften vorhanden).
+Die PR-Dokumentationsprüfung, vier Python-/Qt-Testläufe und die Python-
+Paketprüfung waren vor dem Merge erfolgreich; der automatisch gestartete
+Windows-ZIP-/MSI-Lauf war dabei noch nicht abgeschlossen. Daraus wird keine
+neue Windows-Paketabnahme abgeleitet.
+
 **Grenzen:** Codegestützte Dokumentation, kein neuer GUI-Roundtrip, keine
-PDF-/PS-Konverter-, Fremdplattform- oder Maschinenabnahme. Commit beauftragt;
-Integration und Veröffentlichung bleiben offen. Fachliche Quellen und
+PDF-/PS-Konverter-, Fremdplattform- oder Maschinenabnahme. Fachliche Quellen und
 weitere Redaktion: [WP2-Notizen](../documentation-notes/interface-import-projects.md).
 
 ## Issue-Formulare und Anhanghinweise (03.11.2026)

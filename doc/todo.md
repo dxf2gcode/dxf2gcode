@@ -20,12 +20,11 @@ kein neuer Ausführungsauftrag vor.
 | --- | --- | --- |
 | Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
 | Vor Umsetzung abstimmen | [A1 – Abnahmegrenzen](#a1) | Konkrete Abdeckungslücken |
-| Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | WP1/WP2 integrieren; WP3 abstimmen; Quellenrechte und fehlende Medien |
+| Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | WP3 abstimmen; Quellenrechte und fehlende Medien |
 | Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 
-Als nächstes **DOC1/WP1 und WP2** fachlich sichten und Integration/Veröffentlichung
-freigeben. Anschließend WP3 (Konturen, Layer und Reihenfolge) abstimmen.
+Als nächstes **DOC1/WP3** (Konturen, Layer und Reihenfolge) abstimmen.
 
 ## Bereitstellung und Abnahme
 
@@ -80,11 +79,7 @@ freigeben. Anschließend WP3 (Konturen, Layer und Reihenfolge) abstimmen.
 
 <a id="doc1"></a>
 
-- [ ] **DOC1 / WP1–WP2 – Abnahme und Veröffentlichung:** fertige Kapitel auf
-  `docs/wiki-migration` fachlich sichten, danach Integration und Veröffentlichung
-  freigeben. [WP1-Nachweise](archive/toolpath-refactoring-completed.md#doc1-wp1),
-  [WP2-Nachweise](archive/toolpath-refactoring-completed.md#doc1-wp2).
-- [ ] Danach User Guide (WP3–WP7), Configuration/Postprozessoren (WP8–WP10),
+- [ ] **DOC1:** User Guide (WP3–WP7), Configuration/Postprozessoren (WP8–WP10),
   Developer Guide (WP11–WP12) und historische Inhalte (WP13) bearbeiten.
   [Migrationsmatrix und Reihenfolge](migration/wiki-migration-plan.md).
 - [ ] Bei den jeweiligen Inhaltspaketen die
