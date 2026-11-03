@@ -1,6 +1,5 @@
 name: Publish release
 
-# Preserve this workflow file/identity so release run numbers keep increasing.
 on:
   workflow_dispatch:
   push:

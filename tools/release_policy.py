@@ -36,6 +36,23 @@ def owned_develop_release(release):
     return release_marker(revision, match[1]) in (release.get('body') or '')
 
 
+def develop_build_number(releases, run_id):
+    """Count published Develop versions independently of workflow identity."""
+    numbers = []
+    for release in releases:
+        if not owned_develop_release(release):
+            continue
+        match = re.fullmatch(r'DXF2GCODE Develop \d+\.\d+\.\d+\.dev([1-9]\d*)',
+                             release.get('name', ''))
+        if not match:
+            raise ValueError('Cannot determine the version of an owned Develop release')
+        number = int(match[1])
+        if release['tag_name'] == DEVELOP_PREFIX+str(run_id):
+            return number  # A retry must retain its already published version.
+        numbers.append(number)
+    return max(numbers, default=0)+1
+
+
 def retention_candidates(releases, keep=10):
     if keep < 1:
         raise ValueError('At least one development release must be retained')

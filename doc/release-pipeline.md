@@ -1,7 +1,7 @@
 # Builds und Downloads (CI1)
 
 Zielversion ist **2.0.0**. Entwicklerversionen folgen PEP 440:
-`2.0.0.dev<GitHub-Runnummer>`. Ein bewusst gesetzter Tag `v2.0.0` erstellt
+`2.0.0.dev<Veröffentlichungsnummer>`. Ein bewusst gesetzter Tag `v2.0.0` erstellt
 die stabile Version `2.0.0`; der Tag muss zur Basisversion in
 `source/dxf2gcode/_version.py` passen. Anschließend die Basisversion vor
 weiteren Entwicklerversionen erhöhen. Es gibt keine automatische stabile
@@ -12,7 +12,7 @@ Veröffentlichung aus einem Develop-Push.
 **Lokal vor einem Commit** läuft die Fast-Suite über den Pre-Commit-Hook.
 Nach einem **Push auf `develop` oder einem PR nach `develop`** startet
 **Tests and package checks** (`.github/workflows/checks.yml`) automatisch.
-**Publish release** (`.github/workflows/full-tests.yml`) ist der gesonderte
+**Publish release** (`.github/workflows/publish-release.yml`) ist der gesonderte
 Veröffentlichungsablauf: manuell für Develop, per Versionstag für Stable.
 Er führt vor der Veröffentlichung dieselben Prüfungen erneut aus.
 
@@ -49,10 +49,15 @@ bestätigen. Der Lauf prüft und baut diesen Stand erneut; erst nach Erfolg
 erscheint der Download. Manuelle Starts auf anderen Branches veröffentlichen
 nichts. Es ist kein zusätzlicher Develop-Tag erforderlich.
 
-Der Veröffentlichungsablauf behält intern den bisherigen Dateinamen
-`full-tests.yml` und seine Workflow-Kennung. Dadurch wird der bestehende
-Release-Buildzähler weitergeführt, statt die Versionierung mit einem neuen
-Workflow bei `dev1` beginnen zu lassen.
+Der Veröffentlichungsablauf heißt auch als Datei `publish-release.yml`.
+Der Develop-Versionszähler ist unabhängig vom Workflow: Die nächste Nummer
+folgt auf die höchste bereits veröffentlichte eigene Develop-Version.
+Nach `2.0.0.dev11` entsteht damit `2.0.0.dev12`, auch wenn ein neuer Workflow
+seinen eigenen GitHub-Laufzähler bei 1 beginnt. Bei Wiederholung eines bereits
+veröffentlichten Runs bleibt dessen Version erhalten. Ein fehlgeschlagener
+Draft kann mit der aktuellen Version erneut befüllt werden; Name und
+Beschreibung werden dabei an das neue Manifest angepasst. Die bestehende
+Concurrency-Gruppe führt Develop-Veröffentlichungen nacheinander aus.
 
 Zunächst entsteht ein Draft. Erst wenn alle Dateien hochgeladen und deren
 Namen, Größen sowie verfügbare GitHub-Prüfsummen geprüft sind, wird er sichtbar.
@@ -71,8 +76,11 @@ veröffentlicht. Technische Build-Angaben stehen darunter in einem
 aufklappbaren Bereich. Bereits veröffentlichte Releases bleiben unverändert.
 
 `release-manifest.json` enthält vollständigen Commit, Commitdatum,
-Workflow-Run, Paketversion, MSI-Version und Signierungsstatus. Die eingebettete
-Build-Herkunft bleibt über Quellarchiv, Wheel und Windows-Paket erhalten.
+Workflow-Run, Paketversion, MSI-Version und Signierungsstatus.
+Veröffentlichungsnummer (`build_number`) und GitHub-Laufnummer (`run_number`)
+sind getrennte Angaben; bei temporären Testpaketen dient die Laufnummer als
+Buildnummer. Die eingebettete Build-Herkunft bleibt über Quellarchiv, Wheel
+und Windows-Paket erhalten.
 ZIP/MSI-Dateinamen enthalten Version, Datum und kurze Commitkennung. Das Wheel
 trägt Datum und Commit im gültigen Wheel-Build-Tag. `SHA256SUMS` enthält die
 SHA-256-Werte aller Download-Dateien außer sich selbst.

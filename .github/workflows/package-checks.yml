@@ -106,6 +106,8 @@ jobs:
           python -m pip install -r requirements-release.txt PyQt6==6.12.0
       - name: Stage the exact tested commit and provenance
         id: stage
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: python tools/prepare_release.py "$RELEASE_STAGE"
       - name: Prepare both UI variants and translations
         run: |

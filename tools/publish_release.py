@@ -72,6 +72,11 @@ def publish(folder, repository, revision, ref):
             remove_transient_packages(repository, manifest['run_id'])
             print('This tested release is already published; leaving it unchanged.')
             return
+        # A failed run may be retried after another release has advanced the
+        # counter. Refresh this owned draft to match the rebuilt manifest.
+        gh('api', 'repos/%s/releases/%s' % (repository, release['id']), '--method', 'PATCH', '--input', '-',
+           payload=dict(name='DXF2GCODE %s%s' % ('Develop ' if kind == 'develop' else '', manifest['version']),
+                        body=release_description(manifest, marker)))
     else:
         body = release_description(manifest, marker)
         release = gh('api', 'repos/%s/releases' % repository, '--method', 'POST', '--input', '-',

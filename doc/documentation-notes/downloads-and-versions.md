@@ -15,6 +15,11 @@ Die Anwenderanleitung soll vor allem diese Entscheidungen erklären:
 - **Tests and package checks** ist die automatische GitHub-Prüfung nach Push
   oder PR. Vor einem lokalen Commit läuft die Fast-Suite, nicht die Vollsuite.
   **Publish release** prüft den gewählten Stand vor Veröffentlichung erneut.
+- Der direkte Workflow-Link lautet
+  <https://github.com/dxf2gcode/dxf2gcode/actions/workflows/publish-release.yml>.
+  Dateiname und Anzeigename passen zusammen. Die Develop-Versionsnummer zählt
+  veröffentlichte Stände unabhängig vom GitHub-Laufzähler weiter; beide Nummern
+  können daher voneinander abweichen.
 - Release-Beschreibungen enthalten eine kurze Zusammenfassung der jeweiligen
   Versionslinie statt einer Commitliste. Die gepflegten Texte unter
   `doc/release-notes/` vor künftigen Veröffentlichungen aktualisieren.

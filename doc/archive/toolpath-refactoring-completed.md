@@ -17,13 +17,22 @@ Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 
 ## CI1 – Paketpipeline implementiert und aktiviert (02.11.2026)
 
+**Ergänzung – eindeutiger Release-Workflow (03.11.2026):** Datei und Link heißen
+jetzt `publish-release.yml`, der Anzeigename bleibt **Publish release**.
+Develop-Versionsnummern werden aus den veröffentlichten eigenen Releases
+weitergezählt und sind nicht mehr an Workflow-Dateiname oder Laufzähler
+gebunden. Wiederholungen veröffentlichter Runs behalten ihre Version;
+unterbrochene Drafts bekommen beim Wiederbefüllen passende Metadaten.
+13 gezielte Release-Regressionen und die Actionlint-Prüfung bestanden.
+Ein neuer Release wird durch diese Umbenennung nicht gestartet.
+
 **Ergänzung – getrennte Workflows:** **Tests and package checks** prüft Pushes
 auf `develop` und PRs nach `develop` automatisch. **Publish release** startet
 Develop-Veröffentlichungen manuell und Stable-Veröffentlichungen per Tag.
 Beide nutzen dieselben Tests und Paketprüfungen über einen gemeinsamen
 `workflow_call`-Ablauf. Lokal bleibt der Fast-Hook vor Commits erhalten.
-Die Release-Workflow-Datei und ihre Kennung bleiben für fortlaufende
-Buildnummern erhalten. Die drei Workflow-Dateien wurden mit Actionlint geprüft;
+Der Release-Versionszähler ist inzwischen von der Workflow-Kennung getrennt.
+Die drei Workflow-Dateien wurden mit Actionlint geprüft;
 ein manueller Release wurde durch diesen Umbau nicht gestartet.
 
 **Ergänzung – manuelle Develop-Veröffentlichung:** Develop-Releases werden

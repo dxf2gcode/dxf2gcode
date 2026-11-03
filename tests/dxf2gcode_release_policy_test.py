@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
-from release_policy import release_marker, retention_candidates, write_checksums, verify_checksums
+from release_policy import develop_build_number, release_marker, retention_candidates, write_checksums, verify_checksums
 from prepare_release import manifest_for
 import prepare_release
 from dxf2gcode.bootstrap.version_metadata import VersionInfo
@@ -22,9 +22,23 @@ class TestReleasePolicy(unittest.TestCase):
     def release(self, number):
         revision = '%040x' % number
         return dict(id=number, tag_name='develop-ci-%d' % number, prerelease=True,
+                    name='DXF2GCODE Develop 2.0.0.dev%d' % number,
                     draft=False, target_commitish=revision,
                     body=release_marker(revision, number),
                     published_at='2026-11-%02dT00:00:00Z' % number)
+
+    def test_develop_versions_continue_after_workflow_rename_and_on_retries(self):
+        releases = [self.release(10), self.release(11)]
+        draft = self.release(20)
+        draft['draft'] = True
+        stable = self.release(21)
+        stable['prerelease'] = False
+        self.assertEqual(develop_build_number(releases+[draft, stable], '999'), 12)
+        self.assertEqual(develop_build_number(releases, '11'), 11)
+        self.assertEqual(develop_build_number([], '999'), 1)
+        releases[1]['name'] = 'Renamed without a version'
+        with self.assertRaises(ValueError):
+            develop_build_number(releases, '999')
 
     def test_cleanup_keeps_ten_newest_and_all_unrelated_releases(self):
         releases = [self.release(i) for i in range(1, 14)]
@@ -95,6 +109,13 @@ class TestReleasePublication(unittest.TestCase):
         with self.assertRaises(ValueError):
             msi_version('2.0.0.dev65536')
 
+    def test_manifest_separates_release_counter_from_workflow_run_number(self):
+        manifest = manifest_for('2.0.0.dev0', 'a'*40, 1793610000, '999', 1,
+                                'workflow_dispatch', 'refs/heads/develop', build_number=12)
+        self.assertEqual(manifest['run_number'], 1)
+        self.assertEqual(manifest['build_number'], 12)
+        self.assertEqual((manifest['version'], manifest['msi_version']), ('2.0.0.dev12', '2.0.12'))
+
     def test_staging_keeps_build_tools_and_excludes_previous_outputs(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -106,12 +127,14 @@ class TestReleasePublication(unittest.TestCase):
                 path.write_text('original', encoding='utf-8')
             info = VersionInfo(version='2.0.0.dev0', revision='a'*40, dirty=False)
             with patch.object(prepare_release, 'ROOT', root), \
+                    patch.object(prepare_release, 'read_releases', return_value=[]), \
+                    patch.object(prepare_release, 'develop_build_number', return_value=123), \
                     patch.object(prepare_release, 'capture_build_info', return_value=info), \
                     patch.object(prepare_release.subprocess, 'check_output',
                                  side_effect=['', 'a'*40, '1793610000']), \
                     patch.dict(os.environ, GITHUB_SHA='a'*40, GITHUB_RUN_ID='1234',
                                GITHUB_RUN_NUMBER='123', GITHUB_EVENT_NAME='workflow_dispatch',
-                               GITHUB_REF='refs/heads/develop', GITHUB_OUTPUT=''):
+                               GITHUB_REF='refs/heads/develop', GITHUB_OUTPUT='', GITHUB_REPOSITORY='owner/repo'):
                 prepare_release.prepare(root / 'staged')
             staged = root / 'staged/source'
             self.assertTrue((staged / 'tools/build/qt_assets.py').is_file())
@@ -127,7 +150,7 @@ class TestReleasePublication(unittest.TestCase):
             (folder / name).write_bytes(b'package')
         write_checksums(folder)
 
-    def run_publication(self, kind='develop', complete=True, event=None):
+    def run_publication(self, kind='develop', complete=True, event=None, draft=False):
         event = event or ('workflow_dispatch' if kind == 'develop' else 'push')
         manifest = self.manifest(ref='refs/tags/v2.0.0' if kind == 'stable' else 'refs/heads/develop')
         calls = []
@@ -140,7 +163,9 @@ class TestReleasePublication(unittest.TestCase):
                 if endpoint.endswith('/git/ref/heads/develop'):
                     return {'object': {'sha': 'a'*40}}
                 if endpoint.endswith('/releases?per_page=100'):
-                    return [[]]
+                    return [[dict(id=7, tag_name=manifest['tag'], target_commitish='a'*40,
+                                  body=release_marker('a'*40, manifest['run_id']), draft=True,
+                                  name='DXF2GCODE Develop 2.0.0.dev122', assets=[])]] if draft else [[]]
                 if payload and payload.get('draft') is True:
                     return dict(id=7, assets=[])
                 if args == ('api', 'repos/owner/repo/releases/7'):
@@ -174,6 +199,12 @@ class TestReleasePublication(unittest.TestCase):
     def test_develop_push_cannot_publish_even_with_a_develop_manifest(self):
         with self.assertRaisesRegex(ValueError, 'manual develop'):
             self.run_publication(event='push')
+
+    def test_retried_draft_description_matches_the_current_build(self):
+        calls = self.run_publication(draft=True)
+        updated = [payload for args, payload in calls if payload and 'body' in payload]
+        self.assertEqual(updated[0]['name'], 'DXF2GCODE Develop 2.0.0.dev123')
+        self.assertIn('Package version: `2.0.0.dev123`', updated[0]['body'])
 
 
 if __name__ == '__main__':
