@@ -42,15 +42,17 @@ Use relevant individual regression tests for the affected behavior. The
 full suite. Agree on full-suite runs, Debian/SSH validation, complete release/MSI
 builds or other extensive checks with a maintainer before starting them.
 
-GitHub Actions runs **Full regression tests** on pushes to `develop` and pull
+GitHub Actions runs **Tests and package checks** on pushes to `develop` and pull
 requests targeting `develop`, using Python 3.11/3.12/3.13 with PyQt5 and Python
 3.11 with PyQt6. This includes the fast checks; there is no duplicate fast CI
 workflow. The job generates UI/resources and compiles translations first.
-Manual runs remain available via **Actions → Full regression tests → Run workflow**.
 The restriction on agent-started local full-suite runs does not prohibit these
-automatic CI runs. Release/MSI builds remain separate.
+automatic CI runs. Shared package checks also build Python and Windows artifacts;
+public release creation remains a separate **Publish release** workflow.
 
-### Fast tests before every local commit
+<a id="fast-tests-before-every-local-commit"></a>
+
+### Fast tests before code commits
 
 After preparing the checkout and activating your test environment, enable the
 versioned pre-commit hook once for this checkout:
@@ -69,6 +71,13 @@ install dependencies, generate assets or run the full suite. Missing UI/QM files
 must be prepared using the commands in [source/README.md](source/README.md).
 The tests check the working tree, so keep the staged changes aligned with the
 tested state. Each new clone needs its own hook activation.
+
+Source-code, test and executable-tool changes require this hook. Pure
+documentation changes (including images, drawing examples and site navigation)
+need the relevant documentation checks instead. Inspect staged paths first;
+while the hook remains unconditional, use an empty hook directory only in that
+individual documentation commit's command-local `core.hooksPath`. Do not change
+the persistent hook setting. See [AGENTS.md](AGENTS.md).
 
 ## Translations and generated files
 

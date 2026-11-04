@@ -4,6 +4,12 @@ Implementiert am **01.11.2026**, Postprozessor-Konfigurationsversion **8.2**.
 Die Versionen 8 und 8.1 bleiben lesbar. Alte Profile erhalten automatisch
 `return_state = legacy` und behalten ihre bisherige Ausgabe.
 
+Aktueller Dokumentationsabgleich am **04.11.2026**: Der Leser unterstützt
+8, 8.1, 8.2 und 8.3; 8.3 ergänzt `Program.lin_mov_xyz`. Die neue englische
+[Werkzeugwechselreferenz](../docs/reference/tool-changes.md) beschreibt denselben
+Rückkehrvertrag. Die Implementierungs-/Prüfangaben unten bleiben historische
+Nachweise, keine neu ausgeführte Maschinenabnahme.
+
 Ergänzt am **02.11.2026**: ein dokumentierter
 [manueller LinuxCNC-Ablauf mit ladbarem Beispielprofil](linuxcnc-manual-tool-change.md).
 Er verwendet vorbereitet vermessene Werkzeuge, M6 und danach G43 ohne

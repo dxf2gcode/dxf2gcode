@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben
 
-Stand: **03.11.2026**.
+Stand: **04.11.2026**.
 
 Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
 Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
@@ -20,12 +20,13 @@ kein neuer Ausführungsauftrag vor.
 | --- | --- | --- |
 | Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
 | Vor Umsetzung abstimmen | [A1 – Abnahmegrenzen](#a1) | Konkrete Abdeckungslücken |
-| Eigener Arbeitsstrang | [DOC1 – Dokumentationsinhalte](#doc1) | Rückmeldungen zur Erstansicht; WP9 abstimmen; Quellenrechte |
+| Eigener Arbeitsstrang | [DOC1 – Dokumentationsabnahme](#doc1) | Entwurf WP9–WP13 sichten und veröffentlichen; Rückmeldungen |
 | Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 
-Als nächstes Rückmeldungen zur öffentlichen Erstansicht einarbeiten und
-**DOC1/WP9** (Postprozessoren und Werkzeugwechsel) abstimmen.
+Als nächstes den vollständigen **DOC1/WP9–WP13**-Entwurf sichten und
+Commit/Integration/Veröffentlichung freigeben; Rückmeldungen zu den Kapiteln
+einpflegen. Alle geplanten Themen sind als Dokumentationsinhalte ausgearbeitet.
 
 ## Bereitstellung und Abnahme
 
@@ -80,19 +81,19 @@ Als nächstes Rückmeldungen zur öffentlichen Erstansicht einarbeiten und
 
 <a id="doc1"></a>
 
-- [ ] **DOC1 – Fachliche Rückmeldungen:** öffentliche Erstansicht mit WP1–WP8
-  sichten und konkrete Korrekturen benennen. [Veröffentlichungsnachweis](archive/toolpath-refactoring-completed.md#doc1-wp3-wp8-publication).
-- [ ] **DOC1:** Postprozessoren und Beispiele (WP9–WP10),
-  Developer Guide (WP11–WP12) und historische Inhalte (WP13) bearbeiten.
-  [Migrationsmatrix und Reihenfolge](migration/wiki-migration-plan.md).
-- [ ] Bei den jeweiligen Inhaltspaketen die
-  [gesammelten Fach- und Quellenhinweise](documentation-notes/README.md)
-  abgleichen und externe Wiki-/Forum-Verweise prüfen.
-- [ ] Rechte für Wiki-Texte, Screenshots, fremde DXFs und Git-Flow-Grafik
-  klären; ungeklärte Inhalte nicht übernehmen.
-- [ ] Fehlendes `Spant.png` (404) klären oder autorisiert ersetzen.
-- [ ] Optional das veröffentlichte Symbol und den Header zusätzlich visuell
-  kontrollieren.
+- [ ] **DOC1 – Sichtung und Veröffentlichung:** fertige WP9–WP13 auf
+  `docs/remaining-guide-wp9-wp13` sichten, Commit/Integration/Veröffentlichung
+  freigeben und konkrete Kapitelrückmeldungen einarbeiten.
+  [Umsetzung und Nachweise](archive/toolpath-refactoring-completed.md#doc1-wp9-wp13).
+  WP1–WP8 sind bereits [veröffentlicht](archive/toolpath-refactoring-completed.md#doc1-wp3-wp8-publication).
+- [ ] **Optionale Maschinenabnahme:** die Grbl-1.1-Laser- und LinuxCNC-2.9-
+  Heißdraht-/Drehdemonstrationen bei Bedarf für einen konkreten realen Aufbau
+  anpassen und gesondert abnehmen. Geladene Demoprofile und synthetische
+  Ausgabeprüfungen sind keine Controller-/Material-/Maschinenfreigabe.
+- [ ] **Optionale historische Wiederverwendung:** Rechte für Wiki-Texte,
+  Screenshots, fremde DXFs und Git-Flow-Grafik klären, falls sie übernommen
+  werden sollen; fehlendes `Spant.png` (404) nur mit geklärter Herkunft
+  wiederherstellen/ersetzen. Die neue Anleitung benötigt diese Originale nicht.
 - [ ] Frische Windows-/Ubuntu-/PyQt6-Installationen und macOS-Pakete sowie
   CNC-/ATC-/manuelle Maschinenabnahmen separat planen und freigeben.
 

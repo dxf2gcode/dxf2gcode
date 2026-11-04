@@ -116,6 +116,17 @@ No new blanket branding license has been assigned. The logo/header need a short
 visual check before deployment. Commit, push and deployment still have the
 separate status recorded in the handover report.
 
+### Current guide completion, 2026-11-04
+
+WP9–WP13 add newly authored reference/developer/project text, two own file-output
+demonstration profiles and an own architecture diagram. No preserved wiki
+prose, machine profile, third-party screenshot/DXF or raw discussion archive
+has been copied into these pages. Their own assets carry adjacent provenance
+records; this does not expand rights to preserved originals. Current website
+wordmark and symbol were visually inspected again. Earlier prototype approval
+statements above remain dated records; the current completion/publication
+status is tracked in the completion log and Todo.
+
 ### Latest supplied symbol and stable source names
 
 The user placed the latest wordmark and icon files in the application resource

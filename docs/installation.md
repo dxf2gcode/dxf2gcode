@@ -36,7 +36,7 @@ Use a [Python virtual environment](https://docs.python.org/3/library/venv.html)
 to keep application packages separate from system Python and other projects.
 The application's `.venv` below is separate from the documentation-build
 environment. Instructions for maintaining the website are in the repository's
-[documentation notes](https://github.com/dxf2gcode/dxf2gcode/blob/develop/doc/documentation-notes/documentation-site-maintenance.md).
+[Documentation maintenance](developer/documentation.md).
 PySide6 is not a
 supported runtime binding for this checkout.
 
