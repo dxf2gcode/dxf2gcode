@@ -40,8 +40,14 @@ text. At the user's request for hobby-controller examples, three additional
 loadable demonstrations now target Grbl 1.1 laser motion and LinuxCNC 2.9
 parallel XYUV wire/linear diameter-lathe motion. They retain explicit zero-power,
 setup and acceptance limits. All planned
-documentation topics are written. Commit/integration/publication of this last
-slice and content feedback remain open; see
+documentation topics are written. This last slice was committed as `b32c89e`
+and merged through [PR #4](https://github.com/dxf2gcode/dxf2gcode/pull/4)
+(`0d47323`) after successful documentation checks. Pages run
+[41908888199](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41908888199)
+built and deployed successfully. All nineteen new pages with expected titles,
+six downloads and the updated navigation were verified online (HTTP 200).
+WP1–WP13 are now published; content feedback and separately scoped real-machine
+acceptance remain open. See
 [completion evidence](../archive/toolpath-refactoring-completed.md#doc1-wp9-wp13).
 The work-package specifications below are preserved as the planning baseline.
 

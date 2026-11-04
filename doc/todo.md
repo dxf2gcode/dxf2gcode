@@ -20,13 +20,13 @@ kein neuer Ausführungsauftrag vor.
 | --- | --- | --- |
 | Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
 | Vor Umsetzung abstimmen | [A1 – Abnahmegrenzen](#a1) | Konkrete Abdeckungslücken |
-| Eigener Arbeitsstrang | [DOC1 – Dokumentationsabnahme](#doc1) | Entwurf WP9–WP13 sichten und veröffentlichen; Rückmeldungen |
+| Fachliche Rückmeldungen | [DOC1 – Dokumentationsabnahme](#doc1) | Konkrete Korrekturen zur veröffentlichten Anleitung |
 | Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 
-Als nächstes den vollständigen **DOC1/WP9–WP13**-Entwurf sichten und
-Commit/Integration/Veröffentlichung freigeben; Rückmeldungen zu den Kapiteln
-einpflegen. Alle geplanten Themen sind als Dokumentationsinhalte ausgearbeitet.
+Alle geplanten Dokumentationsthemen **WP1–WP13** sind ausgearbeitet und
+veröffentlicht. Als nächstes konkrete fachliche Rückmeldungen einpflegen;
+weitere Software-/Plattform-/Maschinenabnahmen bleiben gesonderte Aufgaben.
 
 ## Bereitstellung und Abnahme
 
@@ -81,11 +81,10 @@ einpflegen. Alle geplanten Themen sind als Dokumentationsinhalte ausgearbeitet.
 
 <a id="doc1"></a>
 
-- [ ] **DOC1 – Sichtung und Veröffentlichung:** fertige WP9–WP13 auf
-  `docs/remaining-guide-wp9-wp13` sichten, Commit/Integration/Veröffentlichung
-  freigeben und konkrete Kapitelrückmeldungen einarbeiten.
-  [Umsetzung und Nachweise](archive/toolpath-refactoring-completed.md#doc1-wp9-wp13).
-  WP1–WP8 sind bereits [veröffentlicht](archive/toolpath-refactoring-completed.md#doc1-wp3-wp8-publication).
+- [ ] **DOC1 – Fachliche Rückmeldungen:** konkrete Kapitelkorrekturen zur
+  veröffentlichten vollständigen Anleitung einarbeiten.
+  [Abschluss und Veröffentlichung WP9–WP13](archive/toolpath-refactoring-completed.md#doc1-wp9-wp13),
+  [Erstansicht WP1–WP8](archive/toolpath-refactoring-completed.md#doc1-wp3-wp8-publication).
 - [ ] **Optionale Maschinenabnahme:** die Grbl-1.1-Laser- und LinuxCNC-2.9-
   Heißdraht-/Drehdemonstrationen bei Bedarf für einen konkreten realen Aufbau
   anpassen und gesondert abnehmen. Geladene Demoprofile und synthetische

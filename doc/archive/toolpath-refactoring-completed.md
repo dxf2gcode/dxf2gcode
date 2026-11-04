@@ -346,14 +346,23 @@ als Quellbasis `bf1ac6d`; Windows, Python 3.11.1, PyQt5 5.15.11, Qt 5.15.2 für
 Profil-/Template-/SVG-Prüfung. [Assetnachweis](../../docs/assets/examples/postprocessors/README.txt)
 und [Fachquellen](../documentation-notes/postprocessors-and-development.md).
 
-**Grenzen:** Lokal auf `docs/remaining-guide-wp9-wp13`, noch nicht committet,
-integriert oder veröffentlicht. Keine neuen Anwendungs-/Test-/Tooländerungen,
+**Veröffentlichung (04.11.2026):** Auf ausdrücklichen Auftrag als `b32c89e`
+committet und über [PR #4](https://github.com/dxf2gcode/dxf2gcode/pull/4) nach
+`develop` integriert (`0d47323`). Die PR-Dokumentationsprüfung war erfolgreich.
+Der [Pages-Lauf 41908888199](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41908888199)
+hat Build und Deployment erfolgreich abgeschlossen. Alle 19 neuen Seiten mit
+erwarteten Überschriften, fünf Profil-Downloads, die neue Dreh-DXF und die
+aktuelle Startseitennavigation direkt online geprüft (HTTP 200). Damit sind
+alle geplanten Kapitel WP1–WP13 veröffentlicht. Die automatisch gestartete
+allgemeine Quellcode-/Paketmatrix lief unabhängig weiter.
+
+**Grenzen:** Keine neuen Anwendungs-/Test-/Tooländerungen,
 Fast-/Vollsuite, Qt-Neugenerierung, CLI-Beispielexporte, kompletten
 DXF-Reimport-/Controllerprüfungen oder Paket-/Release-/MSI-/Debian-/SSH-Läufe.
 Keine Maschinen-, Material- oder frische Plattformabnahme. Konkrete
 Anpassungen am realen Aufbau sowie historische Wiederverwendung benötigen
 bei Bedarf einen eigenen Auftrag; ihre Grenzen sind Inhalt der fertigen Seiten.
-Fachliche Sichtung/Veröffentlichung bleiben in der Todo.
+Konkrete fachliche Rückmeldungen bleiben in der Todo.
 
 ### WP10-Nachtrag: konkrete Hobby-Steuerungsbeispiele (04.11.2026)
 
@@ -377,7 +386,7 @@ metrische Dreh-DXF importiert als eine offene Kontur mit drei Linien,
 Z-Ausdehnung −20…0 und Radius 3…5 mm sowie einer initialisierten Planerpassfolge.
 Strikter Dokumentationsbuild und lokale Verweise geprüft. Kein vollständiger
 Anwendungsexport, Controller-Interpreter, Materialversuch oder Maschinenlauf.
-Commit und Veröffentlichung bleiben unverändert offen.
+Commit und Veröffentlichung sind mit WP9–WP13 abgeschlossen (Nachweis oben).
 
 ## Issue-Formulare und Anhanghinweise (03.11.2026)
 
