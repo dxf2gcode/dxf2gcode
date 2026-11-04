@@ -1,0 +1,42 @@
+# Newly authored documentation demonstration; GPL-3.0-or-later.
+# Copy as python-events.cfg. Records events as text; executes no Python.
+[Version]
+config_version = 8.3
+[General]
+output_text = Python - event-list demonstration
+output_format = .py
+output_type = text
+abs_export = True
+code_begin_units_mm = ""
+code_begin_units_in = ""
+code_begin_prog_abs = ""
+code_begin_prog_inc = ""
+code_begin = "events = ["
+code_end = "]%nl"
+[Number_Format]
+post_decimals = 6
+decimal_separator = .
+pre_decimal_zero_padding = False
+signed_values = False
+[Line_Numbers]
+use_line_nrs = False
+[Tool_Change]
+return_state = legacy
+[Program]
+tool_change = "('tool', %tool_nr, %speed),%nl"
+feed_change = "('feed', %feed),%nl"
+rap_pos_plane = "('rapid_xy', %XE, %YE),%nl"
+rap_pos_depth = "('rapid_z', %ZE),%nl"
+lin_mov_plane = "('line', %XS, %YS, %XE, %YE),%nl"
+lin_mov_xyz = "('xyz', %XS, %YS, %ZS, %XE, %YE, %ZE),%nl"
+lin_mov_depth = "('linear_z', %ZE),%nl"
+lin_mov_drill = "('drill_z', %ZE),%nl"
+lin_ret_drill = "('drill_retract', %ZE, %ZS),%nl"
+arc_int_cw = "('arc_cw', %XS, %YS, %XE, %YE, %XO, %YO, %R),%nl"
+arc_int_ccw = "('arc_ccw', %XS, %YS, %XE, %YE, %XO, %YO, %R),%nl"
+cutter_comp_off = "('compensation', 40),%nl"
+cutter_comp_left = "('compensation', 41),%nl"
+cutter_comp_right = "('compensation', 42),%nl"
+pre_shape_cut = "('begin_cut',),%nl"
+post_shape_cut = "('end_cut',),%nl"
+comment = ""

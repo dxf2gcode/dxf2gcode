@@ -30,8 +30,20 @@ maintenance instructions have moved out of the public navigation into
 linked example drawings remain available. Pages build/deploy
 [41723317919](https://github.com/dxf2gcode/dxf2gcode/actions/runs/41723317919)
 succeeded; all fourteen chapter URLs and two DXF downloads returned HTTP 200,
-and both removed public prototype URLs returned 404. WP9–WP13 below remain
-plans, not implemented chapters.
+and both removed public prototype URLs returned 404.
+
+**Progress, 2026-11-04:** WP9–WP13 are now authored locally on
+`docs/remaining-guide-wp9-wp13`: nineteen pages complete the reference,
+five examples, developer guide and project pages. Two original loadable
+file-output demonstrations and a new architecture diagram supplement the
+text. At the user's request for hobby-controller examples, three additional
+loadable demonstrations now target Grbl 1.1 laser motion and LinuxCNC 2.9
+parallel XYUV wire/linear diameter-lathe motion. They retain explicit zero-power,
+setup and acceptance limits. All planned
+documentation topics are written. Commit/integration/publication of this last
+slice and content feedback remain open; see
+[completion evidence](../archive/toolpath-refactoring-completed.md#doc1-wp9-wp13).
+The work-package specifications below are preserved as the planning baseline.
 
 ## Baseline, evidence and publication gates
 

@@ -190,6 +190,7 @@ Continue with [contours, pockets and drilling](../user-guide/contours-pockets-an
 [compensation and lead moves](../user-guide/compensation-and-leads.md), or
 [preview and export](../user-guide/preview-and-export.md). For other workflows,
 see [drag-knife cutting](../user-guide/drag-knife-cutting.md) and
-[command-line usage](../user-guide/command-line-usage.md). Detailed tool-change
-configuration belongs to a later chapter. Return to the
+[command-line usage](../user-guide/command-line-usage.md). See
+[Tool changes and macros](../reference/tool-changes.md) for that configuration.
+Return to the
 [project overview](../index.md) for the other available chapters.

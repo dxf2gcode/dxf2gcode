@@ -13,7 +13,8 @@ Die Anwenderanleitung soll vor allem diese Entscheidungen erklären:
   weiterhin automatisch, veröffentlichen aber kein Release. Stabile Releases
   bleiben an passende Versionstags gebunden.
 - **Tests and package checks** ist die automatische GitHub-Prüfung nach Push
-  oder PR. Vor einem lokalen Commit läuft die Fast-Suite, nicht die Vollsuite.
+  oder PR. Vor lokalen Code-/Test-/Werkzeugcommits läuft die Fast-Suite;
+  reine Dokumentationscommits verwenden die dokumentierten Dokuprüfungen.
   **Publish release** prüft den gewählten Stand vor Veröffentlichung erneut.
 - Der direkte Workflow-Link lautet
   <https://github.com/dxf2gcode/dxf2gcode/actions/workflows/publish-release.yml>.

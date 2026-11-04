@@ -5,8 +5,8 @@ a Qt interface for preparing drawings and toolpaths, with configurable
 postprocessors for output.
 
 **Development documentation.** These chapters describe the current development
-version toward 2.0.0. The guide is being expanded; postprocessor examples and
-developer chapters will follow.
+version toward 2.0.0. The guide covers operation, postprocessors, examples and
+development. Example acceptance limits are stated on the relevant pages.
 
 - Follow [First DXF to G-code](getting-started/first-dxf-to-gcode.md) for a
   step-by-step example with a downloadable drawing.
@@ -27,6 +27,17 @@ developer chapters will follow.
   [application settings](user-guide/application-settings.md) or
   [parameterized layer names](user-guide/layer-naming-rules.md).
 - Follow [Installation and startup](installation.md) to run a development checkout.
+- Adapt output using the [postprocessor reference](reference/postprocessors.md),
+  [tool-change contracts](reference/tool-changes.md) and
+  [five example references](examples/index.md).
+- Start development with [setup](developer/setup.md),
+  [architecture](developer/architecture.md), [tests](developer/tests.md) and
+  [Qt/translations](developer/qt-and-translations.md). See
+  [packaging](developer/packaging.md), [contributing](developer/contributing.md)
+  and [website maintenance](developer/documentation.md) for maintenance work.
+- Find [downloads](project/downloads.md), [support](project/support.md),
+  [license and credits](project/license-and-credits.md) and
+  [historical documentation](project/history.md).
 - Find the source code in the [GitHub repository](https://github.com/dxf2gcode/dxf2gcode).
 - Previously published packages remain in the
   [SourceForge download archive](https://sourceforge.net/projects/dxf2gcode/files/).

@@ -1,5 +1,9 @@
 # Documentation site maintenance
 
+The current public developer chapter is
+[Documentation maintenance](../../docs/developer/documentation.md). This internal
+note retains the operational setup details from the earlier public prototype.
+
 The documentation site uses [Zensical](https://zensical.org/docs/get-started/), configured
 in `zensical.toml` at the repository root. The development website is hosted
 with GitHub Pages. A separate GitHub Actions workflow automatically publishes

@@ -27,6 +27,33 @@ nav = [
     { "Application settings" = "user-guide/application-settings.md" },
     { "Layer naming rules" = "user-guide/layer-naming-rules.md" },
   ] },
+  { "Postprocessor reference" = [
+    { "Configuration and templates" = "reference/postprocessors.md" },
+    { "Tool changes and macros" = "reference/tool-changes.md" },
+  ] },
+  { "Postprocessor examples" = [
+    { "Overview and limits" = "examples/index.md" },
+    { "Laser cutter" = "examples/laser.md" },
+    { "Hot-wire and foam" = "examples/hot-wire.md" },
+    { "Lathe output" = "examples/lathe.md" },
+    { "DXF output" = "examples/dxf-output.md" },
+    { "Python text output" = "examples/python-output.md" },
+  ] },
+  { "Developer guide" = [
+    { "Development setup" = "developer/setup.md" },
+    { "Architecture" = "developer/architecture.md" },
+    { "Tests" = "developer/tests.md" },
+    { "Qt resources and translations" = "developer/qt-and-translations.md" },
+    { "Packaging and builds" = "developer/packaging.md" },
+    { "Contributing" = "developer/contributing.md" },
+    { "Documentation maintenance" = "developer/documentation.md" },
+  ] },
+  { "Project" = [
+    { "Releases and downloads" = "project/downloads.md" },
+    { "Support and issue reporting" = "project/support.md" },
+    { "License and credits" = "project/license-and-credits.md" },
+    { "Historical documentation" = "project/history.md" },
+  ] },
 ]
 
 [project.theme]

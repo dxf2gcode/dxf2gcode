@@ -1,0 +1,43 @@
+# Newly authored documentation demonstration; GPL-3.0-or-later.
+# Copy as dxf-lines.cfg. Narrow 2D line output, not a CNC controller profile.
+[Version]
+config_version = 8.3
+[General]
+output_text = DXF - 2D line demonstration
+output_format = .dxf
+output_type = dxf
+abs_export = True
+export_arcs_as_lines = True
+code_begin_units_mm = ""
+code_begin_units_in = ""
+code_begin_prog_abs = ""
+code_begin_prog_inc = ""
+code_begin = "0%nlSECTION%nl2%nlENTITIES"
+code_end = "0%nlENDSEC%nl0%nlEOF%nl"
+[Number_Format]
+post_decimals = 6
+decimal_separator = .
+pre_decimal_zero_padding = False
+signed_values = False
+[Line_Numbers]
+use_line_nrs = False
+[Tool_Change]
+return_state = legacy
+[Program]
+tool_change = ""
+feed_change = ""
+rap_pos_plane = ""
+rap_pos_depth = ""
+lin_mov_plane = "0%nlLINE%nl8%nlTOOLPATH%nl10%nl%XS%nl20%nl%YS%nl30%nl0%nl11%nl%XE%nl21%nl%YE%nl31%nl0%nl"
+lin_mov_xyz = ""
+lin_mov_depth = ""
+lin_mov_drill = ""
+lin_ret_drill = ""
+arc_int_cw = ""
+arc_int_ccw = ""
+cutter_comp_off = ""
+cutter_comp_left = ""
+cutter_comp_right = ""
+pre_shape_cut = ""
+post_shape_cut = ""
+comment = ""

@@ -1,6 +1,6 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **03.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **04.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
 Dieses Dokument bewahrt abgeschlossene Implementierungen, deren dokumentierte
 Prüfergebnisse und die historische Ausgangslage. Die
@@ -295,6 +295,89 @@ Dokumentationsveröffentlichung abgewartet.
 Diese Erstansicht
 ist eine Dokumentationsveröffentlichung; WP9–WP13 und die spätere stabile
 Softwareversion 2.0.0 bleiben davon unabhängig offen.
+
+<a id="doc1-wp9-wp13"></a>
+
+## DOC1/WP9–WP13 – Restliche Dokumentationsinhalte erstellt (04.11.2026)
+
+19 neue englische Seiten vervollständigen die geplanten Dokumentationsthemen.
+Die Website umfasst damit 38 Markdown-Seiten. Neue Navigationsgruppen
+erschließen Postprozessorreferenz, Beispiele, Developer Guide und Projektseiten.
+Installation/Einstieg sind passend verlinkt; die früher entfernten öffentlichen
+Prototypseiten bleiben entfernt.
+
+- **WP9:** Schema-/Dateireferenz einschließlich 8.3 und XYZ-Template,
+  General/Program/Format/Zeilennummern/Custom-G-Code, Bewegungsplatzhalter
+  und Werkzeugwechselvertrag. Legacy/Managed, effektive Werkzeugfolge,
+  absolute Makroziele bei G91, skalare Referenzen, H-Zuordnung und
+  CustomGCode-Beschränkungen sind gegen die Implementierung abgeglichen.
+  Das vorhandene LinuxCNC-Manual-Beispiel bleibt mit seinen Voraussetzungen
+  verlinkt; englische und deutsche Makronotizen widersprechen einander nicht.
+- **WP10:** Fünf eigene Referenzseiten für Laser, Heißdraht, Drehen, DXF und
+  Python. Die ersten drei waren zunächst steuerungsneutrale Fragmente und
+  sind jetzt auf Hobby-Steuerungen konkretisiert (Nachtrag unten). Eigene ladbare
+  DXF-Linien- und Python-Ereignislistenprofile demonstrieren Dateiausgabe.
+  Es wird keine historische Fremdvorlage als aktuelles Vollprofil ausgegeben.
+- **WP11:** Entwicklerinstallation, Architektur und Tests mit aktuellen
+  Paketpfaden, echten Verantwortungsgrenzen und eigenem Diagramm. Python-
+  Mindestdeklaration, CI-Matrix und verbleibende Qt-/Runtime-State-Kopplung
+  sind getrennt beschrieben; keine öffentliche Altimport-API versprochen.
+- **WP12:** Qt-/TS-/QM-Abläufe, Paket-/Windows-Build, Beiträge und Doku-Pflege.
+  Compile-only und Textextraktion, beide Qt-Bindings für Releases, generierte
+  Dateien, Herkunft und lokale Prüffreigaben sind erklärt. CONTRIBUTING und
+  Tests-README entsprechen jetzt den aktuellen CI-Namen und der Doku-Ausnahme.
+- **WP13:** Downloads/Versionen/Retention, Support, Lizenz/Credits und Historie.
+  Stabiles 2.0.0 bleibt an die gesamte Todo gebunden. Es werden weder
+  ungeklärte Wiki-Originale noch persönliche Roharchive veröffentlicht.
+
+**Prüfung:** Strikter Zensical-Build erfolgreich; lokale Markdown-Verweise
+und Navigation geprüft. Zwei neue Demoprofile über `MyPostProConfig` in einem
+temporären Profil geladen: keine Versionsabweichung oder Default-Recovery.
+Synthetische DXF-LINE-Ausgabe auf Gruppenpaare/Koordinaten geprüft; Python-
+Program-Records mit `ast.parse` geprüft, nicht ausgeführt. Architektur-SVG
+gerendert und visuell geprüft. Bestehendes Website-Logo und Symbol zusätzlich
+visuell kontrolliert. Projekt, Releases, Issue-Auswahl, Linux-Installer und
+Forum jeweils direkt erreichbar (HTTP 200). Offizielle LinuxCNC-G43-/M6-
+Manualtoolchange-Quellen geöffnet und mit den Aussagen verglichen.
+
+**Herkunft:** Neue Texte, eigenes Diagramm und eigene Beispieldateien, keine
+unklar lizenzierten Wiki-Texte/-Profile/-Bilder übernommen. Anwendungsversion
+als Quellbasis `bf1ac6d`; Windows, Python 3.11.1, PyQt5 5.15.11, Qt 5.15.2 für
+Profil-/Template-/SVG-Prüfung. [Assetnachweis](../../docs/assets/examples/postprocessors/README.txt)
+und [Fachquellen](../documentation-notes/postprocessors-and-development.md).
+
+**Grenzen:** Lokal auf `docs/remaining-guide-wp9-wp13`, noch nicht committet,
+integriert oder veröffentlicht. Keine neuen Anwendungs-/Test-/Tooländerungen,
+Fast-/Vollsuite, Qt-Neugenerierung, CLI-Beispielexporte, kompletten
+DXF-Reimport-/Controllerprüfungen oder Paket-/Release-/MSI-/Debian-/SSH-Läufe.
+Keine Maschinen-, Material- oder frische Plattformabnahme. Konkrete
+Anpassungen am realen Aufbau sowie historische Wiederverwendung benötigen
+bei Bedarf einen eigenen Auftrag; ihre Grenzen sind Inhalt der fertigen Seiten.
+Fachliche Sichtung/Veröffentlichung bleiben in der Todo.
+
+### WP10-Nachtrag: konkrete Hobby-Steuerungsbeispiele (04.11.2026)
+
+Auf Wunsch des Anwenders sind die Beispiele jetzt auf Grbl 1.1 für einen
+DIY-Diodenlaser sowie LinuxCNC 2.9 für eine parallele XYUV-Heißdrahtmaschine
+und eine lineare Z/X-Durchmesser-Drehbahn konkretisiert. Drei vollständige
+eigene `.cfg.example`-Downloads und eine eigene offene Stufenkontur ergänzen
+die vorhandenen DXF-/Python-Demos; insgesamt stehen fünf ladbare Profile bereit.
+
+Die Grbl-Demo verwendet M4 S0 beim Schnitt und M5 S0 bei Travel/Ende, ohne
+Fräsdrehzahl als Leistung, M6, Kühlmittel oder Z. Heißdraht bildet bei Rapid
+und Schnitt X=U/Y=V ab, ohne Heizung oder unabhängige Konusplanung. Die
+Drehdemo verwendet G18/G7/G94/G97, linearisiert Bögen und startet weder
+Spindel noch Werkzeugwechsel; eine freie Rückzugsbahn ist nicht vorgegeben.
+Offizielle Grbl- und LinuxCNC-2.9-Quellen sind auf den Seiten verlinkt.
+
+**Prüfung:** alle drei neuen Profile im isolierten temporären Profil geladen,
+keine Default-Recovery. Synthetische Formatierung prüft XYUV-Koordinaten,
+Z/X-Durchmesserwerte, S0 und das Fehlen unerwünschter M-/Z-Ausgabe. Die neue
+metrische Dreh-DXF importiert als eine offene Kontur mit drei Linien,
+Z-Ausdehnung −20…0 und Radius 3…5 mm sowie einer initialisierten Planerpassfolge.
+Strikter Dokumentationsbuild und lokale Verweise geprüft. Kein vollständiger
+Anwendungsexport, Controller-Interpreter, Materialversuch oder Maschinenlauf.
+Commit und Veröffentlichung bleiben unverändert offen.
 
 ## Issue-Formulare und Anhanghinweise (03.11.2026)
 

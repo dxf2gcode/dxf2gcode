@@ -1,6 +1,6 @@
 # Material für die spätere Anwenderdokumentation
 
-Stand: **03.11.2026**.
+Stand: **04.11.2026**.
 
 Diese Notizen bündeln fachliche Hinweise aus abgeschlossenen Arbeiten. Sie sind
 Redaktionsmaterial für die GitHub-Dokumentation, keine zusätzliche Aufgabenliste.
@@ -9,6 +9,7 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 
 | Thema | Geplantes Inhaltspaket | Material |
 | --- | --- | --- |
+| [Postprozessoren und Entwicklerdokumentation](postprocessors-and-development.md) | WP9–WP13 | Format-/Werkzeugwechselverträge, fünf Beispielgrenzen, Build-/Testquellen, Downloads und Rechte |
 | [Pflege der Dokumentationswebsite](documentation-site-maintenance.md) | Veröffentlichung und spätere Developer Guide | Zensical-Umgebung, lokale Vorschau, strikter Build und Pages-Workflow; aus öffentlichem Prototyp ausgelagert |
 | [Erste DXF bis zum G-Code](first-dxf-workflow.md) | WP1, Grundlage für WP2–WP7 | Rechteck, aktuelle Screenshots, G40-Demonstrationsprofil und Exportnachweis |
 | [Oberfläche, Import und Projekte](interface-import-projects.md) | WP2, Grundlage für WP3 und WP8 | Bedienung, Formate, Zeichnungspfade, Reload und Grenzen der Projektwiederherstellung |

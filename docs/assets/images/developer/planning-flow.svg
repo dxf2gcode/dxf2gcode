@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="410" viewBox="0 0 1200 410" role="img" aria-labelledby="title desc">
+  <title id="title">Drawing, preparation, planning and output</title>
+  <desc id="desc">Drawing and resolved settings pass through preparation to a semantic toolpath plan. The plan feeds preview projections and serialized dialect output. Shared runtime and legacy preparation dependencies remain.</desc>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#225b82"/></marker></defs>
+  <rect width="1200" height="410" fill="white"/>
+  <g font-family="Arial, sans-serif" fill="#12344a">
+    <text x="30" y="39" font-size="25" font-weight="bold">One planned operation, two output responsibilities</text>
+    <g fill="#eff6fb" stroke="#225b82" stroke-width="2">
+      <rect x="25" y="153" width="235" height="95" rx="12"/>
+      <rect x="315" y="153" width="230" height="95" rx="12"/>
+      <rect x="600" y="153" width="235" height="95" rx="12"/>
+      <rect x="900" y="70" width="270" height="95" rx="12"/>
+      <rect x="900" y="260" width="270" height="95" rx="12"/>
+    </g>
+    <g font-size="20" text-anchor="middle">
+      <text x="142" y="190">Drawing + resolved</text><text x="142" y="220">settings / capabilities</text>
+      <text x="430" y="190">Geometry preparation</text><text x="430" y="220">offsets, leads, pockets</text>
+      <text x="717" y="190">Semantic toolpath plan</text><text x="717" y="220">passes and diagnostics</text>
+      <text x="1035" y="107">Preview projection</text><text x="1035" y="137">2D / 3D</text>
+      <text x="1035" y="297">Serialization + dialect</text><text x="1035" y="327">controller / file text</text>
+    </g>
+    <g fill="none" stroke="#225b82" stroke-width="3" marker-end="url(#arrow)">
+      <path d="M260 200H311"/><path d="M545 200H596"/>
+      <path d="M835 200H860V117H896"/><path d="M860 200V307H896"/>
+    </g>
+    <text x="30" y="391" font-size="17">Current structure: shared runtime state and established preparation algorithms still have legacy dependencies.</text>
+  </g>
+</svg>

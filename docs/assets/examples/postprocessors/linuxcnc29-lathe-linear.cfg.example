@@ -1,0 +1,37 @@
+# Own LinuxCNC 2.9 G7/G18 linear lathe-motion demonstration; GPL-3.0-or-later.
+# Application machine type must be lathe: %YE already contains diameter.
+# No automatic tool change or spindle start; arcs are linearized.
+[Version]
+config_version = 8.3
+[General]
+output_text = LinuxCNC 2.9 - lathe linear diameter demonstration
+output_format = .ngc
+output_type = g-code
+abs_export = True
+export_arcs_as_lines = True
+code_begin_units_mm = G21
+code_begin_units_in = G20
+code_begin_prog_abs = G90
+code_begin_prog_inc = G91
+code_begin = "G18 G7 G94 G40 G97%nlM5 S0"
+code_end = "M5 S0%nlM2%nl"
+[Tool_Change]
+return_state = legacy
+[Program]
+tool_change = ""
+feed_change = "F%feed%nl"
+rap_pos_plane = "G0 Z%XE X%YE%nl"
+rap_pos_depth = ""
+lin_mov_plane = "G1 Z%XE X%YE%nl"
+lin_mov_xyz = ""
+lin_mov_depth = ""
+lin_mov_drill = ""
+lin_ret_drill = ""
+arc_int_cw = ""
+arc_int_ccw = ""
+cutter_comp_off = ""
+cutter_comp_left = ""
+cutter_comp_right = ""
+pre_shape_cut = ""
+post_shape_cut = ""
+comment = ""
