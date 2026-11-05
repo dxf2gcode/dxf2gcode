@@ -1,6 +1,6 @@
 # Offene Aufgaben: Anforderungen und Abnahmekriterien
 
-Stand: **03.11.2026**.
+Stand: **05.11.2026**.
 
 Diese Datei bewahrt die Detailanforderungen der [aktiven Todo](../todo.md).
 Priorität und Auswahl stehen dort; hieraus entsteht kein zusätzlicher
@@ -80,6 +80,28 @@ Bereits nachgewiesene Kriterien sind keine neue Implementierungsserie.
   unter `domain/geometry` und `domain/toolpath` nachgewiesen, nicht für alle
   übrigen Projektmodelle oder die GUI-/Datei-Exportfassade. Eine darüber
   hinausgehende Entkopplung wäre gesondert zu beschließen und zu planen.
+
+<a id="lc1"></a>
+
+### LC1 – Optionaler automatischer LinuxCNC-CLI-Filter
+
+Aufgenommen am 04.11.2026 auf Nutzerwunsch. Die statische Bestandsaufnahme vom
+05.11.2026 ist [abgeschlossen](../archive/toolpath-refactoring-completed.md#lc1-bestandsaufnahme).
+[Befunde, Quellen und Einrichtungshinweise](../documentation-notes/linuxcnc-integration.md)
+stehen getrennt. Die gezielte GUI-Filterkorrektur und lokale Regressionen sind
+[abgeschlossen](../archive/toolpath-refactoring-completed.md#lc1-filter);
+die reale Debian-/AXIS-Simulation ist inzwischen ebenfalls
+[abgeschlossen](../archive/toolpath-refactoring-completed.md#lc1-axis).
+[Einrichtung und Abnahmegrenzen](../../docs/user-guide/linuxcnc-axis.md)
+sind in der Anwenderanleitung dokumentiert.
+
+- [ ] Optional entscheiden, ob zusätzlich zum interaktiven GUI-Dateifilter
+  ein ausdrücklicher automatischer CLI-Filter benötigt wird. Dieser war nicht
+  Teil der beauftragten GUI-Filterkorrektur.
+
+**Grenze:** Ein automatischer CLI-Filter ist nicht beauftragt. Die erfolgte
+AXIS-Abnahme gilt für die dokumentierte Simulation; Maschinenbetrieb,
+GMOCCAPY sowie weitere Paket-/Plattformabnahmen sind davon nicht abgedeckt.
 
 ## Zurückgestelltes Bedienmodell
 

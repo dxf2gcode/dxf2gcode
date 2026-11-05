@@ -36,6 +36,7 @@ FAST_MODULES = (
     "dxf2gcode_leadmove_project_test",
     "dxf2gcode_workflow_test",
     "dxf2gcode_mainwindow_workflow_test",
+    "dxf2gcode_linuxcnc_filter_test",
     "dxf2gcode_test",
 )
 

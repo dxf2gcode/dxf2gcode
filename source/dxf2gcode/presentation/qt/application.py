@@ -30,6 +30,8 @@ from __future__ import absolute_import
 from __future__ import division
 
 import argparse
+import contextlib
+import io
 import logging
 import os
 import subprocess
@@ -278,6 +280,8 @@ class MainWindow(QMainWindow):
         self.config_window.finished.connect(self._configuration_closed)
 
         self.app = app
+        self.stdout_postprocessor = None
+        self.stdout_exit_code = 1  # Closing without an export is cancellation.
         self.settings = QtCore.QSettings("dxf2gcode", "dxf2gcode")
 
         self.ui = Ui_MainWindow()
@@ -670,6 +674,40 @@ class MainWindow(QMainWindow):
         self.showToolpathErrorMessages([str(message)])
 
     def exportShapes(self, status=False, saveas=None):
+        if not g.config.vars.General['write_to_stdout']:
+            return self._exportShapes(status, saveas)
+
+        # A LinuxCNC filter must publish either one successful program or no
+        # output. Legacy exporters can collect errors after producing text.
+        self.stdout_exit_code = 2
+        try:
+            postprocessor_index = self._stdout_postprocessor_index()
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                successful = self._exportShapes(
+                    status, saveas, postprocessor_index)
+            if successful:
+                sys.stdout.write(output.getvalue())
+                sys.stdout.flush()
+                self.stdout_exit_code = 0
+        except Exception as error:
+            logger.error("G-code filter export failed: %s", error)
+        finally:
+            self.unsetCursor()
+            self.close()
+
+    def _stdout_postprocessor_index(self):
+        requested = self.stdout_postprocessor
+        if requested is None:
+            return 0  # Preserve the legacy default when no name was requested.
+        matches = [index for index, (name, extension) in enumerate(zip(
+            self.MyPostProcessor.output_text, self.MyPostProcessor.output_format))
+            if requested in (name, "%s (*%s)" % (name, extension))]
+        if len(matches) != 1:
+            raise ValueError("Unknown or ambiguous filter postprocessor: %s" % requested)
+        return matches[0]
+
+    def _exportShapes(self, status=False, saveas=None, stdout_postprocessor_index=0):
         """
         This function is called by the menu "Export/Export Shapes". It may open
         a Save Dialog if used without LinuxCNC integration. Otherwise it's
@@ -733,8 +771,8 @@ class MainWindow(QMainWindow):
             logger.debug("File Ending => Postprocessor Nr: %i" % (pp_file_nr))
         else:
             save_filename = ""
-            logger.debug("EMC Integration => Postprocessor Nr: %i" % (0))
-            pp_file_nr = 0
+            pp_file_nr = stdout_postprocessor_index
+            logger.debug("EMC Integration => Postprocessor Nr: %i", pp_file_nr)
 
         """
         Export will be performed according to LayerContents and their order
@@ -752,6 +790,10 @@ class MainWindow(QMainWindow):
         # invalid lead out / overcut geometry) are collected during the
         # export and shown at the end of it.
         if export_errors:
+            if g.config.vars.General['write_to_stdout']:
+                for error in export_errors:
+                    logger.error("G-code filter export failed: %s", error)
+                return False
             toolpath_errors = [str(error) for error in export_errors
                                 if self.isToolpathError(str(error))]
             if toolpath_errors:
@@ -762,8 +804,7 @@ class MainWindow(QMainWindow):
 
         self.unsetCursor()
 
-        if g.config.vars.General['write_to_stdout']:
-            self.close()
+        return not export_errors and not self.MyPostProcessor.export_failed
 
     def optimizeAndExportShapes(self, saveas=None, post_pro=None):
         """
@@ -1586,6 +1627,9 @@ class MainWindow(QMainWindow):
                                 self.tr("Cannot Save the File"))
 
     def closeEvent(self, e):
+        if (g.config.vars.General['write_to_stdout'] and
+                self.stdout_exit_code == 1):
+            logger.error("G-code filter cancelled without export")
         logger.debug(self.tr("Closing"))
         self.saveWindowState()
         # Detach Qt-bound StreamHandler so logging.shutdown() won't crash
@@ -1739,6 +1783,8 @@ if __name__ == "__main__":
     application_context = create_application_context(
         config=g.config, logger=logger, quiet=options.quiet)
     window = MainWindow(app, application_context)
+    window.stdout_postprocessor = options.post_pro
+    stdout_filter = g.config.vars.General['write_to_stdout']
     g.window = window
     if not options.quiet:
         Log.add_window_logger(window.ui.messageBox)
@@ -1753,11 +1799,26 @@ if __name__ == "__main__":
 
     if options.filename is not None:
         window.filename = str_decode(options.filename)
-        window.load()
+        if stdout_filter:
+            try:
+                if not os.path.isfile(window.filename):
+                    raise ValueError("Input file does not exist: %s" % window.filename)
+                if not window.load():
+                    raise ValueError("Input file could not be loaded: %s" % window.filename)
+            except Exception as error:
+                logger.error("G-code filter import failed: %s", error)
+                window.stdout_exit_code = 2
+                window.close()
+                sys.exit(2)
+        else:
+            window.load()
 
     if options.export_filename is not None:
         window.exportShapes(None, options.export_filename)
+        if stdout_filter:
+            sys.exit(window.stdout_exit_code)
 
     if not options.quiet:
         # exec is no longer a reserved word in Python
-        sys.exit(app.exec())
+        exit_code = app.exec()
+        sys.exit((exit_code or window.stdout_exit_code) if stdout_filter else exit_code)

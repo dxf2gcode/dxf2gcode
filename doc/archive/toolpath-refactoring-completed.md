@@ -1,6 +1,6 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **04.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **05.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
 Dieses Dokument bewahrt abgeschlossene Implementierungen, deren dokumentierte
 Prüfergebnisse und die historische Ausgangslage. Die
@@ -12,6 +12,148 @@ Historische Testergebnisse gelten für den jeweils beschriebenen Stand.
 Insbesondere liegen die Vollsuite-Ergebnisse mit 775 Tests vor der späteren
 Darstellungskorrektur; diese wurde anschließend mit jeweils 21 gezielten
 Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
+
+<a id="lc1-bestandsaufnahme"></a>
+
+## LC1 – Bestandsaufnahme des LinuxCNC-Dateifilters (05.11.2026)
+
+Historie, heutige Aufruf-/stdout-Pfade, Logging und vorhandene Testabdeckung
+auf Quellbasis `7864ba2` im Windows-Checkout geprüft; historische Projektanleitung
+mit offiziellem LinuxCNC-2.9-Handbuch und AXIS-Quellcode abgeglichen.
+Der Filtermechanismus besteht weiterhin. Empfehlung: beibehalten und gezielt
+modernisieren; GUI-Postprozessorauswahl, Fehler-/Abbruchstatus und veraltete
+Einrichtung sind die konkreten Ansatzpunkte.
+
+[Befunde, Quellen und konkreter Prüfplan](../documentation-notes/linuxcnc-integration.md)
+bewahren das Ergebnis. Nur statische Untersuchung und Dokumentationsprüfung;
+keine neuen Tests, Programmstarts, Debian-/SSH-, LinuxCNC- oder Maschinenläufe.
+Keine Aussage über aktuelle praktische Funktionsfähigkeit oder Paketabnahme.
+Zum Zeitpunkt der Bestandsaufnahme waren Umfangsentscheidung, Implementierung,
+Regressionen, Simulation und geprüfte Anwenderanleitung noch offen. Der folgende
+Abschlussnachweis dokumentiert die inzwischen umgesetzte lokale Filterkorrektur;
+die verbleibenden Aufgaben stehen unter [LC1](../planning/open-task-details.md#lc1).
+
+<a id="lc1-filter"></a>
+
+## LC1 – GUI-Dateifilter lokal abgesichert (05.11.2026)
+
+Nach Nutzerfreigabe die gezielte Filterkorrektur umgesetzt: Im GUI-stdout-
+Modus wählt `--postpro` anhand der Beschreibung oder des vollständigen
+Filtertexts genau einen Postprozessor; unbekannte oder mehrdeutige Namen
+scheitern. Ohne Angabe bleibt die bisherige Auswahl von Index 0 erhalten.
+Die Ausgabe wird erst nach fehlerfreiem Export freigegeben. Gesammelte
+Exportfehler und Exceptions verwerfen den gepufferten Programmtext.
+Status 0 bezeichnet erfolgreichen Export, 1 Schließen ohne Export und 2
+Import-/Exportfehler. Fehlende Eingaben öffnen keinen Ersatz-Dateidialog;
+Start-Exporte schließen ohne anschließenden leeren Eventloop ab.
+
+Nachweis im Windows-Checkout: 12 neue reale Qt-Prozessregressionen unter
+PyQt5 und erneut unter PyQt6 bestanden (24 Ausführungen). Sie prüfen den
+tatsächlichen Argumentparser, DXF mit Leerzeichen im Pfad, Qt-Eventloop und
+Fensterschließen, Profile unabhängig von Dateireihenfolge, Standardauswahl,
+unbekannte/mehrdeutige Profile, fehlende/ungültige DXF, echten Drill-/Pocket-
+Planungskonflikt und injizierte Exportexception mit Teilausgabe. stdout/stderr
+und Prozessstatus werden von außen geprüft. Die zwei vorhandenen GUI-/CLI-
+Dateiexportregressionen bestanden ebenfalls unter beiden Bindungen (vier
+Ausführungen). Neue Filterregressionen sind in der Fast-Suite registriert.
+
+### Reproduzierbarer lokaler Prüfnachweis
+
+Prüfdatum: **05.11.2026**, Windows, Python 3.11. Geprüft wurde der geänderte,
+noch nicht committete Arbeitsstand auf Basis von `7864ba2`. Die Tests starten
+isolierte Unterprozesse mit temporärem Benutzer-/Konfigurationsverzeichnis
+und `QT_QPA_PLATFORM=offscreen`; die Timer ersetzen die Nutzeraktion.
+
+| Umgebung | Filterprozesse | Vorhandener GUI-/CLI-Dateiexport | Ergebnis |
+| --- | --- | --- | --- |
+| PyQt 5.15.8 / Qt 5.15.2, System-Python | 12 Tests | 2 Tests | 14 bestanden |
+| PyQt 6.12.0 / Qt 6.12.0, `.tox/package-build` | 12 Tests | 2 Tests | 14 bestanden |
+
+Ausgeführte Aufrufe aus dem Repository-Verzeichnis (PowerShell):
+
+```powershell
+$env:DXF2GCODE_QT = '5'
+python -m unittest discover -s tests -p dxf2gcode_linuxcnc_filter_test.py -v
+$env:PYTHONPATH = 'tests'
+python -m unittest dxf2gcode_mainwindow_workflow_test.TestMainWindowWorkflow.test_mainwindow_load_edit_preview_and_export dxf2gcode_test.TestDXF2Gcode.test_quiet_cli_exports_real_dxf_without_gui_shutdown_errors -v
+
+$env:DXF2GCODE_QT = '6'
+.tox/package-build/Scripts/python.exe -m unittest discover -s tests -p dxf2gcode_linuxcnc_filter_test.py -v
+.tox/package-build/Scripts/python.exe -m unittest dxf2gcode_mainwindow_workflow_test.TestMainWindowWorkflow.test_mainwindow_load_edit_preview_and_export dxf2gcode_test.TestDXF2Gcode.test_quiet_cli_exports_real_dxf_without_gui_shutdown_errors -v
+```
+
+Alle vier abschließenden Testaufrufe meldeten `OK` (28 Testausführungen
+insgesamt). Die Registrierung in der Fast-Suite ist kein Nachweis eines
+vollständigen Fast-Suite-Laufs. `git diff --check` bestand ebenfalls.
+Für diese Ergänzung des Abschlussnachweises wurden die bereits bestandenen
+Tests nicht erneut ausgeführt.
+
+### Abschlussstatus und verbleibende Grenzen
+
+**Lokale Softwarekorrektur abgeschlossen.** Die Status-/Ausgabeverträge sind
+durch echte Qt-Prozesse geprüft; die Verwendung in einer laufenden AXIS-
+Sitzung und Linux-Desktop-Integration sind dadurch nicht nachgewiesen.
+
+Keine neuen GUI-Texte, keine Übersetzungsänderung. Keine Vollsuite, Builds,
+Debian-/SSH-, LinuxCNC- oder Maschinenläufe. Kein Commit beauftragt.
+[Einrichtungshinweise und Grenzen](../documentation-notes/linuxcnc-integration.md#lokal-umgesetzter-gui-filter)
+bleiben von der noch offenen [LinuxCNC-Abnahme](../planning/open-task-details.md#lc1)
+getrennt; ein automatischer CLI-Filter wurde nicht ergänzt.
+
+<a id="lc1-axis"></a>
+
+## LC1 – Reale AXIS-Filterabnahme auf Debian (05.11.2026)
+
+Nach ausdrücklichem Auftrag auf `christian@192.168.178.183` (Host
+`chriskodxf2gcode`) geprüft: Debian 13, Kernel 6.12.113+deb13-amd64,
+Python 3.13.5, LinuxCNC 2.9.4 (`1:2.9.4-2+deb13u1`), PyQt 5.15.11 /
+Qt 5.15.15. Die notwendigen Debian-Pakete wurden vom Nutzer installiert.
+
+Eigene Kopie der mitgelieferten `sim/axis/axis_mm.ini`, separates HOME,
+eigenes dxf2gcode-Profil und Xvfb-Anzeige verwendet. LinuxCNC meldete
+`Using POSIX non-realtime`; ausschließlich Simulations-HAL geladen.
+AXIS öffnete die eigene 20×10-mm-DXF mit Leerzeichen im Pfad über `[FILTER]`.
+Ein protokollierender Wrapper startete den tatsächlichen Quellcode-Einstieg
+mit `--cfg lc1 --postpro "LinuxCNC LC1 selected"` und reichte dessen stdout,
+stderr und Exitstatus weiter. Export/Abbruch wurden per echten Qt-Tastenkürzeln
+ausgelöst; keine AXIS-/Qt-Mocks. Der gewählte Postprozessor stand hinter einem
+anderen Profil in der Dateireihenfolge.
+
+Der erste Lauf fand einen echten Interpreterfehler: Die Versionskopfzeile
+enthielt einen verschachtelten Kommentar `(Version: … (Py…) …)`. AXIS meldete
+`Nested comment found`. Runtime-Metadaten innerhalb dieser Kommentarzeile
+verwenden nun eckige Klammern. Die 24 fokussierten Postprozessorprüfungen
+einschließlich neuer Regression bestanden unter Windows/PyQt5; danach
+derselbe AXIS-Lade-/Exportweg mit korrigiertem Quellstand erfolgreich geprüft.
+
+| Reale AXIS-Prüfung | Ergebnis |
+| --- | --- |
+| DXF laden, Export, Rückkehr zur Vorschau | Status 0, 910 Byte G-Code, richtiger Postprozessor, Rechteck-Werkzeugbahn sichtbar, kein Fehlerdialog |
+| Fenster ohne Export schließen | Status 1, stdout leer, AXIS zeigt Filterfehler |
+| Unbekannter Postprozessor | Status 2, stdout leer, AXIS zeigt Filterfehler |
+| Ungültige DXF | Status 2, stdout leer, AXIS zeigt Filterfehler |
+
+Bei allen Fehler-/Abbruchfällen blieb das gültige Programm geladen.
+AXIS/Interpreter blieben in ESTOP/IDLE und sämtliche Positionen unverändert
+bei null. Kein Programmstart, Homing, Jogging oder Maschinenbewegung.
+Die gestarteten AXIS-/LinuxCNC-/Xvfb-Prozesse wurden anschließend beendet.
+
+Remote-Nachweise: `/home/christian/dxf2gcode-test-work/runs/lc1-axis-20261105`
+mit `report.json`, `filter.py`, `run_cases.py`, Simulations-INI, G-Code,
+Logs und Vorher-/Nachher-Screenshots. Lokal gesichert unter
+`.tox/lc1-axis/evidence/` sowie als `.tox/lc1-axis/evidence.tar.gz`.
+Snapshot-SHA-256 vor der Kopfzeilenkorrektur:
+`78ed6959392b6b4abb3ae55201dcd305527bcf670be8d33ef74e1e1d01148c5a`.
+SHA-256 des korrigierten, lokal mit dem geprüften Remote-Modul abgeglichenen
+`postprocessor.py`:
+`5e89a5dd5d61c65339a8da9af3b6761194d62cd0204b789c7b485a8360e887c3`.
+
+**Abgenommen ist der interaktive Filter-/Vorschauablauf in dieser realen
+AXIS-Simulation.** Keine Maschinen-/Materialfreigabe, Paket-/Wheel-Abnahme,
+GMOCCAPY-, Wayland- oder Debian/PyQt6-Abnahme. Keine Vollsuite oder Builds.
+[Anwenderanleitung](../../docs/user-guide/linuxcnc-axis.md) ergänzt;
+[optionaler automatischer CLI-Filter](../planning/open-task-details.md#lc1)
+bleibt eine gesonderte Entscheidung. Kein Commit erstellt.
 
 <a id="ci1"></a>
 

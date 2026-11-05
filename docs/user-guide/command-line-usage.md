@@ -98,4 +98,7 @@ shell, read `$?`. The configuration's **export to stdout** option can redirect
 program output away from a file; keep it off when following the file examples.
 `--quiet` means no GUI for the supported export path, not “suppress all logs”.
 
+For interactive DXF loading from AXIS, see
+[LinuxCNC / AXIS integration](linuxcnc-axis.md).
+
 Continue with [Troubleshooting and FAQ](troubleshooting.md).

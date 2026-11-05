@@ -508,7 +508,8 @@ class MyPostProcessor(ProfileDialect):
         """
         if self.vars.General["output_type"] == 'g-code':
             info = get_version_info()
-            version = "%s (%s)" % (info.version, c.RUNTIME_VERSION)
+            # RS274 comments cannot contain nested parentheses.
+            version = "%s [%s]" % (info.version, c.RUNTIME_VERSION)
             date = info.commit_date or info.build_date or "unavailable"
             exstr = self.tr("(Generated with: %s)\n(Version: %s, Date: %s)\n") % (c.APPNAME, version, date)
             exstr += self.tr("(Created from file: %s)\n") % re.sub('[()]', '_', load_filename)

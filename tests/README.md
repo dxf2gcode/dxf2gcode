@@ -126,6 +126,7 @@ The default discovery pattern `test*.py` does **not** match the module names
 | Module | Type | Focus |
 | --- | --- | --- |
 | `dxf2gcode_test.py` | smoke / integration | checks fixture presence and runs a real quiet DXF-to-G-code CLI export |
+| `dxf2gcode_linuxcnc_filter_test.py` | GUI / process integration | checks interactive stdout filter selection, atomic output, cancellation and failure exit codes |
 | `dxf2gcode_import_contract_test.py` | integration | entity conversion, contour references, nested block contents and transforms |
 | `dxf2gcode_postpro_config_test.py` | unit/regression | postprocessor defaults, supported versions, save/reload and invalid-file recovery |
 | `dxf2gcode_canvas_mixed_test.py` | integration | 2D canvas / mixed selection |

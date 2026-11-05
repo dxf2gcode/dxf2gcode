@@ -23,6 +23,7 @@ nav = [
     { "Machine modes" = "user-guide/machine-modes.md" },
     { "Drag-knife cutting" = "user-guide/drag-knife-cutting.md" },
     { "Command-line usage" = "user-guide/command-line-usage.md" },
+    { "LinuxCNC / AXIS integration" = "user-guide/linuxcnc-axis.md" },
     { "Troubleshooting and FAQ" = "user-guide/troubleshooting.md" },
     { "Application settings" = "user-guide/application-settings.md" },
     { "Layer naming rules" = "user-guide/layer-naming-rules.md" },
@@ -61,7 +62,6 @@ language = "en"
 logo = "assets/images/dxf2gcode_symbol.png"
 favicon = "assets/images/dxf2gcode_symbol.png"
 font = false
-
 # Zensical's own search is enabled by default. No MkDocs search plugin is needed.
 [project.validation]
 invalid_links = true

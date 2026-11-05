@@ -230,6 +230,15 @@ class TestPostProcessorMovements(unittest.TestCase):
         self.assertIn(self.pp.vars.General.code_begin_units_mm, header)
         self.assertIn(self.pp.vars.General.code_begin, header)
 
+    def test_gcode_version_comment_has_no_nested_parentheses(self):
+        from dxf2gcode.domain.constants import RUNTIME_VERSION
+        header = self.pp.write_gcode_be('fixture.dxf')
+        version_line = next(line for line in header.splitlines()
+                            if line.startswith('(Version:'))
+        self.assertEqual(version_line.count('('), 1)
+        self.assertEqual(version_line.count(')'), 1)
+        self.assertIn('[%s]' % RUNTIME_VERSION, version_line)
+
     def test_gcode_header_sanitizes_parentheses_in_source_filename(self):
         header = self.pp.write_gcode_be('part (copy).dxf')
         self.assertIn('(Created from file: part _copy_.dxf)', header)
