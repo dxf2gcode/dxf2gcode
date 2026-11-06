@@ -34,13 +34,10 @@ see http://code.activestate.com/recipes/65207/ for module const
 
 import logging
 import os
-import platform
 
-from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 # Global Variables
 APPNAME = "DXF2GCODE"
-RUNTIME_VERSION = "Py%s PyQt%s" % (platform.python_version(), QtCore.PYQT_VERSION_STR)
 
 CONFIG_EXTENSION = '.cfg'
 PY_EXTENSION = '.py'

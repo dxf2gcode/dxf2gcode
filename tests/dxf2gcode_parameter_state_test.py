@@ -268,7 +268,7 @@ class _Harness(object):
 
 def _make_shape(nr, tool_nr=1, **values):
     shape = stmove_test.make_shape(stmove_test.square_geos(), nr=nr, cut_cor=40)
-    shape.parentLayer = LayerContent(nr, "L%d" % nr, [shape])
+    shape.parentLayer = LayerContent(nr, "L%d" % nr, [shape], config=g.config)
     shape.parentLayer.shapes = [shape]
     shape.parentLayer.tool_nr = tool_nr
     for name, value in values.items():

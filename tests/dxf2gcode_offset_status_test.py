@@ -64,7 +64,7 @@ def _square(size=10.0, nr=0):
         LineGeo(Point(0, 0), Point(size, 0)),
         LineGeo(Point(size, 0), Point(size, size)),
         LineGeo(Point(size, size), Point(0, size)),
-        LineGeo(Point(0, size), Point(0, 0))]))
+        LineGeo(Point(0, size), Point(0, 0))]), config=g.config)
     s.AnalyseAndOptimize()
     return s
 

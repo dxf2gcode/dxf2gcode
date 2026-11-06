@@ -24,7 +24,8 @@ class BuildDrawingModel:
     """Turn normalized imported entities into project layers and shapes."""
 
     def __init__(self, drawing, config, shape_factory, split_line_segments,
-                 transform=None, shape_created=None):
+                 transform=None, shape_created=None, translate=None):
+        self.translate = translate
         self.drawing = drawing
         self.config = config
         self.shape_factory = shape_factory
@@ -103,7 +104,8 @@ class BuildDrawingModel:
                 else first_geo.Layer_Nr)
             if self._exclude_layer(layer_number_for_shape):
                 continue
-            shape = self.shape_factory(len(self.shapes), contour.closed, parent)
+            shape = self.shape_factory(len(self.shapes), contour.closed, parent,
+                                       config=self.config, translate=self.translate)
             for geo_number, reverse in contour.order:
                 imported_geos = entities.geo[geo_number].geo
                 # Reverse the complete chain, not just each individual piece.
@@ -156,7 +158,8 @@ class BuildDrawingModel:
                 return
 
         layer_name = self.drawing.layers[layer_number].name
-        layer = LayerContent(layer_number, layer_name, [shape])
+        layer = LayerContent(layer_number, layer_name, [shape],
+                             config=self.config, translate=self.translate)
         self.layers.append(layer)
         shape.parentLayer = layer
         shape.milling_offset = layer.milling_offset

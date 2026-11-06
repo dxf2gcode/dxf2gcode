@@ -174,7 +174,7 @@ class TestImportLayerFilters(unittest.TestCase):
         self.assert_consistent(model)
 
     def test_real_dxf_headless_export_omits_filtered_movements(self):
-        from dxf2gcode.application.cli_export import ExportDrawing
+        from dxf2gcode.bootstrap.composition import create_drawing_exporter as ExportDrawing
         from dxf2gcode.application.importing import ImportDrawing
         from dxf2gcode.adapters.dxf.reader import DxfReaderAdapter
         from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor
@@ -197,11 +197,12 @@ class TestImportLayerFilters(unittest.TestCase):
         self.assertFalse(any(d.severity == "error" for d in diagnostics))
 
     def test_old_projects_restore_remaining_values_after_filtering_and_renumbering(self):
-        from dxf2gcode.application.cli_export import _HeadlessProjectSession
+        from dxf2gcode.bootstrap.composition import create_drawing_session
         from dxf2gcode.domain.project.project import Project
+        from dxf2gcode.adapters.project.legacy_d2g import decode_d2g
 
         path = write_layer_filter_fixture(Path(self.directory.name) / "layers.dxf")
-        source = _HeadlessProjectSession(self.config, str(path.with_suffix(".d2g")))
+        source = create_drawing_session(self.config, str(path.with_suffix(".d2g")))
         source.filename = path.as_posix()
         self.assertTrue(source.load())
         cut = next(l for l in source.layerContents if l.name == "Cut")
@@ -218,7 +219,7 @@ class TestImportLayerFilters(unittest.TestCase):
             with patch.object(Project, "version", version):
                 # These old formats predate the drag-knife settings block.
                 documents[version] = '\n'.join(
-                    line for line in Project(source).export().splitlines()
+                    line for line in Project(source, self.config, decode=decode_d2g, load_drawing=source.load).export().splitlines()
                     if not line.startswith('d2g.drag_knife ='))
 
         self.config.vars.Import_Parameters.exclude_ignore_layers = True
@@ -228,8 +229,8 @@ class TestImportLayerFilters(unittest.TestCase):
             exclude_ignore_layers=True, exclude_layer_zero=True))
         for version, content in documents.items():
             with self.subTest(version=version):
-                target = _HeadlessProjectSession(self.config, source.project_filename)
-                Project(target).load(content)
+                target = create_drawing_session(self.config, source.project_filename)
+                Project(target, self.config, decode=decode_d2g, load_drawing=target.load).load(content)
                 self.assertEqual([l.name for l in target.layerContents], ["Cut"])
                 self.assertEqual([s.nr for s in target.shapes], [0])
                 self.assertEqual(target.shapes[0].f_g1_plane, 321.25)
@@ -237,9 +238,9 @@ class TestImportLayerFilters(unittest.TestCase):
                 target.TreeHandler = source.TreeHandler
                 target.ui = source.ui
                 target.layerContents[0].exp_order_complete = [0]
-                saved = Project(target).export()
-                restored = _HeadlessProjectSession(self.config, source.project_filename)
-                Project(restored).load(saved)
+                saved = Project(target, self.config, decode=decode_d2g, load_drawing=target.load).export()
+                restored = create_drawing_session(self.config, source.project_filename)
+                Project(restored, self.config, decode=decode_d2g, load_drawing=restored.load).load(saved)
                 self.assertEqual([l.name for l in restored.layerContents], ["Cut"])
                 self.assertEqual([s.nr for s in restored.shapes], [0])
                 self.assertEqual(restored.shapes[0].f_g1_plane, 321.25)

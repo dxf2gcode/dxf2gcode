@@ -3,7 +3,7 @@
 from html import escape
 
 from dxf2gcode.bootstrap.version_metadata import get_version_info
-from dxf2gcode.domain.constants import RUNTIME_VERSION
+from dxf2gcode.presentation.qt.runtimeinfo import RUNTIME_VERSION
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 

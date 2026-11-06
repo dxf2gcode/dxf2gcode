@@ -43,7 +43,7 @@ MIN_ELEMENTS = 60       # the ellipse is converted to 70 arcs
 
 
 def shape_from(geos, closed):
-    shape = Shape(0, closed, geos=Geos([deepcopy(geo) for geo in geos]))
+    shape = Shape(0, closed, geos=Geos([deepcopy(geo) for geo in geos]), config=g.config)
     shape.AnalyseAndOptimize()
     return shape
 
@@ -131,7 +131,7 @@ class TestFullEllipseOffset(unittest.TestCase):
         g.config.update_config()
         for cut_cor in (41, 42):
             shape = shape_from(self.entity.geo, closed=True)
-            layer = LayerContent(nr=3, name='Ebene 1', shapes=[])
+            layer = LayerContent(nr=3, name='Ebene 1', shapes=[], config=g.config)
             layer.tool_diameter = 3.05
             layer.lead_radius = 1.6
             layer.lead_length = 1.52

@@ -59,7 +59,7 @@ def _app():
 
 
 def _mk_shape(geos, closed):
-    shape = Shape(0, closed, geos=Geos(geos))
+    shape = Shape(0, closed, geos=Geos(geos), config=g.config)
     shape.AnalyseAndOptimize()
     return shape
 

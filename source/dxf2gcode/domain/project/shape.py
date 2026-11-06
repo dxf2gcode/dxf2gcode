@@ -34,7 +34,6 @@ from math import radians, pi
 from copy import deepcopy
 import logging
 
-import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.domain.geometry.collections import Geos, ContourGeometry
 from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.domain.geometry.linegeo import LineGeo
@@ -54,9 +53,6 @@ from dxf2gcode.domain.toolpath.depths import calculate_depth_passes
 
 
 
-import dxf2gcode.domain.constants as c
-from dxf2gcode.presentation.qt.qt_compat import QtCore
-from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMessageBox
 
 logger = logging.getLogger("Core.Shape")
 
@@ -70,10 +66,12 @@ class Shape(ContourGeometry):
     # only need default arguments here because of the change of usage with
     # super in QGraphicsItem
 
-    def __init__(self, nr=-1, closed=True, parentEntity=None, geos=[]):
+    def __init__(self, nr=-1, closed=True, parentEntity=None, geos=(), *, config, translate=None):
         if nr == -1:
             return
 
+        self.config = config
+        self._translate = translate or (lambda context, text: text)
         self.type = "Shape"
         self.nr = nr
         self.closed = closed
@@ -89,7 +87,7 @@ class Shape(ContourGeometry):
 
         self.stmove = None
 
-        self.send_to_TSP = g.config.vars.Route_Optimisation['default_TSP']
+        self.send_to_TSP = self.config.vars.Route_Optimisation['default_TSP']
 
         self.selected = False
         self.disabled = False
@@ -100,18 +98,18 @@ class Shape(ContourGeometry):
         self.enableDisableCallback = None
 
         # preset defaults
-        self.axis3_start_mill_depth = g.config.vars.Depth_Coordinates[
+        self.axis3_start_mill_depth = self.config.vars.Depth_Coordinates[
             'axis3_start_mill_depth']
-        self.axis3_slice_depth = g.config.vars.Depth_Coordinates[
+        self.axis3_slice_depth = self.config.vars.Depth_Coordinates[
             'axis3_slice_depth']
-        self.axis3_mill_depth = g.config.vars.Depth_Coordinates[
+        self.axis3_mill_depth = self.config.vars.Depth_Coordinates[
             'axis3_mill_depth']
-        self.f_g1_plane = g.config.vars.Feed_Rates['f_g1_plane']
-        self.f_g1_depth = g.config.vars.Feed_Rates['f_g1_depth']
+        self.f_g1_plane = self.config.vars.Feed_Rates['f_g1_plane']
+        self.f_g1_depth = self.config.vars.Feed_Rates['f_g1_depth']
         # Parameters for drag knife
         self._drag_swivel_depth = None
         self.drag_angle = radians(
-            g.config.vars.Drag_Knife_Options['drag_angle'])
+            self.config.vars.Drag_Knife_Options['drag_angle'])
 
         # Break tab processing: -1 = last pass (default), 0 = never,
         # 1..n = process the tabs from this pass number on.
@@ -145,7 +143,7 @@ class Shape(ContourGeometry):
     @property
     def drag_swivel_depth(self):
         value = self._drag_swivel_depth
-        return g.config.vars.Drag_Knife_Options.swivel_depth if value is None else value
+        return self.config.vars.Drag_Knife_Options.swivel_depth if value is None else value
 
     @drag_swivel_depth.setter
     def drag_swivel_depth(self, value):
@@ -215,8 +213,7 @@ class Shape(ContourGeometry):
         @param: string_to_translate: a unicode string
         @return: the translated unicode string if it was possible to translate
         """
-        return str(QtCore.QCoreApplication.translate("Shape",
-                                                           string_to_translate))
+        return str(self._translate("Shape", string_to_translate))
 
     def setSelected(self, flag=False):
         self.selected = flag

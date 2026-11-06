@@ -178,7 +178,7 @@ def _pocket(cut_cor, pct=HISTORIC, tool=2.0, cw=True):
     s.cw = cw
     s.Drill = False
     s.Pocket = True
-    layer = LayerContent(0, "top", [s])
+    layer = LayerContent(0, "top", [s], config=g.config)
     layer.tool_diameter = tool
     layer.axis3_retract = 9.91
     layer.axis3_safe_margin = 3.05

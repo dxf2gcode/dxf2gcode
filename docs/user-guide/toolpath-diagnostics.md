@@ -19,6 +19,19 @@ choice applies the compatible transition described in
 Check the resulting settings rather than dismissing the warning and assuming
 the application selected an operation for you.
 
+## Unsupported pocket settings
+
+Pocket milling requires milling mode with software compensation. Projects
+loaded with pockets in lathe, drag-knife or machine-compensation mode retain
+their values and report the unsupported combination. Switch to a supported
+mode or explicitly disable pocketing. Machine and compensation changes refresh
+the plan and warning; dismissing a dialog does not repair the settings.
+
+If any enabled contour has a blocking planning error, the entire export is
+rejected before writing. An existing target file remains unchanged and stdout
+is empty. Resolve the error or deliberately disable that contour, then export
+again. Nonblocking warnings can still accompany a valid plan.
+
 ## Missing or invalid leads
 
 | Symptom | Check |
@@ -27,7 +40,7 @@ the application selected an operation for you.
 | Arc/radius warning | Compare workpiece radius with tool radius, compensation side and selected lead method |
 | No change after editing a dimension | Check that the selected method uses that dimension and that the effective tool/layer is the one you edited |
 | Overcut absent | Check contour closure, enablement and a nonzero overcut length |
-| Entry or exit error | Read the specific geometry/parameter message; the contour may be omitted from export |
+| Entry or exit error | Read the specific geometry/parameter message; a blocking error rejects the entire export |
 
 Choosing a straight method does not require an unused arc radius. Conversely,
 increasing a radius arbitrarily can move a lead into another part of the work.

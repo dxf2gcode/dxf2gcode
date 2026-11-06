@@ -12,6 +12,53 @@ _SOURCE_DIR = os.path.join(os.path.dirname(_TEST_DIR), "source")
 
 
 class TestDomainImportBoundary(unittest.TestCase):
+    def test_all_domain_and_application_modules_are_inward_facing(self):
+        script = '''
+import importlib, pkgutil, sys
+import dxf2gcode.domain as domain
+import dxf2gcode.application as application
+for package in (domain, application):
+    for module in pkgutil.walk_packages(package.__path__, package.__name__ + '.'):
+        importlib.import_module(module.name)
+assert not any(name.startswith(('PyQt', 'dxf2gcode.presentation',
+    'dxf2gcode.adapters', 'dxf2gcode.bootstrap.runtime_state')) for name in sys.modules)
+from types import SimpleNamespace
+from dxf2gcode.domain.project.shape import Shape
+from dxf2gcode.domain.project.layercontent import LayerContent, Layers
+from dxf2gcode.domain.project.project import Project
+from dxf2gcode.domain.project.document import LegacyProjectDocument
+class Values(dict):
+    __getattr__ = dict.__getitem__
+tool = dict(diameter=2, speed=1000, start_radius=1, lead_radius=2,
+            lead_length=1, overcut_length=0, milling_offset=0)
+values = Values(Route_Optimisation={'default_TSP': True},
+    Depth_Coordinates=dict(axis3_start_mill_depth=0, axis3_slice_depth=-1,
+        axis3_mill_depth=-2, axis3_retract=5, axis3_safe_margin=1),
+    Feed_Rates=dict(f_g1_plane=200, f_g1_depth=50),
+    Drag_Knife_Options=Values(drag_angle=20, swivel_depth=-.1),
+    Tool_Parameters={'1': tool}, Layer_Options={'id_float_separator': ':'},
+    Lead_In_Out=dict(lead_in_mode='off', lead_out_mode='off', overcut_enabled=False),
+    General=dict(split_line_segments=False, automatic_cutter_compensation=False))
+config = SimpleNamespace(vars=values, var_dict=values, point_tolerance=.001,
+                         fitting_tolerance=.001, machine_type='milling', tool_units='mm')
+shape = Shape(nr=1, config=config)
+layer = LayerContent(1, 'plain', [shape], config=config)
+shape.parentLayer = layer
+layer.overrideDefaults()
+assert shape.axis3_mill_depth == -2 and layer.tool_diameter == 2
+values.Drag_Knife_Options['swivel_depth'] = -.2
+assert shape.drag_swivel_depth == -.2
+state = SimpleNamespace(layerContents=Layers([layer]))
+project = Project(state, config)
+project.load(LegacyProjectDocument(1.5, {'layers': []}), compleet=False)
+assert state.layerContents[0].shapes[0] is shape
+assert not any(name.startswith(('PyQt', 'dxf2gcode.presentation',
+    'dxf2gcode.adapters', 'dxf2gcode.bootstrap.runtime_state')) for name in sys.modules)
+'''
+        environment = os.environ.copy()
+        environment['PYTHONPATH'] = _SOURCE_DIR
+        subprocess.check_call([sys.executable, '-c', script], env=environment)
+
     def test_legacy_package_namespaces_are_removed(self):
         package = Path(_SOURCE_DIR) / "dxf2gcode"
         for old_name in ("core", "dxfimport", "globals", "gui", "postpro",

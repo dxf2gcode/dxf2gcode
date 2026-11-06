@@ -82,7 +82,7 @@ def make_plan_service():
                         ShapePlanningInputs(lambda: g.config).request)
 
 def make_shape(geos, closed=True, nr=0, cut_cor=41, cw=True, drill=False, pocket=False, tool_diameter=2.0):
-    s = Shape(nr=nr, closed=closed, geos=Geos(geos))
+    s = Shape(nr=nr, closed=closed, geos=Geos(geos), config=g.config)
     s.AnalyseAndOptimize()
     s.axis3_start_mill_depth = 0.0
     s.axis3_mill_depth = -1.0
@@ -93,7 +93,7 @@ def make_shape(geos, closed=True, nr=0, cut_cor=41, cw=True, drill=False, pocket
     s.cw = cw
     s.Drill = drill
     s.Pocket = pocket
-    layer = LayerContent(0, 'L0', [s])
+    layer = LayerContent(0, 'L0', [s], config=g.config)
     layer.tool_diameter = tool_diameter
     layer.axis3_retract = 9.91
     layer.axis3_safe_margin = 3.05
@@ -231,7 +231,7 @@ class TestPostProcessorMovements(unittest.TestCase):
         self.assertIn(self.pp.vars.General.code_begin, header)
 
     def test_gcode_version_comment_has_no_nested_parentheses(self):
-        from dxf2gcode.domain.constants import RUNTIME_VERSION
+        from dxf2gcode.presentation.qt.runtimeinfo import RUNTIME_VERSION
         header = self.pp.write_gcode_be('fixture.dxf')
         version_line = next(line for line in header.splitlines()
                             if line.startswith('(Version:'))

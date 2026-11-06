@@ -35,6 +35,7 @@ from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 #from dxf2gcode.domain.geometry.holegeo import HoleGeo
 
 from dxf2gcode.application.shapes import SetMachiningMode
+from dxf2gcode.domain.project.machining import pocket_supported
 
 import dxf2gcode.domain.constants as c
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QGraphicsView, QMenu
@@ -183,13 +184,10 @@ class MyDropDownMenu(QMenu):
                                        for geo in item.geos)
                       for item in self.selectedItems)
 
-        #if all are closed and compensation is NOT done by machine,
-        # since I do not know how this should work... /SZ
-        # The drag knife does not support the pocket milling: the entry is
-        # not shown at all in the context menu.
-        if (g.config.machine_type != 'drag_knife' and
-                allClosed == True and
-                not g.config.vars.Cutter_Compensation["done_by_machine"]):
+        # The menu and planner share the same machine/compensation rule.
+        if (allClosed and pocket_supported(
+                g.config.machine_type,
+                g.config.vars.Cutter_Compensation["done_by_machine"])):
             self.PocketAction = self.addAction(self.tr("Pocket Mill"))
             self.PocketAction.setCheckable(True)
             self.PocketAction.triggered.connect(self.setPocket)

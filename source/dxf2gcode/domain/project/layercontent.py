@@ -31,7 +31,6 @@ from __future__ import division
 import re
 import logging
 
-import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.domain.geometry.point import Point
 
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
@@ -39,7 +38,6 @@ from dxf2gcode.domain.toolpath.leadmove import (LEAD_DEFAULT, LEAD_OFF, LEAD_STR
                                      LEAD_RADIUS, LEAD_STARTMOVE,
                                      OVERCUT_DEFAULT, resolve_overcut)
 
-from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 logger = logging.getLogger("Core.LayerContent")
 
@@ -56,10 +54,11 @@ class LayerContent(object):
         @param: string_to_translate: a unicode string
         @return: the translated unicode string if it was possible to translate
         """
-        return str(QtCore.QCoreApplication.translate("LayerContent",
-                                                     string_to_translate))
+        return str(self._translate("LayerContent", string_to_translate))
 
-    def __init__(self, nr, name, shapes):
+    def __init__(self, nr, name, shapes, *, config, translate=None):
+        self.config = config
+        self._translate = translate or (lambda context, text: text)
         self.nr = nr
         self.name = name
         self.shapes = Shapes(shapes)
@@ -67,17 +66,17 @@ class LayerContent(object):
 
         # Use default tool 1 (always exists in config)
         self.tool_nr = 1
-        self.tool_diameter = g.config.vars.Tool_Parameters['1']['diameter']
-        self.speed = g.config.vars.Tool_Parameters['1']['speed']
-        self.start_radius = g.config.vars.Tool_Parameters['1']['start_radius']
-        self.lead_radius = g.config.vars.Tool_Parameters['1']['lead_radius']
-        self.lead_length = g.config.vars.Tool_Parameters['1']['lead_length']
-        self.overcut_length = g.config.vars.Tool_Parameters['1']['overcut_length']
-        self.milling_offset = g.config.vars.Tool_Parameters['1']['milling_offset']
+        self.tool_diameter = self.config.vars.Tool_Parameters['1']['diameter']
+        self.speed = self.config.vars.Tool_Parameters['1']['speed']
+        self.start_radius = self.config.vars.Tool_Parameters['1']['start_radius']
+        self.lead_radius = self.config.vars.Tool_Parameters['1']['lead_radius']
+        self.lead_length = self.config.vars.Tool_Parameters['1']['lead_length']
+        self.overcut_length = self.config.vars.Tool_Parameters['1']['overcut_length']
+        self.milling_offset = self.config.vars.Tool_Parameters['1']['milling_offset']
 
         # preset defaults
-        self.axis3_retract = g.config.vars.Depth_Coordinates['axis3_retract']
-        self.axis3_safe_margin = g.config.vars.Depth_Coordinates['axis3_safe_margin']
+        self.axis3_retract = self.config.vars.Depth_Coordinates['axis3_retract']
+        self.axis3_safe_margin = self.config.vars.Depth_Coordinates['axis3_safe_margin']
 
         # Track which values were overridden by layer name identifiers
         self.lead_radius_overridden = False
@@ -104,16 +103,16 @@ class LayerContent(object):
 
     def should_ignore(self):
         return is_ignored_layer_name(
-            self.name, g.config.vars.Layer_Options['id_float_separator'])
+            self.name, self.config.vars.Layer_Options['id_float_separator'])
 
     def isBreakLayer(self):
-        return self.name.startswith('BREAKS' + g.config.vars.Layer_Options['id_float_separator'])
+        return self.name.startswith('BREAKS' + self.config.vars.Layer_Options['id_float_separator'])
 
     def isMillLayer(self):
-        return self.name.startswith('MILL' + g.config.vars.Layer_Options['id_float_separator'])
+        return self.name.startswith('MILL' + self.config.vars.Layer_Options['id_float_separator'])
 
     def isDrillLayer(self):
-        return self.name.startswith('DRILL' + g.config.vars.Layer_Options['id_float_separator'])
+        return self.name.startswith('DRILL' + self.config.vars.Layer_Options['id_float_separator'])
 
     def isParameterizableLayer(self):
         return self.isMillLayer() or self.isDrillLayer() or self.isBreakLayer()
@@ -129,54 +128,54 @@ class LayerContent(object):
         logger.debug(self.isParameterizableLayer())
         if self.isParameterizableLayer():
             layer_commands = self.name.replace(",", ".")
-            lopts_re = re.compile("([a-zA-Z]+ *"+g.config.vars.Layer_Options['id_float_separator']+" *[\\-\\.0-9]+)")
+            lopts_re = re.compile("([a-zA-Z]+ *"+self.config.vars.Layer_Options['id_float_separator']+" *[\\-\\.0-9]+)")
             logger.debug(lopts_re.findall(layer_commands))
             for lc in lopts_re.findall(layer_commands):
-                name, value = lc.split(g.config.vars.Layer_Options['id_float_separator'])
+                name, value = lc.split(self.config.vars.Layer_Options['id_float_separator'])
                 name = name.strip()
                 #logger.debug('\"%s\" \"%s\"' %(name, value))
                 default_tool = 1 # Tool 1 normally always exists
-                if name in g.config.vars.Layer_Options['tool_nr_identifiers']:
+                if name in self.config.vars.Layer_Options['tool_nr_identifiers']:
                     self.tool_nr = int(value)
                     # Check that the requested tool exists in the tool table & substitute tool 1 if not
-                    if str(self.tool_nr) not in g.config.vars.Tool_Parameters:
+                    if str(self.tool_nr) not in self.config.vars.Tool_Parameters:
                         logger.warning(self.tr("Tool {0} used for \"{1}\" layer doesn't exist anymore in the configuration ; using tool {2} instead").format(self.tool_nr, self.name, default_tool))
                         self.tool_nr = default_tool
                     # set the diameter, speed and start radius according to the selected tool
-                    self.tool_diameter = g.config.vars.Tool_Parameters[str(self.tool_nr)]['diameter']
-                    self.speed = g.config.vars.Tool_Parameters[str(self.tool_nr)]['speed']
-                    self.start_radius = g.config.vars.Tool_Parameters[str(self.tool_nr)]['start_radius']
-                    self.lead_radius = g.config.vars.Tool_Parameters[str(self.tool_nr)]['lead_radius']
-                    self.lead_length = g.config.vars.Tool_Parameters[str(self.tool_nr)]['lead_length']
-                    self.overcut_length = g.config.vars.Tool_Parameters[str(self.tool_nr)]['overcut_length']
+                    self.tool_diameter = self.config.vars.Tool_Parameters[str(self.tool_nr)]['diameter']
+                    self.speed = self.config.vars.Tool_Parameters[str(self.tool_nr)]['speed']
+                    self.start_radius = self.config.vars.Tool_Parameters[str(self.tool_nr)]['start_radius']
+                    self.lead_radius = self.config.vars.Tool_Parameters[str(self.tool_nr)]['lead_radius']
+                    self.lead_length = self.config.vars.Tool_Parameters[str(self.tool_nr)]['lead_length']
+                    self.overcut_length = self.config.vars.Tool_Parameters[str(self.tool_nr)]['overcut_length']
                     # the tool also provides the default additional offset for
                     # its shapes (an explicit identifier overrides it below)
-                    self.milling_offset = g.config.vars.Tool_Parameters[str(self.tool_nr)]['milling_offset']
+                    self.milling_offset = self.config.vars.Tool_Parameters[str(self.tool_nr)]['milling_offset']
                     for shape in self.shapes:
                         shape.milling_offset = self.milling_offset
-                elif name in g.config.vars.Layer_Options['tool_diameter_identifiers']:
+                elif name in self.config.vars.Layer_Options['tool_diameter_identifiers']:
                     self.tool_diameter = float(value)
-                elif name in g.config.vars.Layer_Options['spindle_speed_identifiers']:
+                elif name in self.config.vars.Layer_Options['spindle_speed_identifiers']:
                     self.speed = float(value)
-                elif name in g.config.vars.Layer_Options['start_radius_identifiers']:
+                elif name in self.config.vars.Layer_Options['start_radius_identifiers']:
                     # The deprecated start radius: it was the radius of the
                     # tool center path of the start move. The common radius is
                     # the radius at the workpiece, so the radius of the tool
                     # has to be added to it.
                     self.lead_radius = float(value) + self.getToolRadius()
-                elif name in g.config.vars.Layer_Options['milling_offset_identifiers']:
+                elif name in self.config.vars.Layer_Options['milling_offset_identifiers']:
                     # additional offset (finishing allowance) of this layer;
                     # it is an individual value per shape
                     self.milling_offset = float(value)
                     for shape in self.shapes:
                         shape.milling_offset = float(value)
-                elif name in g.config.vars.Layer_Options['lead_radius_identifiers']:
+                elif name in self.config.vars.Layer_Options['lead_radius_identifiers']:
                     self.lead_radius = float(value)
                     self.lead_radius_overridden = True
-                elif name in g.config.vars.Layer_Options['lead_length_identifiers']:
+                elif name in self.config.vars.Layer_Options['lead_length_identifiers']:
                     self.lead_length = float(value)
                     self.lead_length_overridden = True
-                elif name in g.config.vars.Layer_Options['lead_in_mode_identifiers']:
+                elif name in self.config.vars.Layer_Options['lead_in_mode_identifiers']:
                     # The mode of the lead in of this layer:
                     # 0 = startmove, 1 = off, 2 = straight, 3 = radius, 4 = default
                     mode_map = {0: LEAD_STARTMOVE, 1: LEAD_OFF, 2: LEAD_STRAIGHT,
@@ -187,7 +186,7 @@ class LayerContent(object):
                         self.lead_in_mode_overridden = True
                     except (ValueError, TypeError):
                         pass
-                elif name in g.config.vars.Layer_Options['lead_out_mode_identifiers']:
+                elif name in self.config.vars.Layer_Options['lead_out_mode_identifiers']:
                     # The mode of the lead out of this layer:
                     # 0 = off, 1 = straight, 2 = radius, 3 = startmove, 4 = default
                     mode_map = {0: LEAD_OFF, 1: LEAD_STRAIGHT, 2: LEAD_RADIUS,
@@ -198,26 +197,26 @@ class LayerContent(object):
                         self.lead_out_mode_overridden = True
                     except (ValueError, TypeError):
                         pass
-                elif name in g.config.vars.Layer_Options['overcut_length_identifiers']:
+                elif name in self.config.vars.Layer_Options['overcut_length_identifiers']:
                     self.overcut_length = float(value)
                     self.overcut_length_overridden = True
-                elif name in g.config.vars.Layer_Options['retract_identifiers']:
+                elif name in self.config.vars.Layer_Options['retract_identifiers']:
                     self.axis3_retract = float(value)
-                elif name in g.config.vars.Layer_Options['safe_margin_identifiers']:
+                elif name in self.config.vars.Layer_Options['safe_margin_identifiers']:
                     self.axis3_safe_margin = float(value)
-                elif name in g.config.vars.Layer_Options['start_mill_depth_identifiers']:
+                elif name in self.config.vars.Layer_Options['start_mill_depth_identifiers']:
                     for shape in self.shapes:
                         shape.axis3_start_mill_depth = float(value)
-                elif name in g.config.vars.Layer_Options['slice_depth_identifiers']:
+                elif name in self.config.vars.Layer_Options['slice_depth_identifiers']:
                     for shape in self.shapes:
                         shape.axis3_slice_depth = float(value)
-                elif name in g.config.vars.Layer_Options['mill_depth_identifiers']:
+                elif name in self.config.vars.Layer_Options['mill_depth_identifiers']:
                     for shape in self.shapes:
                         shape.axis3_mill_depth = float(value)
-                elif name in g.config.vars.Layer_Options['f_g1_plane_identifiers']:
+                elif name in self.config.vars.Layer_Options['f_g1_plane_identifiers']:
                     for shape in self.shapes:
                         shape.f_g1_plane = float(value)
-                elif name in g.config.vars.Layer_Options['f_g1_depth_identifiers']:
+                elif name in self.config.vars.Layer_Options['f_g1_depth_identifiers']:
                     for shape in self.shapes:
                         shape.f_g1_depth = float(value)
         if self.should_ignore():
@@ -249,7 +248,7 @@ class LayerContent(object):
         """
         if getattr(self, 'lead_in_mode', LEAD_DEFAULT) != LEAD_DEFAULT:
             return self.lead_in_mode
-        return g.config.vars.Lead_In_Out['lead_in_mode']
+        return self.config.vars.Lead_In_Out['lead_in_mode']
 
     def get_lead_out_mode(self):
         """
@@ -260,7 +259,7 @@ class LayerContent(object):
         """
         if getattr(self, 'lead_out_mode', LEAD_DEFAULT) != LEAD_DEFAULT:
             return self.lead_out_mode
-        return g.config.vars.Lead_In_Out['lead_out_mode']
+        return self.config.vars.Lead_In_Out['lead_out_mode']
 
     def get_overcut_enabled(self):
         """
@@ -276,7 +275,7 @@ class LayerContent(object):
         if getattr(self, 'overcut_length_overridden', False) and \
                 getattr(self, 'overcut_length', 0.0) > 0:
             return True
-        return resolve_overcut(OVERCUT_DEFAULT, g.config.vars.Lead_In_Out['overcut_enabled'])
+        return resolve_overcut(OVERCUT_DEFAULT, self.config.vars.Lead_In_Out['overcut_enabled'])
 
 
     def optimize(self):

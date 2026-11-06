@@ -150,7 +150,7 @@ class TestLoopWindingExport(unittest.TestCase):
         ent_geos = dxf.entities.geo
         shapes = []
         for cont in dxf.entities.cont:
-            tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]))
+            tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]), config=g.config)
             for k in range(len(cont.order)):
                 eg = ent_geos[cont.order[k][0]]
                 if cont.order[k][1]:
@@ -242,7 +242,7 @@ def _load_1997_shapes():
     ent_geos = dxf.entities.geo
     shapes = []
     for cont in dxf.entities.cont:
-        tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]))
+        tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]), config=g.config)
         for k in range(len(cont.order)):
             eg = ent_geos[cont.order[k][0]]
             if cont.order[k][1]:
@@ -349,7 +349,7 @@ def _load_test_dxf_shapes():
     ent_geos = dxf.entities.geo
     shapes = []
     for cont in dxf.entities.cont:
-        tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]))
+        tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]), config=g.config)
         for k in range(len(cont.order)):
             eg = ent_geos[cont.order[k][0]]
             if cont.order[k][1]:

@@ -15,6 +15,15 @@ _REPO_DIR = os.path.dirname(_TEST_DIR)
 class TestMainWindowWorkflow(unittest.TestCase):
     """Exercise load, canvas plot, tree edit, preview, and export together."""
 
+    def test_pocket_machine_and_compensation_changes_refresh_warning_and_plan(self):
+        with tempfile.TemporaryDirectory(prefix='d2g_pocket_changes_') as folder:
+            env = os.environ.copy()
+            env.update(QT_QPA_PLATFORM='offscreen', D2G_WORKFLOW_TEMP=folder)
+            result = subprocess.run([sys.executable, __file__, '--worker', '--pocket-worker'],
+                cwd=folder, env=env, capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stdout.decode(errors='replace') +
+                             result.stderr.decode(errors='replace'))
+
     def test_context_zero_prefills_existing_dialog_and_preserves_cancel(self):
         with tempfile.TemporaryDirectory(prefix='d2g_context_zero_') as folder:
             env = os.environ.copy()
@@ -199,11 +208,46 @@ def _run_mainwindow_workflow():
     app = QApplication([])
     window = app_module.MainWindow(app)
     g.window = window
+    if '--pocket-worker' in sys.argv:
+        from unittest.mock import patch
+        fields = window.config_window.cfg_window_def
+        fields['Cutter_Compensation']['done_by_machine'].setValue(False)
+        window.config_window.applyChanges()
+        window.filename = os.path.join(_REPO_DIR,
+            'docs/assets/examples/first-dxf/rectangle-20x10-mm.dxf')
+        assert window.load()
+        window.shapes[0].parentLayer.tool_diameter = 1
+        window.shapes[0].Pocket = True
+        window.d2g.small_reload()
+        assert window.shapes[0].toolpath_plan is not None
+        with patch.object(app_module.QMessageBox, 'warning') as warning, \
+                patch.object(app_module.QMessageBox, 'critical') as critical:
+            window.ui.actionLathe.trigger()
+            assert window.shapes[0].Pocket
+            assert window.shapes[0].toolpath_plan is None
+            assert warning.call_count == 1
+            window.ui.actionMilling.trigger()
+            assert window.shapes[0].Pocket
+            assert window.shapes[0].toolpath_plan is not None
+            assert warning.call_count == 1
+            fields['Cutter_Compensation']['done_by_machine'].setValue(True)
+            window.config_window.applyChanges()
+            assert window.shapes[0].Pocket
+            assert window.shapes[0].toolpath_plan is None
+            assert warning.call_count == 2
+            fields['Cutter_Compensation']['done_by_machine'].setValue(False)
+            window.config_window.applyChanges()
+            assert window.shapes[0].toolpath_plan is not None
+            assert warning.call_count == 2
+            app.processEvents()
+            critical.assert_not_called()
+        window.close()
+        return
     if zero_worker:
         from unittest.mock import patch
         from math import hypot
         from dxf2gcode.presentation.qt.canvas import MyDropDownMenu
-        from dxf2gcode.domain.project.project import Project
+        from dxf2gcode.presentation.qt.project_session import Project
         from dxf2gcode.adapters.project.legacy_d2g import decode_d2g
         from dxf2gcode_stmove_gcode_test import make_plan_service, make_postpro
         window.filename = os.path.join(_REPO_DIR, 'dxf', 'drag_knive_test.dxf')

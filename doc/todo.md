@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben
 
-Stand: **05.11.2026**.
+Stand: **06.11.2026**.
 
 Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
 Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
@@ -19,7 +19,6 @@ kein neuer Ausführungsauftrag vor.
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
 | Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
-| Vor Umsetzung abstimmen | [A1 – Abnahmegrenzen](#a1) | Konkrete Abdeckungslücken |
 | Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
 | Fachliche Rückmeldungen | [DOC1 – Dokumentationsabnahme](#doc1) | Konkrete Korrekturen zur veröffentlichten Anleitung |
 | Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
@@ -48,12 +47,6 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
   Wheel-/Quell-/Windows-Artefakte einschließlich Herkunft und Start prüfen;
   das freigegebene Wheel im isolierten Debian-Ablauf abnehmen.
   [Prüfumfang und Freigabegrenze](planning/open-task-details.md#m1).
-
-<a id="a1"></a>
-
-- [ ] **A1 – Architekturabnahme:** konkrete verbleibende Fallmatrix-Lücken
-  und den gewünschten Umfang weiterer Importentkopplung benennen.
-  [Offene Entscheidungen](planning/open-task-details.md#a1).
 
 <a id="lc1"></a>
 

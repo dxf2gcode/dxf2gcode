@@ -99,8 +99,8 @@ def build_shape(closed=True, cut_cor=41, done_by_machine=True,
     g.config.update_config()
     g.config.machine_type = machine_type
 
-    shape = Shape(nr=1, closed=closed, geos=geos)
-    layer = LayerContent(nr=1, name="L1", shapes=[])
+    shape = Shape(nr=1, closed=closed, geos=geos, config=g.config)
+    layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
     layer.tool_diameter = tool_diameter
     # The common radius at the workpiece of the lead in / lead out: with the
     # start radius of the program it reproduces the start move of the

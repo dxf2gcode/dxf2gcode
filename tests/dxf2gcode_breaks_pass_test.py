@@ -66,7 +66,7 @@ from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo  # noqa: E402
 from dxf2gcode.domain.geometry.point import Point  # noqa: E402
 from dxf2gcode.domain.project.layercontent import LayerContent, Layers  # noqa: E402
-from dxf2gcode.domain.project.project import Project  # noqa: E402
+from dxf2gcode.presentation.qt.project_session import Project  # noqa: E402
 from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
@@ -102,9 +102,9 @@ def make_break_layer(name, crossing="bottom", a=4.9, b=5.1, enabled=True):
         tab = tab_rect(a, b, -1.0, 4.0)
     else:  # crossing the right side
         tab = tab_rect(4.9, 11.0, a, b)
-    break_shape = Shape(nr=100, closed=True, geos=Geos(tab))
+    break_shape = Shape(nr=100, closed=True, geos=Geos(tab), config=g.config)
     break_shape.setDisable(not enabled)
-    layer = LayerContent(1, name, [break_shape])
+    layer = LayerContent(1, name, [break_shape], config=g.config)
     layer.overrideDefaults()
     return layer
 

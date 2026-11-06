@@ -381,7 +381,7 @@ class TestKnifeIntegration(GoldenTestBase):
 
     def test_old_project_preserves_each_contour_swivel_depth_and_single_cut(self):
         from dxf2gcode_leadmove_project_test import _ParentStub, build_layer
-        from dxf2gcode.domain.project.project import Project
+        from dxf2gcode.presentation.qt.project_session import Project
         from dxf2gcode.adapters.project.legacy_d2g import decode_d2g, D2G_HEADER
         from dxf2gcode.adapters.toolpath.preparation import prepare_shape
         from dxf2gcode_stmove_gcode_test import make_plan_service, make_postpro
@@ -501,7 +501,7 @@ class TestKnifeIntegration(GoldenTestBase):
 
     def test_project_roundtrip_restores_knife_options_including_units(self):
         from dxf2gcode_leadmove_project_test import _ParentStub, build_layer
-        from dxf2gcode.domain.project.project import Project
+        from dxf2gcode.presentation.qt.project_session import Project
         from dxf2gcode.adapters.project.legacy_d2g import decode_d2g
         import dxf2gcode.bootstrap.runtime_state as g
         parent = _ParentStub([build_layer()])

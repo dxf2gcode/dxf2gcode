@@ -17,7 +17,7 @@ from dxf2gcode_leadmove_project_test import _ParentStub
 import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.application.shapes import AssignTool
 from dxf2gcode.domain.project.layercontent import Layers, Shapes
-from dxf2gcode.domain.project.project import Project
+from dxf2gcode.presentation.qt.project_session import Project
 from dxf2gcode.domain.project.tool_settings import ToolSettings, effective_tool
 
 

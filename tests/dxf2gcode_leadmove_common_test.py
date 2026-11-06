@@ -49,7 +49,7 @@ class TestCommonParameters(LeadMoveTestBase):
     """The radius and the length are common to both directions."""
 
     def test_the_layer_has_only_one_radius_and_one_length(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         # The values come from the tool of the layer.
         tool = g.config.vars.Tool_Parameters['1']
         self.assertAlmostEqual(layer.lead_radius, tool['lead_radius'])
@@ -68,7 +68,7 @@ class TestCommonParameters(LeadMoveTestBase):
         self.assertNotIn('lead_out_radius', tool)
 
     def test_the_values_do_not_change_with_the_method(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         radius = layer.lead_radius
         length = layer.lead_length
         for mode in (LEAD_OFF, LEAD_STRAIGHT, LEAD_RADIUS, LEAD_STARTMOVE):
@@ -80,7 +80,7 @@ class TestCommonParameters(LeadMoveTestBase):
     def test_a_change_of_the_tool_diameter_is_validated_again(self):
         # The radius at the workpiece has to be greater than the radius of
         # the tool: a bigger tool makes the radius invalid.
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         layer.tool_diameter = 10.0
         layer.lead_radius = 10.0
         layer.lead_in_mode = LEAD_RADIUS
@@ -102,7 +102,7 @@ class TestCommonParameters(LeadMoveTestBase):
         self.assertEqual(errors[0][0], 'lead_radius')
 
     def test_the_units_are_converted(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         layer.lead_radius = 2.0
         layer.lead_length = 3.0
         layer.changeMeasuringUnits(1, 0)
@@ -114,7 +114,7 @@ class TestMethodSelection(LeadMoveTestBase):
     """The methods of the lead in and of the lead out are independent."""
 
     def test_all_the_methods_can_be_selected_for_both_directions(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         for mode in (LEAD_OFF, LEAD_STRAIGHT, LEAD_RADIUS, LEAD_STARTMOVE):
             layer.lead_in_mode = mode
             layer.lead_out_mode = LEAD_OFF
@@ -126,14 +126,14 @@ class TestMethodSelection(LeadMoveTestBase):
             self.assertEqual(layer.get_lead_out_mode(), mode)
 
     def test_the_configuration_default_is_used_for_each_direction(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         g.config.vars.Lead_In_Out['lead_in_mode'] = LEAD_RADIUS
         g.config.vars.Lead_In_Out['lead_out_mode'] = LEAD_STRAIGHT
         self.assertEqual(layer.get_lead_in_mode(), LEAD_RADIUS)
         self.assertEqual(layer.get_lead_out_mode(), LEAD_STRAIGHT)
 
     def test_a_change_of_the_global_default_is_followed(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         self.assertEqual(layer.lead_in_mode, LEAD_DEFAULT)
         g.config.vars.Lead_In_Out['lead_in_mode'] = LEAD_STRAIGHT
         self.assertEqual(layer.get_lead_in_mode(), LEAD_STRAIGHT)
@@ -477,7 +477,7 @@ class TestTreeGui(LeadMoveTestBase):
         g.config.vars.Lead_In_Out['lead_in_mode'] = LEAD_OFF
         first = _make_shape(0)
         second = _make_shape(1)
-        layer = LayerContent(0, "L", [first, second])
+        layer = LayerContent(0, "L", [first, second], config=g.config)
         first.parentLayer = layer
         second.parentLayer = layer
         harness = _Harness([layer])

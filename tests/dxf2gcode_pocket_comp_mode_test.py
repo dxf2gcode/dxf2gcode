@@ -18,6 +18,7 @@ import os
 import re
 import tempfile
 import unittest
+from unittest.mock import patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -172,7 +173,7 @@ def _build(mode, cut_cor, tool=2.0):
     s.cw = True
     s.Drill = False
     s.Pocket = True
-    layer = LayerContent(0, "top", [s])
+    layer = LayerContent(0, "top", [s], config=g.config)
     layer.tool_diameter = tool
     layer.axis3_retract = 9.91
     layer.axis3_safe_margin = 3.05
@@ -326,8 +327,7 @@ class TestCompensationMenuSelection(unittest.TestCase):
 
 
 class TestDragKnifeMenuGating(unittest.TestCase):
-    """The drag knife does not support the pocket milling: the context menu
-    of a shape must not offer it."""
+    """Pocket actions follow the shared machine rule and closed selection."""
 
     def setUp(self):
         from dxf2gcode.presentation.qt.qt_compat import QtWidgets
@@ -349,8 +349,8 @@ class TestDragKnifeMenuGating(unittest.TestCase):
     def _menu(self, shapes):
         from dxf2gcode.presentation.qt import canvas as canvasmod
         # avoid the modal menu popup
-        canvasmod.MyDropDownMenu.exec = lambda self, pos: None
-        return canvasmod.MyDropDownMenu(_StubScene(shapes), None, Point(0, 0))
+        with patch.object(canvasmod.MyDropDownMenu, 'exec', return_value=None):
+            return canvasmod.MyDropDownMenu(_StubScene(shapes), None, Point(0, 0))
 
     def _action_texts(self, menu):
         return [action.text() for action in menu.actions()]
@@ -371,7 +371,32 @@ class TestDragKnifeMenuGating(unittest.TestCase):
         # The lathe is not supported by the pocket milling either.
         g.config.machine_type = 'lathe'
         menu = self._menu([_StubShape(False)])
-        self.assertIn("Pocket Mill", self._action_texts(menu))
+        self.assertNotIn("Pocket Mill", self._action_texts(menu))
+        self.assertFalse(hasattr(menu, "PocketAction"))
+
+    def test_reopened_menu_follows_machine_and_compensation_without_changing_pocket(self):
+        shape = _StubShape(True)
+        for machine in ('milling', 'lathe', 'drag_knife', 'milling'):
+            for machine_comp in (True, False):
+                with self.subTest(machine=machine, machine_comp=machine_comp):
+                    g.config.machine_type = machine
+                    g.config.vars.Cutter_Compensation['done_by_machine'] = machine_comp
+                    menu = self._menu([shape])
+                    offered = machine == 'milling' and not machine_comp
+                    self.assertEqual(hasattr(menu, 'PocketAction'), offered)
+                    self.assertEqual('Pocket Mill' in self._action_texts(menu), offered)
+                    if offered:
+                        self.assertTrue(menu.PocketAction.isChecked())
+                    self.assertTrue(shape.Pocket)
+
+    def test_open_mixed_and_empty_selections_do_not_offer_pocket(self):
+        g.config.machine_type = 'milling'
+        closed, opened = _StubShape(False), _StubShape(False)
+        opened.closed = False
+        for shapes in ([], [opened], [closed, opened]):
+            with self.subTest(selection=shapes):
+                menu = self._menu(shapes)
+                self.assertFalse(hasattr(menu, 'PocketAction'))
 
 
 def tearDownModule():

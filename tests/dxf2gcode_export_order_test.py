@@ -15,10 +15,10 @@ import dxf2gcode_tree_multiselect_test as tree
 import dxf2gcode_stmove_gcode_test as machining
 from dxf2gcode_leadmove_project_test import _ParentStub
 import dxf2gcode.bootstrap.runtime_state as g
-from dxf2gcode.application.cli_export import ExportDrawing
+from dxf2gcode.bootstrap.composition import create_drawing_exporter as ExportDrawing
 from dxf2gcode.application.drawings import DrawingModel
 from dxf2gcode.domain.project.layercontent import LayerContent, Layers
-from dxf2gcode.domain.project.project import Project
+from dxf2gcode.presentation.qt.project_session import Project
 from dxf2gcode.domain.project.tool_settings import ToolSettings
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 from dxf2gcode.presentation.qt.application import MainWindow
@@ -34,7 +34,7 @@ class TestExportOrder(unittest.TestCase):
                                             nr=nr, cut_cor=40)
                        for nr in range(6)]
         self.layers = Layers([LayerContent(nr, "L%d" % nr,
-                                           self.shapes[nr*3:nr*3+3])
+                                           self.shapes[nr*3:nr*3+3], config=g.config)
                               for nr in range(2)])
         for layer in self.layers:
             layer.lead_in_mode = layer.lead_out_mode = "off"

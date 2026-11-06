@@ -91,7 +91,7 @@ def _load_shapes(path):
     ent_geos = dxf.entities.geo
     shapes = []
     for cont in dxf.entities.cont:
-        tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]))
+        tmp = Shape(len(shapes), True if cont.closed else False, geos=Geos([]), config=g.config)
         for k in range(len(cont.order)):
             eg = ent_geos[cont.order[k][0]]
             if cont.order[k][1]:
@@ -114,7 +114,7 @@ class TestG40PocketStart1997(unittest.TestCase):
         from dxf2gcode.domain.project.layercontent import LayerContent
         from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 
-        layer = LayerContent(0, "L", [shape])
+        layer = LayerContent(0, "L", [shape], config=g.config)
         shape.parentLayer = layer
         shape.calc_bounding_box()
         shape.Pocket = True

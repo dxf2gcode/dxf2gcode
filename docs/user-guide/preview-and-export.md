@@ -59,6 +59,11 @@ display of inter-operation order.
 4. Select the postprocessor/output type in the export dialog and save the file.
 5. Inspect the generated program and operation sequence.
 
+An enabled contour with a blocking planning error rejects the entire export
+before any output is written. Existing target files remain unchanged; CLI
+stdout stays empty and the command reports failure. Correct the settings or
+explicitly disable the affected contour before trying again.
+
 For the illustrated software-compensated rectangle, expect the offset centre
 path to be programmed in G40. In machine compensation, expect nominal geometry
 with the required G41/G42 build-up movement. A drawing coloured for G41 is not

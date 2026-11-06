@@ -126,7 +126,7 @@ class StartPointTestBase(unittest.TestCase):
         A shape with a layer, the lead in and the lead out are set to
         "radius".
         """
-        shape = Shape(nr=nr, closed=True, geos=Geos(geos))
+        shape = Shape(nr=nr, closed=True, geos=Geos(geos), config=g.config)
         shape.AnalyseAndOptimize()
         shape.axis3_start_mill_depth = 0.0
         shape.axis3_mill_depth = -1.0
@@ -137,7 +137,7 @@ class StartPointTestBase(unittest.TestCase):
         shape.cw = cw
         shape.Drill = False
         shape.Pocket = False
-        layer = LayerContent(nr, "L%i" % nr, [shape])
+        layer = LayerContent(nr, "L%i" % nr, [shape], config=g.config)
         layer.tool_diameter = tool_diameter
         layer.axis3_retract = 9.91
         layer.axis3_safe_margin = 3.05

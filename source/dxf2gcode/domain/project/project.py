@@ -32,19 +32,19 @@ from dxf2gcode.domain.project.layercontent import Layers, Shapes
 from dxf2gcode.domain.project.tool_settings import ToolSettings
 from dxf2gcode.domain.project.machining import machining_conflict
 from dxf2gcode.domain.toolpath.leadmove import LEAD_DEFAULT, OVERCUT_DEFAULT
-import dxf2gcode.bootstrap.runtime_state as g
 
-from dxf2gcode.presentation.qt.qt_compat import QtCore
-from dxf2gcode.adapters.project.legacy_d2g import (
+from dxf2gcode.domain.project.document import (
     CURRENT_D2G_VERSION, D2G_HEADER, SUPPORTED_D2G_VERSIONS,
-    LegacyProjectDocument, decode_d2g)
+    LegacyProjectDocument)
 
 logger = logging.getLogger("Core.Project")
 
 def _safe_load_project(self, content):
     """Compatibility facade for the safe legacy project decoder."""
+    if not isinstance(content, LegacyProjectDocument) and self.decode is None:
+        raise ValueError('project text requires an injected decoder')
     document = (content if isinstance(content, LegacyProjectDocument)
-                else decode_d2g(content))
+                else self.decode(content))
     for name, value in document.values.items():
         setattr(self, name, value)
     return document
@@ -54,8 +54,20 @@ class Project(object):
     supported_versions = list(SUPPORTED_D2G_VERSIONS)
     version = CURRENT_D2G_VERSION
 
-    def __init__(self, parent):
+    def __init__(self, parent, config, decode=None, translate=None,
+                 before_export=None, before_load=None, load_drawing=None,
+                 after_load=None, load_failed=None, before_reload=None, rebuild=None):
         self.parent = parent
+        self.config = config
+        self.decode = decode
+        self._translate = translate or (lambda context, text: text)
+        self.before_export = before_export or (lambda: None)
+        self.before_load = before_load or (lambda: None)
+        self.load_drawing = load_drawing
+        self.after_load = after_load or (lambda: None)
+        self.load_failed = load_failed or (lambda: None)
+        self.before_reload = before_reload or (lambda: None)
+        self.rebuild = rebuild or (lambda: None)
 
         self.file = None
         self.point_tol = None
@@ -78,8 +90,7 @@ class Project(object):
         @param: string_to_translate: a unicode string
         @return: the translated unicode string if it was possible to translate
         """
-        return str(QtCore.QCoreApplication.translate('Project',
-                                                           string_to_translate))
+        return str(self._translate("Project", string_to_translate))
 
     def get_hash(self, shape, version, compleet=True):
         reverse = False
@@ -100,7 +111,7 @@ class Project(object):
         
 
     def export(self,compleet=True):
-        self.parent.TreeHandler.updateExportOrder(True)
+        self.before_export()
         layers = []
         for layer in self.parent.layerContents:
             shapes = []
@@ -160,19 +171,19 @@ class Project(object):
 
         pyCode = Project.header % str(Project.version) + '''
 d2g.file = "''' + self.parent.filename + '''"
-d2g.point_tol = ''' + str(g.config.point_tolerance) + '''
-d2g.fitting_tol = ''' + str(g.config.fitting_tolerance) + '''
+d2g.point_tol = ''' + str(self.config.point_tolerance) + '''
+d2g.fitting_tol = ''' + str(self.config.fitting_tolerance) + '''
 d2g.scale = ''' + str(self.parent.cont_scale) + '''
 d2g.rot = ''' + str(self.parent.cont_rotate) + '''
 d2g.wpzero_x = ''' + str(self.parent.cont_dx) + '''
 d2g.wpzero_y = ''' + str(self.parent.cont_dy) + '''
 d2g.mirrorx = ''' + str(self.parent.cont_mirrorx) + '''
 d2g.mirrory = ''' + str(self.parent.cont_mirrory) + '''
-d2g.split_lines = ''' + str(self.parent.ui.actionSplitLineSegments.isChecked()) + '''
-d2g.aut_cut_com = ''' + str(self.parent.ui.actionAutomaticCutterCompensation.isChecked()) + '''
-d2g.machine_type = "''' + g.config.machine_type + '''"
-d2g.drag_knife = ''' + repr(dict(g.config.var_dict['Drag_Knife_Options'], units=g.config.tool_units,
-    lead_defaults={key: g.config.var_dict['Lead_In_Out'][key] for key in
+d2g.split_lines = ''' + str(self.config.vars.General['split_line_segments']) + '''
+d2g.aut_cut_com = ''' + str(self.config.vars.General['automatic_cutter_compensation']) + '''
+d2g.machine_type = "''' + self.config.machine_type + '''"
+d2g.drag_knife = ''' + repr(dict(self.config.var_dict['Drag_Knife_Options'], units=self.config.tool_units,
+    lead_defaults={key: self.config.var_dict['Lead_In_Out'][key] for key in
                    ('lead_in_mode', 'lead_out_mode', 'overcut_enabled')})) + '''
 d2g.layers = ''' + str(layers)
         return pyCode
@@ -186,24 +197,24 @@ d2g.layers = ''' + str(layers)
             knife = document.values.get('drag_knife')
             if knife is None:
                 if self.machine_type == 'drag_knife':
-                    g.config.var_dict['Drag_Knife_Options'].update(dict(
+                    self.config.var_dict['Drag_Knife_Options'].update(dict(
                         extra_pass=False, alternate=False, return_to_start=False, entry_mode='fixed'))
-                    g.config.var_dict['Lead_In_Out'].update(dict(lead_in_mode='off', lead_out_mode='off'))
+                    self.config.var_dict['Lead_In_Out'].update(dict(lead_in_mode='off', lead_out_mode='off'))
             else:
-                factor = (1 if knife['units'] == g.config.tool_units else
+                factor = (1 if knife['units'] == self.config.tool_units else
                           25.4 if knife['units'] == 'in' else 1 / 25.4)
                 for key, value in knife.items():
                     if key in ('units', 'lead_defaults'):
                         continue
                     if key in ('swivel_depth', 'ramp_in_length', 'lead_out_length', 'alignment_length'):
                         value *= factor
-                    g.config.var_dict['Drag_Knife_Options'][key] = value
+                    self.config.var_dict['Drag_Knife_Options'][key] = value
                 if self.machine_type == 'drag_knife':
-                    g.config.var_dict['Lead_In_Out'].update(knife['lead_defaults'])
-            g.config.update_config()
+                    self.config.var_dict['Lead_In_Out'].update(knife['lead_defaults'])
+            self.config.update_config()
             self.parent.filename = self.file
-            g.config.point_tolerance = self.point_tol
-            g.config.fitting_tolerance = self.fitting_tol
+            self.config.point_tolerance = self.point_tol
+            self.config.fitting_tolerance = self.fitting_tol
 
         # If one of scale / move / rot variables has changed the reload will not identify the shape to be similar.
         # Therefore try to move those variables at the end and do a second reload afterwards.
@@ -220,13 +231,13 @@ d2g.layers = ''' + str(layers)
                 self.parent.cont_mirrorx = self.mirrorx
                 self.parent.cont_mirrory = self.mirrory
 
-            g.config.vars.General['split_line_segments'] = self.split_lines
-            g.config.vars.General['automatic_cutter_compensation'] = self.aut_cut_com
-            g.config.machine_type = self.machine_type
+            self.config.vars.General['split_line_segments'] = self.split_lines
+            self.config.vars.General['automatic_cutter_compensation'] = self.aut_cut_com
+            self.config.machine_type = self.machine_type
 
-            self.parent.connectToolbarToConfig(True)
-            if not self.parent.load(False):
-                self.parent.unsetCursor()
+            self.before_load()
+            if not self.load_drawing():
+                self.load_failed()
                 return
 
         name_layers = dict((layer.name, layer) for layer in self.parent.layerContents)
@@ -247,9 +258,9 @@ d2g.layers = ''' + str(layers)
                 # common to both directions and they are defined per tool.
                 # Older project files do not contain them: they fall back to
                 # the values of the tool of the layer.
-                tool = g.config.vars.Tool_Parameters[str(layer.tool_nr)]
+                tool = self.config.vars.Tool_Parameters[str(layer.tool_nr)]
                 if tool is None:
-                    tool = g.config.vars.Tool_Parameters['1']
+                    tool = self.config.vars.Tool_Parameters['1']
                 default_radius = tool['lead_radius']
                 if default_radius is None:
                     default_radius = 0.0
@@ -365,18 +376,16 @@ d2g.layers = ''' + str(layers)
 
         layers.extend(set(self.parent.layerContents) - set(layers))  # add "new" layers to the end
         self.parent.layerContents = Layers(layers)  # overwrite original
-        self.parent.plot()
+        self.after_load()
         return tuple(shape.nr for layer in layers for shape in layer.shapes
                      if not isinstance(shape, CustomGCode) and
                      machining_conflict(shape.Drill, shape.Pocket, shape.cut_cor))
 
     def reload(self, compleet=True):
         if self.parent.filename:
-            self.parent.setCursor(QtCore.Qt.CursorShape.WaitCursor)
-            self.parent.canvas.resetAll()
-            self.parent.app.processEvents()
+            self.before_reload()
             pyCode = self.export(compleet)
-            self.parent.makeShapes()
+            self.rebuild()
             self.load(pyCode, compleet)
 
     def small_reload(self,):

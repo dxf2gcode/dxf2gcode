@@ -7,14 +7,13 @@ objects. This module only validates and decodes the persisted representation.
 import ast
 import re
 from math import isfinite
-from dataclasses import dataclass
 
 from dxf2gcode.application.exceptions import VersionMismatchError
 
 
-D2G_HEADER = "# +~+~+~ DXF2GCODE project file V%s ~+~+~+"
-SUPPORTED_D2G_VERSIONS = (1.1, 1.2, 1.3, 1.4, 1.5)
-CURRENT_D2G_VERSION = SUPPORTED_D2G_VERSIONS[-1]
+from dxf2gcode.domain.project.document import (
+    D2G_HEADER, SUPPORTED_D2G_VERSIONS, CURRENT_D2G_VERSION, LegacyProjectDocument)
+
 
 _ALLOWED_D2G_ATTRS = frozenset([
     "file", "point_tol", "fitting_tol",
@@ -23,12 +22,6 @@ _ALLOWED_D2G_ATTRS = frozenset([
     "mirrorx", "mirrory",
     "split_lines", "aut_cut_com", "machine_type", "layers", "drag_knife",
 ])
-
-
-@dataclass(frozen=True)
-class LegacyProjectDocument:
-    version: float
-    values: dict
 
 
 def decode_d2g(content):

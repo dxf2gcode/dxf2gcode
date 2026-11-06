@@ -70,6 +70,33 @@ class TestPureToolpathPlanner(unittest.TestCase):
              if action.kind == "linear_z" and action.role == "pocket" and
              action.args[0] < 0], [-1, -2, -3])
 
+    def test_unsupported_pocket_requests_are_rejected_without_changing_values(self):
+        for machine in ('milling', 'lathe', 'drag_knife'):
+            for machine_compensation in (False, True):
+                if machine == 'milling' and not machine_compensation:
+                    continue  # The existing pocket tests cover this supported case.
+                for side in (40, 41, 42):
+                    with self.subTest(machine=machine, comp=machine_compensation, side=side):
+                        request = replace(self.request(), pocket=True, compensation=side,
+                            settings=MachiningSettings(machine_type=machine,
+                                machine_compensation=machine_compensation),
+                            start_error='preparation also rejected this state')
+                        before = asdict(request)
+                        result = ToolpathPlanner().plan(request)
+                        self.assertIsNone(result.plan)
+                        self.assertTrue(result.has_errors)
+                        self.assertEqual(result.diagnostics[0].code,
+                                         'machining.pocket_unsupported')
+                        self.assertEqual(result.diagnostics[0].shape_number, 7)
+                        self.assertEqual(asdict(request), before)
+
+    def test_existing_drill_conflict_takes_precedence_over_pocket_support(self):
+        request = replace(self.request(), pocket=True, drill=True,
+                          settings=MachiningSettings(machine_type='lathe'))
+        result = ToolpathPlanner().plan(request)
+        self.assertIsNone(result.plan)
+        self.assertEqual(result.diagnostics[0].code, 'machining.conflict')
+
     def test_pocket_connections_keep_the_first_approach_position(self):
         request = self.request()
         body = (request.contour[0],

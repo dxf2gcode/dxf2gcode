@@ -142,6 +142,28 @@ class TestMachiningWorkflow(GoldenTestBase):
                     self.assertIsNone(shape.toolpath_plan)
                     self.assertEqual(result.diagnostics[0].code, 'machining.conflict')
 
+    def test_unsupported_pocket_is_blocked_before_geometry_and_preserves_settings(self):
+        from dxf2gcode.domain.toolpath.diagnostics import POCKET_UNSUPPORTED
+        for machine, machine_comp in (('milling', True), ('drag_knife', False),
+                                      ('drag_knife', True), ('lathe', False),
+                                      ('lathe', True)):
+            with self.subTest(machine=machine, machine_comp=machine_comp):
+                shape, _ = build_shape(machine_type=machine,
+                    done_by_machine=machine_comp, cut_cor=40,
+                    layer_settings=dict(lead_in_mode='off', lead_out_mode='off'))
+                shape.Pocket = True
+                with patch('dxf2gcode.domain.toolpath.stmove.PocketMill') as pocket:
+                    prepare_shape(shape)
+                pocket.assert_not_called()
+                self.assertEqual(shape.stmove.geos, [])
+                self.assertEqual(shape.stmove.start_move_error.source, POCKET_UNSUPPORTED)
+                self.assertEqual((shape.Drill, shape.Pocket, shape.cut_cor),
+                                 (False, True, 40))
+                result = make_plan_service().execute_result(shape, make_postpro())
+                self.assertIsNone(result.plan)
+                self.assertEqual(result.diagnostics[0].code, 'machining.pocket_unsupported')
+                self.assertIsNone(shape.toolpath_plan)
+
     def test_conflicting_preview_has_warning_instead_of_machining_overlay(self):
         from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
         shape = self.circle()
@@ -184,6 +206,7 @@ class TestMachiningWorkflow(GoldenTestBase):
         harness = SimpleNamespace(
             project_repository=SimpleNamespace(load=lambda filename: content),
             d2g=SimpleNamespace(load=lambda document: Project(parent).load(document, compleet=False)),
+            layerContents=parent.layerContents,
             tr=lambda text: text)
         with patch.object(QMessageBox, 'warning', return_value=QMessageBox.StandardButton.Ok) as warning:
             MainWindow.loadProject(harness, 'test.d2g')
@@ -204,13 +227,120 @@ class TestMachiningWorkflow(GoldenTestBase):
         prepare_shape(shape)
         self.assertFalse(make_plan_service().execute_result(shape, make_postpro()).has_errors)
 
+    def test_loaded_pocket_settings_warn_only_when_unsupported_and_stay_unchanged(self):
+        from dxf2gcode.presentation.qt.application import MainWindow
+        from dxf2gcode.domain.toolpath.diagnostics import POCKET_UNSUPPORTED
+        for machine, machine_comp in (('milling', True), ('drag_knife', False),
+                                      ('lathe', False), ('milling', False)):
+            with self.subTest(machine=machine, machine_comp=machine_comp):
+                shape, _ = build_shape(done_by_machine=machine_comp, cut_cor=40,
+                    tool_diameter=20,
+                    layer_settings=dict(lead_in_mode='off', lead_out_mode='off'))
+                shape.calc_bounding_box()
+                shape.Pocket = True
+                shape.nr = 17
+                layer = shape.parentLayer
+                layer.shapes = [shape]
+                layer.exp_order_complete = [0]
+                g.config.machine_type = machine
+                parent = _ParentStub([layer])
+                content = Project(parent).export(compleet=False)
+                shape.Pocket = False
+                harness = SimpleNamespace(
+                    project_repository=SimpleNamespace(load=lambda filename: content),
+                    d2g=SimpleNamespace(load=lambda document:
+                                       Project(parent).load(document, compleet=False)),
+                    layerContents=parent.layerContents,
+                    tr=lambda text: text)
+                with patch.object(QMessageBox, 'warning') as warning:
+                    MainWindow.loadProject(harness, 'pocket.d2g')
+                self.assertEqual((shape.Drill, shape.Pocket, shape.cut_cor),
+                                 (False, True, 40))
+                if machine == 'milling' and not machine_comp:
+                    warning.assert_not_called()
+                else:
+                    warning.assert_called_once()
+                    self.assertIn(POCKET_UNSUPPORTED % shape.nr, warning.call_args.args[2])
+                    prepare_shape(shape)
+                    self.assertIsNone(shape.toolpath_plan)
+
+    def test_mixed_job_failure_preserves_file_and_publishes_no_stdout(self):
+        import tempfile
+        from dxf2gcode.domain.project.layercontent import Layers
+        for machine, machine_comp in (('milling', True), ('lathe', False),
+                                      ('drag_knife', False)):
+            with self.subTest(machine=machine, machine_comp=machine_comp):
+                valid, layer = build_shape(machine_type=machine,
+                    done_by_machine=machine_comp, cut_cor=40,
+                    layer_settings=dict(lead_in_mode='off', lead_out_mode='off'))
+                invalid, _ = build_shape(machine_type=machine,
+                    done_by_machine=machine_comp, cut_cor=40,
+                    layer_settings=dict(lead_in_mode='off', lead_out_mode='off'))
+                invalid.nr = 8
+                invalid.Pocket = True
+                invalid.parentLayer = layer
+                prepare_shape(invalid)
+                layer.shapes = [valid, invalid]
+                layer.exp_order_complete = [0, 1]
+                layers = Layers([layer])
+                post = make_postpro()
+                post.postpro_file_used = 'fixture.cfg'
+                with tempfile.TemporaryDirectory() as folder:
+                    path = Path(folder) / 'existing.ngc'
+                    for exists in (True, False):
+                        if exists:
+                            path.write_text('existing program')
+                        else:
+                            path.unlink()
+                        with patch.dict(g.config.vars.General.__dict__, write_to_stdout=False):
+                            post.exportShapes('drawing.dxf', str(path), layers)
+                        self.assertTrue(post.export_failed)
+                        if exists:
+                            self.assertEqual(path.read_text(), 'existing program')
+                        else:
+                            self.assertFalse(path.exists())
+                    with patch.dict(g.config.vars.General.__dict__, write_to_stdout=True), \
+                            patch('builtins.print') as output:
+                        post.exportShapes('drawing.dxf', str(path), layers)
+                    output.assert_not_called()
+                    self.assertTrue(post.export_failed)
+
+    def test_cli_rejects_loaded_pocket_project_and_preserves_existing_file(self):
+        import os
+        import subprocess
+        import tempfile
+        from dxf2gcode.bootstrap.composition import create_drawing_session
+        from dxf2gcode.domain.project.project import Project as ProjectModel
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as folder:
+            project_path = Path(folder) / 'pocket.d2g'
+            session = create_drawing_session(g.config, str(project_path))
+            session.filename = str(root / 'docs/assets/examples/first-dxf/rectangle-20x10-mm.dxf')
+            self.assertTrue(session.load())
+            session.shapes[0].Pocket = True
+            for layer in session.layerContents:
+                layer.exp_order_complete = list(range(len(layer.shapes)))
+            g.config.machine_type = 'lathe'
+            project_path.write_text(ProjectModel(session, g.config).export(), encoding='utf-8')
+            output = Path(folder) / 'existing.ngc'
+            output.write_text('existing program')
+            env = os.environ.copy()
+            env.update(HOME=folder, USERPROFILE=folder, QT_QPA_PLATFORM='offscreen')
+            result = subprocess.run([sys.executable, str(root / 'source/dxf2gcode.py'),
+                '--cfg', 'a1', '--quiet', '--export', str(output), str(project_path)],
+                env=env, cwd=folder, capture_output=True, timeout=30)
+            self.assertEqual(result.returncode, 2, result.stderr.decode(errors='replace'))
+            self.assertEqual(result.stdout, b'')
+            self.assertEqual(output.read_text(), 'existing program')
+
     def test_conflict_translations_are_available(self):
-        from dxf2gcode.domain.toolpath.diagnostics import MODE_CONFLICT
+        from dxf2gcode.domain.toolpath.diagnostics import MODE_CONFLICT, POCKET_UNSUPPORTED
         source = Path(__file__).resolve().parents[1] / 'source/i18n'
         for language in ('de', 'fr', 'ru'):
             translator = QTranslator()
             self.assertTrue(translator.load(str(source / ('dxf2gcode_' + language + '.qm'))))
             for context, text in (('Shape', MODE_CONFLICT),
+                                  ('Shape', POCKET_UNSUPPORTED),
                                   ('MainWindow', 'Conflicting machining settings'),
                                   ('MainWindow', 'Shapes %s combine drilling with pocket milling or G41/G42. '
                                    'Their settings were preserved. Select drilling, pocket milling '

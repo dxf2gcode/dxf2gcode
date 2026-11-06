@@ -1,6 +1,6 @@
 # DXF2GCODE: Architektur und Verträge
 
-**Dokumentstand:** 31. Oktober 2026.
+**Dokumentstand:** 6. November 2026.
 
 Dieses Dokument beschreibt Paketstruktur und geltende Architekturverträge.
 Zielverträge bedeuten keine vollständige Abnahme aller Altmodule. Offene
@@ -49,7 +49,7 @@ Werkzeugweg-Vorschau und Routenoptimierung.
 
 ## Verhaltens- und Formatverträge
 
-- `.d2g`-Versionen 1.1–1.3 sowie Anwendungs- und Postprozessorprofile bleiben
+- `.d2g`-Versionen 1.1–1.5 sowie Anwendungs- und Postprozessorprofile bleiben
   lesbar und migrierbar.
 - Für die bestehenden Golden-Fälle bleibt der G-Code bytegleich.
 - GUI-, CLI-, Vorschau- und Projektabläufe bleiben erhalten.
@@ -59,6 +59,26 @@ Werkzeugweg-Vorschau und Routenoptimierung.
 Die Vollsuite wird mit `python tests/run_tests.py full` ausgeführt. Importtests
 stellen zusätzlich sicher, dass keine alten Paketnamen im Produktionscode
 verwendet werden.
+
+## Reichweite der Architekturabnahme
+
+A1 ist in der vollständigen Variante abgeschlossen. Der
+[Nachweis](archive/toolpath-refactoring-completed.md#a1-complete) verbindet
+die repräsentative Fallmatrix mit den erweiterten Import- und Verhaltenstests.
+Alle Module unter `domain` und `application` lassen sich in frischen Prozessen
+ohne Qt, Presentation, Runtime-Globals oder konkrete Adapter importieren.
+Shape und LayerContent erhalten die Konfiguration explizit; geerbte Werte
+bleiben dabei an die übergebene aktuelle Konfiguration gebunden.
+
+Project verarbeitet Modellzustand und reine Projektdokumente. Der sichere
+`.d2g`-Decoder wird injiziert; Tree-, Canvas-, Cursor- und Reload-Koordination
+liegen in `presentation/qt/project_session.py`. Die CLI verwendet eine eigene
+DrawingSession ohne nachgebildete GUI-Methoden. Reader, Vorbereitung und Codec
+werden in `bootstrap/composition.py` ausgewählt und an Anwendungsfälle
+übergeben. Qt-Runtime-Metadaten liegen in `presentation/qt/runtimeinfo.py`.
+Dies beseitigt nicht jeden globalen Zustand an den äußeren GUI-/Adapterrändern.
+
+Paket-, Plattform-, GPU- und physische Maschinenabnahmen bleiben gesondert.
 
 ## Weitergeltende Architekturverträge
 
@@ -162,10 +182,13 @@ verwechselt werden.
   Kontur, Werkzeug, Offsetstrategie, Richtung, Wandreferenz und Freiraum sind
   explizite Eingaben.
 - G40/G41/G42 bestimmen auch bei Taschen die Richtung. `always_inward`
-  bleibt entfernt; ältere Profile bleiben ladbar. Die bisherige GUI-Sperre
-  für Pocketing bei Maschinenkompensation bleibt zunächst bestehen; siehe
-  [B1/B2](archive/toolpath-refactoring-completed.md#b1-b2).
-  Die Gültigkeit ist zusätzlich im Planer zu prüfen.
+  bleibt entfernt; ältere Profile bleiben ladbar. Pocketing ist ausschließlich
+  beim Fräsen mit Softwarekompensation unterstützt. Maschinenkompensation,
+  Schleppmesser und Drehen werden in Vorbereitung und Planer blockiert;
+  geladene Werte bleiben erhalten. Ein aktives Shape mit blockierendem
+  Planungsfehler lehnt den gesamten Export vor der Ausgabe ab: vorhandene
+  Dateien bleiben erhalten, stdout bleibt leer. Warnungen allein sperren
+  einen gültigen Plan nicht.
 
 ### Vorschau aus demselben Plan
 

@@ -64,23 +64,6 @@ Artefakt. Er schließt M1 deshalb nicht ab. Die spätere Darstellungskorrektur
 wurde gezielt mit je 21 Tests unter Qt5/Qt6 geprüft. Keine erneuten langen
 Läufe allein wegen dieser Dokumentbereinigung starten.
 
-<a id="a1"></a>
-
-### A1 – Verbleibende Grenzen der Architekturabnahme klären
-
-Die früheren allgemeinen Abnahmetore sind im
-[Erledigt-Dokument eingeordnet](../archive/toolpath-refactoring-completed.md#einordnung-der-früheren-abnahmetore).
-Bereits nachgewiesene Kriterien sind keine neue Implementierungsserie.
-
-- [ ] Über die gezielten B1/B2-Nachweise hinaus weitere relevante Maschinen-,
-  Kompensations- und Profilfälle nur bei einer benannten Abdeckungslücke
-  festlegen; aus der früher pauschalen Matrix keine neue Vollprüfung ableiten.
-- [ ] Die Reichweite des früher pauschal auf „Domain und Application“
-  bezogenen Import-Abnahmetors klären. Importfreiheit ist für alle Module
-  unter `domain/geometry` und `domain/toolpath` nachgewiesen, nicht für alle
-  übrigen Projektmodelle oder die GUI-/Datei-Exportfassade. Eine darüber
-  hinausgehende Entkopplung wäre gesondert zu beschließen und zu planen.
-
 <a id="lc1"></a>
 
 ### LC1 – Optionaler automatischer LinuxCNC-CLI-Filter

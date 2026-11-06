@@ -10,6 +10,8 @@ SOURCES += \
     dxf2gcode/_version.py \
     dxf2gcode/bootstrap/version_metadata.py \
     dxf2gcode/presentation/qt/versioninfo.py \
+    dxf2gcode/presentation/qt/runtimeinfo.py \
+    dxf2gcode/presentation/qt/project_session.py \
     dxf2gcode/__init__.py \
     dxf2gcode/adapters/__init__.py \
     dxf2gcode/adapters/config/configobj_store.py \
@@ -80,6 +82,7 @@ SOURCES += \
     dxf2gcode/domain/project/entitycontent.py \
     dxf2gcode/domain/project/layercontent.py \
     dxf2gcode/domain/project/project.py \
+    dxf2gcode/domain/project/document.py \
     dxf2gcode/domain/project/shape.py \
     dxf2gcode/domain/project/machining.py \
     dxf2gcode/domain/project/__init__.py \

@@ -3426,6 +3426,10 @@ La longueur doit être supérieure à la tolérance</translation>
 <context>
     <name>Shape</name>
     <message>
+        <source>Shape %i: pocket milling requires milling mode with software compensation. Disable pocket milling or change the machine settings.</source>
+        <translation>Forme %i : le fraisage de poche nécessite le mode fraisage avec compensation logicielle. Désactivez le fraisage de poche ou modifiez les paramètres de la machine.</translation>
+    </message>
+    <message>
         <source>Shape %i: Z infeed depth is null!</source>
         <translation>Contour %i : la profondeur de passe est nulle !</translation>
     </message>

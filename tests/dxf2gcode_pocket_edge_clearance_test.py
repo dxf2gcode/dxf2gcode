@@ -82,7 +82,7 @@ def rect_geos(w=RECT_W, h=RECT_H):
 
 
 def make_shape(geos, nr=0):
-    s = Shape(nr=nr, closed=True, geos=Geos(geos))
+    s = Shape(nr=nr, closed=True, geos=Geos(geos), config=g.config)
     s.AnalyseAndOptimize()
     return s
 
@@ -101,7 +101,7 @@ def build(mode, cut_cor, pct, reversed_dir=False, geos=None):
     s.cut_cor = cut_cor
     s.Drill = False
     s.Pocket = True
-    layer = LayerContent(0, "L", [s])
+    layer = LayerContent(0, "L", [s], config=g.config)
     layer.tool_diameter = TOOL_DIA
     layer.axis3_retract = 9.91
     layer.axis3_safe_margin = 3.05

@@ -3,13 +3,10 @@
 import os
 
 from dxf2gcode.domain.geometry.point import Point
-from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 from dxf2gcode.application.optimization.routes import OptimizeRoutes
 from dxf2gcode.application.shapes import AutomaticCutterCompensation
 from dxf2gcode.application.exporting import ExportToolpath
-from dxf2gcode.adapters.dxf.reader import DxfReaderAdapter
 from dxf2gcode.application.drawings import BuildDrawingModel, DrawingModel
-from dxf2gcode.application.importing import ImportDrawing
 from dxf2gcode.domain.project.shape import Shape
 from dxf2gcode.domain.project.project import Project
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
@@ -19,7 +16,8 @@ class ExportDrawing:
     """Run the shared import, model-building, optimization and export services."""
 
     def __init__(self, import_drawing, build_model, postprocessor, config,
-                 optimizer_factory=None):
+                 optimizer_factory=None, *, prepare_shape):
+        self._prepare_shape = prepare_shape
         self._import_drawing = import_drawing
         self._build_model = build_model
         self._postprocessor = postprocessor
@@ -62,7 +60,7 @@ class ExportDrawing:
                               model.shapes)
 
         for shape in model.shapes:
-            shape.stmove = prepare_shape(shape, config=self._config, build_preview=False)
+            shape.stmove = self._prepare_shape(shape, config=self._config, build_preview=False)
 
         ExportToolpath(self._postprocessor).execute(
             filename, output_filename, model.layers, postprocessor_index)
@@ -70,10 +68,11 @@ class ExportDrawing:
             raise ValueError('; '.join(self._postprocessor.export_errors))
 
 
-class _HeadlessProjectSession:
-    """Small compatibility context for loading .d2g without MainWindow."""
+class DrawingSession:
+    """Drawing state and loading operation shared with project restoration."""
 
-    def __init__(self, config, project_filename):
+    def __init__(self, config, project_filename, import_drawing):
+        self.import_drawing = import_drawing
         self.config = config
         self.project_filename = project_filename
         self.filename = None
@@ -92,10 +91,7 @@ class _HeadlessProjectSession:
         self.diagnostics = ()
         self.excluded_layers = ()
 
-    def connectToolbarToConfig(self, block_signals=True):
-        """The GUI-only toolbar binding has no headless equivalent."""
-
-    def load(self, plot=False):
+    def load(self):
         filename = self.filename
         if not filename:
             return False
@@ -105,7 +101,7 @@ class _HeadlessProjectSession:
         if not os.path.isfile(filename):
             return False
         self.filename = filename
-        result = ImportDrawing(DxfReaderAdapter(self.config)).execute(filename)
+        result = self.import_drawing.execute(filename)
         self.diagnostics = result.diagnostics
         self.drawing = result.drawing
         model = BuildDrawingModel(
@@ -128,18 +124,14 @@ class _HeadlessProjectSession:
         self.loaded = True
         return True
 
-    def unsetCursor(self):
-        """Compatibility no-op for the old project loader."""
-
-    def plot(self):
-        """Project loading calls plot after restoring the model; export does not."""
-
-
 class ExportProject:
     """Load a legacy .d2g model and export it without constructing Qt UI."""
 
     def __init__(self, project_repository, config, postprocessor,
-                 optimizer_factory=None):
+                 optimizer_factory=None, *, import_drawing, prepare_shape, decode_project):
+        self._import_drawing = import_drawing
+        self._prepare_shape = prepare_shape
+        self._decode_project = decode_project
         self._repository = project_repository
         self._config = config
         self._postprocessor = postprocessor
@@ -147,8 +139,9 @@ class ExportProject:
 
     def execute(self, project_filename, output_filename, optimize=False,
                 postprocessor_index=0):
-        session = _HeadlessProjectSession(self._config, project_filename)
-        project = Project(session)
+        session = DrawingSession(self._config, project_filename, self._import_drawing)
+        project = Project(session, self._config, decode=self._decode_project,
+                          load_drawing=session.load)
         project_document = self._repository.load(project_filename)
         project.load(project_document)
         if not session.loaded:
@@ -164,7 +157,7 @@ class ExportProject:
         exporter = ExportDrawing(
             import_drawing=None, build_model=None,
             postprocessor=self._postprocessor, config=self._config,
-            optimizer_factory=self._optimizer_factory)
+            optimizer_factory=self._optimizer_factory, prepare_shape=self._prepare_shape)
         exporter.export_model(model, source_filename, output_filename,
                               optimize, postprocessor_index)
         return model, session.diagnostics

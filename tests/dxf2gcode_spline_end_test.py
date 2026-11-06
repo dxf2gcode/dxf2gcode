@@ -68,7 +68,7 @@ def offset_distance_range(off, target=TOOL_RADIUS):
 
 
 def shape_from(geos, closed):
-    shape = Shape(0, closed, geos=Geos([deepcopy(geo) for geo in geos]))
+    shape = Shape(0, closed, geos=Geos([deepcopy(geo) for geo in geos]), config=g.config)
     shape.AnalyseAndOptimize()
     return shape
 

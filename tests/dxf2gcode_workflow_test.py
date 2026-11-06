@@ -41,7 +41,7 @@ def _first_imported_shape(dxf):
                    != "Insert")
     root = EntityContent(nr=0, name="Entities", parent=None, p0=Point(),
                          pb=Point(), sca=[1.0, 1.0, 1.0], rot=0.0)
-    shape = Shape(0, contour.closed, root)
+    shape = Shape(0, contour.closed, root, config=g.config)
     for geo_nr, reverse in contour.order:
         entity = entities.geo[geo_nr]
         geos = entity.geo
@@ -57,7 +57,7 @@ def _first_imported_shape(dxf):
     root.append(shape)
 
     layer_nr = entities.geo[contour.order[0][0]].Layer_Nr
-    layer = LayerContent(layer_nr, dxf.layers[layer_nr].name, [shape])
+    layer = LayerContent(layer_nr, dxf.layers[layer_nr].name, [shape], config=g.config)
     shape.parentLayer = layer
     shape.milling_offset = layer.milling_offset
     return shape, layer

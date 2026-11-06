@@ -7,6 +7,11 @@ def machining_conflict(drill, pocket, compensation):
     return drill and (pocket or compensation != 40)
 
 
+def pocket_supported(machine_type, machine_compensation):
+    """Pocket geometry requires milling with software compensation."""
+    return machine_type == 'milling' and not machine_compensation
+
+
 @dataclass(frozen=True)
 class MachiningState:
     drill: bool

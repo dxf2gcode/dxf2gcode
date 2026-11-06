@@ -3674,6 +3674,10 @@ Skipped Geometries</source>
 <context>
     <name>Shape</name>
     <message>
+        <source>Shape %i: pocket milling requires milling mode with software compensation. Disable pocket milling or change the machine settings.</source>
+        <translation>Контур %i: обработка кармана требует режима фрезерования с программной компенсацией. Отключите обработку кармана или измените настройки станка.</translation>
+    </message>
+    <message>
         <source>Shape %i: Z infeed depth is null!</source>
         <translation>Контур %i: глубина врезания равна нулю!</translation>
     </message>

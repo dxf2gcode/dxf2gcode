@@ -476,14 +476,19 @@ class MyGraphicsScene(QGraphicsScene):
             # repaint_shape calls) has been processed.
             QtCore.QTimer.singleShot(0, self._show_pending_error_messages)
 
+    def take_pending_error_messages(self):
+        """Drain messages before a model reload or explicit combined warning."""
+        messages = self._pending_error_messages
+        self._pending_error_messages = []
+        self._error_message_scheduled = False
+        return messages
+
     def _show_pending_error_messages(self):
         """
         Show the error messages collected by queue_error_message in one message
         box and reset the collection.
         """
-        self._error_message_scheduled = False
-        messages = self._pending_error_messages
-        self._pending_error_messages = []
+        messages = self.take_pending_error_messages()
         if not messages:
             return
         QMessageBox.critical(
@@ -710,7 +715,8 @@ class ShapeGUI(QGraphicsItem):
         else:
             # Retain the historical constructor for add-on code while the
             # application itself passes an already-built domain model.
-            self.model = Shape(model, closed, parentEntity)
+            self.model = Shape(model, closed, parentEntity, config=g.config,
+                               translate=QtCore.QCoreApplication.translate)
 
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.setAcceptedMouseButtons(QtCore.Qt.MouseButton.NoButton)

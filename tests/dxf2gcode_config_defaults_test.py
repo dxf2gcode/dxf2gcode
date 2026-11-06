@@ -122,11 +122,11 @@ class TestConfigDefaults(unittest.TestCase):
             with patch.object(g,'config',config):
                 config.var_dict['Route_Optimisation']['default_TSP']=False
                 config.update_config()
-                existing=Shape(nr=1,closed=True,geos=[])
+                existing=Shape(nr=1,closed=True,geos=[], config=g.config)
                 self.assertFalse(existing.send_to_TSP)
                 config.var_dict['Route_Optimisation']['default_TSP']=True
                 config.update_config()
-                new=Shape(nr=2,closed=True,geos=[])
+                new=Shape(nr=2,closed=True,geos=[], config=g.config)
                 self.assertTrue(new.send_to_TSP)
                 self.assertFalse(existing.send_to_TSP)
 

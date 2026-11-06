@@ -111,7 +111,7 @@ class TestOvercutValues(OvercutTestBase):
             config.vars.Tool_Parameters['1']['overcut_length'], 12.5)
 
     def test_the_activation_is_a_setting_of_the_shape(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         # The shape uses the standard of the configuration file.
         self.assertEqual(layer.overcut_enabled, OVERCUT_DEFAULT)
         # The standard of the configuration file is used.
@@ -162,7 +162,7 @@ class TestOvercutValues(OvercutTestBase):
 
     def test_the_length_comes_from_the_tool(self):
         self.set_tool_value(1, 'overcut_length', 7.0)
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         self.assertAlmostEqual(layer.overcut_length, 7.0)
         self.update(layer)
         self.assertAlmostEqual(layer.overcut_length, 7.0)
@@ -175,7 +175,7 @@ class TestOvercutValues(OvercutTestBase):
     def test_the_tool_change_uses_the_new_length(self):
         self.set_tool_value(1, 'overcut_length', 7.0)
         self.set_tool_value(2, 'overcut_length', 20.0)
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         self.assertAlmostEqual(layer.overcut_length, 7.0)
         layer.tool_nr = 2
         self.update(layer)
@@ -190,7 +190,7 @@ class TestOvercutValues(OvercutTestBase):
         g.config.update_tool_values()
         self.assertAlmostEqual(
             g.config.vars.Tool_Parameters['1']['overcut_length'], 1.0)
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         self.update(layer)
         self.assertAlmostEqual(layer.overcut_length, 1.0)
         # A second update must not convert the value again.

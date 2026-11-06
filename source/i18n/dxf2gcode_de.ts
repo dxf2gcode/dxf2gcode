@@ -3463,6 +3463,10 @@ Die Länge muss größer der Toleranz sein.
 <context>
     <name>Shape</name>
     <message>
+        <source>Shape %i: pocket milling requires milling mode with software compensation. Disable pocket milling or change the machine settings.</source>
+        <translation>Shape %i: Taschenfräsen erfordert den Fräsmodus mit Softwarekompensation. Deaktivieren Sie das Taschenfräsen oder ändern Sie die Maschineneinstellungen.</translation>
+    </message>
+    <message>
         <source>Shape %i: Z infeed depth is null!</source>
         <translation>Kontur %i: Die Zustelltiefe ist null!</translation>
     </message>

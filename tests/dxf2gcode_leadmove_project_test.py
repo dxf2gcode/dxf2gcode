@@ -22,7 +22,7 @@ sys.path[:0] = [_TEST_DIR, os.path.join(os.path.dirname(_TEST_DIR), "source")]
 
 import dxf2gcode.bootstrap.runtime_state as g  # noqa: E402
 from dxf2gcode.domain.project.layercontent import LayerContent  # noqa: E402
-from dxf2gcode.domain.project.project import Project  # noqa: E402
+from dxf2gcode.presentation.qt.project_session import Project  # noqa: E402
 from dxf2gcode.domain.project.shape import Shape, Geos  # noqa: E402
 from dxf2gcode.domain.geometry.linegeo import LineGeo  # noqa: E402
 from dxf2gcode.domain.geometry.point import Point  # noqa: E402
@@ -75,7 +75,7 @@ class _ParentStub(object):
 
 
 def build_layer(name="L1", with_shape=True):
-    layer = LayerContent(nr=1, name=name, shapes=[])
+    layer = LayerContent(nr=1, name=name, shapes=[], config=g.config)
     layer.tool_nr = 1
     layer.tool_diameter = 10.0
     layer.speed = 1000.0
@@ -88,7 +88,7 @@ def build_layer(name="L1", with_shape=True):
                       geos=Geos([LineGeo(Point(0, 0), Point(100, 0)),
                                  LineGeo(Point(100, 0), Point(100, 100)),
                                  LineGeo(Point(100, 100), Point(0, 100)),
-                                 LineGeo(Point(0, 100), Point(0, 0))]))
+                                 LineGeo(Point(0, 100), Point(0, 0))]), config=g.config)
         layer.shapes = [shape]
         layer.exp_order_complete = [0]
     return layer

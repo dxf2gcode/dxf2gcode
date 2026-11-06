@@ -42,8 +42,8 @@ from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.domain.geometry.point import Point
 from dxf2gcode.domain.geometry.collections import Geos
-from dxf2gcode.domain.project.machining import machining_conflict
-from dxf2gcode.domain.toolpath.diagnostics import MODE_CONFLICT
+from dxf2gcode.domain.project.machining import machining_conflict, pocket_supported
+from dxf2gcode.domain.toolpath.diagnostics import MODE_CONFLICT, POCKET_UNSUPPORTED
 from dxf2gcode.domain.toolpath.messages import SourceMessage
 from dxf2gcode.domain.toolpath.pocketmill import PocketMill
 from dxf2gcode.domain.toolpath.pocketmove import PocketMove
@@ -234,6 +234,11 @@ class StMove(object):
         # The planner supplies the translatable diagnostic until an explicit edit.
         if machining_conflict(self.shape.Drill, self.shape.Pocket, self.shape.cut_cor):
             self.start_move_error = SourceMessage(MODE_CONFLICT, 'Shape', (self.shape.nr,))
+            return
+        if self.shape.Pocket and not pocket_supported(
+                self.settings.machine_type, self.settings.machine_compensation):
+            self.start_move_error = SourceMessage(
+                POCKET_UNSUPPORTED, 'Shape', (self.shape.nr,))
             return
 
         if self.settings.machine_type == 'drag_knife':

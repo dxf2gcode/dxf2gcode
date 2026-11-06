@@ -70,6 +70,8 @@ This group exercises DXF entity import and transforms, offsets, spline and
 ellipse regressions, postprocessor settings, project persistence, and a real
 quiet CLI conversion from `dxf/test.dxf` to a temporary `.ngc` file. The CLI
 test gives the subprocess its own temporary configuration profile.
+It also checks all Domain/Application imports without Qt or concrete adapters,
+explicit model configuration, machining conflicts and whole-job export failure.
 
 Run every test before a release or a broad change:
 

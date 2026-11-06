@@ -81,7 +81,7 @@ BRIDGE_X0, BRIDGE_X1 = 35.0, 47.2
 # helpers
 def pocket_stmove(shape, tool_diameter, cut_cor, cw=True):
     """Build an StMove for ``shape`` with pocket milling enabled."""
-    layer = LayerContent(0, "top", [shape])
+    layer = LayerContent(0, "top", [shape], config=g.config)
     layer.tool_diameter = tool_diameter
     layer.start_radius = 0.0
     # The test checks the compensated pocket toolpath, not the lead in.
@@ -143,7 +143,7 @@ def circle_geos(radius):
 
 def make_circle_shape(radius, nr=0):
     from dxf2gcode.domain.project.shape import Shape, Geos
-    s = Shape(nr=nr, closed=True, geos=Geos(circle_geos(radius)))
+    s = Shape(nr=nr, closed=True, geos=Geos(circle_geos(radius)), config=g.config)
     s.AnalyseAndOptimize()
     return s
 
@@ -229,7 +229,7 @@ class TestPocketing1MissingLines(unittest.TestCase):
         # y=32.219 and must NOT contribute a crossing; only the round corner
         # arc crosses there -> exactly one crossing in that small x window.
         shape = _load_shapes(DXF_POCKETING1)[0]
-        layer = LayerContent(0, "top", [shape])
+        layer = LayerContent(0, "top", [shape], config=g.config)
         layer.tool_diameter = 2.0
         layer.start_radius = 0.0
         shape.parentLayer = layer
@@ -271,7 +271,7 @@ class TestLargeToolDiameter(unittest.TestCase):
     def test_too_large_tool_is_reported_and_skipped(self):
         for dia in (40.0, 50.0):
             shape = _load_shapes(DXF_POCKETING1)[0]
-            layer = LayerContent(0, "top", [shape])
+            layer = LayerContent(0, "top", [shape], config=g.config)
             layer.tool_diameter = dia
             layer.start_radius = 0.0
             # The test checks the pocket toolpath, not the lead in.
@@ -297,7 +297,7 @@ class TestCirclePocket(unittest.TestCase):
         # r=1.65 mm (3.3 mm dia) with a 2 mm cutter: previously ZeroDivisionError
         for cut_cor in (40, 41, 42):
             shape = make_circle_shape(1.65)
-            layer = LayerContent(0, "top", [shape])
+            layer = LayerContent(0, "top", [shape], config=g.config)
             layer.tool_diameter = 2.0
             layer.start_radius = 0.0
             shape.parentLayer = layer
@@ -331,7 +331,7 @@ class TestValidPocketsStillWork(unittest.TestCase):
 
     def test_square_pocket_rectangle_branch(self):
         from dxf2gcode.domain.project.shape import Shape, Geos
-        s = Shape(nr=0, closed=True, geos=Geos(square_geos(20.0)))
+        s = Shape(nr=0, closed=True, geos=Geos(square_geos(20.0)), config=g.config)
         s.AnalyseAndOptimize()
         st = pocket_stmove(s, tool_diameter=2.0, cut_cor=42)
         self.assertGreater(len(pocket_geos(st)), 1,

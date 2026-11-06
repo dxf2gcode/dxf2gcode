@@ -55,7 +55,7 @@ LinuxCNC-2.9-Handbuch (AXIS Foam, INI, Lathe und G-Code), auf den Seiten verlink
 [Release](../../.github/workflows/publish-release.yml) und
 [Pages](../../.github/workflows/documentation-pages.yml) gegen die Anleitung
 verglichen. Python-Mindestdeklaration nicht mit frischer Plattformabnahme
-gleichsetzen. Shared runtime/Qt-Kopplung ausdrücklich erhalten; Architektur-
+gleichsetzen. Im damaligen WP12-Stand Shared runtime/Qt-Kopplung ausdrücklich erhalten; Architektur-
 diagramm ist eine Verantwortungsübersicht, kein Beweis kompletter Entkopplung.
 
 Compile-only und TS-Update/Übersetzungsprüfung getrennt; generierte Dateien
@@ -75,3 +75,14 @@ Projekt-Nutzungserlaubnis des Brandings und fremde Inhalte.
 Die Website enthält nun alle geplanten Themen, aber technische/visuelle
 Kapitelabnahme, Veröffentlichung sowie optionale historische Wiederverwendung
 und reale Steuerungs-/Plattformabnahmen bleiben getrennte Statusangaben.
+
+## A1: aktualisierte Architekturgrenze (06.11.2026)
+
+Die [Entwicklerübersicht](../../docs/developer/architecture.md) und die
+[Architekturverträge](../architecture.md) beschreiben jetzt die nachgewiesene
+Importfreiheit aller Domain-/Application-Module. Explizite Konfiguration,
+injizierter Projektdecoder und Qt-Projektkoordination ersetzen die früheren
+Modellkopplungen. Reader und Vorbereitung werden im Composition Root gewählt.
+Pocketing ist nur beim Fräsen mit Softwarekompensation gültig; ein blockierender
+Planungsfehler stoppt den gesamten Export vor Datei-/stdout-Ausgabe.
+[Abschluss und Prüfgrenzen](../archive/toolpath-refactoring-completed.md#a1-complete).

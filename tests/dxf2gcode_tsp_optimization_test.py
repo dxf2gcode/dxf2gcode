@@ -176,7 +176,7 @@ class TestTspOptimization(unittest.TestCase):
         shapes = [Mock(nr=nr, send_to_TSP=nr == 2) for nr in range(3)]
         for nr, shape in enumerate(shapes):
             shape.get_start_end_points.return_value = Point(nr, 0)
-        layer = LayerContent(0, "order", shapes)
+        layer = LayerContent(0, "order", shapes, config=g.config)
         layer.exp_order = [0, 1, 2]
         layer.optimize()
         shapes[0].setNearestStPoint.assert_not_called()

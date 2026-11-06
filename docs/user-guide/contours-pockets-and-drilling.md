@@ -37,8 +37,10 @@ when the drawing is a nominal finished boundary.
 5. Inspect the boundary and internal clearing paths before any export.
 
 The pocket command is offered for a fully closed selection when compensation
-is performed in software. It is not offered for drag-knife mode or for machine
-compensation. A mixed open/closed selection therefore does not offer the same
+is performed in software in milling mode. It is unavailable for lathe,
+drag knife or machine compensation. Loaded pocket settings in these modes are
+preserved and reported; change to milling with software compensation or
+explicitly disable pocketing before export. A mixed open/closed selection therefore does not offer the same
 pocket command as selecting A alone.
 
 Pocket milling includes interior clearing as well as the prepared boundary.

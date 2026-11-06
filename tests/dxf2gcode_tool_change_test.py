@@ -266,7 +266,7 @@ class TestToolChange(unittest.TestCase):
         self.assertIn('work offset', self.pp.export_errors[-1])
 
     def test_cli_reports_failure_instead_of_success_without_a_file(self):
-        from dxf2gcode.application.cli_export import ExportDrawing
+        from dxf2gcode.bootstrap.composition import create_drawing_exporter as ExportDrawing
         from dxf2gcode.application.drawings import DrawingModel
         from unittest.mock import Mock
         self.pp.getPostProVars = Mock()

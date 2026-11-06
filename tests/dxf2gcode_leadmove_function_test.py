@@ -169,8 +169,8 @@ class TestErrorHandling(LeadMoveTestBase):
                      LineGeo(Point(100, 100), Point(0, 100)),
                      LineGeo(Point(0, 100), Point(0, 0)),
                      BreakGeo(Point(0, 0), Point(10, 0), -1.0, 0.0, 0.0)])
-        shape = Shape(nr=1, closed=True, geos=geos)
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        shape = Shape(nr=1, closed=True, geos=geos, config=g.config)
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         layer.tool_diameter = 10.0
         # The common radius at the workpiece and the common length of the
         # straight part (they are defined per tool).
@@ -210,8 +210,8 @@ class TestErrorHandling(LeadMoveTestBase):
                      LineGeo(Point(100, 100), Point(0, 100)),
                      LineGeo(Point(0, 100), Point(0, 0)),
                      LineGeo(Point(0, 0), Point(50, 0))])
-        shape = Shape(nr=1, closed=True, geos=geos)
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        shape = Shape(nr=1, closed=True, geos=geos, config=g.config)
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         layer.tool_diameter = 10.0
         # The common radius at the workpiece and the common length of the
         # straight part (they are defined per tool).
@@ -461,7 +461,7 @@ class TestLayerIdentifiers(LeadMoveTestBase):
         layer = LayerContent(
             nr=1,
             name=separator.join(["MILL", "Lim", "2.0", "Lom", "2.0"]),
-            shapes=[])
+            shapes=[], config=g.config)
         layer.overrideDefaults()
         self.assertEqual(layer.lead_in_mode, LEAD_STRAIGHT)
         self.assertEqual(layer.lead_out_mode, LEAD_RADIUS)
@@ -471,7 +471,7 @@ class TestLayerIdentifiers(LeadMoveTestBase):
         layer = LayerContent(
             nr=1,
             name=separator.join(["MILL", "Lim", "2", "Lom", "1"]),
-            shapes=[])
+            shapes=[], config=g.config)
         layer.overrideDefaults()
         self.assertEqual(layer.lead_in_mode, LEAD_STRAIGHT)
         self.assertEqual(layer.lead_out_mode, LEAD_STRAIGHT)
@@ -482,7 +482,7 @@ class TestLayerIdentifiers(LeadMoveTestBase):
             layer = LayerContent(
                 nr=1,
                 name=separator.join(["MILL", "Lim", value]),
-                shapes=[])
+                shapes=[], config=g.config)
             # No exception: the value is ignored and the default is kept.
             layer.overrideDefaults()
             self.assertEqual(layer.lead_in_mode, LEAD_DEFAULT)
@@ -492,7 +492,7 @@ class TestLayerIdentifiers(LeadMoveTestBase):
         layer = LayerContent(
             nr=1,
             name=separator.join(["MILL", "Lim", "2", "Lr", "8.0"]),
-            shapes=[])
+            shapes=[], config=g.config)
         layer.overrideDefaults()
         self.assertTrue(layer.lead_in_mode_overridden)
         self.assertTrue(layer.lead_radius_overridden)
@@ -506,7 +506,7 @@ class TestLayerIdentifiers(LeadMoveTestBase):
         layer = LayerContent(
             nr=1,
             name=separator.join(["MILL", "Sr", "2.0"]),
-            shapes=[])
+            shapes=[], config=g.config)
         layer.overrideDefaults()
         self.assertAlmostEqual(layer.lead_radius,
                                2.0 + layer.getToolRadius())
@@ -522,7 +522,7 @@ class TestConfigurationChange(LeadMoveTestBase):
         self.update = update_lead_move_values
 
     def test_the_global_values_are_applied_to_the_layer(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         g.config.vars.Lead_In_Out['lead_in_mode'] = 'radius'
         g.config.vars.Lead_In_Out['lead_out_mode'] = 'straight'
         g.config.vars.Lead_In_Out['overcut_enabled'] = True
@@ -541,7 +541,7 @@ class TestConfigurationChange(LeadMoveTestBase):
         self.assertAlmostEqual(layer.overcut_length, 7.0)
 
     def test_nothing_changes_if_the_values_are_the_same(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         self.update(layer)
         self.assertFalse(self.update(layer))
 
@@ -551,7 +551,7 @@ class TestConfigurationChange(LeadMoveTestBase):
             nr=1,
             name=separator.join(["MILL", "Lim", "2", "Lr", "8.0", "Ol",
                                  "3.0"]),
-            shapes=[])
+            shapes=[], config=g.config)
         layer.overrideDefaults()
         g.config.vars.Lead_In_Out['lead_in_mode'] = 'radius'
         g.config.vars.Lead_In_Out['overcut_enabled'] = False
@@ -570,7 +570,7 @@ class TestConfigurationChange(LeadMoveTestBase):
         g.config.tool_units_metric = 1
         g.config.metric = 0
         g.config.vars.Tool_Parameters['1']['overcut_length'] = 25.4
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         self.update(layer)
         self.assertAlmostEqual(layer.overcut_length, 25.4)
 
@@ -818,7 +818,7 @@ class TestCanvasFullCirclePreview(LeadMoveTestBase):
         from dxf2gcode.domain.project.shape import Shape, Geos
         from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
 
-        shape = Shape(nr=0, closed=True, geos=Geos([]))
+        shape = Shape(nr=0, closed=True, geos=Geos([]), config=g.config)
         model = SimpleNamespace(
             shape=shape, geos=Geos(geos), pocket_geos_start=0,
             lead_in_geos=[], exit_geos=[], exit_chain=[],
@@ -1016,12 +1016,12 @@ class TestCanvasPreviewBreaks(LeadMoveTestBase):
         from dxf2gcode.domain.geometry.point import Point
         from dxf2gcode.domain.project.layercontent import Shapes
         separator = g.config.vars.Layer_Options['id_float_separator']
-        layer = LayerContent(nr=2, name="BREAKS" + separator + "1", shapes=[])
+        layer = LayerContent(nr=2, name="BREAKS" + separator + "1", shapes=[], config=g.config)
         tab = Shape(nr=1, closed=True,
                     geos=Geos([LineGeo(Point(40, -5), Point(60, -5)),
                                LineGeo(Point(60, -5), Point(60, 5)),
                                LineGeo(Point(60, 5), Point(40, 5)),
-                               LineGeo(Point(40, 5), Point(40, -5))]))
+                               LineGeo(Point(40, 5), Point(40, -5))]), config=g.config)
         tab.axis3_mill_depth = -1.0
         tab.f_g1_plane = 400
         tab.f_g1_depth = 150
@@ -1461,7 +1461,7 @@ class TestConfiguration(LeadMoveTestBase):
         self.assertEqual(tool['overcut_length'], 0.0)
 
     def test_the_layer_uses_the_global_defaults(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         # The layer uses the configuration default, the method which is
         # really used follows the global default value.
         self.assertEqual(layer.lead_in_mode, LEAD_DEFAULT)
@@ -1480,7 +1480,7 @@ class TestConfiguration(LeadMoveTestBase):
                          self.config.vars.Tool_Parameters['1']['overcut_length'])
 
     def test_a_change_of_the_global_default_is_followed(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         g.config.vars.Lead_In_Out['lead_in_mode'] = LEAD_RADIUS
         g.config.vars.Lead_In_Out['lead_out_mode'] = LEAD_STRAIGHT
         self.assertEqual(layer.get_lead_in_mode(), LEAD_RADIUS)
@@ -1495,7 +1495,7 @@ class TestConfiguration(LeadMoveTestBase):
             nr=1,
             name=separator.join(["MILL", "Lr", "8.0", "Ll", "3.0", "Lom", "1",
                                  "Ol", "12.0"]),
-            shapes=[])
+            shapes=[], config=g.config)
         layer.overrideDefaults()
         self.assertAlmostEqual(layer.lead_radius, 8.0)
         self.assertAlmostEqual(layer.lead_length, 3.0)
@@ -1521,7 +1521,7 @@ class TestConfiguration(LeadMoveTestBase):
         self.assertFalse(config.var_dict["Lead_In_Out"]["overcut_enabled"])
 
     def test_the_values_are_scaled_with_the_units(self):
-        layer = LayerContent(nr=1, name="L1", shapes=[])
+        layer = LayerContent(nr=1, name="L1", shapes=[], config=g.config)
         layer.lead_radius = 2.0
         layer.lead_length = 3.0
         layer.overcut_length = 4.0

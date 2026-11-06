@@ -46,13 +46,22 @@ Milling/lathe/knife mode, G40/G41/G42 side, machine/software compensation and
 postprocessor capabilities are separate inputs. A software-compensated side
 choice can legitimately serialize a geometric centre path in G40.
 
-## Current coupling and compatibility limits
+## Import boundaries and compatibility limits
 
-`bootstrap/runtime_state.py` still holds shared configuration/window state.
-Some project/preparation/GUI paths read it. `domain/constants.py` imports Qt
-compatibility code, and preparation reuses established shape/lead/offset
-algorithms. A clean package hierarchy is not proof of a completely Qt-free
-application or domain runtime.
+All modules under `domain` and `application` are imported in fresh processes
+without Qt, presentation, shared runtime globals or concrete adapters. The
+boundary regression also constructs shapes/layers with explicit configuration
+and applies a project document. Shape and layer constructors require `config`;
+optional translation callbacks belong to their callers. Inherited settings
+continue to read the current supplied configuration.
+
+The project model receives decoded documents or an injected decoder and
+lifecycle callbacks. `presentation/qt/project_session.py` coordinates tree,
+canvas, cursor and reload operations. CLI export uses `DrawingSession`, without
+GUI placeholders; `bootstrap/composition.py` supplies readers, preparation and
+the project codec. Qt runtime version information lives in presentation.
+Outer GUI/adapter paths still use `bootstrap/runtime_state.py`; the import
+boundary does not imply removal of all shared application state.
 
 The old internal import namespaces were removed rather than kept as public
 aliases. File-format compatibility is a separate contract: the current readers
@@ -65,7 +74,12 @@ Trace a change through imported model, current selection/settings, plan,
 preview, saved project and emitted output as applicable. Existing golden files
 capture particular serialization contracts; they are not physical-machine
 acceptance. Loaded contradictory machining settings remain visible and block
-the affected plan rather than being silently repaired.
+the affected plan rather than being silently repaired. Pocket milling is
+supported only in milling mode with software compensation; lathe, drag knife
+and machine-compensated pockets retain their settings but have no valid plan.
+Any enabled shape with a blocking planning error rejects the entire export
+before output: existing target files are preserved and stdout stays empty.
+Warnings alone may accompany a valid plan.
 
 For implementation detail see the repository's
 [architecture contracts](https://github.com/dxf2gcode/dxf2gcode/blob/develop/doc/architecture.md),

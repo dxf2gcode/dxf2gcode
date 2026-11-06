@@ -143,7 +143,7 @@ def _set_clearance(pct):
 def _pocket(tool_dia, cut_cor, pct):
     _set_clearance(pct)
     shape = _load_shapes(DXF_POCKETING1)[0]
-    layer = LayerContent(0, "top", [shape])
+    layer = LayerContent(0, "top", [shape], config=g.config)
     layer.tool_diameter = tool_dia
     layer.start_radius = 0.0
     # The test checks the compensated pocket toolpath, not the lead in.

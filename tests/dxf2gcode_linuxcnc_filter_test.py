@@ -59,6 +59,9 @@ class TestLinuxCNCFilter(unittest.TestCase):
     def test_planning_conflict_does_not_publish_partial_program(self):
         self.run_filter('conflict', 2)
 
+    def test_unsupported_pocket_does_not_publish_partial_program(self):
+        self.run_filter('unsupported-pocket', 2)
+
     def test_export_exception_does_not_publish_partial_program(self):
         self.run_filter('exception', 2)
 
@@ -119,6 +122,9 @@ def worker(case):
         if case == 'conflict':
             window.shapes[0].Drill = True
             window.shapes[0].Pocket = True
+        if case == 'unsupported-pocket':
+            window.shapes[0].Pocket = True
+            g.config.machine_type = 'lathe'
         if case == 'exception':
             def fail(*args, **kwargs):
                 print('PARTIAL PROGRAM MUST NOT ESCAPE')

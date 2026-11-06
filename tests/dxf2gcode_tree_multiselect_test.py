@@ -79,7 +79,7 @@ def _mk_shape(nr, size=10.0):
         LineGeo(Point(0, 0), Point(size, 0)),
         LineGeo(Point(size, 0), Point(size, size)),
         LineGeo(Point(size, size), Point(0, size)),
-        LineGeo(Point(0, size), Point(0, 0))]))
+        LineGeo(Point(0, size), Point(0, 0))]), config=g.config)
     s.AnalyseAndOptimize()
     return s
 
@@ -96,7 +96,7 @@ class MultiSelectHarness(object):
         _APP = QApplication.instance() or QApplication([])
         g.window = _Win()
         self.shapes = [_mk_shape(i) for i in range(n)]
-        self.layer = LayerContent(0, "L", self.shapes)
+        self.layer = LayerContent(0, "L", self.shapes, config=g.config)
         for s in self.shapes:
             s.parentLayer = self.layer
         if disabled_flags is not None:
@@ -299,7 +299,7 @@ class TestOptimalPathLayerAggregation(unittest.TestCase):
         # a second layer must not be affected by the first layer's checkbox
         h = MultiSelectHarness(3)
         other_shapes = [_mk_shape(10), _mk_shape(11)]
-        other_layer = LayerContent(1, "L2", other_shapes)
+        other_layer = LayerContent(1, "L2", other_shapes, config=g.config)
         for s in other_shapes:
             s.parentLayer = other_layer
         h.th.layers_list.append(other_layer)
@@ -358,7 +358,7 @@ class TestExportOrderAndTreeSync(unittest.TestCase):
         g.window.updateExportRoute.assert_called_once_with()
 
     def test_layer_reorder_commits_without_changing_shape_membership(self):
-        other = LayerContent(1, "L2", [_mk_shape(10)])
+        other = LayerContent(1, "L2", [_mk_shape(10)], config=g.config)
         other.shapes[0].parentLayer = other
         self.h.th.layers_list.append(other)
         self.h.th.buildLayerTree(self.h.th.layers_list)

@@ -66,7 +66,7 @@ from dxf2gcode.domain.geometry.point import Point  # noqa: E402
 from dxf2gcode.domain.project.layercontent import LayerContent, Layers, Shapes  # noqa: E402
 from dxf2gcode.adapters.toolpath.preparation import prepare_shape  # noqa: E402
 from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
-from dxf2gcode.domain.project.project import Project  # noqa: E402
+from dxf2gcode.presentation.qt.project_session import Project  # noqa: E402
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
     make_postpro, make_shape, build_stmove, square_geos, norm)
@@ -229,7 +229,7 @@ class TestMillingOffsetDefaultFlow(unittest.TestCase):
     def test_layer_uses_tool_default(self):
         g.config.vars.Tool_Parameters['2']['milling_offset'] = 0.7
         shape = make_shape(square_geos(10.0), nr=0)
-        layer = LayerContent(0, "MILL:ToolNr:2", [shape])
+        layer = LayerContent(0, "MILL:ToolNr:2", [shape], config=g.config)
         shape.parentLayer = layer
         layer.overrideDefaults()
         self.assertEqual(layer.tool_nr, 2)
@@ -239,14 +239,14 @@ class TestMillingOffsetDefaultFlow(unittest.TestCase):
     def test_layer_identifier_overrides_the_tool_default(self):
         g.config.vars.Tool_Parameters['2']['milling_offset'] = 0.7
         shape = make_shape(square_geos(10.0), nr=0)
-        layer = LayerContent(0, "MILL:ToolNr:2 MillingOffset:0.25", [shape])
+        layer = LayerContent(0, "MILL:ToolNr:2 MillingOffset:0.25", [shape], config=g.config)
         shape.parentLayer = layer
         layer.overrideDefaults()
         self.assertAlmostEqual(shape.milling_offset, 0.25)
 
     def test_default_is_zero_without_any_setting(self):
         shape = make_shape(square_geos(10.0), nr=0)
-        layer = LayerContent(0, "MILL:ToolNr:1", [shape])
+        layer = LayerContent(0, "MILL:ToolNr:1", [shape], config=g.config)
         shape.parentLayer = layer
         layer.overrideDefaults()
         self.assertAlmostEqual(shape.milling_offset, 0.0)
@@ -254,7 +254,7 @@ class TestMillingOffsetDefaultFlow(unittest.TestCase):
 
     def test_measuring_unit_change_scales_the_offset(self):
         shape = make_shape(square_geos(10.0), nr=0)
-        layer = LayerContent(0, "L0", [shape])
+        layer = LayerContent(0, "L0", [shape], config=g.config)
         layer.milling_offset = 1.0
         shape.milling_offset = 1.0
         layer.changeMeasuringUnits(1, 0)  # mm -> inch
@@ -311,7 +311,7 @@ class TestMillingOffsetPocketFill(unittest.TestCase):
             del shape.milling_offset          # pre-feature object
         else:
             shape.milling_offset = extra
-        layer = LayerContent(0, "L", [shape])
+        layer = LayerContent(0, "L", [shape], config=g.config)
         layer.tool_diameter = self.TOOL_DIA if tool_dia is None else tool_dia
         layer.axis3_retract = 9.91
         layer.axis3_safe_margin = 3.05

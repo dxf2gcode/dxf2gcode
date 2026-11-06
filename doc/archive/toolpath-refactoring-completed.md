@@ -1,6 +1,6 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **05.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **06.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
 Dieses Dokument bewahrt abgeschlossene Implementierungen, deren dokumentierte
 Prüfergebnisse und die historische Ausgangslage. Die
@@ -12,6 +12,133 @@ Historische Testergebnisse gelten für den jeweils beschriebenen Stand.
 Insbesondere liegen die Vollsuite-Ergebnisse mit 775 Tests vor der späteren
 Darstellungskorrektur; diese wurde anschließend mit jeweils 21 gezielten
 Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
+
+<a id="a1-complete"></a>
+
+## A1 – Vollständiger Architekturabschluss (06.11.2026)
+
+Die beauftragte Variante V ist vollständig umgesetzt: P0–P4 und I0–I5 aus
+dem [Abschlussplan](../planning/a1-completion-plan.md). Die frühere
+[Bestandsaufnahme](../planning/architecture-acceptance.md) bleibt historisch
+erhalten; A1 steht nicht mehr in der offenen Todo.
+
+**Fachlicher Vertrag:** Pocketing ist nur beim Fräsen mit Softwarekompensation
+unterstützt. Maschinenkompensation, Schleppmesser und Drehen blockieren die
+Vorbereitung und Planung mit `machining.pocket_unsupported`. Gespeicherte
+Werte bleiben erhalten. Projektladen sowie Maschinen-/Kompensationswechsel
+aktualisieren Pläne und Warnungen. Ausstehende Vorschaufehlermeldungen werden
+bei Reloads bereinigt und mit aktuellen Warnungen zusammengeführt.
+Jedes aktive Shape mit blockierendem Planungsfehler stoppt den gesamten
+Export vor der Ausgabe; vorhandene Dateien bleiben unverändert, stdout leer.
+GUI-Filter und CLI melden Fehlerstatus. Gültige Software-Pocket-, Bohr-,
+Kontur-, Dreh- und Messerfälle behalten ihre bisherigen Planverträge.
+
+**Architektur:** Alle Domain-/Application-Module werden ohne Qt, Presentation,
+Runtime-Globals oder konkrete Adapter importiert. Shape/LayerContent erhalten
+`config` explizit und optional eine Übersetzungsfunktion; geerbte Werkzeug-
+und Messerwerte bleiben aktuell. Project erhält Konfiguration, Dokumente bzw.
+Decoder und Lebenszyklus-Callbacks. Qt koordiniert Tree/Canvas/Cursor/Reload
+in `presentation/qt/project_session.py`; reine Dokumentdaten liegen im Domain,
+der sichere Codec im Adapter. `.d2g` 1.1–1.5 bleiben unterstützt.
+CLI-DrawingSession benötigt keine GUI-No-ops. Reader, Vorbereitung und Decoder
+werden im Composition Root injiziert. Qt-Runtime-Metadaten liegen außerhalb
+des Domain. Interne Konstruktoraufrufe und Qt-Projektmetadaten sind umgestellt.
+
+**Prüfnachweise:** 76 fokussierte Qt5-Tests und 88 Qt6-Tests bestanden
+(Importgrenzen, Machining, Plan/Projektion, Projekte, CLI/Filter, Hauptfenster,
+Werkzeugwechsel und Messer; überlappende Gruppen, keine addierte Gesamtzahl).
+Der anschließend ergänzte reale Hauptfenster-Test für Maschinen-/Kompensations-
+wechsel und Korrektur besteht unter beiden Bindungen. Gemischte Aufträge
+prüfen Dateierhalt, ausbleibende Neuanlage und leeres stdout. Ein echter CLI-
+Unterprozess und der GUI-Filter liefern bei ungültigem Pocket-Auftrag Status 2.
+Der Importtest führt zusätzlich Shape-/Layer-/Projektoperationen mit expliziten
+Werten ohne Qt/Globals aus. Neue Diagnose in DE/FR/RU übersetzt, QM regeneriert
+und geladene Übersetzungen unter beiden Bindungen geprüft.
+
+Der verpflichtende Fast-Prüflauf erfolgt beim Commit über den Pre-Commit-Hook.
+Keine neue Vollsuite, Debian-/SSH-, Paket-, GPU- oder physische Maschinenabnahme;
+M1/CI1 und die Release-Freigabe bleiben gesondert. Der frühere AXIS-Nachweis
+ist kein erneuter Plattformnachweis dieser A1-Änderungen.
+
+<a id="a1-p2-menu"></a>
+
+## A1-P2 – Pocket-Menü verwendet gemeinsame Gültigkeitsregel (06.11.2026)
+
+Das echte Qt-Kontextmenü verwendet nun dieselbe `pocket_supported`-Regel
+wie Vorbereitung und Planer. Pocketing wird nur im Fräsmodus mit
+Softwarekompensation und ausschließlich geschlossener Auswahl angeboten.
+Im Drehmodus entfällt damit der bisher fälschlich vorhandene Menüeintrag.
+Gesetzte Pocket-Werte bleiben auch beim erneuten Öffnen in einem nicht
+unterstützten Modus erhalten; das Menü korrigiert sie nicht stillschweigend.
+
+Je 17 gezielte Menü-/Machining-Tests unter Qt5 und Qt6 bestanden. Die echten
+QMenu-/QAction-Objekte werden aufgebaut, nur der blockierende Popup-Aufruf
+ist ersetzt. Geprüft: Dreh-/Messer-/Fräsmodus, Wechsel der Kompensationsart
+und erneutes Öffnen, Erhalt gesetzter Pocket-Werte sowie offene, gemischte
+und leere Auswahl. Der widersprüchliche Lathe-Test erwartet jetzt die
+ausdrücklich beschlossene Sperre. Keine neuen GUI-Texte oder Übersetzungen.
+
+Projektlade-Meldungen, vollständige Aktualisierung bei Einstellungswechsel,
+auftragsweiter Exportabbruch und I0–I5 bleiben offen.
+[Restplan](../planning/a1-completion-plan.md). Keine Vollsuite, Debian-/SSH-,
+Paket- oder Maschinenprüfung. Kein Commit.
+
+<a id="a1-p1"></a>
+
+## A1-P1 – Gemeinsame Pocket-Gültigkeitsregel (06.11.2026)
+
+Nach Nutzerentscheidung Pocketing bei Maschinenkompensation, Schleppmesser
+und Drehen blockieren. `pocket_supported` in `domain/project/machining.py`
+definiert die reine Regel; StMove prüft sie vor Geometrieerzeugung und der
+Planer vor Strategieauswahl. Nicht unterstützte Pocket-Zustände erzeugen
+`machining.pocket_unsupported` ohne Plan. Gespeicherte Drill-/Pocket-/G40-
+Werte bleiben erhalten; bestehende Drill-Konflikte behalten Vorrang.
+
+44 gezielte Planvertrags-, Machining-, Importgrenz- und Toolpath-Slice-Tests
+unter Qt5 sowie dieselben 44 unter Qt6 bestanden. Neue Regressionen prüfen
+direkte Requests für alle nicht unterstützten Maschinen-/Kompensations-
+Kombinationen mit G40/G41/G42, unveränderte Requests, Vorrang der alten
+Konfliktregel und frühe Vorbereitung ohne Pocket-Geometrie. Vorhandene
+positive Software-Pocket-Fälle bleiben erfolgreich. Die neue Meldung ist
+in DE/FR/RU übersetzt; QM-Dateien regeneriert und über geladene Kataloge
+unter beiden Qt-Bindungen geprüft. Generierte QM-Dateien bleiben ignoriert.
+
+Dies ist bewusst nur die gemeinsame Regel mit frühen Sperren. Menüfreigaben,
+Projektlade-Meldungen und der bestätigte auftragsweite Exportabbruch sind
+noch nicht vollständig angebunden. Keine entsprechende Gesamtfreigabe;
+auch I0–I5 bleiben offen. [Restplan](../planning/a1-completion-plan.md).
+Keine Vollsuite, Debian-/SSH-, Paket- oder Maschinenprüfung. Kein Commit.
+
+<a id="a1-auswertung"></a>
+
+## A1 – Architekturgrenzen und konkrete Falllücken ausgewertet (05.11.2026)
+
+Quellbasis `7246810` mit bestehender Testabdeckung abgeglichen. Die
+[A1-Auswertung](../planning/architecture-acceptance.md) benennt die
+repräsentative Maschinen-/Kompensations-/Profilmatrix und die genaue
+Importgrenze. Der Geometry-/Toolpath-Kern ist Qt-/Runtime-frei; die pauschale
+Aussage für sämtliche Domain-/Application-Module ist nicht zutreffend.
+
+41 gezielte Architektur-, Planvertrag-, Fallmatrix- und B1/B2-Tests unter
+Windows/Python 3.11/PyQt5 bestanden. Ergänzende AST-Importprüfung und drei
+Modellzustandsproben fanden konkrete Pocket-Gültigkeitslücken: keine
+blockierende Diagnose bei Maschinenkompensation oder Schleppmesser trotz
+gesetztem Pocket-Wert; beim Drehen werden Pocket-Aktionen geplant. Die
+GUI-Freigaben und ein widersprüchlich benannter Menütest sind im Bericht
+zugeordnet. Keine neue fachliche Semantik implementiert.
+
+Offen bleiben ausschließlich die benannten Entscheidungen
+[A1-P/A1-I](#a1-complete), keine unbestimmte Vollmatrix.
+Keine Quellcodeänderung, Vollsuite, Debian-/SSH-, Paket- oder Maschinenprüfung.
+Dies dokumentiert die abgeschlossene Untersuchung und noch keine pauschale
+Architektur-, Release- oder Maschinenfreigabe.
+
+**Planung ergänzt:** Der Nutzer möchte die verbleibende Arbeit vor einer
+Entscheidung im Detail verstehen. Der [A1-Abschlussplan](../planning/a1-completion-plan.md)
+trennt P0–P4 (konkrete Pocket-Fälle) und I0–I5 (zusätzliche Modell-/CLI-
+Entkopplung), benennt Dateien, notwendige Entscheidungen, Regressionen und
+Abschlusskriterien für beide möglichen Abnahmegrenzen. Keine Implementierung,
+neuen Testläufe, Commits oder Pushes durch diesen Planungsschritt.
 
 <a id="lc1-bestandsaufnahme"></a>
 
@@ -1835,8 +1962,8 @@ Grenzen sind getrennt zu lesen:
 | Gemeinsamer unveränderlicher Plan für GUI/CLI und Werkzeugwegvorschau | Gemeinsamer Planvertrag, Planer und Exportadapter; Originalgeometrie bleibt eine gesonderte Grunddarstellung |
 | 2D-Deduplizierung und 3D-Tiefen | Projektionstests und fokussierte Darstellungskorrektur; kein manueller GPU-Nachweis |
 | Software-/Maschinenkompensation unterscheidbar | Geometrie beziehungsweise explizite Zustandsaktionen und Tooltip; bestehende Bahnfarben erhalten |
-| Unterstützte und nicht unterstützte Kombinationen vollständig erfasst | Repräsentative Tests vorhanden; Konfliktfälle B1/B2 und die genaue Abnahmegrenze bleiben in der aktiven Todo |
-| Importfreiheit von Domain und Application | Nachgewiesen für alle Module unter `domain/geometry` und `domain/toolpath`; die weitergehende pauschale Formulierung ist unter A1 zu klären |
+| Unterstützte und nicht unterstützte Kombinationen vollständig erfasst | Repräsentative Fallmatrix sowie B1/B2 und Pocket-Gültigkeit geprüft; [A1-Abschluss](#a1-complete), keine universelle Maschinenfreigabe |
+| Importfreiheit von Domain und Application | Alle Domain-/Application-Module ohne Qt, Runtime-Globals oder konkrete Adapter importiert; [A1-Abschluss](#a1-complete) |
 | Alte Shape-Ausgabe und doppelte Werkzeugwegplanung entfernt | Etappen 2/4/6; für Anzeigezugriffe verbleiben lediglich aus Planaktionen abgeleitete Werte |
 
 Fertige Pakete und ihre Herkunft werden erst mit

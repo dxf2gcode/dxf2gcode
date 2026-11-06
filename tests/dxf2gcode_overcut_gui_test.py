@@ -75,7 +75,7 @@ def _closed_shape(nr):
         LineGeo(Point(0, 0), Point(10, 0)),
         LineGeo(Point(10, 0), Point(10, 10)),
         LineGeo(Point(10, 10), Point(0, 10)),
-        LineGeo(Point(0, 10), Point(0, 0))]))
+        LineGeo(Point(0, 10), Point(0, 0))]), config=g.config)
     shape.AnalyseAndOptimize()
     return shape
 
@@ -83,7 +83,7 @@ def _closed_shape(nr):
 def _open_shape(nr):
     shape = Shape(nr=nr, closed=False, geos=Geos([
         LineGeo(Point(0, 0), Point(10, 0)),
-        LineGeo(Point(10, 0), Point(10, 10))]))
+        LineGeo(Point(10, 0), Point(10, 10))]), config=g.config)
     shape.AnalyseAndOptimize()
     return shape
 
@@ -104,8 +104,8 @@ class OvercutGuiTestBase(unittest.TestCase):
 
         self.closed = _closed_shape(1)
         self.open = _open_shape(2)
-        self.layer_closed = LayerContent(1, "CLOSED", [self.closed])
-        self.layer_open = LayerContent(2, "OPEN", [self.open])
+        self.layer_closed = LayerContent(1, "CLOSED", [self.closed], config=g.config)
+        self.layer_open = LayerContent(2, "OPEN", [self.open], config=g.config)
         self.closed.parentLayer = self.layer_closed
         self.open.parentLayer = self.layer_open
 

@@ -83,7 +83,7 @@ def _mk_shape(nr):
         LineGeo(Point(0, 0), Point(10, 0)),
         LineGeo(Point(10, 0), Point(10, 10)),
         LineGeo(Point(10, 10), Point(0, 10)),
-        LineGeo(Point(0, 10), Point(0, 0))]))
+        LineGeo(Point(0, 10), Point(0, 0))]), config=g.config)
     return s
 
 

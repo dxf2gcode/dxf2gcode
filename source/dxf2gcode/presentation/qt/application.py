@@ -43,7 +43,7 @@ import dxf2gcode.domain.constants as c
 import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.domain.project.layercontent import Layers, Shapes
 from dxf2gcode.domain.geometry.point import Point
-from dxf2gcode.domain.project.project import Project
+from dxf2gcode.presentation.qt.project_session import Project
 from dxf2gcode.bootstrap.composition import create_application_context
 from dxf2gcode.application.drawings import BuildDrawingModel
 from dxf2gcode.application.importing import ImportDrawing
@@ -96,7 +96,7 @@ def _log_import_diagnostics(diagnostics):
 def _run_headless_dxf_export(filename, output_filename, postprocessor_name,
                              optimize):
     """Run the CLI workflow without constructing a MainWindow."""
-    from dxf2gcode.application.cli_export import ExportDrawing
+    from dxf2gcode.bootstrap.composition import create_drawing_exporter as ExportDrawing
     from dxf2gcode.domain.project.shape import Shape as DomainShape
 
     postprocessor = MyPostProcessor(create_config_window=False)
@@ -171,6 +171,7 @@ def _run_headless_dxf_export(filename, output_filename, postprocessor_name,
             drawing=drawing,
             config=g.config,
             shape_factory=DomainShape,
+            translate=QtCore.QCoreApplication.translate,
             split_line_segments=g.config.vars.General['split_line_segments'],
             transform={
                 "scale": g.config.vars.Plane_Coordinates['std_scale'],
@@ -204,7 +205,7 @@ def _run_headless_dxf_export(filename, output_filename, postprocessor_name,
 def _run_headless_project_export(filename, output_filename,
                                  postprocessor_name, optimize):
     """Load a .d2g project and export it without creating a MainWindow."""
-    from dxf2gcode.application.cli_export import ExportProject
+    from dxf2gcode.bootstrap.composition import create_project_exporter as ExportProject
 
     postprocessor = MyPostProcessor(create_config_window=False)
     if postprocessor.version_mismatch:
@@ -1089,16 +1090,19 @@ class MainWindow(QMainWindow):
         g.config.machine_type = 'milling'
         self.updateMachineType()
         self.d2g.small_reload()
+        MainWindow._show_machining_warnings(self)
 
     def setMachineTypeToDragKnife(self):
         g.config.machine_type = 'drag_knife'
         self.updateMachineType()
         self.d2g.small_reload()
+        MainWindow._show_machining_warnings(self)
 
     def setMachineTypeToLathe(self):
         g.config.machine_type = 'lathe'
         self.updateMachineType()
         self.d2g.small_reload()
+        MainWindow._show_machining_warnings(self)
 
     def updateMachineType(self):
         if g.config.machine_type == 'milling':
@@ -1386,6 +1390,7 @@ class MainWindow(QMainWindow):
             drawing=self.valuesDXF,
             config=g.config,
             shape_factory=DomainShape,
+            translate=QtCore.QCoreApplication.translate,
             split_line_segments=g.config.vars.General['split_line_segments'],
             transform={
                 "x": self.cont_dx,
@@ -1435,6 +1440,7 @@ class MainWindow(QMainWindow):
             g.config.update_config()
             live = self._live_config_settings()
             machine_changed = live['machine_type'] != self._live_config_applied['machine_type']
+            compensation_changed = live['machine_compensation'] != self._live_config_applied['machine_compensation']
             tolerances_changed = any(live[key] != self._live_config_applied[key]
                                      for key in ('point_tolerance', 'fitting_tolerance'))
             if machine_changed:
@@ -1457,8 +1463,10 @@ class MainWindow(QMainWindow):
             # A full tolerance reload also covers a simultaneous mode change.
             if tolerances_changed:
                 self.d2g.reload()
-            elif machine_changed:
+            elif machine_changed or compensation_changed:
                 self.d2g.small_reload()
+            if tolerances_changed or machine_changed or compensation_changed:
+                MainWindow._show_machining_warnings(self)
 
             if g.config.tool_units != units_before:
                 # The config file's unit changed: refresh the still-open
@@ -1471,6 +1479,7 @@ class MainWindow(QMainWindow):
     @staticmethod
     def _live_config_settings():
         return dict(machine_type=g.config.var_dict['General']['machine_type'],
+                    machine_compensation=g.config.var_dict['Cutter_Compensation']['done_by_machine'],
                     point_tolerance=g.config.var_dict['Import_Parameters']['point_tolerance'],
                     fitting_tolerance=g.config.var_dict['Import_Parameters']['fitting_tolerance'])
 
@@ -1578,14 +1587,37 @@ class MainWindow(QMainWindow):
         """
         project_document = LoadProject(self.project_repository).execute(filename)
         conflicts = self.d2g.load(project_document)
+        MainWindow._show_machining_warnings(self, conflicts)
+
+    def _show_machining_warnings(self, conflicts=None):
+        from dxf2gcode.domain.project.machining import machining_conflict
+        if conflicts is None:
+            conflicts = tuple(shape.nr for layer in self.layerContents for shape in layer.shapes
+                              if hasattr(shape, 'Drill') and machining_conflict(
+                                  shape.Drill, shape.Pocket, shape.cut_cor))
+        messages = []
         if conflicts:
-            QMessageBox.warning(
-                self, self.tr("Conflicting machining settings"),
+            messages.append(
                 self.tr("Shapes %s combine drilling with pocket milling or G41/G42. "
                         "Their settings were preserved. Select drilling, pocket milling "
                         "or cutter compensation in the context menu to resolve each "
                         "conflict. Affected shapes cannot be exported until then.") %
                 ', '.join(str(number) for number in conflicts))
+        from dxf2gcode.domain.project.machining import pocket_supported
+        from dxf2gcode.domain.toolpath.diagnostics import POCKET_UNSUPPORTED
+        if not pocket_supported(g.config.machine_type,
+                                g.config.vars.Cutter_Compensation['done_by_machine']):
+            messages.extend(
+                QtCore.QCoreApplication.translate('Shape', POCKET_UNSUPPORTED) % shape.nr
+                for layer in self.layerContents for shape in layer.shapes
+                if getattr(shape, 'Pocket', False) and shape.nr not in conflicts)
+        if messages:
+            scene = getattr(self, 'canvas_scene', None)
+            if hasattr(scene, 'take_pending_error_messages'):
+                messages.extend(text for text in scene.take_pending_error_messages()
+                                if text not in messages)
+            QMessageBox.warning(self, self.tr("Conflicting machining settings"),
+                                '\n'.join(messages))
 
     def saveProject(self):
         """

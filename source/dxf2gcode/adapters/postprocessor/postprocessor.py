@@ -31,6 +31,7 @@ import re
 import shutil
 import logging
 
+from dxf2gcode.presentation.qt.runtimeinfo import RUNTIME_VERSION
 import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.bootstrap.version_metadata import get_version_info
 
@@ -126,6 +127,7 @@ class MyPostProcessor(ProfileDialect):
         if message not in self.export_errors:
             self.export_errors.append(message)
         if diagnostic.severity == "error":
+            self.export_failed = True
             logger.error(message)
         else:
             logger.warning(message)
@@ -341,6 +343,10 @@ class MyPostProcessor(ProfileDialect):
         else:
             exstr += self._legacy_tool_changes(LayerContents)
 
+        # All shapes have been planned before opening or writing any output.
+        if self.export_failed:
+            return
+
         # Move machine to the Final Position
         EndPosition = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
                             g.config.vars.Plane_Coordinates['axis2_start_end'])
@@ -364,6 +370,7 @@ class MyPostProcessor(ProfileDialect):
                     stream.write(str_encode(exstr))
                 logger.info(self.tr("Export to FILE was successful"))
             except IOError:
+                self.export_failed = True
                 if getattr(g, "window", None) is not None:
                     QMessageBox.warning(g.window,
                                         self.tr("Warning during Export"),
@@ -509,7 +516,7 @@ class MyPostProcessor(ProfileDialect):
         if self.vars.General["output_type"] == 'g-code':
             info = get_version_info()
             # RS274 comments cannot contain nested parentheses.
-            version = "%s [%s]" % (info.version, c.RUNTIME_VERSION)
+            version = "%s [%s]" % (info.version, RUNTIME_VERSION)
             date = info.commit_date or info.build_date or "unavailable"
             exstr = self.tr("(Generated with: %s)\n(Version: %s, Date: %s)\n") % (c.APPNAME, version, date)
             exstr += self.tr("(Created from file: %s)\n") % re.sub('[()]', '_', load_filename)
