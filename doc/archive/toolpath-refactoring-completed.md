@@ -13,6 +13,32 @@ Insbesondere liegen die Vollsuite-Ergebnisse mit 775 Tests vor der späteren
 Darstellungskorrektur; diese wurde anschließend mit jeweils 21 gezielten
 Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 
+<a id="r3-r1b-plan"></a>
+
+## R3/R1b – Gemeinsamer Umsetzungsplan abgestimmt (06.11.2026)
+
+Der Nutzer hat den [Detailplan](../planning/r3-r1b-implementation-plan.md)
+nach mehreren Entscheidungsrunden bestätigt. Entities/Layers bleiben für
+Originalgeometrie und Auswahl; ein dritter Tab enthält Bearbeitungsschritte
+mit je einer Art und einem Werkzeug. Bearbeitungskonturen referenzieren die
+Originalkontur; Verschieben und bewusstes Kopieren sind getrennte Aktionen.
+Eigene Werte bleiben erhalten, Zielvorgaben werden geerbt. Neue DXF-Konturen
+nach Reload werden erst bewusst zugeordnet. Unpassende Mehrfachaktionen
+werden vollständig abgelehnt. Direkte Ausführung, Änderungsanzeige und Undo
+sind vereinbart. Projektwerte bleiben bis zur bewussten Aktualisierung stabil.
+
+Neue `.d2g`-Version mit Lesern für 1.1–1.5, Erhalt unklarer Altwerte und
+Migration ohne geänderte Ausgabereihenfolge sind geplant. Manuelle Stege,
+Automatik/Fang und Teilkonturbedienung folgen später; bestehende BREAKS:-
+Funktion bleibt im Grundumfang erhalten. P0 (Planung) ist abgeschlossen;
+P1–P6/P8 sind noch nicht implementiert oder als Software abgenommen.
+
+Prüfung dieser Dokumentationsänderung: relative Dokumentlinks und Diff-Format;
+strikter Dokumentationsbuild beim Commitabschluss. Kein neuer lokaler
+Softwaretest erforderlich. Vor der Umsetzung sind Commit, Push und ein
+Develop-Prerelease des bisherigen Softwarestandes ausdrücklich beauftragt.
+Keine Freigabe einer stabilen Version oder neuen Debian-/Maschinenabnahme.
+
 <a id="a1-complete"></a>
 
 ## A1 – Vollständiger Architekturabschluss (06.11.2026)

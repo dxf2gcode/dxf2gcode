@@ -12,16 +12,17 @@ Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
 ## Empfohlene Reihenfolge
 
 **Release-Freigabe:** Version **2.0.0** wird erst nach Abarbeitung der gesamten
-Todo freigegeben. Ein manueller Develop-Release samt Downloadprüfung und die
-anschließende Paket-/Debian-Abnahme sind aktuell zurückgestellt; dafür liegt
-kein neuer Ausführungsauftrag vor.
+Todo freigegeben. Ein manueller Develop-Release vor Umsetzung des
+abgestimmten R3-/R1b-Plans ist am 06.11.2026 beauftragt. Eine anschließende
+gesonderte Paket-/Debian-Abnahme bleibt zurückgestellt.
 
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
 | Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
 | Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
 | Fachliche Rückmeldungen | [DOC1 – Dokumentationsabnahme](#doc1) | Konkrete Korrekturen zur veröffentlichten Anleitung |
-| Zurückgestellt | [R3 – Bedienmodell](#r3), [R1b – Layerwechsel](#r1b), [Teilkonturen](#teilkonturen) | Gemeinsamer Bedien-, Modell- und Persistenzentwurf |
+| Plan abgestimmt, Umsetzung offen | [R3 – Bedienmodell](#r3), [R1b – Gruppenwechsel](#r1b) | [Nach Develop-Release mit P1 beginnen](planning/r3-r1b-implementation-plan.md) |
+| Zurückgestellt | [Teilkonturen](#teilkonturen) | Mit dem neuen Bearbeitungsmodell abstimmen |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 | Optional | [GUI1 – Ribbon-Menüband](#gui1) | Bedienentwurf, Bibliothekswahl und Windows-/Linux-Kompatibilität |
 
@@ -55,19 +56,29 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
   automatischer stdout-Export ohne Bearbeitungsfenster angeboten werden soll.
   [Verbleibender Umfang](planning/open-task-details.md#lc1).
 
-## Zurückgestellte Erweiterungen
+## Bedienmodell und zurückgestellte Erweiterungen
 
 <a id="r3"></a>
 
 - [ ] **R3 – Geometrie und Bearbeitung trennen:** Bedienmodell mit
   Bearbeitungsgruppen, referenzierten Konturen, Reihenfolge und Persistenz
-  gemeinsam entwerfen. [Planungsumfang](planning/open-task-details.md#r3).
+  gemeinsam entwerfen. Dritter Tab Bearbeitung; Originalkonturen in
+  Entities/Layers erhalten. Manuelle Stegregionen, Automatik und Fang
+  ausdrücklich erst als spätere Erweiterung planen.
+  [Gemeinsamer Detailplan und Nutzerentscheidungen](planning/r3-r1b-implementation-plan.md),
+  [Anforderungen](planning/open-task-details.md#r3). Plan bestätigt;
+  vor Umsetzung Commit, Push und Develop-Release abschließen.
 
 <a id="r1b"></a>
 
-- [ ] **R1b – Layerwechsel:** erst zusammen mit R3 planen. Semantik von
-  Verschieben/Kopieren, expliziten Konturwerten und geerbten Werkzeugwerten
-  festlegen. [Planungsumfang](planning/open-task-details.md#r1b).
+- [ ] **R1b – Gruppenwechsel:** gemeinsam mit R3 planen. Verschieben/Kopieren
+  mit eigenen Werten und Zielvererbung; je Schritt ein Werkzeug und eine
+  Bearbeitungsart. Atomare Zielvalidierung, bewusste Zuordnung neuer Konturen
+  und Rückgängig/Wiederholen sind festgelegt. Projektwerte bis bewusster
+  Aktualisierung erhalten; Aktionen direkt mit Änderungsanzeige und Undo.
+  Gemeinsamer Plan bestätigt; Implementierung und Abnahme bleiben offen.
+  [Gemeinsamer Detailplan](planning/r3-r1b-implementation-plan.md),
+  [Anforderungen](planning/open-task-details.md#r1b).
 
 <a id="teilkonturen"></a>
 

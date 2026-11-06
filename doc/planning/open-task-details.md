@@ -1,6 +1,6 @@
 # Offene Aufgaben: Anforderungen und Abnahmekriterien
 
-Stand: **05.11.2026**.
+Stand: **06.11.2026**.
 
 Diese Datei bewahrt die Detailanforderungen der [aktiven Todo](../todo.md).
 Priorität und Auswahl stehen dort; hieraus entsteht kein zusätzlicher
@@ -13,8 +13,9 @@ Stand vom 30./31.10.2026, soweit nicht ausdrücklich anders vermerkt.
 
 ### CI1 – Verbleibende Betriebsabnahme
 
-**Entscheidung vom 03.11.2026:** Der erste manuelle Develop-Release samt
-Downloadprüfung und die anschließende M1-Abnahme werden jetzt nicht gestartet.
+**Aktualisierte Entscheidung vom 06.11.2026:** Der manuelle Develop-Release
+samt Prüfung der veröffentlichten Downloads ist vor der R3-/R1b-Umsetzung
+beauftragt. Die gesonderte M1-/Debian-Abnahme bleibt zurückgestellt.
 Die stabile Version **2.0.0** wird erst nach Abarbeitung der gesamten Todo
 freigegeben; kein stabiler Release wird vorab nur zu Prüfzwecken veröffentlicht.
 
@@ -86,18 +87,19 @@ sind in der Anwenderanleitung dokumentiert.
 AXIS-Abnahme gilt für die dokumentierte Simulation; Maschinenbetrieb,
 GMOCCAPY sowie weitere Paket-/Plattformabnahmen sind davon nicht abgedeckt.
 
-## Zurückgestelltes Bedienmodell
+## Bedienmodell: gemeinsame Planung von R3 und R1b
 
-Diese Themen bleiben zurückgestellt. Weder die abgeschlossenen
-Refactoring-Etappen noch die Neuordnung dieser Liste geben ihre Umsetzung
-frei. Zuerst R3 und R1b gemeinsam entwerfen; das Datenmodell der
-Teilkontur-Erweiterung dabei berücksichtigen und anschließend abstimmen.
+Der gemeinsame Plan für R3 und R1b ist vom Nutzer bestätigt. Vor der
+Softwareimplementierung sind Commit, Push und Develop-Release beauftragt. Der
+[Detailplan mit Nutzerentscheidungen](r3-r1b-implementation-plan.md) verbindet
+Bedienmodell, Vererbung, Persistenz, Stegregionen und prüfbare Etappen.
+Die Teilkontur-Erweiterung wird dabei berücksichtigt, aber noch nicht umgesetzt.
 
 <a id="r3"></a>
 
 ### R3 – Geometrie und Bearbeitung im Bedienmodell trennen
 
-**Umfang für die spätere Planung:** Den zurückgestellten Layerwechsel R1b
+**Umfang der beauftragten Planung:** Den zurückgestellten Layerwechsel R1b
 gemeinsam mit diesem Bedienkonzept behandeln; aktuell keine separate
 Implementierung im bestehenden Layerbaum vornehmen.
 
@@ -117,10 +119,13 @@ Geometrie                         Bearbeitung (Export von oben nach unten)
                                       Operation → referenzierte Kontur(en)
 ```
 
-- [ ] Einen Tab „Geometrie“ für Herkunft, Sichtbarkeit und Auswahl sowie einen
-  Tab „Bearbeitung“ für geordnete Gruppen/Operationen entwerfen. Die Auswahl
-  in Baum und Vorschau bleibt gekoppelt. Die ursprüngliche DXF-Zuordnung
-  bleibt als Herkunft erhalten, auch wenn Arbeitsgänge umsortiert werden.
+- [ ] **Bestätigter Entwurf vom 06.11.2026:** Die bestehenden Tabs Entities
+  und Layers erhalten; Bearbeitung als dritten Tab für geordnete Gruppen und
+  Arbeitsgänge ergänzen. Die Auswahl in Baum und Vorschau bleibt gekoppelt.
+  Die ursprüngliche DXF-Zuordnung bleibt als Herkunft erhalten. Die genaue
+  Rolle ist präzisiert: Entities und Layers dienen der Auswahl der
+  Originalkonturen; der anfängliche Bearbeitungsbaum wird aus Layers
+  aufgebaut. Verschieben ist nur zwischen Bearbeitungsschritten vorgesehen.
 - [ ] Bearbeitungsgruppen anlegen/benennen, Werkzeug und Vorgaben zuweisen,
   Operationen per Drag-and-drop umsortieren oder in andere Gruppen verschieben.
   Zusätzliche Aktionen „Nach oben/unten“ und „In Gruppe verschieben …“ machen
@@ -130,6 +135,10 @@ Geometrie                         Bearbeitung (Export von oben nach unten)
   Schlichten. B1 gilt je Operation; zwei getrennte Operationen dürfen dieselbe
   Geometrie unterschiedlich bearbeiten. Verschieben und bewusstes Erzeugen
   einer weiteren Operation müssen in der Bedienung unterscheidbar sein.
+  **Präzisierung vom Nutzer:** Eine Kontur kann mit Schruppen, Schlichten
+  und weiteren Schritten verknüpft werden; Kopieren bedeutet zusätzliche
+  Zuordnung derselben Originalgeometrie. Verschieben und Kopieren gehören
+  gemäß aktualisierter Entscheidung beide zur ersten nutzbaren Version.
 - [ ] Jede Operation besitzt eine stabile Identität und klare effektive
   Werkzeug-/Bearbeitungswerte. Entstehende Teilkonturen können später eigene
   Startpunkte und Leads erhalten, wie in der Teilkontur-Erweiterung beschrieben;
@@ -138,46 +147,98 @@ Geometrie                         Bearbeitung (Export von oben nach unten)
   Optimierung erfolgt innerhalb ausdrücklich freigegebener Grenzen und
   verändert niemals die fachlich geplante Gruppenreihenfolge.
 - [ ] Projektpersistenz und Übernahme bestehender Layerprojekte gesondert
-  planen. **Offene Entscheidung:** zunächst eine Bearbeitungsgruppe je
-  bestehendem Layer als verlustfreie Ausgangssicht? Speicherformat und
-  Kompatibilitätsweg vor Implementierung klären.
+  planen. **Bestätigt:** Anfangsstruktur aus dem Layerbaum übernehmen;
+  neue `.d2g`-Version und Leser für 1.1–1.5. Genau ein Werkzeug je Schritt;
+  alte Tool-Overrides erfordern getrennte Schritte. Ebenso ist je Schritt
+  genau eine Bearbeitungsart festgelegt. Bei Aufteilung gemischter alter Layer
+  die ursprüngliche Ausgabereihenfolge erhalten; konkrete Migration abstimmen.
 
 **Weiteres Vorgehen:** R1a sichert den bestehenden Baum ab. R2 hat den
-Reihenfolgevertrag unabhängig vom Layerwechsel abgesichert. R1b wird erst
-gemeinsam mit R3 anhand von Bedienabläufen und einem Modell-/Speicherentwurf
-geplant und zur Freigabe vorgelegt. R1b und R3 bleiben ebenso wie die
-Teilkontur-Erweiterung zunächst zurückgestellt.
+Reihenfolgevertrag unabhängig vom Layerwechsel abgesichert. Der gemeinsame
+R3-/R1b-Plan ist abgestimmt; nach Commit, Push und Develop-Release folgt
+die Umsetzung in den geplanten kleinen Etappen. Die Teilkontur-Erweiterung
+bleibt weiterhin ein gesonderter Folgeumfang.
+
+#### Ergänzung: Break-/Haltestegregionen im Bearbeitungsmodell anlegen
+
+**Nutzerwunsch vom 04.11.2026:** Break-Regionen sollen künftig auch ohne eine
+vorher im CAD angelegte `BREAKS:`-Ebene erzeugt werden können. Gemeinsam mit
+R3 planen, nicht als isolierte Erweiterung des bestehenden Layerbaums.
+
+- [ ] Eine manuelle Aktion zum Anlegen einer Break-/Haltestegregion vorsehen;
+  Erzeugen, Auswählen, Ändern und Löschen im Bedienentwurf berücksichtigen.
+  Ob sie als eigener Bearbeitungsobjekttyp oder über eine Kompatibilitäts-
+  Darstellung als Break-Layer gespeichert wird, ist noch zu entscheiden.
+- [ ] Platzierung durch Zeichnen von Rechtecken im Canvas untersuchen,
+  einschließlich späterem Verschieben und Ändern der Abmessungen. Zusammenhang
+  zwischen gezeichneter Region, betroffenem Konturabschnitt und wirksamer
+  Stegbreite bei Kompensation erklären.
+- [ ] Optionalen Fang an bestehender Geometrie prüfen. Fangkandidaten,
+  Toleranz, Ausrichtung und Verhalten bei mehreren nahen Konturen vor
+  Implementierung abstimmen; Fang und frei gesetzte Position unterscheidbar halten.
+- [ ] Unterstützte/automatische Platzierung prüfen, etwa nach Anzahl,
+  Abstand und gewünschter Breite. Regeln für Ecken, ungeeignete Abschnitte
+  und erforderliche manuelle Korrekturen gemeinsam festlegen; keine
+  automatische material-/spanntechnische Eignung zusagen.
+- [ ] Beziehung zu referenzierten Konturen und einzelnen Arbeitsgängen
+  definieren, damit dieselbe Zeichnung unterschiedlich bearbeitet werden kann.
+  Ursprüngliche DXF-Geometrie/-Layer als Herkunft erhalten; neue Regionen
+  benötigen stabile Identitäten und Projektpersistenz einschließlich
+  Weiterladen geänderter Zeichnungen.
+- [ ] Bestehende `BREAKS:`-Projekte, absolute Steg-Z-Werte und
+  „Process breaks from“ berücksichtigen. Neue Bedienung muss denselben
+  Bearbeitungszustand in Vorschau und Export erzeugen; Rechteck-/Fang-/Auto-
+  Erzeugung, Änderung/Löschung und Projekt-Roundtrip später gezielt absichern.
+
+**Nutzerentscheidung vom 06.11.2026:** Zunächst Gruppen, Verschieben und Kopieren;
++manuelle Stegregionen folgen später. Rechteckzeichnen, automatische
++Platzierung und Fang bleiben Teil einer gesonderten Folgeplanung. Bestehende
++BREAKS:-Funktionen bleiben beim Grundumbau erhalten.
 
 <a id="r1b"></a>
 
 ### R1b – Layerwechsel gemeinsam mit R3
 
-**Zurückgestellt durch Nutzerfestlegung:** Aktuell keine Shapes in einen
-anderen Layer verschieben. Diese Erweiterung später gemeinsam mit dem
-Bedienkonzept R3 planen; sie ist keine Voraussetzung für R2.
+**Planung jetzt gemeinsam mit R3 beauftragt:** Noch keine Shapes im bestehenden
+Modell umhängen. Ziel sind unabhängige Bearbeitungsgruppen; Verschieben soll
+die DXF-Herkunft nicht verändern. [Entwurf](r3-r1b-implementation-plan.md).
 
-Ein rein optisches Umhängen im Baum reicht nicht: Mitgliedschaft in
-`real_layer.shapes`, `parentLayer`, Exportreihenfolge und die beim
-Projekt-Neuimport wiederhergestellte Zuordnung müssen zusammenpassen.
+**Bestandsbefund:** Heute hängen Mitgliedschaft, `parentLayer` und
+Exportreihenfolge eng zusammen. Im neuen Modell müssen Mitgliedschaft und
+Exportreihenfolge der Bearbeitungseinträge zusammenpassen, während die
+Layerzuordnung der Originalgeometrie unverändert bleibt.
 
-- [ ] Gültige Shapes in einen anderen Bearbeitungslayer verschieben;
-  das bestehende Umordnen von Layern und Shapes innerhalb ihrer Ebene
-  erhalten. Auswahl mehrerer Shapes und eindeutige Drop-Markierung
+- [ ] Konturzuordnungen zwischen Bearbeitungsschritten verschieben;
+  die Original-Layer und ihre Geometrien unverändert lassen. Sortieren
+  der Bearbeitung und bewusstes Erzeugen weiterer Zuordnungen trennen.
+  Auswahl mehrerer Bearbeitungen und eindeutige Drop-Markierung
   beim Umhängen beziehungsweise Einfügen berücksichtigen.
 - [ ] Einen Anwendungsfall für die atomare Änderung von Quell-/Ziellisten,
-  `parentLayer`, Reihenfolge und Planinvalidierung verwenden. Baum, Modell,
+  Arbeitsgangmitgliedschaft, Reihenfolge und Planinvalidierung verwenden.
+  `parentLayer` der Originalgeometrie nicht zum Umhängen von Bearbeitungen
+  nutzen. Baum, Modell,
   Vorschau und Export anschließend aus demselben Zustand aktualisieren;
   Identität und Gesamtzahl der Shapes erhalten.
-- [ ] **Vor R1b abstimmen:** Beim Verschieben explizite Shape-Werte behalten
-  und geerbte Werte aus dem Ziel übernehmen? Das ist der Vorschlag für
-  Werkzeug, Tiefe und Leads; die wirksamen Änderungen müssen erkennbar sein.
+- [ ] **Bestätigte Semantik vom 06.11.2026:** Beim Verschieben explizite
+  Tiefen, Vorschübe und Leads behalten und geerbte Werte aus dem Ziel
+  übernehmen. Das Werkzeug stammt verbindlich aus dem Zielschritt.
+  **Ebenfalls bestätigt:** Beim Kopieren eigene Werte übernehmen und
+  Zielvorgaben erben; die neue Zuordnung ist unabhängig bearbeitbar.
+  Unklare bisher gespeicherte Zahlen bei Migration als eigene Werte erhalten,
+  ihre Herkunft nicht erraten. Wirksame Änderungen müssen erkennbar sein.
+  **Weitere bestätigte Regeln:** Unpassende Zielart lehnt die gesamte Aktion
+  vor Änderungen ab; neue Konturen nach Neuimport erst bewusst zuordnen;
+  Rückgängig/Wiederholen für die neuen Bearbeitungsaktionen sofort vorsehen.
+  Werkzeugdaten/Vorgaben im Projekt bis zur bewussten Aktualisierung erhalten.
+  Gültige Aktionen direkt ausführen, Änderungen anzeigen und Undo anbieten;
+  kein zusätzlicher Bestätigungsdialog beim Verschieben/Kopieren.
   Sonderlayer, Breaks und benutzerdefinierter G-Code benötigen klare Regeln.
 - [ ] Speichern/Laden nach dem Verschieben prüfen. Ein notwendiger Ausbau
   der Projektzuordnung ist als eigener Kompatibilitätsschritt zu planen;
-  bestehende `.d2g`-Versionen 1.1–1.3 bleiben lesbar. Keine unbemerkte
+  bestehende `.d2g`-Versionen 1.1–1.5 bleiben lesbar. Keine unbemerkte
   Formatänderung als Nebenwirkung des GUI-Fixes.
 
-**Abnahme bei späterer Umsetzung:** Quell-/Ziellayer, Hin-/Zurückverschieben,
+**Abnahme bei späterer Umsetzung:** Quell-/Zielschritt, Hin-/Zurückverschieben,
 Mehrfachauswahl, Reihenfolge, unveränderte Identitäten und Overrides sowie
 Projekt-Roundtrip und tatsächlichen Export der neuen Zuordnung prüfen.
 Die Absturzabsicherung R1a ist bereits abgeschlossen und dokumentiert im
