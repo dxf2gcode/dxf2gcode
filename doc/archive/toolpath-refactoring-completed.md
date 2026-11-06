@@ -72,7 +72,17 @@ Testhelfern und eine alte Pocket-Erwartung für Maschinenkompensation. Die
 Testhelfer sind korrigiert; die Pocket-Regression prüft jetzt ausdrücklich
 Blockierung und Werterhalt. Alle 58 betroffenen Tests bestehen lokal unter
 PyQt5 und PyQt6. Das CI-Ergebnis des ursprünglichen Commits ist damit kein
-erfolgreicher Gesamtnachweis; die erneute CI-Abnahme bleibt separat auszuweisen.
+erfolgreicher Gesamtnachweis.
+
+**Nachbesserung und aktueller Freigabestand:**
+[`7335d09`](https://github.com/dxf2gcode/dxf2gcode/commit/7335d09d4b0f795ce3685b57d73eda6323e2bc77)
+enthält die korrigierten Regressionen und ist auf `origin/develop` gepusht.
+Der Pre-Commit-Hook bestand erneut mit **251 Tests in 44,680 Sekunden**.
+Die 58 gezielten Qt5- und 58 Qt6-Tests bestanden ebenfalls; sie ersetzen keine
+lokale Vollsuite. Der [neue CI-Lauf](https://github.com/dxf2gcode/dxf2gcode/actions/runs/42245781440)
+wartet zum Zeitpunkt dieses Nachweises auf den vorherigen Lauf. Die Software-
+Umsetzung und die genannten lokalen Prüfungen sind abgeschlossen; ein
+erfolgreiches CI-Gesamtergebnis des korrigierten Standes ist noch offen.
 
 Keine neue lokale Vollsuite, Debian-/SSH-, Paket-, GPU- oder physische Maschinenabnahme;
 M1/CI1 und die Release-Freigabe bleiben gesondert. Der frühere AXIS-Nachweis
