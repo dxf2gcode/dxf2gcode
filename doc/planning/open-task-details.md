@@ -13,9 +13,10 @@ Stand vom 30./31.10.2026, soweit nicht ausdrücklich anders vermerkt.
 
 ### CI1 – Verbleibende Betriebsabnahme
 
-**Aktualisierte Entscheidung vom 06.11.2026:** Der manuelle Develop-Release
-samt Prüfung der veröffentlichten Downloads ist vor der R3-/R1b-Umsetzung
-beauftragt. Die gesonderte M1-/Debian-Abnahme bleibt zurückgestellt.
+**Stand vom 06.11.2026:** Der manuelle Develop-Release 2.0.0.dev12 samt
+Prüfung der veröffentlichten Downloads ist vor der R3-/R1b-Umsetzung
+[abgeschlossen](../archive/toolpath-refactoring-completed.md#develop-r3-checkpoint).
+Die gesonderte M1-/Debian-Abnahme bleibt zurückgestellt.
 Die stabile Version **2.0.0** wird erst nach Abarbeitung der gesamten Todo
 freigegeben; kein stabiler Release wird vorab nur zu Prüfzwecken veröffentlicht.
 
@@ -26,8 +27,6 @@ Versionsregeln, Paketprüfungen, Aufbewahrung und Betrieb stehen in der
 
 - [ ] Bei einem echten Pull Request die temporären Pakete und die
   Sieben-Tage-Aufbewahrung nachvollziehen; kein PR darf veröffentlichen.
-- [ ] Den ersten bewusst manuell gestarteten Develop-Release über **Actions →
-  Publish release → Run workflow → develop** real nachvollziehen.
 - [ ] Den ersten bewusst freigegebenen stabilen Tag `v2.0.0` einschließlich
   dauerhaftem Download und „Latest“ real abnehmen. Dies ist noch keine
   Freigabe, einen stabilen Tag nur für einen Test zu erzeugen.
@@ -89,8 +88,10 @@ GMOCCAPY sowie weitere Paket-/Plattformabnahmen sind davon nicht abgedeckt.
 
 ## Bedienmodell: gemeinsame Planung von R3 und R1b
 
-Der gemeinsame Plan für R3 und R1b ist vom Nutzer bestätigt. Vor der
-Softwareimplementierung sind Commit, Push und Develop-Release beauftragt. Der
+Der gemeinsame Plan für R3 und R1b ist vom Nutzer bestätigt. Commit, Push
+und Develop-Release vor der Softwareimplementierung sind abgeschlossen;
+[Nachweis](../archive/toolpath-refactoring-completed.md#develop-r3-checkpoint).
+Als nächstes folgt die beauftragte Auswahl der ersten Implementierungsscheibe P1. Der
 [Detailplan mit Nutzerentscheidungen](r3-r1b-implementation-plan.md) verbindet
 Bedienmodell, Vererbung, Persistenz, Stegregionen und prüfbare Etappen.
 Die Teilkontur-Erweiterung wird dabei berücksichtigt, aber noch nicht umgesetzt.

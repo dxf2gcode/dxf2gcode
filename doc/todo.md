@@ -12,9 +12,10 @@ Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
 ## Empfohlene Reihenfolge
 
 **Release-Freigabe:** Version **2.0.0** wird erst nach Abarbeitung der gesamten
-Todo freigegeben. Ein manueller Develop-Release vor Umsetzung des
-abgestimmten R3-/R1b-Plans ist am 06.11.2026 beauftragt. Eine anschließende
-gesonderte Paket-/Debian-Abnahme bleibt zurückgestellt.
+Todo freigegeben. Der Develop-Release **2.0.0.dev12** vor Umsetzung von
+R3/R1b ist veröffentlicht und seine Downloads sind geprüft;
+[Nachweis](archive/toolpath-refactoring-completed.md#develop-r3-checkpoint).
+Eine gesonderte Paket-/Debian-Abnahme bleibt zurückgestellt.
 
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
@@ -67,7 +68,8 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
   ausdrücklich erst als spätere Erweiterung planen.
   [Gemeinsamer Detailplan und Nutzerentscheidungen](planning/r3-r1b-implementation-plan.md),
   [Anforderungen](planning/open-task-details.md#r3). Plan bestätigt;
-  vor Umsetzung Commit, Push und Develop-Release abschließen.
+  Commit, Push und Develop-Release sind abgeschlossen; Umsetzung mit P1
+  kann im nächsten Auftrag beginnen.
 
 <a id="r1b"></a>
 

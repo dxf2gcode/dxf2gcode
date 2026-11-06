@@ -13,6 +13,46 @@ Insbesondere liegen die Vollsuite-Ergebnisse mit 775 Tests vor der späteren
 Darstellungskorrektur; diese wurde anschließend mit jeweils 21 gezielten
 Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 
+<a id="develop-r3-checkpoint"></a>
+
+## Develop-Release vor R3/R1b veröffentlicht und geprüft (06.11.2026)
+
+Der bestätigte Plan und die Release-Zusammenfassung wurden als
+[`452ba97`](https://github.com/dxf2gcode/dxf2gcode/commit/452ba97c863be9769d9e74903bfe43f4d30cafde)
+committet und auf `origin/develop` gepusht. Der Commit ändert ausschließlich
+Dokumentation; relative Dokumentlinks, Diff-Format und strikter Zensical-Build
+bestanden. Der Fast-Hook wurde gemäß AGENTS.md nur für diesen Dokumentations-
+commit mit befehlslokalem leerem `core.hooksPath` ausgelassen.
+
+Der manuell auf Develop gestartete
+[Release-Lauf 42259036046](https://github.com/dxf2gcode/dxf2gcode/actions/runs/42259036046)
+bestand mit allen sieben Jobs: je **925 Tests** unter Python 3.11/3.12/3.13
+mit PyQt5 sowie Python 3.11 mit PyQt6, Quellarchiv/Wheel-Build und Prüfung in
+frischen Qt5-/Qt6-Umgebungen, Windows-ZIP-/MSI-Build samt automatisierter
+Prüfung und Veröffentlichung. Ein wegen langsamer Ubuntu-Downloads verzögerter
+Python-3.12-Job wurde auf frischem Runner wiederholt; die drei bereits
+erfolgreichen Ergebnisse blieben erhalten. Kein Quellcode wurde dafür geändert.
+
+Veröffentlicht ist
+[DXF2GCODE Develop 2.0.0.dev12](https://github.com/dxf2gcode/dxf2gcode/releases/tag/develop-ci-42259036046)
+mit Tag `develop-ci-42259036046`, Buildnummer 12 und MSI-Version `2.0.12`.
+Der Release ist ein sichtbarer Prerelease, kein Draft oder stabiler Release.
+Die Windows-Pakete sind wie im Manifest ausgewiesen **unsigned**.
+
+**Reale Downloadprüfung:** Alle sechs veröffentlichten Dateien heruntergeladen
+(135.427.923 Bytes): Windows x64 MSI und ZIP, Python-Wheel, Quellarchiv,
+`release-manifest.json` und `SHA256SUMS`. Dateinamen und Größen entsprechen den
+Release-Assets; sämtliche SHA-256-Werte stimmen mit `SHA256SUMS` sowie den
+GitHub-Asset-Digests überein. Das Manifest nennt den vollständigen Commit
+`452ba97c863be9769d9e74903bfe43f4d30cafde`, Run `42259036046`, Version und
+Develop-Kanal korrekt. Die heruntergeladenen Pakete wurden lokal nicht installiert.
+
+Damit ist der manuelle Develop-Veröffentlichungsablauf einschließlich
+öffentlicher Downloads real nachgewiesen. CI1 behält seine offenen PR-/Stable-
+und Signierungsprüfpunkte; M1, gesonderte Debian-/GPU-/Maschinenabnahme und
+die stabile Version 2.0.0 bleiben separat. R3/R1b ist geplant, noch nicht
+implementiert. Der Release fixiert ausdrücklich den Stand vor dieser Umsetzung.
+
 <a id="r3-r1b-plan"></a>
 
 ## R3/R1b – Gemeinsamer Umsetzungsplan abgestimmt (06.11.2026)
