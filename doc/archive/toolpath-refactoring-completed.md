@@ -79,14 +79,37 @@ erfolgreicher Gesamtnachweis.
 enthält die korrigierten Regressionen und ist auf `origin/develop` gepusht.
 Der Pre-Commit-Hook bestand erneut mit **251 Tests in 44,680 Sekunden**.
 Die 58 gezielten Qt5- und 58 Qt6-Tests bestanden ebenfalls; sie ersetzen keine
-lokale Vollsuite. Der [neue CI-Lauf](https://github.com/dxf2gcode/dxf2gcode/actions/runs/42245781440)
-wartet zum Zeitpunkt dieses Nachweises auf den vorherigen Lauf. Die Software-
-Umsetzung und die genannten lokalen Prüfungen sind abgeschlossen; ein
-erfolgreiches CI-Gesamtergebnis des korrigierten Standes ist noch offen.
+lokale Vollsuite. Der zunächst wartende
+[CI-Lauf für 7335d09](https://github.com/dxf2gcode/dxf2gcode/actions/runs/42245781440)
+wurde durch den Dokumentationscommit `d44976f` abgelöst.
 
-Keine neue lokale Vollsuite, Debian-/SSH-, Paket-, GPU- oder physische Maschinenabnahme;
-M1/CI1 und die Release-Freigabe bleiben gesondert. Der frühere AXIS-Nachweis
-ist kein erneuter Plattformnachweis dieser A1-Änderungen.
+**CI-Gesamtergebnis abgeschlossen (06.11.2026):** Der
+[Prüflauf 42245959419](https://github.com/dxf2gcode/dxf2gcode/actions/runs/42245959419)
+für den exakten Stand
+[`d44976f`](https://github.com/dxf2gcode/dxf2gcode/commit/d44976fc2bac76a1d1f2cdc216d2fa90809ccf07)
+ist vollständig mit **success** beendet; alle sechs Jobs sind erfolgreich.
+
+| CI-Prüfung | Ergebnis |
+| --- | --- |
+| Python 3.11 / PyQt5, Ubuntu 24.04 | 925 Tests bestanden |
+| Python 3.12 / PyQt5, Ubuntu 24.04 | 925 Tests bestanden |
+| Python 3.13 / PyQt5, Ubuntu 24.04 | 925 Tests bestanden |
+| Python 3.11 / PyQt6, Ubuntu 24.04 | 925 Tests bestanden |
+| Quellarchiv und Wheel | Gebaut; Wheel in frischen Qt5-/Qt6-Umgebungen geprüft |
+| Windows x64 ZIP und MSI | Gebaut; ZIP und installiertes MSI auf GUI-Start, DXF-Export, Ressourcen und Herkunft geprüft |
+
+Ein überholter, bereits fehlerhafter Lauf blockierte zunächst die Warteschlange
+und wurde abgebrochen. Im aktuellen Lauf verzögerte der Ubuntu-Paketserver
+den Qt6-Abhängigkeitsdownload; der betroffene Job wurde auf einem frischen
+Runner wiederholt und bestand anschließend. Die drei erfolgreichen PyQt5-
+Ergebnisse blieben erhalten. Die Wiederholung änderte keinen Quellcode.
+Damit sind die A1-Softwareprüfung und das ausstehende CI-Gesamtergebnis erledigt.
+
+Keine neue lokale Vollsuite oder Debian-/SSH-Prüfung. Die automatisierte
+Ubuntu-/Windows-Paketprüfung ersetzt keine gesonderte M1-/CI1-Betriebsabnahme,
+GPU-Prüfung, physische Maschinenabnahme oder Release-Freigabe. Diese bleiben
+separat; der frühere AXIS-Nachweis ist kein erneuter Debian-/Maschinennachweis
+dieser A1-Änderungen.
 
 <a id="a1-p2-menu"></a>
 
