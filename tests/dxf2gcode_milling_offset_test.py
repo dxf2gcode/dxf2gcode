@@ -438,13 +438,15 @@ class TestMillingOffsetPocketFill(unittest.TestCase):
         m40 = self._measure(40, 0.6, mode="selected_direction")
         self.assertIsNone(m40["ref_bbox"])
 
-    def test_machine_compensation_ignores_the_offset(self):
-        m0 = self._measure(41, 0.0, machine=True)
-        m1 = self._measure(41, 0.6, machine=True)
-        self.assertIsNone(m1["ref_bbox"])
-        self.assertEqual(m0["fill_bbox"], m1["fill_bbox"])
-        self.assertEqual(norm(serialize_gcode(m0["shape"], make_postpro())),
-                         norm(serialize_gcode(m1["shape"], make_postpro())))
+    def test_machine_compensated_pocket_blocks_and_preserves_the_offset(self):
+        from dxf2gcode.domain.toolpath.diagnostics import POCKET_UNSUPPORTED
+        for extra in (0.0, 0.6):
+            with self.subTest(extra=extra):
+                shape, st = self._build(41, extra, machine=True)
+                self.assertEqual(st.geos, [])
+                self.assertEqual(st.start_move_error.source, POCKET_UNSUPPORTED)
+                self.assertEqual((shape.Pocket, shape.cut_cor, shape.milling_offset),
+                                 (True, 41, extra))
 
     def test_offset_cancelling_the_compensation_skips_the_shape(self):
         shape, st = self._build(41, -self.TOOL_RAD)

@@ -30,6 +30,7 @@ from dxf2gcode_stmove_gcode_test import (  # noqa: E402  (config is initialised 
     square_geos, corridor_shape)
 
 from dxf2gcode.domain.project.shape import Shape, Geos
+import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.domain.toolpath.shapeoffset import offShapeClass, OffPoint
 from dxf2gcode.domain.geometry.linegeo import LineGeo
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo

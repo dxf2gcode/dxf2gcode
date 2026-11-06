@@ -55,8 +55,26 @@ Der Importtest führt zusätzlich Shape-/Layer-/Projektoperationen mit explizite
 Werten ohne Qt/Globals aus. Neue Diagnose in DE/FR/RU übersetzt, QM regeneriert
 und geladene Übersetzungen unter beiden Bindungen geprüft.
 
-Der verpflichtende Fast-Prüflauf erfolgt beim Commit über den Pre-Commit-Hook.
-Keine neue Vollsuite, Debian-/SSH-, Paket-, GPU- oder physische Maschinenabnahme;
+**Commit und Bereitstellung:**
+[`a552dc9`](https://github.com/dxf2gcode/dxf2gcode/commit/a552dc9e055f6ee636b542bf12c49b2cb8e38563)
+(`refactor(core): complete A1 model and export boundaries`) ist auf
+`origin/develop` gepusht. Der verpflichtende Pre-Commit-Hook bestand mit
+**251 Tests in 43,262 Sekunden**. Lokaler strikter Dokumentationsbuild und
+Prüfung der relativen Dokumentlinks bestanden.
+
+**CI-Nachkontrolle:** Die
+[Dokumentationsprüfung](https://github.com/dxf2gcode/dxf2gcode/actions/runs/42244121005)
+und die [Develop-Dokumentationsvorschau](https://github.com/dxf2gcode/dxf2gcode/actions/runs/42244121008)
+sind erfolgreich. Die automatische
+[Vollprüfung des ursprünglichen Commits](https://github.com/dxf2gcode/dxf2gcode/actions/runs/42244120989)
+fand 14 Fehler in drei Testdateien: fehlender Runtime-Import in GIR-/Offset-
+Testhelfern und eine alte Pocket-Erwartung für Maschinenkompensation. Die
+Testhelfer sind korrigiert; die Pocket-Regression prüft jetzt ausdrücklich
+Blockierung und Werterhalt. Alle 58 betroffenen Tests bestehen lokal unter
+PyQt5 und PyQt6. Das CI-Ergebnis des ursprünglichen Commits ist damit kein
+erfolgreicher Gesamtnachweis; die erneute CI-Abnahme bleibt separat auszuweisen.
+
+Keine neue lokale Vollsuite, Debian-/SSH-, Paket-, GPU- oder physische Maschinenabnahme;
 M1/CI1 und die Release-Freigabe bleiben gesondert. Der frühere AXIS-Nachweis
 ist kein erneuter Plattformnachweis dieser A1-Änderungen.
 
