@@ -774,6 +774,23 @@ Strikter Dokumentationsbuild und lokale Verweise geprüft. Kein vollständiger
 Anwendungsexport, Controller-Interpreter, Materialversuch oder Maschinenlauf.
 Commit und Veröffentlichung sind mit WP9–WP13 abgeschlossen (Nachweis oben).
 
+## Postprozessorprofile vollständig als Code anzeigen (04.11.2026)
+
+Auf allen fünf Beispielseiten werden die bisher nur herunterladbaren Profile
+zusätzlich vollständig als hervorgehobener INI-Codeblock mit Kopierfunktion
+angezeigt. Die bestehenden Downloads bleiben erhalten. Snippet-Einbindung
+verwendet dieselben `.cfg.example`-Dateien; es gibt keine separat gepflegte
+Konfigurationskopie in den Markdown-Seiten. Fehlende Quelldateien werden beim
+Build als Fehler behandelt.
+
+**Prüfung:** Strikter Zensical-Build erfolgreich. In allen fünf erzeugten
+HTML-Seiten den vollständigen Codeblock nach HTML-Dekodierung mit der
+Download-Quelldatei verglichen: identischer Inhalt, Kopierfunktion aktiviert,
+keine unaufgelösten Include-Anweisungen. Keine Anwendung oder Profile geändert,
+keine Quellcode-/Fast-Suite nötig. Der Dokumentationscommit für diese
+verbliebenen Änderungen wurde am 06.11.2026 beauftragt; Veröffentlichung
+und ein weiterer Release sind nicht Teil dieses Commitauftrags.
+
 ## Issue-Formulare und Anhanghinweise (03.11.2026)
 
 Bug report und Feature request sind erweitert; Documentation issue sowie

@@ -71,3 +71,12 @@ are not a hardware interlock. Any hardware trial is separate from file review.
 
 Historical laser examples remain [historical references](../project/history.md),
 not current accepted profiles. See [Postprocessor reference](../reference/postprocessors.md).
+
+## Complete configuration
+
+The code below is included directly from the downloadable profile, so both
+represent the same file. Use the download link above to save the configuration.
+
+```ini title="grbl11-laser-dry.cfg.example"
+--8<-- "grbl11-laser-dry.cfg.example"
+```

@@ -4,6 +4,12 @@ Stand: **04.11.2026**, Anwendungsbasis `bf1ac6d`. Neue englische Inhalte auf
 `docs/remaining-guide-wp9-wp13`: 19 Seiten, fünf eigene Beispielprofile und ein
 eigenes Architekturdiagramm. [Assetnachweis](../../docs/assets/examples/postprocessors/README.txt).
 
+Die fünf Beispielseiten zeigen die vollständigen Profile zusätzlich als
+INI-Codeblock mit Kopierfunktion. `pymdownx.snippets` bindet die tatsächlichen
+Download-Dateien aus dem gezielt konfigurierten Assetverzeichnis ein; fehlende
+Dateien lassen den Build scheitern. Codeanzeige und Download daher gemeinsam
+an der `.cfg.example`-Quelle pflegen, nicht als zweite Textkopie.
+
 ## WP9: maßgebliche Quellen
 
 - [Postprozessorschema](../../source/dxf2gcode/adapters/postprocessor/postprocessorconfig.py):

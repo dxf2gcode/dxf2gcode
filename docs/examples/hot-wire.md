@@ -54,3 +54,12 @@ and synthetic XYUV formatting were checked, not a LinuxCNC interpreter or real
 machine. No independent four-axis solver or accepted material process is implied.
 See [Machine modes](../user-guide/machine-modes.md) and
 [Postprocessor reference](../reference/postprocessors.md).
+
+## Complete configuration
+
+The code below is included directly from the downloadable profile, so both
+represent the same file. Use the download link above to save the configuration.
+
+```ini title="linuxcnc29-foam-parallel.cfg.example"
+--8<-- "linuxcnc29-foam-parallel.cfg.example"
+```

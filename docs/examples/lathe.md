@@ -72,3 +72,12 @@ Configuration loading, diameter formatting and the own drawing import were
 checked; no LinuxCNC interpreter or physical turning trial was run.
 See [Machine modes](../user-guide/machine-modes.md#lathe-check-the-coordinate-convention)
 and [Tool changes](../reference/tool-changes.md).
+
+## Complete configuration
+
+The code below is included directly from the downloadable profile, so both
+represent the same file. Use the download link above to save the configuration.
+
+```ini title="linuxcnc29-lathe-linear.cfg.example"
+--8<-- "linuxcnc29-lathe-linear.cfg.example"
+```

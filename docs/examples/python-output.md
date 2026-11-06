@@ -40,3 +40,12 @@ templates or adding custom actions.
 The old “Python postprocessor” title does not mean the application loads an
 arbitrary Python postprocessor module. Adaptations here are configuration-driven
 text templates. See [Postprocessor reference](../reference/postprocessors.md).
+
+## Complete configuration
+
+The code below is included directly from the downloadable profile, so both
+represent the same file. Use the download link above to save the configuration.
+
+```ini title="python-events.cfg.example"
+--8<-- "python-events.cfg.example"
+```

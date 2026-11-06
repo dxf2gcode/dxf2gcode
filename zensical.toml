@@ -62,6 +62,13 @@ language = "en"
 logo = "assets/images/dxf2gcode_symbol.png"
 favicon = "assets/images/dxf2gcode_symbol.png"
 font = false
+features = ["content.code.copy"]
+
+[project.markdown_extensions]
+pymdownx.snippets.base_path = ["docs/assets/examples/postprocessors"]
+pymdownx.snippets.check_paths = true
+pymdownx.snippets.restrict_base_path = true
+
 # Zensical's own search is enabled by default. No MkDocs search plugin is needed.
 [project.validation]
 invalid_links = true
