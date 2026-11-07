@@ -92,7 +92,7 @@ machining modes, start points and directions, enablement, ordering, lead/overcut
 settings and stored tool overrides. New JSON 2.0 projects also store machining
 steps, independent operation identities and their references to original
 geometry, plus snapshots of machining defaults and tool definitions. The
-third machining tab and its move/copy commands are still being implemented.
+[Machining tab](machining-steps.md) provides the step and move/copy commands.
 
 This does not make the project a complete machine setup archive. Application
 defaults, the tool catalogue and output postprocessor remain separate files.
@@ -126,8 +126,8 @@ imported geometry within matching layer names. Changing the CAD geometry,
 layer names, units or import result can prevent that match. New or unrecognized
 contours in JSON 2.0 projects remain without a machining assignment. Missing or
 ambiguous references used by enabled operations block the entire export;
-existing output files remain intact. The interface for assigning those new
-contours follows with the machining tab. Historical projects can still append
+existing output files remain intact. Assign new contours through **Unassigned**
+in the Machining tab. Historical projects can still append
 unrecognized contours using their previous loading rules. Removed geometry
 cannot be restored from a project alone.
 

@@ -72,9 +72,16 @@ R3/R1b P1–P3 add `domain/project/machining_project.py` and the pure applicatio
 bridge `application/machining.py`. Operations reference original geometry and
 resolve saved project/step/own values; tools use definition IDs independent of
 their output numbers. Detached shape/layer projections feed preview and export.
-The version 2.0 codec validates JSON and retains old readers. A temporary Qt
-editor bridge applies deltas to the active operation until the machining tab
-and move/copy/undo commands are implemented. These later UI stages are pending.
+The version 2.0 codec validates JSON and retains old readers.
+`application/machining_actions.py` provides transactional commands/history;
+`presentation/qt/machining_panel.py` implements the third tab and explicit
+selection context. The machining document owns order, activation and values.
+`machining_parameters.py` reparents the original tool/contour form and binds
+its signals to commands. It replaces the earlier table with per-field
+provenance icons, source tooltips and reset actions.
+Optimization respects step and custom-code boundaries. A compatibility input
+bridge still supports legacy adapter paths; integrated user acceptance and
+removal of its remaining consumers are the P8 follow-up.
 
 ## Review behaviour end to end
 

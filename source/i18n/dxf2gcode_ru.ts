@@ -2950,6 +2950,30 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <source>Show the tool circle at the planned entry, even without a lead in. With machine compensation, the actual cutter position is approximate. This display does not change the toolpath.</source>
         <translation>Показывает окружность инструмента в запланированной точке входа даже без захода. При компенсации на станке фактическое положение фрезы приблизительное. Отображение не меняет траекторию.</translation>
     </message>
+    <message>
+        <source>Number display</source>
+        <translation>Отображение чисел</translation>
+    </message>
+    <message>
+        <source>Display rounding does not change stored values. Editing uses the full precision.</source>
+        <translation>Округление при отображении не меняет сохранённые значения. Ввод использует полную точность.</translation>
+    </message>
+    <message>
+        <source>Decimal places for millimeters:</source>
+        <translation>Знаков после запятой для миллиметров:</translation>
+    </message>
+    <message>
+        <source>Decimal places for inches:</source>
+        <translation>Знаков после запятой для дюймов:</translation>
+    </message>
+    <message>
+        <source>Decimal places for angles:</source>
+        <translation>Знаков после запятой для углов:</translation>
+    </message>
+    <message>
+        <source>Decimal places for feed rates:</source>
+        <translation>Знаков после запятой для подач:</translation>
+    </message>
 </context>
 <context>
     <name>MyDropDownMenu</name>
@@ -4712,12 +4736,542 @@ Skipped Geometries</source>
         <source>Lift to the swivel contact height when the direction change exceeds this angle. The knife never plunges below the current cut depth.</source>
         <translation>Поднимать до высоты контакта поворота, если изменение направления превышает этот угол. Нож не опускается ниже текущей глубины реза.</translation>
     </message>
+    <message>
+        <source>Decimal places used only for GUI display; stored values retain full precision.</source>
+        <translation>Знаки после запятой только для отображения; сохранённые значения сохраняют полную точность.</translation>
+    </message>
 </context>
 <context>
     <name>CfgListEdit</name>
     <message>
         <source>Separate entries with '%s'.</source>
         <translation>Разделяйте записи символом « %s ».</translation>
+    </message>
+</context>
+
+<context>
+    <name>MachiningPanel</name>
+    <message>
+        <source>New step</source>
+        <translation>Новый этап</translation>
+    </message>
+    <message>
+        <source>From selection</source>
+        <translation>Из выделенного</translation>
+    </message>
+    <message>
+        <source>Edit step</source>
+        <translation>Изменить этап</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <source>Machining</source>
+        <translation>Обработка</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Вид обработки</translation>
+    </message>
+    <message>
+        <source>Tool</source>
+        <translation>Инструмент</translation>
+    </message>
+    <message>
+        <source>Source / diagnosis</source>
+        <translation>Источник / диагностика</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <translation>Экспорт</translation>
+    </message>
+    <message>
+        <source>Optimize</source>
+        <translation>Оптимизация</translation>
+    </message>
+    <message>
+        <source>Select a machining operation to edit its values.</source>
+        <translation>Выберите операцию для изменения её параметров.</translation>
+    </message>
+    <message>
+        <source>Parameter</source>
+        <translation>Параметр</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Значение</translation>
+    </message>
+    <message>
+        <source>Origin</source>
+        <translation>Источник</translation>
+    </message>
+    <message>
+        <source>Use step default</source>
+        <translation>Использовать значение этапа</translation>
+    </message>
+    <message>
+        <source>Reverse</source>
+        <translation>Изменить направление</translation>
+    </message>
+    <message>
+        <source>Start point</source>
+        <translation>Начальная точка</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Вверх</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Вниз</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <translation>Отменить</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <translation>Повторить</translation>
+    </message>
+    <message>
+        <source>Undo machining action</source>
+        <translation>Отменить действие обработки</translation>
+    </message>
+    <message>
+        <source>Redo machining action</source>
+        <translation>Повторить действие обработки</translation>
+    </message>
+    <message>
+        <source>Move up</source>
+        <translation>Переместить вверх</translation>
+    </message>
+    <message>
+        <source>Move down</source>
+        <translation>Переместить вниз</translation>
+    </message>
+    <message>
+        <source>Contour</source>
+        <translation>Контур</translation>
+    </message>
+    <message>
+        <source>Pocket</source>
+        <translation>Карман</translation>
+    </message>
+    <message>
+        <source>Drilling</source>
+        <translation>Сверление</translation>
+    </message>
+    <message>
+        <source>Holding tabs</source>
+        <translation>Перемычки</translation>
+    </message>
+    <message>
+        <source>Ignored</source>
+        <translation>Пропускается</translation>
+    </message>
+    <message>
+        <source>Custom G-code</source>
+        <translation>Пользовательский G-код</translation>
+    </message>
+    <message>
+        <source>Contour {0}</source>
+        <translation>Контур {0}</translation>
+    </message>
+    <message>
+        <source>Missing or ambiguous geometry</source>
+        <translation>Геометрия отсутствует или неоднозначна</translation>
+    </message>
+    <message>
+        <source>Conflicting machining settings</source>
+        <translation>Противоречивые параметры обработки</translation>
+    </message>
+    <message>
+        <source>Unassigned</source>
+        <translation>Не назначено</translation>
+    </message>
+    <message>
+        <source>Action rejected: {0}</source>
+        <translation>Действие отклонено: {0}</translation>
+    </message>
+    <message>
+        <source>Machining updated. Undo is available.</source>
+        <translation>Обработка изменена. Доступна отмена.</translation>
+    </message>
+    <message>
+        <source>Active: {0} · T{1}</source>
+        <translation>Активно: {0} · T{1}</translation>
+    </message>
+    <message>
+        <source>Tool definition</source>
+        <translation>Определение инструмента</translation>
+    </message>
+    <message>
+        <source>Project default</source>
+        <translation>Значение проекта</translation>
+    </message>
+    <message>
+        <source>Step default</source>
+        <translation>Значение этапа</translation>
+    </message>
+    <message>
+        <source>Own value</source>
+        <translation>Собственное значение</translation>
+    </message>
+    <message>
+        <source>Local X, Y</source>
+        <translation>Локальные X, Y</translation>
+    </message>
+    <message>
+        <source>Machining step</source>
+        <translation>Этап обработки</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Имя</translation>
+    </message>
+    <message>
+        <source>Import profile tool T{0}</source>
+        <translation>Импортировать инструмент T{0} из профиля</translation>
+    </message>
+    <message>
+        <source>Move existing assignments</source>
+        <translation>Переместить существующие назначения</translation>
+    </message>
+    <message>
+        <source>Additional machining</source>
+        <translation>Дополнительная обработка</translation>
+    </message>
+    <message>
+        <source>Assignment</source>
+        <translation>Назначение</translation>
+    </message>
+    <message>
+        <source>Select original contours in Entities, Layers or the canvas first.</source>
+        <translation>Сначала выберите исходные контуры в Entities, Layers или на чертеже.</translation>
+    </message>
+    <message>
+        <source>Select an active operation for contour {0}.</source>
+        <translation>Выберите активную операцию для контура {0}.</translation>
+    </message>
+    <message>
+        <source>Select one step to remove.</source>
+        <translation>Выберите один этап для удаления.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>Remove assignments</source>
+        <translation>Удалить назначения</translation>
+    </message>
+    <message>
+        <source>Move assignments to {0}</source>
+        <translation>Переместить назначения в {0}</translation>
+    </message>
+    <message>
+        <source>Remove step</source>
+        <translation>Удалить этап</translation>
+    </message>
+    <message>
+        <source>Original contours are retained. Choose what happens to the assignments.</source>
+        <translation>Исходные контуры сохраняются. Выберите действие для назначений.</translation>
+    </message>
+    <message>
+        <source>Copy to step</source>
+        <translation>Копировать в этап</translation>
+    </message>
+    <message>
+        <source>Move to step</source>
+        <translation>Переместить в этап</translation>
+    </message>
+    <message>
+        <source>Target step</source>
+        <translation>Целевой этап</translation>
+    </message>
+    <message>
+        <source>Select entries from one step to reorder.</source>
+        <translation>Для изменения порядка выберите записи одного этапа.</translation>
+    </message>
+    <message>
+        <source>Edit step defaults</source>
+        <translation>Изменить значения этапа</translation>
+    </message>
+    <message>
+        <source>Update tool from profile</source>
+        <translation>Обновить инструмент из профиля</translation>
+    </message>
+    <message>
+        <source>Add custom G-code</source>
+        <translation>Добавить пользовательский G-код</translation>
+    </message>
+    <message>
+        <source>The tool is absent from the current profile. Saved values are retained.</source>
+        <translation>Инструмент отсутствует в текущем профиле. Сохранённые значения не изменяются.</translation>
+    </message>
+    <message>
+        <source>Workpiece surface</source>
+        <translation>Поверхность заготовки</translation>
+    </message>
+    <message>
+        <source>Depth per pass</source>
+        <translation>Глубина за проход</translation>
+    </message>
+    <message>
+        <source>Final depth</source>
+        <translation>Конечная глубина</translation>
+    </message>
+    <message>
+        <source>Retract height</source>
+        <translation>Высота отвода</translation>
+    </message>
+    <message>
+        <source>Safety margin</source>
+        <translation>Безопасный зазор</translation>
+    </message>
+    <message>
+        <source>XY feed</source>
+        <translation>Подача XY</translation>
+    </message>
+    <message>
+        <source>Z feed</source>
+        <translation>Подача Z</translation>
+    </message>
+    <message>
+        <source>Milling allowance</source>
+        <translation>Припуск на фрезерование</translation>
+    </message>
+    <message>
+        <source>Lead in</source>
+        <translation>Подвод</translation>
+    </message>
+    <message>
+        <source>Lead out</source>
+        <translation>Отвод</translation>
+    </message>
+    <message>
+        <source>Overcut</source>
+        <translation>Перекрытие</translation>
+    </message>
+    <message>
+        <source>Lead radius</source>
+        <translation>Радиус подвода/отвода</translation>
+    </message>
+    <message>
+        <source>Lead length</source>
+        <translation>Длина подвода/отвода</translation>
+    </message>
+    <message>
+        <source>Overcut length</source>
+        <translation>Длина перекрытия</translation>
+    </message>
+    <message>
+        <source>Knife swivel height</source>
+        <translation>Высота поворота ножа</translation>
+    </message>
+    <message>
+        <source>Knife swivel angle</source>
+        <translation>Угол поворота ножа</translation>
+    </message>
+    <message>
+        <source>Cutter compensation</source>
+        <translation>Коррекция радиуса инструмента</translation>
+    </message>
+    <message>
+        <source>Holding-tab first pass</source>
+        <translation>Первый проход с перемычками</translation>
+    </message>
+    <message>
+        <source>Spindle speed</source>
+        <translation>Частота вращения шпинделя</translation>
+    </message>
+    <message>
+        <source>Start radius</source>
+        <translation>Начальный радиус</translation>
+    </message>
+    <message>
+        <source>G-code</source>
+        <translation>G-код</translation>
+    </message>
+    <message>
+        <source>Tool diameter</source>
+        <translation>Диаметр инструмента</translation>
+    </message>
+    <message>
+        <source>Update step defaults from profile</source>
+        <translation>Обновить значения этапа из профиля</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Выкл.</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation>Вкл.</translation>
+    </message>
+    <message>
+        <source>Straight</source>
+        <translation>Прямая</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation>Радиус</translation>
+    </message>
+    <message>
+        <source>Start move</source>
+        <translation>Начальное перемещение</translation>
+    </message>
+    <message>
+        <source>Literal actions require a machining step.</source>
+        <translation>Пользовательский G-код требует этапа обработки.</translation>
+    </message>
+    <message>
+        <source>The original contour is missing or ambiguous.</source>
+        <translation>Исходный контур отсутствует или неоднозначен.</translation>
+    </message>
+    <message>
+        <source>Holding-tab and ignored assignments must retain their kind.</source>
+        <translation>Назначения перемычек и пропускаемых контуров должны сохранять свой вид.</translation>
+    </message>
+    <message>
+        <source>Drilling requires a point or circle and G40.</source>
+        <translation>Для сверления требуется точка или окружность и G40.</translation>
+    </message>
+    <message>
+        <source>A drilling point cannot be used as a milling contour.</source>
+        <translation>Точку сверления нельзя использовать как контур фрезерования.</translation>
+    </message>
+    <message>
+        <source>Pocketing requires a closed contour, milling mode and internal compensation.</source>
+        <translation>Для выборки кармана требуется замкнутый контур, режим фрезерования и внутренняя коррекция.</translation>
+    </message>
+    <message>
+        <source>The geometry selection is invalid or belongs to another project.</source>
+        <translation>Выбранная геометрия недопустима или принадлежит другому проекту.</translation>
+    </message>
+    <message>
+        <source>The machining selection is no longer valid.</source>
+        <translation>Выбор операций больше не действителен.</translation>
+    </message>
+    <message>
+        <source>Select an active operation before editing shared geometry.</source>
+        <translation>Перед изменением общей геометрии выберите активную операцию.</translation>
+    </message>
+    <message>
+        <source>Collapse all</source>
+        <translation>Свернуть всё</translation>
+    </message>
+    <message>
+        <source>Expand all</source>
+        <translation>Развернуть всё</translation>
+    </message>
+    <message>
+        <source>Create…</source>
+        <translation>Создать…</translation>
+    </message>
+    <message>
+        <source>Create machining step…</source>
+        <translation>Создать этап обработки…</translation>
+    </message>
+    <message>
+        <source>Do not use selection — create empty step</source>
+        <translation>Не использовать выбор — создать пустой этап</translation>
+    </message>
+    <message>
+        <source>No linked machining steps</source>
+        <translation>Нет связанных этапов обработки</translation>
+    </message>
+    <message>
+        <source>Related machining steps</source>
+        <translation>Связанные этапы обработки</translation>
+    </message>
+    <message>
+        <source>{0} contours selected</source>
+        <translation>Выбрано контуров: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>MachiningParameters</name>
+    <message>
+        <source>Step tool</source>
+        <translation>Инструмент этапа</translation>
+    </message>
+    <message>
+        <source>Use step default</source>
+        <translation>Использовать значение этапа</translation>
+    </message>
+    <message>
+        <source>Step defaults: {0}</source>
+        <translation>Значения этапа: {0}</translation>
+    </message>
+    <message>
+        <source>Step defaults</source>
+        <translation>Значения этапа</translation>
+    </message>
+    <message>
+        <source>Tool from step {0}</source>
+        <translation>Инструмент этапа {0}</translation>
+    </message>
+    <message>
+        <source>Step {0}</source>
+        <translation>Этап {0}</translation>
+    </message>
+    <message>
+        <source>Tool T{0}</source>
+        <translation>Инструмент T{0}</translation>
+    </message>
+    <message>
+        <source>Project default</source>
+        <translation>Значение проекта</translation>
+    </message>
+    <message>
+        <source>Own value: {0}</source>
+        <translation>Собственное значение: {0}</translation>
+    </message>
+    <message>
+        <source>Inherited from {0}: {1}</source>
+        <translation>Унаследовано от {0}: {1}</translation>
+    </message>
+    <message>
+        <source>Own value</source>
+        <translation>Собственное значение</translation>
+    </message>
+    <message>
+        <source>Inherited value</source>
+        <translation>Унаследованное значение</translation>
+    </message>
+    <message>
+        <source>Enter a finite number.</source>
+        <translation>Введите конечное число.</translation>
+    </message>
+    <message>
+        <source>Edit value…</source>
+        <translation>Изменить значение…</translation>
+    </message>
+    <message>
+        <source>Machining tool</source>
+        <translation>Инструмент обработки</translation>
+    </message>
+    <message>
+        <source>Tool</source>
+        <translation>Инструмент</translation>
+    </message>
+</context>
+<context>
+    <name>GeometryPanel</name>
+    <message>
+        <source>Entities</source>
+        <translation>Объекты</translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation>Геометрия</translation>
+    </message>
+    <message>
+        <source>Layers</source>
+        <translation>Слои</translation>
     </message>
 </context>
 </TS>

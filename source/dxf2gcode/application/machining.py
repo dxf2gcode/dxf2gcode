@@ -5,6 +5,7 @@ identity of a machining step. Geometry is copied before start/direction edits.
 """
 
 from collections import defaultdict
+from contextlib import contextmanager
 from copy import copy, deepcopy
 from dataclasses import asdict, replace
 import hashlib
@@ -13,7 +14,7 @@ import json
 from dxf2gcode.domain.project.machining_project import (
     GeometryReference, LiteralAction, MachiningOperation, MachiningProject,
     MachiningStep, PARAMETERS, TOOL_PARAMETERS, new_id)
-from dxf2gcode.domain.project.layercontent import Layers, Shapes
+from dxf2gcode.domain.project.layercontent import LayerContent, Layers, Shapes
 from dxf2gcode.domain.project.machining import machining_conflict
 from dxf2gcode.domain.project.tool_settings import ToolSettings, effective_tool
 from dxf2gcode.domain.geometry.point import Point
@@ -59,7 +60,9 @@ class ProjectConfiguration:
     def update_tool_values(self):
         # The parser reports the drawing unit through metric. The snapshot
         # already uses that unit; a changed source unit requires reassignment.
-        if self.metric != int(self.tool_units == 'mm'):
+        if self.vars.General.get('drawing_units_override') == self.tool_units:
+            self.metric = int(self.tool_units == 'mm')
+        elif self.metric != int(self.tool_units == 'mm'):
             raise ValueError('Drawing units differ from saved machining project')
 
 
@@ -147,6 +150,7 @@ class MachiningDrawing:
         self.sources = {}
         self._baseline = {}
         self.active_operations = {}
+        self.preview_layers = None
         self.bind()
 
     @classmethod
@@ -244,8 +248,10 @@ class MachiningDrawing:
             if source_layer is None:
                 source_layer = next(iter(self.source_layers), None)
             if source_layer is None:
-                continue
+                source_layer = LayerContent(len(layers), step.name, [], config=configuration)
             layer = copy(source_layer)
+            layer.nr = len(layers)
+            layer.machining_step_id = step.id
             layer.config = configuration
             layer.name = ('BREAKS:' + step.name if step.kind == 'break' else
                           'IGNORE:' + step.name if step.kind == 'ignored' else step.name)
@@ -262,7 +268,7 @@ class MachiningDrawing:
                 if isinstance(entry, LiteralAction):
                     shape = CustomGCode(entry.name, sum(len(l.shapes) for l in layers) + len(layer.shapes),
                                         entry.gcode, layer)
-                    shape.disabled = not entry.enabled
+                    shape.disabled = not entry.enabled or step.kind == 'ignored'
                 elif entry.geometry_id not in self.sources:
                     continue  # disabled unresolved entries are retained in the document
                 else:
@@ -306,6 +312,7 @@ class MachiningDrawing:
                     shape.setNearestStPoint(anchor)
                     shape.parameter_origins = origins
                 shape.parentLayer = layer
+                shape.operation_id = entry.id
                 layer.shapes.append(shape)
                 if not shape.disabled:
                     layer.exp_order_complete.append(len(layer.shapes) - 1)
@@ -324,6 +331,8 @@ class MachiningDrawing:
         configuration = ProjectConfiguration(self.project)
         for layer in self.source_layers:
             layer.project_values_locked = True
+            layer.exp_order_complete = list(range(len(layer.shapes)))
+            layer.exp_order = [shape.nr for shape in layer.shapes if not isinstance(shape, CustomGCode)]
         by_geometry = self.operations_by_geometry()
         for identity, source in self.sources.items():
             source.machining_binding = self
@@ -345,10 +354,13 @@ class MachiningDrawing:
                 source.Drill, source.Pocket = step.kind == 'drill', step.kind == 'pocket'
                 if entry.legacy_conflict:
                     source.Drill, source.Pocket, source.cut_cor = entry.legacy_conflict
-                source.disabled, source.send_to_TSP = not entry.enabled, entry.optimize
+                source.send_to_TSP = entry.optimize
                 source.operation_id = entry.id
+            source.disabled = not any(entry.enabled for step, entry in operations)
             self._baseline[identity] = self._editor_state(source)
         for source in self.unassigned:
+            source.machining_binding = self
+            source.machining_config = configuration
             source.disabled = True
 
     def operations_by_geometry(self):
@@ -395,6 +407,8 @@ class MachiningDrawing:
             if selected is None:
                 raise ValueError('Select an explicit machining operation before editing shared geometry')
             changes.append((identity, source, selected, old, current))
+        if not changes:
+            return
         # Validate the complete batch on a document copy before changing it.
         staged = deepcopy(self.project)
         for identity, source, (step, entry), old, current in changes:
@@ -431,13 +445,26 @@ class MachiningDrawing:
                 self._baseline[identity] = state
 
     def active_view(self, source):
-        self.synchronize_editor()
+        if self.preview_layers is None:
+            self.synchronize_editor()
         identity = getattr(source, 'geometry_id', None)
         active = self.active_operations.get(identity)
         if active is None:
             return None
-        return next((shape for layer in self.materialize(allow_unresolved=True) for shape in layer.shapes
+        layers = self.preview_layers if self.preview_layers is not None else self.materialize(allow_unresolved=True)
+        return next((shape for layer in layers for shape in layer.shapes
                      if getattr(shape, 'operation_id', None) == active), None)
+
+    @contextmanager
+    def preview_batch(self):
+        """Reuse projections only within one synchronous repaint, never across edits."""
+        self.synchronize_editor()
+        previous = self.preview_layers
+        self.preview_layers = self.materialize(allow_unresolved=True)
+        try:
+            yield
+        finally:
+            self.preview_layers = previous
 
 
 def _register_tool(project, tool):

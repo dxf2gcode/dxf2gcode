@@ -136,6 +136,8 @@ class MachiningProject:
         data_tree(self.configuration)
         if self.units not in ('mm', 'in'):
             raise ValueError('Invalid project units')
+        if self.configuration.get('General', {}).get('drawing_units_override', self.units) not in ('mm', 'in'):
+            raise ValueError('Invalid drawing unit override')
         for step in self.steps:
             identity(step.id)
             if (not isinstance(step.name, str) or step.kind not in KINDS

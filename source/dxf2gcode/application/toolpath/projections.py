@@ -13,6 +13,19 @@ class PreviewSegment:
     space: str
 
 
+def plan_route_endpoints(plan):
+    """Project the actual approach and final XY, including leads and overcut."""
+    end = plan.approach_xy
+    for action in plan.actions:
+        if action.kind == 'rapid_xy':
+            end = action.args[0]
+        elif action.kind in ('linear_xy', 'linear_xyz'):
+            end = action.args[1]
+        elif action.kind == 'arc':
+            end = action.args[2]
+    return plan.approach_xy, end, plan.retract_depth
+
+
 def plan_preview_segments(plan, dimensions=3):
     """Project ordered actions, retaining movement roles and compensation space."""
     if plan is None:

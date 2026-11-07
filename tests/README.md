@@ -76,6 +76,11 @@ The machining-project regressions cover JSON 2.0 identities/provenance,
 legacy migration, missing references and protected output. A real offscreen
 MainWindow workflow verifies save/load/reload and GUI/CLI program parity with
 two operations referencing one original contour.
+The machining-command/panel regressions also exercise atomic move/copy and
+stable undo/redo identities, real Qt drops, step/custom-code optimizer barriers,
+saved-value provenance, unit interpretation, all new DE/FR/RU translations and
+visible step order through actual GUI/CLI output. OpenGL adapter checks use
+mocks and do not establish GPU acceptance.
 
 Run every test before a release or a broad change:
 
@@ -204,3 +209,8 @@ Temporary scripts for debugging, profiling or performance comparisons are
 untracked local directory, or a future `tools/` directory) and remember that
 `python -m unittest discover -s tests -p "dxf2gcode_*test.py"` only picks up
 files matching that pattern.
+
+`dxf2gcode_numeric_display_test.py` checks configurable mm/inch/angle display,
+full-precision focus/input and compiled translations. The machining-panel
+workflow also checks shared resizing columns, fixed visible status buttons
+and changing display settings without modifying the machining project.

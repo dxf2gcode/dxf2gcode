@@ -1,8 +1,11 @@
 # R3/R1b: Bearbeitungsmodell und Projektformat 2.0
 
-Stand: **07.11.2026**, P1–P3. Die Bedienung im dritten Tab folgt in P4/P5.
-[Plan und Entscheidungen D1–D19](../planning/r3-r1b-implementation-plan.md),
-[Prüfnachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3).
+Stand: **07.11.2026**, P1–P6 implementiert. P8 ist die gemeinsame Nutzerabnahme.
+[Anwenderanleitung](../../docs/user-guide/machining-steps.md),
+[Plan und Entscheidungen D1–D22](../planning/r3-r1b-implementation-plan.md),
+[P1–P3](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3) und
+[P4–P6-Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6),
+[Formular-Korrektur D22](../archive/toolpath-refactoring-completed.md#r3-parameter-form-correction).
 
 ## Identitäten und Auflösung
 
@@ -38,8 +41,9 @@ Geometrie und Projektwerte werden vor der Planung in getrennte Shape-/Layer-
 Projektionen kopiert. Vorschau und Export verwenden denselben Resolver und
 dieselbe gespeicherte Konfiguration. Projektionen werden frisch erstellt,
 statt alte Pläne nach einer Änderung weiterzuverwenden. `update_tool` ist die
-atomare Modelloperation zur ausdrücklichen Werkzeugaktualisierung; die
-Profilübernahme mit Änderungsanzeige/Undo folgt mit der neuen Bedienung.
+atomare Modelloperation zur ausdrücklichen Werkzeugaktualisierung.
+`MachiningCommands` bietet Profilübernahme und Schrittvorgabenänderung mit
+Änderungsanzeige/Undo. Eigene Werte werden dabei nicht überschrieben.
 
 ## Datei, Migration und Reload
 
@@ -69,23 +73,71 @@ der Ausgabe. Die vorhandene Zieldatei bleibt erhalten, stdout bleibt leer.
 Neue Konturen beim Neuimport bleiben ohne Bearbeitungszuordnung.
 Auch der Parser verwendet den gespeicherten Import-Snapshot. Abweichende
 Einheiten der Quelldatei werden abgelehnt, statt den Auftrag umzudeuten.
+Eine ausdrücklich über das vorhandene Einheitenmenü gewählte Interpretation
+wird als `General.drawing_units_override` gespeichert; dabei werden Längen
+und Vorschübe einmalig umgerechnet, lokale Geometriestarts bleiben unverändert.
 
-Bis P4 synchronisiert ein begrenzter Adapter Änderungen des vorhandenen
-Editors in den aktiven Arbeitsgang. Bei mehreren Verknüpfungen muss der
-Kontext ausdrücklich über `activate_operation` gewählt werden; ohne Kontext
-gibt es keine willkürliche Vorschau oder gemeinsame Parameteränderung.
-Gruppenaktionen, Listen aller Verknüpfungen, eigener/geerbter Wertdarstellung,
-neue Unzugeordnet-Anzeige, Undo und Bearbeitungsbaum sind noch keine UI-Funktionen.
-Die bisherige Layer-/Entities-Bedienung wird erst in P4 vollständig auf die
-vereinbarte Auswahlrolle umgestellt.
+Der Bearbeitungstab verwendet atomare Modellbefehle statt Änderungen an Original-
+Layer-Mitgliedschaften. Entities/Layers haben gemäß D20 keine Exportcheckboxen
+mehr. Originalauswahl zeigt alle Verknüpfungen; eine ausdrücklich aktive
+Bearbeitung bestimmt Werte und Vorschau. Neue Konturen können über
+„Nicht zugeordnet“ zugewiesen werden. Drag-and-drop, Menü, Sortierung und
+Undo/Redo benutzen dieselbe Befehlsschicht. Ungültige Mehrfachaktionen ändern
+weder Zuordnung noch History. Rückgängig/Wiederholen gilt für die neuen
+Bearbeitungsaktionen; ein Import/Reload beginnt eine neue History.
+
+Gemäß D22 sind die bisherigen Werkzeug-/Konturfelder in den Bearbeitungstab
+verschoben. `MachiningParameters` verbindet sie mit den Modellbefehlen;
+die direkte Legacy-Layer-/Shape-Signalverdrahtung ist für diese Felder entfernt.
+Die Ersatz-Parametertabelle entfällt. Kette/Stift zeigen die Herkunft ohne
+dauerhafte Textspalte; Tooltips nennen Quelle und Wert. Ein gemeinsames
+Symbolmenü je Feld bietet Bearbeiten und das Rücksetzen eigener Konturwerte.
+Die vier Spalten beider Gruppen sind bündig. Die gekürzte Zahlenanzeige
+ändert unveränderte Modellwerte nicht. „Bearbeitungswerkzeug“ benennt die
+Werkzeuggruppe. Entities und Layers liegen in zwei einklappbaren, vertikal
+verstellbaren Gruppen im Tab Geometrie. Rechtsklick zeigt zuerst ein Menü
+mit verknüpften Schritten. Erstellen bietet bei Auswahl Verschieben
+(vorbelegt), Kopieren oder einen leeren Schritt. Bei Schrittauswahl bearbeiten dieselben Felder
+Schrittvorgaben, bei aktiver Kontur deren Werte. Sicherheits-/Rückzugshöhe und
+Werkzeugzuweisung bleiben schrittbezogen. Die Herkunft wird nicht aus bloßer
+Wertgleichheit erraten, und unveränderte Felder erzeugen keinen eigenen Wert.
+
+Optimierung bleibt in Schritt- und Custom-G-Code-Grenzen und erhält beide
+relativen Constraint-Modi. Routenendpunkte stammen aus dem vollständigen Plan
+einschließlich Leads/Overcut, nicht aus einer willkürlichen Originalreferenz.
+Gemäß D21 löst weiterhin nur eine andere Ausgabenummer den Profil-
+Werkzeugwechselblock aus. Unterschiedliche Definitionen oder Drehzahlen bei
+aufeinanderfolgend gleicher Nummer geben keine zusätzliche Drehzahl aus.
+Dies ist bewusst beibehaltenes Exportverhalten, keine Exportsperre.
+
+Die alte Eingabesynchronisierung besteht für Legacy-Adapteraufrufe weiter;
+der normale neue Parametereditor benutzt Modellbefehle. Vor Entfernen der
+verbliebenen Aufrufer folgt P8. Manuelle Stegregionen/Fang/Automatik bleiben P7.
+
+Die früheren Bearbeitungs-Kontextaktionen sind gemäß D30 im Bearbeitungsbaum
+und Canvas wieder verfügbar: Kontur, Taschenfräsen, Bohren, G40/G41/G42.
+`MachiningCommands.set_operation_mode` arbeitet auf ausgewählten Zuordnungen.
+Artwechsel erzeugen neue homogene Schritte mit kopierten Quellvorgaben und
+identischer Werkzeugdefinition; je Quellschritt getrennt, direkt dahinter.
+Arbeitsgang-/Geometrie-IDs und eigene Werte bleiben erhalten. Bohren setzt
+bewusst G40; Kompensationswahl auf einer Bohrkreis-Zuordnung wählt wieder
+Konturbearbeitung. Die gesamte Mehrfachaktion ist transaktional mit einem
+Undo-Eintrag. Vorhandene Typ-/Maschinen-/Geometriesperren gelten weiterhin.
+Der Canvas löst ausschließlich eindeutige oder ausdrücklich aktive Zuordnungen
+auf; bei mehrdeutiger Originalauswahl sind die Aktionen deaktiviert.
 
 ## Maßgebliche Quellen
 
 - [Reines Modell und Resolver](../../source/dxf2gcode/domain/project/machining_project.py)
 - [Migration, Bindung und Projektionen](../../source/dxf2gcode/application/machining.py)
+- [Atomare Befehle und History](../../source/dxf2gcode/application/machining_actions.py),
+  [Bearbeitungstab](../../source/dxf2gcode/presentation/qt/machining_panel.py)
+- [Wiederverwendete Felder und Herkunftssymbole](../../source/dxf2gcode/presentation/qt/machining_parameters.py)
 - [Codec](../../source/dxf2gcode/adapters/project/machining_d2g.py),
   [Dateispeicher](../../source/dxf2gcode/adapters/project/file_store.py)
 - [GUI-Projektkoordination](../../source/dxf2gcode/presentation/qt/project_session.py),
   [CLI](../../source/dxf2gcode/application/cli_export.py)
 - [Modell-/Formatregressionen](../../tests/dxf2gcode_machining_project_test.py),
   [echter Qt-Workflow](../../tests/dxf2gcode_machining_gui_test.py)
+- [Befehlsregressionen](../../tests/dxf2gcode_machining_actions_test.py),
+  [echte Drops und Übersetzungen](../../tests/dxf2gcode_machining_panel_test.py)

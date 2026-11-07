@@ -161,6 +161,15 @@ class MyDropDownMenu(QMenu):
         zero_action.setEnabled(bool(canvas_scene.shapes))
         zero_action.triggered.connect(self.moveWorkpieceZeroHere)
 
+        panel = getattr(getattr(g, 'window', None), 'machining_panel', None)
+        if panel is not None and panel.binding is not None:
+            if self.selectedItems:
+                panel.add_machining_actions(self, panel.canvas_operation_ids(self.selectedItems))
+                self.addAction(panel.tr('From selection'), panel.from_selection)
+                self.addAction(self.tr('Invert Selection'), self.invertSelection)
+            self.exec(position)
+            return
+
         if len(self.selectedItems) == 0:
             self.exec(position)
             return

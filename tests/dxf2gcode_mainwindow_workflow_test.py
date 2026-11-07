@@ -126,6 +126,36 @@ def _check_startpoint_route_display(window, app):
     window.TreeHandler.updateExportOrder()
     order = [(layer.nr, list(layer.exp_order_complete)) for layer in window.layerContents]
 
+    panel = getattr(window, 'machining_panel', None)
+    if panel is not None and panel.binding is not None:
+        from dxf2gcode.presentation.qt import machining_panel as panel_module
+        entry = panel.binding.operations_by_geometry()[shape.geometry_id][0][1]
+        panel.context = entry.id
+        panel.binding.activate_operation(entry.id)
+        original_start = shape.get_start_end_points(True)
+        for live in (False, True):
+            window.ui.actionLiveUpdateExportRoute.setChecked(live)
+            for visible in ((False, True) if not live else (True,)):
+                window.deleteG0Paths()
+                if visible:
+                    window.updateExportRoute()
+                routes = tuple(scene.routearrows)
+                point = shape.geos[len(shape.geos)//2].Ps
+                from types import SimpleNamespace
+                with patch('dxf2gcode.presentation.qt.popupdialog.PopUpDialog',
+                           return_value=SimpleNamespace(result=[point.x, point.y])):
+                    panel.start_point()
+                app.processEvents()
+                assert shape.get_start_end_points(True) == original_start
+                if live:
+                    assert scene.routearrows and tuple(scene.routearrows) != routes
+                else:
+                    assert tuple(scene.routearrows) == routes
+                assert [(layer.nr, list(layer.exp_order_complete)) for layer in window.layerContents] == order
+                window.updateExportRoute()
+                assert scene.routearrows and scene.routetext
+        return
+
     for live in (False, True):
         window.ui.actionLiveUpdateExportRoute.setChecked(live)
         assert window.TreeHandler.auto_update_export_order == live
@@ -163,6 +193,12 @@ def _check_startpoint_route_display(window, app):
 
 
 def _run_mainwindow_workflow():
+    import traceback
+    def exception_hook(kind, value, trace):
+        traceback.print_exception(kind, value, trace)
+        sys.stderr.flush()
+        os._exit(1)
+    sys.excepthook = exception_hook
     """Worker entry point; run separately so a Qt crash cannot kill unittest."""
     from types import SimpleNamespace
     fold_worker = "--fold-worker" in sys.argv
@@ -261,6 +297,8 @@ def _run_mainwindow_workflow():
                     for geo in shape.geos.abs_iter()]
         for metric in (1, 0):
             window.setMeasurementUnits(metric)
+            assert window.ui.toolDiameterUnitLabel.text() == ('[mm]' if metric else '[in]')
+            assert window.ui.unitLabel_1.text() == ('[mm]' if metric else '[in]')
             clicked = vertices()[0]
             expected = [window.cont_dx-clicked.x, window.cont_dy-clicked.y]
             with patch.object(MyDropDownMenu, 'exec'):
@@ -306,6 +344,11 @@ def _run_mainwindow_workflow():
             assert (window.cont_dx, window.cont_dy) == tuple(edited)
         shape = window.shapes[0]
         shape.setSelected(True)
+        with patch.object(MyDropDownMenu, 'exec'):
+            menu = MyDropDownMenu(window.canvas_scene, QtCore.QPoint(), shape.get_start_end_points(True))
+        assert menu.selectedItems
+        assert menu.actions()[0].text() == menu.tr('Move workpiece zero here ...')
+        assert menu.actions()[0].isEnabled()
         for closed in (True, False):
             shape.closed = closed
             if not closed:
@@ -596,7 +639,7 @@ def _run_mainwindow_workflow():
                  window.ui.layersExpandPushButton),
                 (0, window.ui.entitiesTreeView, window.ui.blocksCollapsePushButton,
                  window.ui.blocksExpandPushButton)):
-            window.ui.mytabWidget.setCurrentIndex(tab)
+            window.ui.mytabWidget.setCurrentWidget(window.geometry_panel)
             view.expandAll()
             app.processEvents()
             for row in range(view.model().rowCount()):
@@ -647,31 +690,27 @@ def _run_mainwindow_workflow():
         QtCore.QItemSelectionModel.SelectionFlag.Select |
         QtCore.QItemSelectionModel.SelectionFlag.Rows)
     assert shape.isSelected()
-    for name in ("toolDiameterComboBox", "leadInComboBox",
-                 "leadOutComboBox", "overcutComboBox"):
-        assert getattr(window.ui, name).currentIndex() >= 0, name
-
-    # Real keyboard actions and checkbox synchronization must work with Qt6's
-    # scoped key/check-state enums as well as with Qt5.
-    from dxf2gcode.presentation.qt.qt_compat.QtGui import QKeyEvent
+    panel = window.machining_panel
+    from dxf2gcode.presentation.qt.machining_panel import ROLE
+    assert panel.isAncestorOf(window.ui.millSettingsFrame)
+    item = next(panel.tree.topLevelItem(i).child(j)
+                for i in range(panel.tree.topLevelItemCount())
+                for j in range(panel.tree.topLevelItem(i).childCount())
+                if panel.tree.topLevelItem(i).child(j).data(0, ROLE) == ('entry', shape.operation_id))
+    panel.tree.clearSelection()
+    panel.tree.setCurrentItem(item)
+    entry_id = shape.operation_id
     for expected_disabled in (True, False):
-        event = QKeyEvent(QtCore.QEvent.Type.KeyPress,
-                          QtCore.Qt.Key.Key_Space,
-                          QtCore.Qt.KeyboardModifier.NoModifier)
-        assert window.TreeHandler.actionOnKeyPress(event)
+        panel.execute(lambda: panel.commands.update_entries([entry_id], enabled=not expected_disabled))
         assert shape.isDisabled() == expected_disabled
-        window.TreeHandler.updateShapeEnabling(shape, not expected_disabled)
-    optimize_item = index.model().itemFromIndex(index.sibling(index.row(), 3))
-    previous_check = optimize_item.checkState()
-    for changed in (True, False):
-        event = QKeyEvent(QtCore.QEvent.Type.KeyPress, QtCore.Qt.Key.Key_O,
-                          QtCore.Qt.KeyboardModifier.NoModifier)
-        assert window.TreeHandler.actionOnKeyPress(event)
-        assert (optimize_item.checkState() != previous_check) == changed
+    for optimize in (True, False):
+        panel.execute(lambda: panel.commands.update_entries([entry_id], optimize=optimize))
+        assert shape.send_to_TSP == optimize
 
     previous_preview = shape.stmove
     new_offset = 0.25
     window.ui.millingOffsetLineEdit.setText(str(new_offset))
+    window.ui.millingOffsetLineEdit.setModified(True)
     window.ui.millingOffsetLineEdit.editingFinished.emit()
     app.processEvents()
     assert abs(shape.milling_offset - new_offset) < 1e-9
@@ -686,18 +725,18 @@ def _run_mainwindow_workflow():
     app_module.options = SimpleNamespace(post_pro=output_format)
     # A manual tree edit is authoritative even with route live update off.
     window.TreeHandler.setLiveUpdateExportRoute(False)
-    model = window.TreeHandler.layer_item_model
-    for row in range(model.rowCount()):
-        layer_item = model.item(row, 0)
-        if layer_item.rowCount() > 1:
-            window.ui.layersShapesTreeView.setCurrentIndex(layer_item.child(0, 0).index())
-            window.ui.layersShapesTreeView.moveDownCurrentItem()
+    for row in range(panel.tree.topLevelItemCount()):
+        step_item = panel.tree.topLevelItem(row)
+        if step_item.childCount() > 1:
+            panel.tree.clearSelection()
+            panel.tree.setCurrentItem(step_item.child(0))
+            panel.nudge(1)
             break
     else:
         raise AssertionError("workflow fixture needs two shapes in one layer")
     window.TreeHandler.updateExportOrder()
     expected_sequence = [layer.shapes[index].nr
-                         for layer in window.layerContents.non_break_layer_iter()
+                         for layer in panel.binding.materialize().non_break_layer_iter()
                          for index in layer.exp_order_complete]
     startpoints = [shape.get_start_end_points() for shape in window.shapes]
     window.updateExportRoute()

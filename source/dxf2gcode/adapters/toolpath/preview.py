@@ -31,6 +31,13 @@ def preview_result(shape, postprocessor=None, layers=None):
         shape.toolpath_plan = None
         shape.toolpath_diagnostics = ()
         return ToolpathPlanningResult(None, ())
+    binding = getattr(shape, 'machining_binding', None)
+    predecessor_shape = shape
+    if binding is not None:
+        layers = binding.preview_layers if binding.preview_layers is not None else binding.materialize(allow_unresolved=True)
+        active_id = getattr(shape._machining_view, 'operation_id', None)
+        predecessor_shape = next((candidate for layer in layers for candidate in layer.shapes
+                                  if getattr(candidate, 'operation_id', None) == active_id), shape)
     config = getattr(shape, 'machining_config', None) or g.config
     if postprocessor is not None and not hasattr(postprocessor, "vars"):
         if getattr(postprocessor, "postprocessor_files", ()):
@@ -45,11 +52,15 @@ def preview_result(shape, postprocessor=None, layers=None):
     if (config.machine_type == 'drag_knife'
             and getattr(config.vars.Drag_Knife_Options, 'entry_mode', 'fixed') == 'previous'
             and layers is not None):
-        _set_previous_knife_state(shape, layers, dialect)
+        _set_previous_knife_state(predecessor_shape, layers, dialect)
     request = ShapePlanningInputs(lambda: config).request(shape, dialect)
     result = ToolpathPlanner(exit_geometry).plan(request)
     shape.toolpath_plan = result.plan
     shape.toolpath_diagnostics = result.diagnostics
+    view = getattr(shape, '_machining_view', None)
+    if view is not None:
+        view.toolpath_plan = result.plan
+        view.toolpath_diagnostics = result.diagnostics
     shape.stmove.exit_error = next((item.message for item in result.diagnostics
                                    if item.code == "lead.invalid_exit"), "")
     return result

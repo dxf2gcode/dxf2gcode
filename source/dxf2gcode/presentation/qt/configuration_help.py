@@ -7,6 +7,7 @@ from dxf2gcode.presentation.qt.qt_compat.QtCore import (
 # Match ConfigWindow.configspecParser's normalized schema comments. Technical
 # profile values and user-provided G-code are never passed through translation.
 HELP_SOURCES = (
+    QT_TRANSLATE_NOOP('ConfigurationHelp', 'Decimal places used only for GUI display; stored values retain full precision.'),
     QT_TRANSLATE_NOOP("ConfigurationHelp", 'Automatic save last path to config file. Therefore open with last path'),
     QT_TRANSLATE_NOOP("ConfigurationHelp", 'Automatically enable cutter compensation for all the shapes (G41 & G42)'),
     QT_TRANSLATE_NOOP("ConfigurationHelp", 'By default look for DXF files in this directory.'),

@@ -78,6 +78,15 @@ def build_application_config_widgets(config):
             ("__subtitle3__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Output")))),
             ("write_to_stdout", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Export the G-Code to stdout (instead of a file)")))),
         ])),
+        ("Display", OrderedDict([
+            ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "General settings"))),
+            ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Number display")))),
+            ("__intro__", CfgNote(tr(QT_TRANSLATE_NOOP('MyConfig', "Display rounding does not change stored values. Editing uses the full precision.")))),
+            ("decimals_mm", CfgSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Decimal places for millimeters:")))),
+            ("decimals_in", CfgSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Decimal places for inches:")))),
+            ("decimals_angle", CfgSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Decimal places for angles:")))),
+            ("decimals_feed", CfgSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Decimal places for feed rates:")))),
+        ])),
         ("Axis_letters", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Machine config"))),
             ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Axes' identifiers")))),
@@ -125,15 +134,15 @@ def build_application_config_widgets(config):
                 'previous': tr(QT_TRANSLATE_NOOP('MyConfig', "Retain previous angle (first cut: start angle)")),
                 'unknown': tr(QT_TRANSLATE_NOOP('MyConfig', "Unknown: external settling stroke")),
             })),
-            ("alignment_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Alignment length:")), coordinate_unit, 0, None, 4).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Settling length (verify on the actual knife and material):')))),
+            ("alignment_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Alignment length:")), coordinate_unit, 0, None).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Settling length (verify on the actual knife and material):')))),
             ("return_to_start", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Return knife to start angle"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Return to start angle in lead out before lifting')))),
-            ("swivel_depth", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Swivel contact Z:")), coordinate_unit, None, None, 4)),
+            ("swivel_depth", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Swivel contact Z:")), coordinate_unit, None, None)),
             ("extra_pass", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Additional cut at final depth"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'One additional complete cut at final depth')))),
             ("alternate", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Alternate open cuts"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Alternate open cuts using external straight leads')))),
-            ("lead_out_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Knife lead out length:")), coordinate_unit, 0, None, 4).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Knife lead out length (lead in uses tool lead length):')))),
+            ("lead_out_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Knife lead out length:")), coordinate_unit, 0, None).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Knife lead out length (lead in uses tool lead length):')))),
             ("drag_angle", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', 'Lift for swivels if angle exceeds:')), "°")),
             ("drag_start_angle", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Initial knife angle:")), "°").setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'Direction the knife points to when the cut starts (0 = positive X axis):')))),
-            ("ramp_in_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Ramp length (0 = vertical plunge):")), coordinate_unit, 0, None, 4)),
+            ("ramp_in_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Ramp length (0 = vertical plunge):")), coordinate_unit, 0, None)),
         ])),
         ("Lead_In_Out", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Output settings"))),
@@ -160,9 +169,9 @@ def build_application_config_widgets(config):
         ])),
         ("Import_Parameters", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Output settings"))),
-            ("point_tolerance", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "DXF default import point tolerance:")), "", None, None, 5)),
+            ("point_tolerance", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "DXF default import point tolerance:")), coordinate_unit)),
             ("spline_check", CfgSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "DXF import spline check:")))),
-            ("fitting_tolerance", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "DXF default import fit tolerance:")), "", None, None, 5)),
+            ("fitting_tolerance", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "DXF default import fit tolerance:")), coordinate_unit)),
             ("insert_at_block_layer", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Import inserted entities on block layer"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', 'insert elements which are part of a block to layer where the block is inserted')))),
             ("exclude_ignore_layers", CfgCheckBox(QtCore.QCoreApplication.translate(
                 "MyConfig", "Do not import IGNORE layers"))),
@@ -221,6 +230,11 @@ def build_application_config_widgets(config):
             label = control.item_labels.get(default, str(default))
         control.setDescription(explanation)
         control.setDefaultHint(tr(QT_TRANSLATE_NOOP('MyConfig', 'Default for new profiles: %s')) % label)
+    for section in widgets.values():
+        if isinstance(section, dict):
+            for widget in section.values():
+                if isinstance(widget, CfgDoubleSpinBox):
+                    widget.spinbox.display_config = config
     return widgets
 
 

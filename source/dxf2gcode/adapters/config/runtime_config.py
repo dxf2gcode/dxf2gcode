@@ -47,7 +47,7 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 
 logger = logging.getLogger("Core.Config")
 
-SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14, 9.15, 9.16, 9.17, 9.18, 9.19]
+SUPPORTED_CONFIGS = [9.11, 9.12, 9.13, 9.14, 9.15, 9.16, 9.17, 9.18, 9.19, 9.20, 9.21]
 CONFIG_VERSION = SUPPORTED_CONFIGS[-1]
 """
 version tag - increment this each time you edit CONFIG_SPEC
@@ -184,6 +184,13 @@ CONFIG_SPEC = str('''
     machine_type = option('milling', 'lathe', 'drag_knife', default = 'milling')
     # The unit used for all values in this file
     tool_units = option('mm', 'in', default = 'mm')
+
+    [Display]
+    # Decimal places used only for GUI display; stored values retain full precision.
+    decimals_mm = integer(min = 0, max = 12, default = 3)
+    decimals_in = integer(min = 0, max = 12, default = 5)
+    decimals_angle = integer(min = 0, max = 12, default = 1)
+    decimals_feed = integer(min = 0, max = 12, default = 1)
 
     [Cutter_Compensation]
     # If not checked, DXF2GCODE will create a virtual path for G41 and G42 command. And output will be set to G40; i.e. it will create the path that normally your machine would create with it's cutter compensation.

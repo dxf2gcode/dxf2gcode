@@ -12,6 +12,11 @@ SOURCES += \
     dxf2gcode/presentation/qt/versioninfo.py \
     dxf2gcode/presentation/qt/runtimeinfo.py \
     dxf2gcode/presentation/qt/project_session.py \
+    dxf2gcode/presentation/qt/numeric_display.py \
+    dxf2gcode/presentation/qt/geometry_panel.py \
+    dxf2gcode/presentation/qt/machining_panel.py \
+    dxf2gcode/presentation/qt/machining_parameters.py \
+    dxf2gcode/application/machining_actions.py \
     dxf2gcode/__init__.py \
     dxf2gcode/adapters/__init__.py \
     dxf2gcode/adapters/config/configobj_store.py \

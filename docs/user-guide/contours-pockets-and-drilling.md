@@ -1,5 +1,9 @@
 # Contours, pockets and drilling
 
+In the current development UI, choose the machining kind through **Edit step**
+in the [Machining tab](machining-steps.md). The earlier contour context-menu
+instructions and screenshots below describe the previous interface.
+
 This chapter describes milling operations using the
 [three-shape drawing](../assets/examples/machining-basics/three-shapes-mm.dxf).
 A is the closed rectangle, B the circle and C the open two-segment contour.

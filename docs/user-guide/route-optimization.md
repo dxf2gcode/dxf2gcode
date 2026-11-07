@@ -1,7 +1,8 @@
 # Route optimization
 
 Route optimization reorders machining operations to reduce travel between
-contour endpoints. It works within each layer; it does not solve workholding,
+contour endpoints. It works within each machining step and between custom-code
+boundaries; it does not solve workholding,
 part stability or the machining order required by your process.
 
 Start with the [three-shape example](shapes-layers-and-order.md). Keep the
@@ -27,7 +28,7 @@ one. Save a project before experimenting if you want to reopen the old preparati
 
 ## Constraints and custom rows
 
-The **Optimal path** checkbox releases a contour for free reordering. Unchecked
+The **Optimize** checkbox in Machining releases a contour for free reordering. Unchecked
 contours retain their relative order constraints. This does not give each
 unchecked contour an immutable absolute row number.
 
@@ -49,12 +50,13 @@ for those coordinates.
 | Operation/mode | Resulting enabled rows |
 | --- | --- |
 | Normal export before optimization | A, M, B, C |
-| `CONSTRAIN_ORDER_ONLY` with proposed route B, A, C | M, B, A, C |
+| `CONSTRAIN_ORDER_ONLY` with proposed route B, A, C | A, M, B, C |
 | `CONSTRAIN_PLACE_AFTER` with the same proposal | A, M, C, B |
 
-In both modes A remains before C. In neither mode is M a fixed boundary that
-all contour movements respect. Check custom actions after optimizing, especially
-when they change controller state.
+In both modes A remains before C, and M separates the optimization segments:
+A cannot move after M, and B/C cannot move before it. The proposed whole-step
+route is therefore constrained to those segments. Check custom actions and
+the generated program, especially when they change controller state.
 
 Disabled contours and custom rows are excluded from the enabled export route.
 They can remain visible in the tree; their presence is not a machining operation.

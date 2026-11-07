@@ -1,5 +1,9 @@
 # First DXF to G-code
 
+The current development version uses a third **Machining** tab for operation
+parameters, export checkboxes and order. Use the [Machining steps guide](../user-guide/machining-steps.md)
+alongside this walkthrough; the screenshots below show the earlier interface.
+
 This walkthrough takes one small drawing from import to an exported `.ngc`
 file. You will select a contour, set its machining parameters, inspect the
 toolpath and choose an output profile.

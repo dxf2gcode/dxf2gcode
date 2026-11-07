@@ -1,5 +1,9 @@
 # Cutter compensation and lead moves
 
+In the current development UI, edit compensation and leads in the active
+operation's [Machining form](machining-steps.md). Screenshots and
+control positions below predate the Geometry/Machining layout; the machining rules still apply.
+
 First decide whether your DXF describes a tool-centre path or a nominal part
 boundary. Then choose the compensation side and who calculates the tool-radius
 offset. Entry and exit geometry are separate choices.

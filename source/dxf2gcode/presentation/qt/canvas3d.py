@@ -132,10 +132,12 @@ class GLWidget(CanvasBase):
             GL.glDeleteLists(self.routearrows[0][2], len(self.routearrows))
             self.routearrows = []
 
-    def addexproutest(self):
-        self.expprv = Point3D(g.config.vars.Plane_Coordinates['axis1_start_end'],
-                              g.config.vars.Plane_Coordinates['axis2_start_end'],
-                              0)
+    def addexproutest(self, config=None):
+        start_z = config.vars.Depth_Coordinates['axis3_retract'] if config is not None else 0
+        config = config or g.config
+        self.expprv = Point3D(config.vars.Plane_Coordinates['axis1_start_end'],
+                              config.vars.Plane_Coordinates['axis2_start_end'],
+                              start_z)
 
     def addexproute(self, exp_order, layer_nr):
         """
@@ -144,18 +146,23 @@ class GLWidget(CanvasBase):
         for order in exp_order:
             shape = self.shapes[order]
             st = self.expprv
-            en, self.expprv = shape.get_start_end_points_physical()
-            en = en.to3D(shape.axis3_start_mill_depth)
-            self.expprv = self.expprv.to3D(shape.axis3_mill_depth)
+            if hasattr(shape, 'route_endpoints'):
+                start, end, retract = shape.route_endpoints
+                en, self.expprv = Point3D(*start, retract), Point3D(*end, retract)
+            else:
+                en, self.expprv = shape.get_start_end_points_physical()
+                en = en.to3D(shape.axis3_start_mill_depth)
+                self.expprv = self.expprv.to3D(shape.axis3_mill_depth)
 
             self.routearrows.append([st, en, -1])
 
             # TODO self.routetext.append(RouteText(text=("%s,%s" % (layer_nr, shape_nr+1)), startp=en))
 
-    def addexprouteen(self):
+    def addexprouteen(self, config=None):
+        config = config or g.config
         st = self.expprv
-        en = Point3D(g.config.vars.Plane_Coordinates['axis1_start_end'],
-                     g.config.vars.Plane_Coordinates['axis2_start_end'],
+        en = Point3D(config.vars.Plane_Coordinates['axis1_start_end'],
+                     config.vars.Plane_Coordinates['axis2_start_end'],
                      0)
 
         self.routearrows.append([st, en, -1])
@@ -440,9 +447,12 @@ class GLWidget(CanvasBase):
         for shape in self.shapes:
             if shape.selected and (not shape.disabled or self.showDisabledPaths) or\
                self.showPathDirections and not shape.disabled:
-                start, end = shape.get_start_end_points_physical()
-                start = scaleArrow * start.to3D(shape.axis3_start_mill_depth)
-                end = scaleArrow * end.to3D(shape.axis3_mill_depth)
+                if hasattr(shape, 'machining_binding') and getattr(shape, '_machining_view', None) is None:
+                    continue
+                arrow_shape = getattr(shape, '_machining_view', None) or shape
+                start, end = arrow_shape.get_start_end_points_physical()
+                start = scaleArrow * start.to3D(arrow_shape.axis3_start_mill_depth)
+                end = scaleArrow * end.to3D(arrow_shape.axis3_mill_depth)
                 GL.glTranslatef(start.x, -start.y, start.z)
                 GL.glCallList(shape.drawArrowsDirection[0])
                 GL.glTranslatef(-start.x, start.y, -start.z)
@@ -675,6 +685,7 @@ class GLWidget(CanvasBase):
         GL.glEnd()
 
     def makeDirArrows(self, shape):
+        shape = getattr(shape, '_machining_view', None) or shape
         (start, start_dir), (end, end_dir) = shape.get_start_end_points_physical(None, False)
 
         startArrow = GL.glGenLists(1)

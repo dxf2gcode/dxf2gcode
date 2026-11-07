@@ -50,6 +50,7 @@ class TestLayerTreeStartupConfig(unittest.TestCase):
                 values = ConfigObj(configspec=CONFIG_SPEC,
                                    interpolation=False, _inspec=True)
                 values.validate(Validator(), copy=True)
+                del values["Display"]
                 del values["General"]["expand_layers_on_load"]
                 del values["General"]["show_tool_circle"]
                 del values["Import_Parameters"]["exclude_ignore_layers"]
@@ -59,6 +60,7 @@ class TestLayerTreeStartupConfig(unittest.TestCase):
                 values.filename = str(Path(g.folder) / "config/config.cfg")
                 values.write()
                 loaded = MyConfig()
+                self.assertEqual(dict(loaded.var_dict["Display"]), dict(decimals_mm=3, decimals_in=5, decimals_angle=1, decimals_feed=1))
                 self.assertIs(loaded.vars.General.expand_layers_on_load, True)
                 self.assertIs(loaded.vars.General.show_tool_circle, True)
                 self.assertTrue(loaded.vars.General.live_update_export_route)

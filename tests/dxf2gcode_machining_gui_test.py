@@ -20,6 +20,12 @@ class TestMachiningProjectGUI(unittest.TestCase):
 
 
 def worker():
+    import traceback
+    def exception_hook(kind, value, trace):
+        traceback.print_exception(kind, value, trace)
+        sys.stderr.flush()
+        os._exit(1)
+    sys.excepthook = exception_hook
     from copy import deepcopy
     from dataclasses import replace
     from unittest.mock import patch
@@ -88,7 +94,7 @@ def worker():
         def program(path):
             return [line for line in path.read_text().splitlines() if line and not line.startswith('(')]
         assert program(output) == program(cli_output)
-        assert output.read_text().count('* SHAPE Nr:') == 2
+        assert output.read_text().count('* SHAPE Nr:') == 2, output.read_text()
         saved_diameter = window.shapes[0].tool_override.tool_diameter
         g.config.vars.Tool_Parameters['1']['diameter'] = 999
         window.TreeHandler.updateConfiguration()
@@ -104,11 +110,15 @@ def worker():
         binding = window.d2g.machining_drawing
         assert binding.project.steps[0].entries[0].id == operation_id
         assert len(binding.unassigned) == 1
+        assert binding.unassigned[0].toolpath_plan is None
         assert sum(len(layer.shapes) for layer in binding.materialize()) == 2
         assert binding.project.steps[0].entries[0].overrides['axis3_mill_depth'] == -4
         window.filename = str(path)
         assert window.load()
-        assert window.d2g.machining_drawing is None
+        assert window.d2g.machining_drawing is not binding
+        if os.environ.get('D2G_TEST_MACHINING_PANEL'):
+            from dxf2gcode_machining_panel_test import exercise_panel
+            exercise_panel(window, app, folder)
         app.processEvents()
         critical.assert_not_called()
         warning.assert_not_called()

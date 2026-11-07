@@ -46,7 +46,8 @@ class Project(ProjectModel):
                 ('lead_in_mode', 'lead_out_mode', 'overcut_enabled')})
         source['split_lines'] = project.configuration['General']['split_line_segments']
         source['aut_cut_com'] = project.configuration['General']['automatic_cutter_compensation']
-        self.parent.layerContents = Layers(self.parent.layerContents)
+        if not isinstance(self.parent.layerContents, Layers):
+            self.parent.layerContents = Layers(self.parent.layerContents)
         self.machining_drawing.source_layers = self.parent.layerContents
         self.parent.layerContents.machining_binding = self.machining_drawing
         self.machining_drawing.bind_legacy_editor()

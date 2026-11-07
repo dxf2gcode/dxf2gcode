@@ -1014,6 +1014,9 @@ class CfgSpinBox(CfgBase):
         self.spinbox.blockSignals(False)
 
 
+from dxf2gcode.presentation.qt.numeric_display import format_number, display_decimals
+
+
 class CorrectedDoubleSpinBox(QDoubleSpinBox):
     """
     Subclassed QDoubleSpinBox to get a version that works for everyone ...
@@ -1026,7 +1029,12 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
     def __init__(self, parent = None):
         QDoubleSpinBox.__init__(self, parent)
         self._original_value = None
-        self.setDecimals(4)
+        self.display_config = None
+        self.display_precision = None
+        self.number_kind = 'length'
+        self.number_units = None
+        self.saved_suffix = ''
+        QDoubleSpinBox.setDecimals(self, 323)
         self.lineEdit().textEdited.connect(self._value_edited)
         self.saved_suffix = ''
         #Let's use the locale decimal separator if it is different from the dot ('.')
@@ -1035,8 +1043,38 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
             local_decimal_separator = ''
         self.lineEdit().setValidator(QRegularExpressionValidator(QRegularExpression("-?[0-9]*[.{0}]?[0-9]*.*".format(local_decimal_separator)), self))
 
+    def setDecimals(self, places):
+        """Compatibility API for display precision, never storage precision."""
+        self.display_precision = places
+        self.update_display()
+
+    def textFromValue(self, value):
+        if self.hasFocus():
+            return repr(value)
+        places = self.display_precision if self.display_precision is not None else display_decimals(
+            self.number_units, self.number_kind, self.display_config)
+        return format_number(value, self.number_units, self.number_kind, places)
+
+    def update_display(self):
+        if hasattr(self, 'saved_suffix'):
+            self.lineEdit().setText(self.textFromValue(self.value()) + self.saved_suffix)
+
+    def focusInEvent(self, event):
+        QDoubleSpinBox.focusInEvent(self, event)
+        self.update_display()
+
+    def focusOutEvent(self, event):
+        QDoubleSpinBox.focusOutEvent(self, event)
+        self.update_display()
+
     def setSuffix(self, suffix):
         self.saved_suffix = suffix
+        if '/min' in suffix or 'IPS' in suffix:
+            self.number_kind = 'feed'
+        if 'mm' in suffix:
+            self.number_units = 'mm'
+        elif 'in' in suffix or 'IPS' in suffix:
+            self.number_units = 'in'
         QDoubleSpinBox.setSuffix(self, suffix)
 
     def setValue(self, value):
@@ -1044,6 +1082,7 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
         QDoubleSpinBox.setValue(self, value)
         self._original_value = (value if self.minimum() <= value <= self.maximum()
                                 else None)
+        self.setToolTip(str(value))
 
     def value(self):
         if self._original_value is not None:
@@ -1051,10 +1090,10 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
         return QDoubleSpinBox.value(self)
 
     def _value_edited(self, *args):
-        self._original_value = None
+        self._original_value = self.valueFromText(self.lineEdit().text())
 
     def stepBy(self, steps):
-        self._value_edited()
+        self._original_value = None
         QDoubleSpinBox.stepBy(self, steps)
 
     def valueFromText(self, text):
@@ -1086,9 +1125,14 @@ class CfgDoubleSpinBox(CfgSpinBox):
 
         self.label = QLabel(text, parent)
 
-        self.spinbox = QSpinBox(parent)
         self.spinbox = CorrectedDoubleSpinBox(parent)
         self.spinbox.setMinimumWidth(200)  # Provide better alignment with other items
+        self.spinbox.number_kind = 'angle' if unit == '°' else 'feed' if unit and ('/min' in unit or 'IPS' in unit) else 'length'
+        if unit and 'mm' in unit:
+            self.spinbox.number_units = 'mm'
+        elif unit and ('in' in unit or 'IPS' in unit):
+            self.spinbox.number_units = 'in'
+        # Explicit precision remains useful for dimensionless percentages.
         if precision is not None:
             self.spinbox.setDecimals(precision)
 
@@ -1751,6 +1795,9 @@ class CfgTableToolParameters(CfgTable):
             if self.knife_offset and self.keys[column] == 'diameter':
                 spinbox.setDecimals(4)
                 computed_value /= 2
+            spinbox.number_units = getattr(g.config, 'tool_units', 'mm')
+            spinbox.number_kind = 'integer' if self.keys[column] == 'speed' else 'length'
+            spinbox.display_precision = None
             spinbox.setValue(computed_value)
         else:
             #tool number is an integer

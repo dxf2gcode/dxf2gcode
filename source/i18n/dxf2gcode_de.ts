@@ -2749,6 +2749,30 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
         <source>Show the tool circle at the planned entry, even without a lead in. With machine compensation, the actual cutter position is approximate. This display does not change the toolpath.</source>
         <translation>Zeigt den Werkzeugkreis am geplanten Einstieg, auch ohne Einfahrt. Bei Maschinenkompensation ist die tatsächliche Fräserposition nur angenähert. Die Anzeige verändert den Werkzeugweg nicht.</translation>
     </message>
+    <message>
+        <source>Number display</source>
+        <translation>Zahlenanzeige</translation>
+    </message>
+    <message>
+        <source>Display rounding does not change stored values. Editing uses the full precision.</source>
+        <translation>Die Anzeigerundung ändert keine gespeicherten Werte. Beim Bearbeiten bleibt die volle Genauigkeit verfügbar.</translation>
+    </message>
+    <message>
+        <source>Decimal places for millimeters:</source>
+        <translation>Nachkommastellen für Millimeter:</translation>
+    </message>
+    <message>
+        <source>Decimal places for inches:</source>
+        <translation>Nachkommastellen für Zoll:</translation>
+    </message>
+    <message>
+        <source>Decimal places for angles:</source>
+        <translation>Nachkommastellen für Winkel:</translation>
+    </message>
+    <message>
+        <source>Decimal places for feed rates:</source>
+        <translation>Nachkommastellen für Vorschübe:</translation>
+    </message>
 </context>
 <context>
     <name>MyDropDownMenu</name>
@@ -4493,12 +4517,542 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
         <source>Lift to the swivel contact height when the direction change exceeds this angle. The knife never plunges below the current cut depth.</source>
         <translation>Zur Schwenk-Kontakthöhe anheben, wenn die Richtungsänderung diesen Winkel überschreitet. Das Messer taucht nie tiefer als die aktuelle Schnitttiefe ein.</translation>
     </message>
+    <message>
+        <source>Decimal places used only for GUI display; stored values retain full precision.</source>
+        <translation>Nachkommastellen nur für die GUI-Anzeige; gespeicherte Werte behalten die volle Genauigkeit.</translation>
+    </message>
 </context>
 <context>
     <name>CfgListEdit</name>
     <message>
         <source>Separate entries with '%s'.</source>
         <translation>Einträge durch '%s' trennen.</translation>
+    </message>
+</context>
+
+<context>
+    <name>MachiningPanel</name>
+    <message>
+        <source>New step</source>
+        <translation>Neuer Schritt</translation>
+    </message>
+    <message>
+        <source>From selection</source>
+        <translation>Aus Auswahl</translation>
+    </message>
+    <message>
+        <source>Edit step</source>
+        <translation>Schritt bearbeiten</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Machining</source>
+        <translation>Bearbeitung</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Bearbeitungsart</translation>
+    </message>
+    <message>
+        <source>Tool</source>
+        <translation>Werkzeug</translation>
+    </message>
+    <message>
+        <source>Source / diagnosis</source>
+        <translation>Herkunft / Diagnose</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <translation>Export</translation>
+    </message>
+    <message>
+        <source>Optimize</source>
+        <translation>Optimieren</translation>
+    </message>
+    <message>
+        <source>Select a machining operation to edit its values.</source>
+        <translation>Eine Bearbeitung zum Ändern ihrer Werte auswählen.</translation>
+    </message>
+    <message>
+        <source>Parameter</source>
+        <translation>Parameter</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Wert</translation>
+    </message>
+    <message>
+        <source>Origin</source>
+        <translation>Herkunft</translation>
+    </message>
+    <message>
+        <source>Use step default</source>
+        <translation>Schrittvorgabe verwenden</translation>
+    </message>
+    <message>
+        <source>Reverse</source>
+        <translation>Richtung umkehren</translation>
+    </message>
+    <message>
+        <source>Start point</source>
+        <translation>Startpunkt</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Nach oben</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Nach unten</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <translation>Rückgängig</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <translation>Wiederherstellen</translation>
+    </message>
+    <message>
+        <source>Undo machining action</source>
+        <translation>Bearbeitungsaktion rückgängig</translation>
+    </message>
+    <message>
+        <source>Redo machining action</source>
+        <translation>Bearbeitungsaktion wiederholen</translation>
+    </message>
+    <message>
+        <source>Move up</source>
+        <translation>Nach oben verschieben</translation>
+    </message>
+    <message>
+        <source>Move down</source>
+        <translation>Nach unten verschieben</translation>
+    </message>
+    <message>
+        <source>Contour</source>
+        <translation>Kontur</translation>
+    </message>
+    <message>
+        <source>Pocket</source>
+        <translation>Tasche</translation>
+    </message>
+    <message>
+        <source>Drilling</source>
+        <translation>Bohren</translation>
+    </message>
+    <message>
+        <source>Holding tabs</source>
+        <translation>Haltestege</translation>
+    </message>
+    <message>
+        <source>Ignored</source>
+        <translation>Ignoriert</translation>
+    </message>
+    <message>
+        <source>Custom G-code</source>
+        <translation>Freier G-Code</translation>
+    </message>
+    <message>
+        <source>Contour {0}</source>
+        <translation>Kontur {0}</translation>
+    </message>
+    <message>
+        <source>Missing or ambiguous geometry</source>
+        <translation>Geometrie fehlt oder ist mehrdeutig</translation>
+    </message>
+    <message>
+        <source>Conflicting machining settings</source>
+        <translation>Widersprüchliche Bearbeitungswerte</translation>
+    </message>
+    <message>
+        <source>Unassigned</source>
+        <translation>Nicht zugeordnet</translation>
+    </message>
+    <message>
+        <source>Action rejected: {0}</source>
+        <translation>Aktion abgelehnt: {0}</translation>
+    </message>
+    <message>
+        <source>Machining updated. Undo is available.</source>
+        <translation>Bearbeitung geändert. Rückgängig ist verfügbar.</translation>
+    </message>
+    <message>
+        <source>Active: {0} · T{1}</source>
+        <translation>Aktiv: {0} · T{1}</translation>
+    </message>
+    <message>
+        <source>Tool definition</source>
+        <translation>Werkzeugdefinition</translation>
+    </message>
+    <message>
+        <source>Project default</source>
+        <translation>Projektvorgabe</translation>
+    </message>
+    <message>
+        <source>Step default</source>
+        <translation>Schrittvorgabe</translation>
+    </message>
+    <message>
+        <source>Own value</source>
+        <translation>Eigener Wert</translation>
+    </message>
+    <message>
+        <source>Local X, Y</source>
+        <translation>Lokales X, Y</translation>
+    </message>
+    <message>
+        <source>Machining step</source>
+        <translation>Bearbeitungsschritt</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>Import profile tool T{0}</source>
+        <translation>Profilwerkzeug T{0} übernehmen</translation>
+    </message>
+    <message>
+        <source>Move existing assignments</source>
+        <translation>Bestehende Zuordnungen verschieben</translation>
+    </message>
+    <message>
+        <source>Additional machining</source>
+        <translation>Zusätzlich bearbeiten</translation>
+    </message>
+    <message>
+        <source>Assignment</source>
+        <translation>Zuordnung</translation>
+    </message>
+    <message>
+        <source>Select original contours in Entities, Layers or the canvas first.</source>
+        <translation>Zuerst Originalkonturen in Entities, Layers oder der Zeichnung auswählen.</translation>
+    </message>
+    <message>
+        <source>Select an active operation for contour {0}.</source>
+        <translation>Für Kontur {0} eine aktive Bearbeitung auswählen.</translation>
+    </message>
+    <message>
+        <source>Select one step to remove.</source>
+        <translation>Einen Schritt zum Entfernen auswählen.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Remove assignments</source>
+        <translation>Zuordnungen entfernen</translation>
+    </message>
+    <message>
+        <source>Move assignments to {0}</source>
+        <translation>Zuordnungen nach {0} verschieben</translation>
+    </message>
+    <message>
+        <source>Remove step</source>
+        <translation>Schritt entfernen</translation>
+    </message>
+    <message>
+        <source>Original contours are retained. Choose what happens to the assignments.</source>
+        <translation>Originalkonturen bleiben erhalten. Behandlung der Zuordnungen auswählen.</translation>
+    </message>
+    <message>
+        <source>Copy to step</source>
+        <translation>In Schritt kopieren</translation>
+    </message>
+    <message>
+        <source>Move to step</source>
+        <translation>In Schritt verschieben</translation>
+    </message>
+    <message>
+        <source>Target step</source>
+        <translation>Zielschritt</translation>
+    </message>
+    <message>
+        <source>Select entries from one step to reorder.</source>
+        <translation>Zum Umordnen Einträge eines Schritts auswählen.</translation>
+    </message>
+    <message>
+        <source>Edit step defaults</source>
+        <translation>Schrittvorgaben bearbeiten</translation>
+    </message>
+    <message>
+        <source>Update tool from profile</source>
+        <translation>Werkzeug aus Profil aktualisieren</translation>
+    </message>
+    <message>
+        <source>Add custom G-code</source>
+        <translation>Freien G-Code hinzufügen</translation>
+    </message>
+    <message>
+        <source>The tool is absent from the current profile. Saved values are retained.</source>
+        <translation>Das Werkzeug fehlt im aktuellen Profil. Gespeicherte Werte bleiben erhalten.</translation>
+    </message>
+    <message>
+        <source>Workpiece surface</source>
+        <translation>Werkstückoberfläche</translation>
+    </message>
+    <message>
+        <source>Depth per pass</source>
+        <translation>Zustellung je Durchgang</translation>
+    </message>
+    <message>
+        <source>Final depth</source>
+        <translation>Endtiefe</translation>
+    </message>
+    <message>
+        <source>Retract height</source>
+        <translation>Rückzugshöhe</translation>
+    </message>
+    <message>
+        <source>Safety margin</source>
+        <translation>Sicherheitsabstand</translation>
+    </message>
+    <message>
+        <source>XY feed</source>
+        <translation>XY-Vorschub</translation>
+    </message>
+    <message>
+        <source>Z feed</source>
+        <translation>Z-Vorschub</translation>
+    </message>
+    <message>
+        <source>Milling allowance</source>
+        <translation>Fräsaufmaß</translation>
+    </message>
+    <message>
+        <source>Lead in</source>
+        <translation>Anfahrt</translation>
+    </message>
+    <message>
+        <source>Lead out</source>
+        <translation>Abfahrt</translation>
+    </message>
+    <message>
+        <source>Overcut</source>
+        <translation>Überfahrt</translation>
+    </message>
+    <message>
+        <source>Lead radius</source>
+        <translation>An-/Abfahrtradius</translation>
+    </message>
+    <message>
+        <source>Lead length</source>
+        <translation>An-/Abfahrtlänge</translation>
+    </message>
+    <message>
+        <source>Overcut length</source>
+        <translation>Überfahrtlänge</translation>
+    </message>
+    <message>
+        <source>Knife swivel height</source>
+        <translation>Messerschwenkhöhe</translation>
+    </message>
+    <message>
+        <source>Knife swivel angle</source>
+        <translation>Messerschwenkwinkel</translation>
+    </message>
+    <message>
+        <source>Cutter compensation</source>
+        <translation>Werkzeugradiuskorrektur</translation>
+    </message>
+    <message>
+        <source>Holding-tab first pass</source>
+        <translation>Erster Haltestegdurchgang</translation>
+    </message>
+    <message>
+        <source>Spindle speed</source>
+        <translation>Spindeldrehzahl</translation>
+    </message>
+    <message>
+        <source>Start radius</source>
+        <translation>Startradius</translation>
+    </message>
+    <message>
+        <source>G-code</source>
+        <translation>G-Code</translation>
+    </message>
+    <message>
+        <source>Tool diameter</source>
+        <translation>Werkzeugdurchmesser</translation>
+    </message>
+    <message>
+        <source>Update step defaults from profile</source>
+        <translation>Schrittvorgaben aus Profil aktualisieren</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Aus</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation>Ein</translation>
+    </message>
+    <message>
+        <source>Straight</source>
+        <translation>Gerade</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation>Radius</translation>
+    </message>
+    <message>
+        <source>Start move</source>
+        <translation>Startbewegung</translation>
+    </message>
+    <message>
+        <source>Literal actions require a machining step.</source>
+        <translation>Freier G-Code benötigt einen Bearbeitungsschritt.</translation>
+    </message>
+    <message>
+        <source>The original contour is missing or ambiguous.</source>
+        <translation>Die Originalkontur fehlt oder ist mehrdeutig.</translation>
+    </message>
+    <message>
+        <source>Holding-tab and ignored assignments must retain their kind.</source>
+        <translation>Haltesteg- und Ignore-Zuordnungen müssen ihre Art behalten.</translation>
+    </message>
+    <message>
+        <source>Drilling requires a point or circle and G40.</source>
+        <translation>Bohren benötigt einen Punkt oder Kreis und G40.</translation>
+    </message>
+    <message>
+        <source>A drilling point cannot be used as a milling contour.</source>
+        <translation>Ein Bohrpunkt kann nicht als Fräskontur verwendet werden.</translation>
+    </message>
+    <message>
+        <source>Pocketing requires a closed contour, milling mode and internal compensation.</source>
+        <translation>Taschenfräsen benötigt eine geschlossene Kontur, den Fräsmodus und interne Kompensation.</translation>
+    </message>
+    <message>
+        <source>The geometry selection is invalid or belongs to another project.</source>
+        <translation>Die Geometrieauswahl ist ungültig oder gehört zu einem anderen Projekt.</translation>
+    </message>
+    <message>
+        <source>The machining selection is no longer valid.</source>
+        <translation>Die Bearbeitungsauswahl ist nicht mehr gültig.</translation>
+    </message>
+    <message>
+        <source>Select an active operation before editing shared geometry.</source>
+        <translation>Vor dem Bearbeiten gemeinsam genutzter Geometrie eine aktive Bearbeitung auswählen.</translation>
+    </message>
+    <message>
+        <source>Collapse all</source>
+        <translation>Alles einklappen</translation>
+    </message>
+    <message>
+        <source>Expand all</source>
+        <translation>Alles ausklappen</translation>
+    </message>
+    <message>
+        <source>Create…</source>
+        <translation>Erstellen …</translation>
+    </message>
+    <message>
+        <source>Create machining step…</source>
+        <translation>Bearbeitungsschritt erstellen …</translation>
+    </message>
+    <message>
+        <source>Do not use selection — create empty step</source>
+        <translation>Auswahl nicht verwenden – leeren Schritt erstellen</translation>
+    </message>
+    <message>
+        <source>No linked machining steps</source>
+        <translation>Keine verknüpften Bearbeitungsschritte</translation>
+    </message>
+    <message>
+        <source>Related machining steps</source>
+        <translation>Zugehörige Bearbeitungsschritte</translation>
+    </message>
+    <message>
+        <source>{0} contours selected</source>
+        <translation>{0} Konturen ausgewählt</translation>
+    </message>
+</context>
+<context>
+    <name>MachiningParameters</name>
+    <message>
+        <source>Step tool</source>
+        <translation>Schrittwerkzeug</translation>
+    </message>
+    <message>
+        <source>Use step default</source>
+        <translation>Schrittvorgabe verwenden</translation>
+    </message>
+    <message>
+        <source>Step defaults: {0}</source>
+        <translation>Schrittvorgaben: {0}</translation>
+    </message>
+    <message>
+        <source>Step defaults</source>
+        <translation>Schrittvorgaben</translation>
+    </message>
+    <message>
+        <source>Tool from step {0}</source>
+        <translation>Werkzeug aus Schritt {0}</translation>
+    </message>
+    <message>
+        <source>Step {0}</source>
+        <translation>Schritt {0}</translation>
+    </message>
+    <message>
+        <source>Tool T{0}</source>
+        <translation>Werkzeug T{0}</translation>
+    </message>
+    <message>
+        <source>Project default</source>
+        <translation>Projektvorgabe</translation>
+    </message>
+    <message>
+        <source>Own value: {0}</source>
+        <translation>Eigener Wert: {0}</translation>
+    </message>
+    <message>
+        <source>Inherited from {0}: {1}</source>
+        <translation>Geerbt von {0}: {1}</translation>
+    </message>
+    <message>
+        <source>Own value</source>
+        <translation>Eigener Wert</translation>
+    </message>
+    <message>
+        <source>Inherited value</source>
+        <translation>Geerbter Wert</translation>
+    </message>
+    <message>
+        <source>Enter a finite number.</source>
+        <translation>Bitte eine endliche Zahl eingeben.</translation>
+    </message>
+    <message>
+        <source>Edit value…</source>
+        <translation>Wert bearbeiten …</translation>
+    </message>
+    <message>
+        <source>Machining tool</source>
+        <translation>Bearbeitungswerkzeug</translation>
+    </message>
+    <message>
+        <source>Tool</source>
+        <translation>Werkzeug</translation>
+    </message>
+</context>
+<context>
+    <name>GeometryPanel</name>
+    <message>
+        <source>Entities</source>
+        <translation>Entities</translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation>Geometrie</translation>
+    </message>
+    <message>
+        <source>Layers</source>
+        <translation>Layer</translation>
     </message>
 </context>
 </TS>

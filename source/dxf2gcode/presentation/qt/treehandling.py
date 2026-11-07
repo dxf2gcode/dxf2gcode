@@ -41,6 +41,8 @@ from __future__ import absolute_import
 
 from math import degrees
 from dxf2gcode.presentation.qt.toolpath_labels import lead_mode_labels
+from dxf2gcode.presentation.qt.numeric_display import format_number
+
 import logging
 
 import dxf2gcode.bootstrap.runtime_state as g
@@ -154,6 +156,13 @@ class TreeHandler(QWidget):
     Class to handle both QTreeView :  entitiesTreeView (for blocks, and the tree of blocks) and layersShapesTreeView (for layers and shapes)
     """
 
+    def machining_panel(self):
+        panel = getattr(getattr(g, 'window', None), 'machining_panel', None)
+        if (panel is not None and panel.binding is not None and
+                panel.binding.source_layers is getattr(self, 'layers_list', None)):
+            return panel
+        return None
+
     def __init__(self, ui):
         """
         Standard method to initialize the class
@@ -265,6 +274,9 @@ class TreeHandler(QWidget):
         # Right click menu
         self.ui.layersShapesTreeView.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.ui.layersShapesTreeView.customContextMenuRequested.connect(self.displayContextMenu)
+        self.ui.entitiesTreeView.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.ui.entitiesTreeView.customContextMenuRequested.connect(
+            lambda position: self.displayContextMenu(position, self.ui.entitiesTreeView))
 
         # Not used for now, so hide them
         self.ui.startAtXLabel.hide()
@@ -285,6 +297,26 @@ class TreeHandler(QWidget):
         """
         return str(QtCore.QCoreApplication.translate('TreeHandler',
                                                            string_to_translate))
+
+    def refresh_numeric_display(self):
+        model = self.ui.entitiesTreeView.model()
+        if model is None:
+            return
+        blocked = model.blockSignals(True)
+        try:
+            def visit(parent):
+                for row in range(parent.rowCount()):
+                    item = parent.child(row, 0)
+                    element = item.data(ENTITY_OBJECT)
+                    if isinstance(element, EntityContent):
+                        for column, text in ((4, 'X: %s  Y: %s' % (format_number(element.p0.x), format_number(element.p0.y))),
+                                             (5, format_number(element.sca)),
+                                             (6, format_number(degrees(element.rot), kind='angle'))):
+                            parent.child(row, column).setText(text)
+                    visit(item)
+            visit(model.invisibleRootItem())
+        finally:
+            model.blockSignals(blocked)
 
     def updateConfiguration(self):
         """
@@ -405,7 +437,30 @@ class TreeHandler(QWidget):
         self.updateToolParameters()
 
 
-    def displayContextMenu(self, position):
+    def displayContextMenu(self, position, view=None):
+        """Use the clicked row as context; popup positions belong to the viewport."""
+        view = view or self.ui.layersShapesTreeView
+        panel = self.machining_panel()
+        if panel is not None:
+            index = view.indexAt(position)
+            shapes = []
+            if index.isValid():
+                index = index.sibling(index.row(), 0)
+                def collect(item_index):
+                    value = item_index.data(SHAPE_OBJECT)
+                    if value:
+                        shapes.append(value.shapeobj)
+                    for row in range(view.model().rowCount(item_index)):
+                        collect(view.model().index(row, 0, item_index))
+                collect(index)
+                if shapes and not all(shape.isSelected() for shape in shapes):
+                    view.selectionModel().clearSelection()
+                    view.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select |
+                                                  QItemSelectionModel.SelectionFlag.Rows)
+                view.selectionModel().setCurrentIndex(index, QItemSelectionModel.SelectionFlag.NoUpdate)
+                shapes = [shape for shape in panel.window.shapes if shape.isSelected()]
+            panel.geometry_menu(shapes, view.viewport().mapToGlobal(position))
+            return
         """
         Function used to display a right click context menu
         @param position: position of the cursor within the treeView widget
@@ -636,9 +691,9 @@ class TreeHandler(QWidget):
             item_col_1 = QStandardItem(element.name)
             item_col_2 = QStandardItem(str(element.nr))
             item_col_3 = QStandardItem(self.tr("Entity"))
-            item_col_4 = QStandardItem(str(element.p0))
-            item_col_5 = QStandardItem(str(element.sca))
-            item_col_6 = QStandardItem(str(round(degrees(element.rot), 3)))  # convert the angle into degrees with 3 digit after the decimal point
+            item_col_4 = QStandardItem('X: %s  Y: %s' % (format_number(element.p0.x), format_number(element.p0.y)))
+            item_col_5 = QStandardItem(format_number(element.sca))
+            item_col_6 = QStandardItem(format_number(degrees(element.rot), kind='angle'))  # convert the angle into degrees with 3 digit after the decimal point
             elements_model.appendRow([item_col_0, item_col_1, item_col_2, item_col_3, item_col_4, item_col_5, item_col_6])
 
             for sub_element in element.children:
@@ -703,6 +758,8 @@ class TreeHandler(QWidget):
         options
         """
 
+        if self.machining_panel() is not None:
+            return
         i = self.layer_item_model.rowCount(QtCore.QModelIndex())
         while i > 0:
             i -= 1
@@ -823,6 +880,9 @@ class TreeHandler(QWidget):
             self.displayToolParametersForSelection(layers, shapes)
         # else: nothing is selected - clearToolsParameters() above already
         # cleared the fields, so no values are shown.
+        panel = self.machining_panel()
+        if panel is not None:
+            panel.geometry_selected()
 
     def updateShapeEnabling(self, shape, enable):
         """
@@ -1764,6 +1824,9 @@ class TreeHandler(QWidget):
 
         if g.window.canvas_scene:
             g.window.canvas_scene.update()
+        panel = self.machining_panel()
+        if panel is not None:
+            panel.geometry_selected()
 
     def updateSelection(self, treeview):
         """
@@ -1815,6 +1878,10 @@ class TreeHandler(QWidget):
         This function restore defaults for tools parameters widgets
         (disabled, default color, ...)
         """
+        panel = self.machining_panel()
+        if panel is not None:
+            panel.show_parameters()
+            return
         self._ensure_knife_swivel_widgets()
         knife = g.config.machine_type == 'drag_knife'
         self.ui.knifeSwivelLabel.setVisible(knife)
@@ -2022,6 +2089,10 @@ class TreeHandler(QWidget):
         back to the value of a single shape while several shapes are
         selected (that would hide the mixed state).
         """
+        panel = self.machining_panel()
+        if panel is not None:
+            panel.show_parameters()
+            return
         layers, shapes = self._selectedShapesAndLayers()
         if shapes or layers:
             self.displayToolParametersForSelection(layers, shapes)
@@ -2193,7 +2264,7 @@ class TreeHandler(QWidget):
         """
         palette = QPalette(self.palette)
         if state == sps.SAME:
-            widget.setText(str(round(value, 4)))
+            widget.setText(format_number(value, kind='feed' if widget.objectName().startswith('g1Feed') else 'length'))
             widget._parameter_display_text = widget.text()
             if hasattr(widget, 'setModified'):
                 widget.setModified(False)
@@ -2268,7 +2339,7 @@ class TreeHandler(QWidget):
                 widget.setText("\u2014")
             elif params is not None:
                 try:
-                    widget.setText(str(round(float(params[key]), digits)))
+                    widget.setText(format_number(float(params[key]), kind='integer' if key == 'speed' else 'length'))
                 except Exception:
                     widget.setText("")
             widget.setPalette(palette)
@@ -2304,6 +2375,10 @@ class TreeHandler(QWidget):
         @param layers: layers of the selection (layer/tool parameters)
         @param shapes: selected shapes (shape parameters)
         """
+        panel = self.machining_panel()
+        if panel is not None:
+            panel.show_parameters()
+            return
         self.display_tool_layers = list(layers)
         self.display_tool_shapes = list(shapes)
         self.display_tool_layer = (self.display_tool_layers[0]
@@ -2458,7 +2533,7 @@ class TreeHandler(QWidget):
         @param previous_value: the value of the previously selected item
         @param value: the value (parameter) of the selected item
         """
-        widget.setText(str(round(value, 4)))  # Round the value with at most 4 digits
+        widget.setText(format_number(value, kind='feed' if widget.objectName().startswith('g1Feed') else 'length'))  # Round the value with at most 4 digits
 
         if previous_value and value != previous_value:
             # Several different tools parameter are currently selected (eg: mill deph = -3 for the first selected item and -2 for the second) => grey color for the text
@@ -2519,6 +2594,8 @@ class TreeHandler(QWidget):
         @param item_index: the item on which the keyPress event occurred
         """
 
+        if self.machining_panel() is not None:
+            return
         # Enable/disable checkbox
         if event.key() == QtCore.Qt.Key.Key_Space:
             for layer in self.layers_list:

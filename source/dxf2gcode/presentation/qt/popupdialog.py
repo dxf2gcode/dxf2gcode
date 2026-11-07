@@ -37,10 +37,14 @@ from dxf2gcode.presentation.qt.qt_compat import QtCore
 logger = logging.getLogger("Gui.PopUpDialog")
 
 
+from dxf2gcode.presentation.qt.numeric_display import set_number, format_number
+from numbers import Real
+
+
 class PopUpDialog(QDialog):
 
     def __init__(self, title="Test", label='Value1', value=1.0, wtype="lineEdit", haveAuto=False,
-                 decimals=None, snap=None):
+                 decimals=None, snap=None, number_kind='length'):
         super(PopUpDialog, self).__init__()
 
         logger.debug(title)
@@ -53,6 +57,7 @@ class PopUpDialog(QDialog):
         self.label = label
         self.value = value
         self.decimals = decimals
+        self.number_kind = number_kind
         self.snap = snap
 
         self.result = None
@@ -95,6 +100,8 @@ class PopUpDialog(QDialog):
                 self.lineElement.append(QLineEdit(text))
                 self.lineElement[-1]._original_popup_text = text
                 self.lineElement[-1]._original_popup_value = self.value[i]
+                if isinstance(self.value[i], Real) and not isinstance(self.value[i], bool):
+                    set_number(self.lineElement[-1], self.value[i], kind=self.number_kind, decimals=self.decimals)
                 grid1.addWidget(self.lineElement[-1], i, 1)
             elif self.wtype[i]=="checkBox":
                 self.lineElement.append(QCheckBox())
@@ -151,10 +158,7 @@ class PopUpDialog(QDialog):
         self.exec()
 
     def _display_value(self, value):
-        if self.decimals is None:
-            return str(value)
-        text = format(float(value), '.%df' % self.decimals).rstrip('0').rstrip('.')
-        return '0' if text == '-0' else text
+        return format_number(value, kind=self.number_kind, decimals=self.decimals)
 
     def cbAuto(self):
         """
@@ -171,7 +175,17 @@ class PopUpDialog(QDialog):
         values = []
         for lineElement in self.lineElement:
             if isinstance(lineElement,QLineEdit):
-                if (self.decimals is not None and not lineElement.isModified() and
+                numeric = getattr(lineElement, '_numeric_display', None)
+                if numeric is not None:
+                    text = lineElement.text()
+                    if numeric.edited_text is not None:
+                        values.append(numeric.edited_text)
+                    elif text not in (str(numeric.value), format_number(numeric.value, numeric.units,
+                                                                       numeric.kind, numeric.decimals)):
+                        values.append(text)
+                    else:
+                        values.append(numeric.value)
+                elif (self.decimals is not None and not lineElement.isModified() and
                         lineElement.text() == lineElement._original_popup_text):
                     values.append(lineElement._original_popup_value)
                 else:

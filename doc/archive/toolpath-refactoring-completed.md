@@ -13,6 +13,321 @@ Insbesondere liegen die Vollsuite-Ergebnisse mit 775 Tests vor der späteren
 Darstellungskorrektur; diese wurde anschließend mit jeweils 21 gezielten
 Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
 
+## R3/R1b: Arbeiten auf Feature-Zweig isoliert (07.11.2026)
+
+Auf Nutzerauftrag wurde `maschining-project` bei `5415018`
+(`feat(core): introduce project-owned machining operations`) angelegt und
+als aktiver Zweig ausgecheckt. Anschließend wurde ausschließlich der lokale
+`develop`-Zeiger auf dessen Vorgänger `4346709` gesetzt. Dieser entspricht dem
+live per `ls-remote` geprüften GitHub-Stand. Es war kein Umschreiben eines
+veröffentlichten Commits und kein Remote-Push erforderlich.
+
+Alle 53 zuvor geänderten/unversionierten Pfade blieben erhalten; vor/nach der
+Trennung stimmen Statusliste und SHA256 des vollständigen getrackten Diffs
+überein. `develop...origin/develop` ist `0/0`. Der aktuelle Arbeitsstand bleibt
+uncommittet auf dem aktiven Feature-Zweig; dieser ist bislang nur lokal.
+Plan und Abschlussnotiz halten den zukünftigen Arbeitszweig fest. Keine
+Quellcodeänderung, deshalb kein Testlauf oder Build für die Branch-Trennung.
+
+## R3: Nullpunkt ausschließlich im Canvas-Menü (07.11.2026)
+
+D31 klärt den Nutzerbegriff: Gemeint ist der Werkstücknullpunkt. Der
+missverständliche „Startpunkt“-Eintrag für den Bearbeitungsstart einer
+Kontur ist aus dem Kontextmenü des Bearbeitungsbaums entfernt.
+„Werkstücknullpunkt hierher …“ bleibt ausschließlich im Canvas-Menü und
+ist bei geladener Zeichnung mit und ohne Konturauswahl verfügbar. Die
+vorhandenen Nullpunkt-/Fangfunktionen bleiben bestehen. Konturstarts
+werden dadurch nicht verändert.
+
+**Nachweis:** je **3 gezielte Tests unter Qt5 und Qt6** bestanden
+(Panel und Nullpunkt-Workflow). Nach zusätzlicher expliziter Assertion
+für vorhandene Auswahl den **Nullpunkttest je Bindung** erneut bestanden.
+Baummenü ohne Startpunkt, Canvas mit/ohne Auswahl, Dialog/Abbruch,
+mm/inch und unveränderte Konturstarts sind abgedeckt. Bestehende übersetzte
+Nullpunkt-Texte werden weiterverwendet. Strikter Dokumentationsbuild
+und Diff-Prüfung ohne Fehler. Kein Commit/Push; P8 bleibt Nutzerabnahme.
+
+## R3: Bearbeitungs-Kontextaktionen wiederhergestellt (07.11.2026)
+
+D30 ist nach ausdrücklicher Nutzerentscheidung umgesetzt: Kontur,
+Taschenfräsen, Bohren und G40/G41/G42 stehen im Bearbeitungsbaum und im
+Canvas wieder bereit. Die Aktionen ändern ausgewählte Bearbeitungszuordnungen.
+Bei Artwechsel entstehen neue Schritte unmittelbar nach dem jeweiligen
+Quellschritt, mit dessen Werkzeugdefinition und Vorgaben. Arbeitsgang- und
+Geometrie-IDs, eigene Werte, Start und Richtung bleiben erhalten. Andere
+Bearbeitungen derselben Originalkontur bleiben unverändert. Mehrere
+Quellschritte/Werkzeuge bleiben getrennt. Rückgängig stellt die gesamte Aktion
+wieder her; Wiederherstellen erhält auch neue Schritt-IDs.
+
+Bohren setzt bewusst G40. Kompensationswahl auf einer Bohrkreis-Zuordnung
+kehrt zur Konturbearbeitung zurück. Ungültige Geometrie-/Maschinenkombinationen
+werden ohne Teiländerungen abgelehnt. Mehrdeutige Canvas-Auswahl ohne aktive
+Bearbeitung deaktiviert die Aktionen, statt willkürlich eine Referenz zu wählen.
+Die fachlichen Konfliktregeln bleiben erhalten; keine Original-Shape-Mutation
+über die alten Signalpfade.
+
+**Nachweis:** je **43 gezielte Qt5-/Qt6-Tests** bestanden (Befehle, echte
+Baum-/Canvas-Menüaktionen, GUI-/CLI-Projektweg, MainWindow und Modusregeln).
+Zusätzlich je **3 betroffene Tests** mit Assertions für aktive Taschenvorschau
+und materialisierte Bohr-/Konturzustände bestanden. Abgedeckt sind stabile
+IDs, Quellvorgaben, getrennte Werkzeuge, Einzelzuordnung einer mehrfach
+bearbeiteten Kontur, atomarer Abbruch und Undo/Redo. Sieben vorhandene
+Menütexte werden wiederverwendet und in DE/FR/RU gegen fertige TS-Übersetzungen
+und geladene QM-Dateien geprüft. Strikter Dokumentationsbuild und Diff-Prüfung
+ohne Fehler. Keine neue Vollsuite-, Paket-, Debian- oder Maschinenabnahme;
+kein Commit/Push. Die Sicht-/Bedienprüfung bleibt Teil von P8.
+
+[Anleitung](../../docs/user-guide/machining-steps.md),
+[Entscheidung und Nutzerprüfung](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check).
+
+## R3: Vorschub-/Winkelanzeige präzisiert (07.11.2026)
+
+Die spätere Nutzerkorrektur zu D28 ersetzt den Vorschub-/Winkelstandard des
+folgenden Nachweises: Längen bleiben bei mm 3 / inch 5 Nachkommastellen;
+**Vorschübe und Winkel erhalten jeweils Standard 1**, unabhängig von mm/inch.
+Beide sind unter Zahlenanzeige getrennt von 0–12 konfigurierbar. Schema 9.21
+ergänzt `Display.decimals_feed`; gespeicherte individuelle Anzeigeeinstellungen
+bleiben erhalten. Ein bereits gespeicherter Winkelwert 3 wird daher nicht
+ungefragt überschrieben. Formular und Konfigurationsfelder verwenden die
+getrennten Einstellungen ohne Änderung der Eingabe-/Speichergenauigkeit.
+
+**Nachweis:** je **20 gezielte Tests unter Qt5 und Qt6** bestanden
+(Anzeige, Konfigurationsfelder, Eingabe-/Exportpräzision, Altprofile und Panel).
+Vorschub-/Winkelstandard, unabhängige Änderung, beide Längeneinheiten und
+vollständige Werte bleiben abgesichert. Neuer Config-Text DE/FR/RU übersetzt,
+QM-Dateien regeneriert und geladene Übersetzungen geprüft. Strikter
+Dokumentationsbuild und Diff-Prüfung ohne Fehler. Kein Commit/Push.
+
+<a id="r3-numeric-layout"></a>
+
+## R3: Anzeigepräzision und skalierende Formularbreiten (07.11.2026)
+
+Nutzerkorrektur D28/D29 ist umgesetzt. Zahlenfelder zeigen standardmäßig
+3 Nachkommastellen für mm und 5 für inch. Vorschübe folgen der Einheit;
+Winkel verwenden eine eigene Vorgabe mit Standard 3. Ganzzahlige
+Werkzeugnummern/Drehzahlen bleiben ganzzahlig. Unter Konfiguration → Allgemeine
+Einstellungen → Zahlenanzeige sind die drei Werte von 0 bis 12 einstellbar.
+Konfigurationsversion 9.20 übernimmt alte unterstützte Profile mit 3/5/3.
+
+Die gemeinsame Formatierung gilt für Bearbeitungsfelder, Werkzeugwerte,
+Konfiguration, numerische Popups und numerische Entities-Einträge. Beim
+Bearbeiten wird der vollständige Float-Wert sichtbar. Unveränderte Felder
+schreiben keinen gerundeten Anzeigetext zurück. Die bisherigen Spinbox-
+Begrenzungen betreffen nun nur die Anzeige; zusätzliche Eingabestellen und
+Schritte verwenden die vollständigen Werte. Auch der Startpunktdialog nutzt
+jetzt die gemeinsame Eingabe statt `%g` mit verkürzten Rückgabewerten.
+Anzeigeeinstellungen verändern weder Projektwerte noch Exportpräzision.
+
+Beschriftungen, Einheiten und Wertfelder beider Parametergruppen skalieren
+über gemeinsame Spaltengewichte. Die Startbreite links ergibt sich aus den
+jeweils breitesten Inhalten. Beschriftungen umbrechen bei Bedarf, Einheiten
+sind gleich ausgerichtet, die Symbolspalte bleibt 32 Pixel breit. Das gesamte
+Formular wird beim Verkleinern nicht mehr seitlich aus dem Sichtbereich
+hinausgeschoben.
+
+**Nachweis:** je **47 gezielte Tests unter PyQt5 und PyQt6** bestanden.
+Nach abschließender Einheiten-/Startbreitenanpassung die **2 Paneltests je
+Bindung** erneut bestanden. Enthalten sind volle zusätzliche Eingabestellen,
+unveränderte Übernahme, kleine Werte unterhalb der Anzeigeauflösung,
+mm/inch/Winkel, Punkt/Komma, Konfigurations-/Projekt-/Export-Roundtrip,
+3/5/3-Migration für unterstützte Altprofile, Anzeigeänderung ohne
+Projektmutation sowie breites/schmales Formular mit bündigen Spalten und
+sichtbaren Symbolen. **6 neue Texte je DE/FR/RU-Katalog**, QM-Dateien neu
+kompiliert und neue Übersetzungen gegen geladene Kataloge geprüft. Native
+Windows-Qt-Ansichten in mm/inch und mit 620/340 Pixel Seitenleistenbreite
+verdeckt gerendert und visuell kontrolliert. Strikter Dokumentationsbuild
+und Diff-Prüfung ohne Fehler.
+
+[Bedienung](../../docs/user-guide/machining-steps.md),
+[technische Notizen](../documentation-notes/gui-numeric-display.md).
+Die [Nutzerprüfung](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check)
+auf realem Monitor/Skalierung bleibt P8. Kein Commit, Push, Release oder
+zusätzlicher Vollsuite-/Paket-/Debian-/Maschinenlauf.
+
+<a id="r3-ui"></a>
+
+## R3-UI: Geometrieansicht und Bedienkorrektur (07.11.2026)
+
+Nach ausdrücklicher Nutzerfreigabe sind D23–D27 umgesetzt. Die zwei Original-
+Auswahlbäume liegen unverändert in den einklappbaren, vertikal verstellbaren
+Gruppen Entities und Layers im Tab Geometrie. Bearbeitung ist der zweite Tab.
+Die ursprünglichen Layers-Sortierpfeile entfallen aus der Originalansicht.
+
+R3-MENU öffnet in beiden Originalbäumen zunächst ein Kontextmenü an der
+Viewport-Klickposition. Verknüpfte Schritte sind in Bearbeitungsreihenfolge
+anspringbar. Erst die Erstellen-Aktion öffnet den Dialog nahe dem Auslöser.
+Ohne Auswahl entsteht ein leerer Schritt; mit Auswahl ist Verschieben
+vorbelegt, Kopieren und „Auswahl nicht verwenden“ sind Alternativen.
+Navigation und Abbruch verändern weder Projekt noch Befehlsverlauf.
+
+Die Werkzeugleiste oben gruppiert Erstellen, Umordnen, Rückgängig/
+Wiederherstellen und Baumansicht. Ein-/Ausklappen steht rechts; ohne mögliche
+Aktion sind die betreffenden Knöpfe grau. Bearbeiten (F2), Entfernen (Delete),
+Richtung und Startpunkt liegen im Baumkontextmenü. Die unteren Buttonreihen
+sind entfernt. Der Baum hat drei Spalten: Bezeichnung, Export und Optimierung;
+Schrittzeilen nennen Name, Art und Werkzeug, Tooltips Herkunft und Diagnose.
+
+Bearbeitungswerkzeug und Konturparameter verwenden bündige Spalten für
+Bezeichnung, Einheit, Wert und ein einziges Herkunftsmenü. Kette/Stift zeigen
+Vererbung/eigenen Wert; das Menü bietet Bearbeiten und Schrittvorgabe.
+Die Anzeige verwendet zehn signifikante Stellen; ein unverändertes Feld
+behält den vollständigen gespeicherten Wert. Eine im neuen Checkbox-Test
+gefundene native Qt5-Zugriffsverletzung ist behoben: Der Baum wird erst nach
+Abschluss des Checkbox-Ereignisses erneuert.
+
+**Nachweis:** je **38 gezielte Tests unter PyQt5 und PyQt6** bestanden
+(Panel, GUI-/CLI-Projektweg, Befehle, MainWindow, Übersetzungen und
+Architekturgrenzen). Nach der abschließenden Werkzeugleistenanordnung die
+**2 Paneltests je Bindung** erneut geprüft. Abgedeckt sind ganze Layer,
+beide Rechtsklick-Ansichten, Popup-Position, bestehende Mehrfachverknüpfungen,
+Navigation, Verschieben/Kopieren/Leer/Abbruch, Gruppen-Einklappen,
+Export-/Optimierungscheckboxen, Undo/Redo und Erhalt voller Zahlengenauigkeit.
+Native Windows-Qt-Ansichten verdeckt gerendert und visuell kontrolliert.
+**14 neue Texte je DE/FR/RU-Katalog**, QM-Dateien regeneriert und alle drei
+GUI-Sprachkontexte gegen geladene Kataloge geprüft. Strikter Dokumentations-
+build und Diff-Prüfung ohne Fehler.
+
+Die [konkreten Aufgaben für P8](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check)
+bleiben offen: Nutzerablauf, Bildschirm-/Skalierungseindruck, Referenzprojekte
+und Wiederladen. Keine erneute Vollsuite-, Paket-, Debian-, GPU- oder reale
+Maschinenabnahme. Kein Commit, Push oder Release in diesem Auftrag.
+
+<a id="r3-parameter-form-correction"></a>
+
+## R3: vertraute Parameterfelder und Herkunftssymbole (07.11.2026)
+
+Auf Nutzerkorrektur D22 sind die vorhandenen Bereiche für Werkzeug und
+Konturparameter aus Layers in Bearbeitung verschoben und direkt mit dem
+Bearbeitungsmodell verbunden. Die zunächst eingeführte Parametertabelle ist
+entfernt. Die bisherigen Eingabefelder bleiben erhalten; zuvor reine
+Werkzeug-Wertanzeigen für Drehzahl und Lead-Abmessungen sind an gleicher
+Position editierbar, damit eigene Werte weiter bedienbar sind.
+
+Bei Schrittauswahl bearbeiten die Felder Schrittvorgaben, bei aktiver
+Bearbeitungskontur deren Werte. Werkzeugwahl sowie Rückzugs-/Sicherheitshöhe
+bleiben schrittbezogen. Alte Schreibsignale auf Original-Layer/Shapes sind
+abgeklemmt; Änderungen laufen über dieselben atomaren Modellbefehle und Undo.
+Entities/Layers enthalten diese Parameterbereiche nicht mehr.
+
+Kettenglied/Stift als skalierte monochrome Vektorpfade kennzeichnen geerbte
+und eigene Werte. Tooltips nennen Herkunft und wirksamen Wert. Ein separater
+Rücksetzpfeil entfernt einen eigenen Konturwert und aktiviert die Vererbung.
+Herkunft hängt nicht von Wertgleichheit oder Farbe ab. Symbole und Aktionen
+besitzen zugängliche Namen, Tooltips sind auch per Symbolaktivierung erreichbar.
+Ohne eindeutigen Bearbeitungskontext sind die Felder gezielt deaktiviert.
+
+**Nachweis:** jeweils **38 fokussierte Tests unter PyQt5 und PyQt6** bestanden
+(Panel, echter GUI-Workflow, Modellbefehle, MainWindow, Übersetzungs- und
+Architekturgrenzen). Nach abschließender Einheitenkorrektur die **3 betroffenen
+Panel-/Einheitentests je Bindung** erneut bestanden. Geprüft sind echte
+Tastatureingabe, eigener/geerbter Wert mit Rücksetzen, unverändertes Feld ohne
+neuen History-Eintrag, Undo/Redo, Schrittvorgaben ohne Überschreiben eigener
+Konturwerte, Werkzeugwahl ohne Original-Layer-Änderung, ungültige Zahlen ohne
+Mutation, korrekte mm/in-Anzeigen sowie Export-Roundtrip. Das Formular wurde
+zusätzlich mit nativer Windows-Qt-Darstellung verdeckt gerendert und visuell
+kontrolliert. Das ersetzt keine gemeinsame Nutzerabnahme P8.
+
+**13 zusätzliche Texte je DE/FR/RU-Katalog** übersetzt, QM-Dateien regeneriert
+und beide Sprachkontexte gegen geladene Qt-Kataloge geprüft. Strikter
+Dokumentationsbuild und Diff-Prüfung gehören zum Abschluss. Kein Commit/Push,
+keine Vollsuite-, Paket-, Debian- oder Maschinenabnahme in diesem Folgeauftrag.
+
+[Anleitung](../../docs/user-guide/machining-steps.md),
+[Modellnotizen](../documentation-notes/machining-project-format.md).
+
+<a id="r3-r1b-p4-p6"></a>
+
+## R3/R1b P4–P6: Bearbeitungstab, Befehle und Ausgabe (07.11.2026)
+
+Vor Beginn wurde der geprüfte P1–P3-Stand als **`5415018`** lokal committet.
+Der verpflichtende Fast-Hook bestand mit **277 Tests**. Für diesen Auftrag
+wurde kein Push oder Release ausgelöst.
+
+**P4:** Dritter Tab „Bearbeitung“ mit benannten Schritten, genau einer Art
+und Werkzeugdefinition je Schritt, Original-/Bearbeitungsauswahl und aktivem
+Editierkontext umgesetzt. Originalkonturen werden einmal gezeichnet; alle
+Verknüpfungen sind auffindbar. Parameter zeigen ihre Herkunft und können
+bewusst wieder geerbt werden. Richtung/Start ändern nur die Bearbeitung.
+Schritte anlegen, umbenennen, Art/Werkzeug ändern und ganze Layer über die
+Originalauswahl zuordnen ist möglich. Bekannte Planungsdiagnosen erscheinen
+bei der aktiven Bearbeitung. Neue/unzugeordnete Konturen haben keine
+willkürliche Bearbeitungsvorschau.
+
+**Zusätzliche Nutzerentscheidung D20:** Exportcheckboxen nur in Bearbeitung;
+Entities/Layers behalten Originalstruktur und Auswahl. Die Zeichnungs-
+Aktivdarstellung berücksichtigt, ob mindestens eine verknüpfte Bearbeitung
+aktiviert ist. Alte Parameterfelder sind dort nicht mehr editierbar.
+
+**P5:** Reine `MachiningCommands` mit Transaktionen und History implementiert.
+Drag-and-drop mit Einfügemarkierung, Ctrl-Kopieren, Menüwege, Auf-/Ab-Sortieren,
+Zuordnung, Entfernen sowie Werkzeug-/Schrittvorgabenübernahme benutzen dieselbe
+Befehlsschicht. Eigene Werte bleiben erhalten, Zielwerte werden geerbt.
+Ungültige Mehrfachaktionen melden die betroffenen Konturen und verändern
+weder Daten noch History. Verschieben erhält IDs, Kopieren erzeugt neue
+Bearbeitungs-IDs, Redo stellt dieselben IDs wieder her. Beim Entfernen eines
+gefüllten Schritts wird sein Inhalt ausdrücklich entfernt oder verschoben;
+Originalgeometrie bleibt erhalten. Undo/Redo erfasst die neuen Aktionen,
+nicht alle früheren CAD-Funktionen; Import/Reload beginnt eine neue History.
+
+**P6:** Sichtbare Schritt-/Eintragsreihenfolge ist der Exportvertrag und wird
+gespeichert. Beide relativen Optimierungsmodi bleiben erhalten, Optimierung
+überschreitet weder Schritt- noch Custom-G-Code-Grenzen. Vorschau und Route
+verwenden getrennte Projektionen desselben Plans; Routenenden enthalten
+Anfahrt, Abfahrt und Overcut. Eine Vorschauaktion aktiviert keine manuelle
+Routenanzeige. Aktive Richtungs-/Startpfeile und 3D-Planverbrauch sind an die
+Bearbeitung gekoppelt. Projektionsdaten werden nur innerhalb eines
+synchronen Neuzeichnens wiederverwendet, nicht über Änderungen hinweg.
+
+**Zusätzliche Nutzerentscheidung D21:** Werkzeugwechsel weiterhin nur bei
+anderer Ausgabenummer. Unterschiedliche Definitionen/Drehzahlen gleicher
+aufeinanderfolgender Nummer erzeugen weder einen weiteren Werkzeugwechsel-
+Profilblock noch eine zusätzliche Drehzahlausgabe. Dies ist ausdrücklich
+beibehaltenes Verhalten, geprüft für Legacy- und verwaltete Werkzeugwechsel.
+Bestehende Einschränkungen verwalteter Makros für opaken freien G-Code bleiben.
+
+Bewusste Maschinenart-/Kompensations-/Toleranzänderungen über vorhandene
+Bedienwege wirken weiterhin auf den Auftrag; externe Werkzeugprofiländerungen
+werden erst bewusst übernommen. Einheitenwechsel konvertiert Bearbeitungswerte
+einmal und speichert die ausdrückliche Interpretation der Zeichnungseinheit.
+Der dabei sichtbar gewordene `None`-Fall des optionalen Startradius ist behoben.
+
+**Nachweis:** gezielte Integrationsgruppe mit **134 Tests unter PyQt5 und
+134 unter PyQt6** bestanden. Anschließend **29 gezielte Befehls-/Panel-/
+Modusprüfungen je Bindung** einschließlich der letzten Änderungen bestanden.
+Enthalten sind reine Befehlsregressionen, echte Qt5-/Qt6-Drop-Events,
+Ablehnung veralteter Nutzdaten, Auswahl mehrfach referenzierter Konturen,
+ursprüngliche Geometrie bei Richtungswechsel, eigene/geerbte Werte,
+Exportaktivierung/Sichtbarkeit, stabile Undo-/Redo-IDs, Unit-Override,
+Fremdprojekt-Ablehnung, Routenendpunkt gegen ausgegebene Lead-out-Koordinate,
+Optimierungsgrenzen sowie sichtbare T2→T1-Folge gegen echten GUI-/CLI-Export.
+Die ganze Layerauswahl wurde zusätzlich über echte Auswahlsignale und den
+modalen Schritt-Dialog bis zur Übernahme und Undo geprüft. Umbenennen oder
+Ändern der Kompensation erhält widersprüchliche Altmodi; erst eine ausdrücklich
+gewählte Schrittart löst sie auf.
+Architektur-, bestehende MainWindow-, Werkzeugwechsel-, Plan-, Vorschau- und
+3D-Adapterregressionen sind einbezogen. Frühere Qt-Callbackabbrüche durch eine
+zu frühe Neuzeichnung bzw. Diagnoseformatierung wurden korrigiert und die
+betroffenen Abläufe anschließend erneut erfolgreich geprüft.
+
+Alle **102 neuen Texte je Katalog** in DE/FR/RU sind fertig übersetzt,
+QM-Dateien regeneriert und gegen die tatsächlich geladenen Qt-Übersetzungen
+geprüft. Der Austausch zweier QM-Dateien benötigte wegen abweichender
+Windows-Berechtigungen einen erlaubten Schreibzugriff außerhalb der Sandbox;
+ein Neustart oder Schließen eines Benutzerfensters war dafür nicht notwendig.
+Strikter Zensical-Build, relative Dokumentdateilinks und `git diff --check`
+bestanden.
+
+**Grenzen:** P8 bleibt die gemeinsame fachliche Nutzerabnahme an konkreten
+Projekten, einschließlich aktueller Screenshots und Prüfung verbliebener
+Legacy-Kompatibilitätsaufrufer vor Entfernung. P7 bleibt separat. 3D-Tests
+verwenden gemocktes OpenGL und sind kein GPU-Nachweis. Keine neue Vollsuite-,
+Debian-, Paket- oder physische Maschinenabnahme. P4–P6 wurden in diesem
+Auftrag nicht committet oder gepusht.
+
+[Anleitung](../../docs/user-guide/machining-steps.md),
+[Plan und Entscheidungen](../planning/r3-r1b-implementation-plan.md),
+[Modell-/Formatnotizen](../documentation-notes/machining-project-format.md).
+
 <a id="r3-r1b-p1-p3"></a>
 
 ## R3/R1b P1–P3: Modell, Projektionen und Persistenz (07.11.2026)

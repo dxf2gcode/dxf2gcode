@@ -549,6 +549,8 @@ class MyGraphicsScene(QGraphicsScene):
 
         # The arrows are 1.5 times the default size, so that they are easier to
         # see, and their outline is one pixel thicker.
+        inactive = hasattr(shape, 'machining_binding') and getattr(shape, '_machining_view', None) is None
+        shape = getattr(shape, '_machining_view', None) or shape
         length = 30
         start, start_ang = shape.get_start_end_points_physical(True, True, PPocket=True)
         
@@ -563,6 +565,8 @@ class MyGraphicsScene(QGraphicsScene):
         arrow.arrowSize = 12.0
         arrow.pen.setWidth(2)
         arrow.pen.setStyle(QtCore.Qt.PenStyle.DashLine)
+        if inactive:
+            arrow.setOpacity(0)
         return arrow
 
     def createenarrow(self, shape):
@@ -573,6 +577,8 @@ class MyGraphicsScene(QGraphicsScene):
         """
         # The arrows are 1.5 times the default size, so that they are easier to
         # see, and their outline is one pixel thicker.
+        inactive = hasattr(shape, 'machining_binding') and getattr(shape, '_machining_view', None) is None
+        shape = getattr(shape, '_machining_view', None) or shape
         length = 30
         end, end_ang = shape.get_start_end_points_physical(False, True, PPocket=shape.Pocket)
             
@@ -589,6 +595,8 @@ class MyGraphicsScene(QGraphicsScene):
         arrow.arrowSize = 12.0
         arrow.pen.setWidth(2)
         arrow.pen.setStyle(QtCore.Qt.PenStyle.DashLine)
+        if inactive:
+            arrow.setOpacity(0)
         return arrow
 
     def createstmove(self, shape):
@@ -615,9 +623,10 @@ class MyGraphicsScene(QGraphicsScene):
             item.hide()
             del item
 
-    def addexproutest(self):
-        self.expprv = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
-                            g.config.vars.Plane_Coordinates['axis2_start_end'])
+    def addexproutest(self, config=None):
+        config = config or g.config
+        self.expprv = Point(config.vars.Plane_Coordinates['axis1_start_end'],
+                            config.vars.Plane_Coordinates['axis2_start_end'])
         self.expcol = QtCore.Qt.GlobalColor.darkRed
 
     def addexproute(self, exp_order, layer_nr):
@@ -627,7 +636,10 @@ class MyGraphicsScene(QGraphicsScene):
         for shape_nr in range(len(exp_order)):
             shape = self.shapes[exp_order[shape_nr]]
             st = self.expprv
-            if shape.Pocket == True:
+            if hasattr(shape, 'route_endpoints'):
+                start, end, _ = shape.route_endpoints
+                en, self.expprv = Point(*start), Point(*end)
+            elif shape.Pocket == True:
                 start_en_points = shape.get_start_end_points(PPocket=True)
                 en = start_en_points[0]
                 self.expprv = start_en_points[1]
@@ -648,10 +660,11 @@ class MyGraphicsScene(QGraphicsScene):
             self.addItem(self.routearrows[-1])
             self.addItem(self.routetext[-1])
 
-    def addexprouteen(self):
+    def addexprouteen(self, config=None):
+        config = config or g.config
         st = self.expprv
-        en = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
-                   g.config.vars.Plane_Coordinates['axis2_start_end'])
+        en = Point(config.vars.Plane_Coordinates['axis1_start_end'],
+                        config.vars.Plane_Coordinates['axis2_start_end'])
         self.expcol = QtCore.Qt.GlobalColor.darkRed
 
         self.routearrows.append(Arrow(startp=en,
