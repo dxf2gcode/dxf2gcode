@@ -1,6 +1,6 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **06.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **07.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
 Dieses Dokument bewahrt abgeschlossene Implementierungen, deren dokumentierte
 Prüfergebnisse und die historische Ausgangslage. Die
@@ -12,6 +12,20 @@ Historische Testergebnisse gelten für den jeweils beschriebenen Stand.
 Insbesondere liegen die Vollsuite-Ergebnisse mit 775 Tests vor der späteren
 Darstellungskorrektur; diese wurde anschließend mit jeweils 21 gezielten
 Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
+
+## Qt6 – Konfigurationsfehler beim Start anzeigen (07.11.2026)
+
+Die drei kritischen Fehlerdialoge in `presentation/qt/application.py` nutzen
+`QMessageBox.Icon.Critical`, das unter PyQt5 und PyQt6 verfügbar ist. Dadurch
+verdeckt unter Qt6 kein `AttributeError` mehr die eigentliche Meldung über eine
+inkompatible Konfigurationsversion; die Konfiguration wird weiterhin abgelehnt.
+
+**Prüfung:** `dxf2gcode_startup_error_test.py` bestand mit jeweils zwei Tests
+unter lokalem PyQt5 und PyQt6 (`.tox/package-build`). Der GUI-Startpfad erzeugt
+eine echte QMessageBox; geprüft werden Icon, Titel, Fehlertext und Beenden.
+Der Quiet-Startpfad beendet ohne Dialog mit Fehlercode 2. Die Tests ersetzen
+die Konfiguration und schließen den Dialog ohne interaktive Bedienung.
+Keine Vollsuite, Paket-/Debian- oder Maschinenabnahme; GUI-Texte unverändert.
 
 <a id="develop-r3-checkpoint"></a>
 

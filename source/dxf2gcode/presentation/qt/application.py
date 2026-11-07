@@ -305,14 +305,14 @@ class MainWindow(QMainWindow):
         self.configuration_changed.connect(self.updateCanvasOverlay)
 
         if sys.version_info[0] == 2:
-            error_message = QMessageBox(QMessageBox.Critical, self.tr('ERROR'), self.tr("Python version 2 is not supported, please use it with python version 3."))
+            error_message = QMessageBox(QMessageBox.Icon.Critical, self.tr('ERROR'), self.tr("Python version 2 is not supported, please use it with python version 3."))
             sys.exit(error_message.exec())
 
         # Load the post-processor configuration and build the post-processor configuration window
         self.MyPostProcessor = MyPostProcessor()
         # If string version_mismatch isn't empty, we popup an error and exit
         if self.MyPostProcessor.version_mismatch:
-            error_message = QMessageBox(QMessageBox.Critical, self.tr('Configuration error'), self.MyPostProcessor.version_mismatch)
+            error_message = QMessageBox(QMessageBox.Icon.Critical, self.tr('Configuration error'), self.MyPostProcessor.version_mismatch)
             sys.exit(error_message.exec())
 
         self.d2g = Project(self)
@@ -1747,7 +1747,7 @@ if __name__ == "__main__":
             sys.exit(2)
         error_app = QApplication(sys.argv)
         error_message = QMessageBox(
-            QMessageBox.Critical,
+            QMessageBox.Icon.Critical,
             QtCore.QCoreApplication.translate('MainWindow',
                                               'Configuration error'),
             g.config.version_mismatch)
