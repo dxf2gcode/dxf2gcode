@@ -9,6 +9,7 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 
 | Thema | Geplantes Inhaltspaket | Material |
 | --- | --- | --- |
+| [Bearbeitungsmodell und Projektformat 2.0](machining-project-format.md) | R3/R1b P1–P3 | Parameterherkunft, Werkzeugdefinitions-IDs, Migration, Referenzbindung und Übergangsgrenzen |
 | [LinuxCNC-Dateifilter](linuxcnc-integration.md) | LC1 | Historischer und aktueller Integrationsweg, Befunde, Nutzen und noch freizugebender Prüfplan |
 | [Postprozessoren und Entwicklerdokumentation](postprocessors-and-development.md) | WP9–WP13 | Format-/Werkzeugwechselverträge, fünf Beispielgrenzen, Build-/Testquellen, Downloads und Rechte |
 | [Pflege der Dokumentationswebsite](documentation-site-maintenance.md) | Veröffentlichung und spätere Developer Guide | Zensical-Umgebung, lokale Vorschau, strikter Build und Pages-Workflow; aus öffentlichem Prototyp ausgelagert |

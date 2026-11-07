@@ -72,6 +72,10 @@ quiet CLI conversion from `dxf/test.dxf` to a temporary `.ngc` file. The CLI
 test gives the subprocess its own temporary configuration profile.
 It also checks all Domain/Application imports without Qt or concrete adapters,
 explicit model configuration, machining conflicts and whole-job export failure.
+The machining-project regressions cover JSON 2.0 identities/provenance,
+legacy migration, missing references and protected output. A real offscreen
+MainWindow workflow verifies save/load/reload and GUI/CLI program parity with
+two operations referencing one original contour.
 
 Run every test before a release or a broad change:
 

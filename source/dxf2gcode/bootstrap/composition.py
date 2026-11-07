@@ -36,7 +36,7 @@ def create_project_exporter(project_repository, config, postprocessor,
     from dxf2gcode.application.importing import ImportDrawing
     from dxf2gcode.adapters.dxf.reader import DxfReaderAdapter
     from dxf2gcode.adapters.toolpath.preparation import prepare_shape
-    from dxf2gcode.adapters.project.legacy_d2g import decode_d2g
+    from dxf2gcode.adapters.project.machining_d2g import decode_project
     return ExportProject(project_repository, config, postprocessor,
         optimizer_factory, import_drawing=ImportDrawing(DxfReaderAdapter(config)),
-        prepare_shape=prepare_shape, decode_project=decode_d2g)
+        prepare_shape=prepare_shape, decode_project=decode_project)

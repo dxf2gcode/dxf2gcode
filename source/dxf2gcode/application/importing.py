@@ -33,6 +33,9 @@ class DxfReader(Protocol):
     def read(self, filename: str) -> ImportResult:
         """Read a drawing and return its payload with any diagnostics."""
 
+    def with_configuration(self, config):
+        """Return a reader using a supplied project configuration snapshot."""
+
 
 class ImportDrawing:
     """Use case that obtains a drawing through the configured reader port."""
@@ -42,4 +45,7 @@ class ImportDrawing:
 
     def execute(self, filename: str) -> ImportResult:
         return self._reader.read(filename)
+
+    def with_configuration(self, config):
+        return ImportDrawing(self._reader.with_configuration(config))
 

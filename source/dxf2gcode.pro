@@ -39,6 +39,7 @@ SOURCES += \
     dxf2gcode/adapters/postprocessor/__init__.py \
     dxf2gcode/adapters/project/file_store.py \
     dxf2gcode/adapters/project/legacy_d2g.py \
+    dxf2gcode/adapters/project/machining_d2g.py \
     dxf2gcode/adapters/project/legacy_repository.py \
     dxf2gcode/adapters/project/__init__.py \
     dxf2gcode/adapters/toolpath/planning.py \
@@ -49,6 +50,7 @@ SOURCES += \
     dxf2gcode/application/cli_export.py \
     dxf2gcode/application/context.py \
     dxf2gcode/application/drawings.py \
+    dxf2gcode/application/machining.py \
     dxf2gcode/application/exceptions.py \
     dxf2gcode/application/exporting.py \
     dxf2gcode/application/importing.py \
@@ -83,6 +85,7 @@ SOURCES += \
     dxf2gcode/domain/project/layercontent.py \
     dxf2gcode/domain/project/project.py \
     dxf2gcode/domain/project/document.py \
+    dxf2gcode/domain/project/machining_project.py \
     dxf2gcode/domain/project/shape.py \
     dxf2gcode/domain/project/machining.py \
     dxf2gcode/domain/project/__init__.py \

@@ -56,6 +56,10 @@ class MyPostProcessor(ProfileDialect):
     variables from the PostProcessorConfig Classes and general function related
     to the export of the Code.
     """
+    @property
+    def machining_config(self):
+        return getattr(self, 'project_config', None) or g.config
+
     def __init__(self, create_config_window=True):
         """
         The initialisation of the Postprocessor class. This function is called
@@ -318,8 +322,29 @@ class MyPostProcessor(ProfileDialect):
         export parameters (e.g. mill depth) and the shapes to be exported. The
         shape order is also given in a list defined in LayerContent.
         """
+        self.project_config = getattr(LayerContents, 'machining_config', None)
+        binding = getattr(LayerContents, 'machining_binding', None)
+        if binding is not None:
+            try:
+                binding.synchronize_editor()
+                LayerContents = binding.materialize()
+                self.project_config = LayerContents.machining_config
+                self.initialize_export_vars()
+                from dxf2gcode.adapters.toolpath.preparation import prepare_shape
+                from dxf2gcode.domain.toolpath.customgcode import CustomGCode
+                for layer in LayerContents:
+                    for shape in layer.shapes:
+                        if not isinstance(shape, CustomGCode):
+                            prepare_shape(shape, config=self.project_config, build_preview=False)
+            except ValueError as error:
+                self.export_errors = []
+                self.export_failed = True
+                self.export_errors.append(str(error))
+                logger.error('%s', error)
+                return
+        else:
+            self.initialize_export_vars()
         self.breaks = Breaks(LayerContents)
-        self.initialize_export_vars()
 
         exstr = self.write_gcode_be(load_filename)
 
@@ -348,8 +373,8 @@ class MyPostProcessor(ProfileDialect):
             return
 
         # Move machine to the Final Position
-        EndPosition = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
-                            g.config.vars.Plane_Coordinates['axis2_start_end'])
+        EndPosition = Point(self.machining_config.vars.Plane_Coordinates['axis1_start_end'],
+                            self.machining_config.vars.Plane_Coordinates['axis2_start_end'])
 
         if has_moves:
             exstr += self.rap_pos_xy(EndPosition)
@@ -386,7 +411,7 @@ class MyPostProcessor(ProfileDialect):
         # Move Machine to retraction Area before continuing anything.
         # Note: none of the changes done in the GUI can affect this height,
         #       only the config file can do so (intended)
-        exstr += self.rap_pos_z(g.config.vars.Depth_Coordinates['axis3_retract'])
+        exstr += self.rap_pos_z(self.machining_config.vars.Depth_Coordinates['axis3_retract'])
 
         previous_tool = None
         # Do the export for each LayerContent in LayerContents List
@@ -422,7 +447,7 @@ class MyPostProcessor(ProfileDialect):
         from dxf2gcode.domain.project.tool_settings import effective_tool
         from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 
-        if g.config.machine_type != 'milling' or self.vars.General['output_type'] != 'g-code':
+        if self.machining_config.machine_type != 'milling' or self.vars.General['output_type'] != 'g-code':
             raise ToolChangeError('Managed tool-change macros currently require milling G-code')
         service = self._get_shape_export_use_case()
         prepared = []
@@ -452,8 +477,8 @@ class MyPostProcessor(ProfileDialect):
                     context = ToolChangeContext(
                         tool.tool_nr, previous_tool, tool.speed, start,
                         result.plan.retract_depth,
-                        g.config.vars.Depth_Coordinates['axis3_retract'],
-                        g.config.metric == 1)
+                        self.machining_config.vars.Depth_Coordinates['axis3_retract'],
+                        self.machining_config.metric == 1)
                     output.append(macro.expand(context))
                     previous_tool = tool.tool_nr
                 output.append(self.commentprint('* SHAPE Nr: %i *' % shape.nr))
@@ -479,7 +504,7 @@ class MyPostProcessor(ProfileDialect):
             exporter = ExportShape(
                 plan_toolpath=PlanToolpath(
                     ToolpathPlanner(exit_geometry),
-                    ShapePlanningInputs(lambda: g.config).request),
+                    ShapePlanningInputs(lambda: self.machining_config).request),
                 plan_exporter=ToolpathGCodeExporter(),
                 diagnostic_sink=self.add_planning_diagnostic,
             )
@@ -492,12 +517,12 @@ class MyPostProcessor(ProfileDialect):
 
     def initialize_export_vars(self):
         """Snapshot output settings and reset formatting state before export."""
-        plane = g.config.vars.Plane_Coordinates
+        plane = self.machining_config.vars.Plane_Coordinates
         ProfileDialect.__init__(
             self, self.vars,
             start_xy=(plane['axis1_start_end'], plane['axis2_start_end']),
-            start_z=g.config.vars.Depth_Coordinates['axis3_retract'],
-            diameter_factor=2 if g.config.machine_type == 'lathe' else 1)
+            start_z=self.machining_config.vars.Depth_Coordinates['axis3_retract'],
+            diameter_factor=2 if self.machining_config.machine_type == 'lathe' else 1)
         self.export_errors = []
         self.export_failed = False
         self.planning_diagnostics = []
@@ -531,7 +556,7 @@ class MyPostProcessor(ProfileDialect):
 
         # In addition the text defined in the PostProcessor Config file is
         # added.
-        if g.config.metric == 0:
+        if self.machining_config.metric == 0:
             exstr += "%s\n" % self.vars.General["code_begin_units_in"]
         else:
             exstr += "%s\n" % self.vars.General["code_begin_units_mm"]

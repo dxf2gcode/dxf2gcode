@@ -319,6 +319,11 @@ class TreeHandler(QWidget):
             if isValid(layer_item_index.data(LAYER_OBJECT)):
                 real_layer = toPyObject(layer_item_index.data(LAYER_OBJECT))
 
+                if getattr(real_layer, 'project_values_locked', False):
+                    # Project snapshots are updated only through an explicit
+                    # machining command, not by refreshing global profiles.
+                    continue
+
                 update_drawing = False
                 if real_layer is not None and str(real_layer.tool_nr) not in g.config.vars.Tool_Parameters:
                     # The tool used for this layer doesn't exist anymore, we are going to replace it with the first tool

@@ -89,12 +89,15 @@ after making changes and review it before use.
 The project stores drawing transformations and import tolerances, the machine
 type, layer tools and values, contour depths and feeds, compensation and
 machining modes, start points and directions, enablement, ordering, lead/overcut
-settings and stored tool overrides. It also preserves the project's drag-knife
-settings where applicable.
+settings and stored tool overrides. New JSON 2.0 projects also store machining
+steps, independent operation identities and their references to original
+geometry, plus snapshots of machining defaults and tool definitions. The
+third machining tab and its move/copy commands are still being implemented.
 
 This does not make the project a complete machine setup archive. Application
-defaults, the tool catalogue and output postprocessor remain separate files;
-settings inherited from them still matter. A loaded project can also change
+defaults, the tool catalogue and output postprocessor remain separate files.
+JSON 2.0 projects retain their saved machining/tool values when those profiles
+change. Output postprocessor selection remains external. A loaded project can also change
 the active machine type and relevant import or knife settings. Check these
 before continuing with another drawing.
 
@@ -121,19 +124,22 @@ your preparation first. To restore a saved preparation, explicitly open the
 When a project is opened, saved contour settings are matched to the newly
 imported geometry within matching layer names. Changing the CAD geometry,
 layer names, units or import result can prevent that match. New or unrecognized
-contours can be appended using their current defaults; removed contours cannot
-be restored from the project alone. Do not assume that a successful file open
-means every old machining setting was transferred.
+contours in JSON 2.0 projects remain without a machining assignment. Missing or
+ambiguous references used by enabled operations block the entire export;
+existing output files remain intact. The interface for assigning those new
+contours follows with the machining tab. Historical projects can still append
+unrecognized contours using their previous loading rules. Removed geometry
+cannot be restored from a project alone.
 
 After revising a drawing, check the layer/shape count, enablement, tools, depths,
 start points, directions and order, then inspect the preview and a fresh export.
 If the application reports contradictory machining settings, resolve them
 through the contour context menu; affected shapes cannot be exported meanwhile.
 
-Projects are versioned. The current reader supports the historical D2G versions
-1.1 through 1.5, with migration of older settings where implemented. That does
-not guarantee that an older application can read a newly saved project. Keep
-the original project when migrating and save the result under a new name first.
+Projects are versioned. The current reader supports historical D2G versions
+1.1 through 1.5 and JSON 2.0. New saves use 2.0, which older applications cannot
+read. Save a migrated project under a new name first; overwriting the old
+format file with JSON is rejected. Keep the original project and drawing.
 
 Return to [Interface and navigation](interface-and-navigation.md), or follow
 [First DXF to G-code](../getting-started/first-dxf-to-gcode.md) for the export steps.

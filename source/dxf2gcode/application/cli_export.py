@@ -10,6 +10,8 @@ from dxf2gcode.application.drawings import BuildDrawingModel, DrawingModel
 from dxf2gcode.domain.project.shape import Shape
 from dxf2gcode.domain.project.project import Project
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
+from dxf2gcode.domain.project.document import MachiningProjectDocument
+from dxf2gcode.application.machining import MachiningDrawing, ProjectConfiguration
 
 
 class ExportDrawing:
@@ -43,10 +45,11 @@ class ExportDrawing:
                 index for index, shape in enumerate(layer.shapes)
                 if not shape.isDisabled()]
 
-        AutomaticCutterCompensation().execute(
-            model.layers.non_break_layer_iter(),
-            self._config.vars.General['automatic_cutter_compensation'],
-            self._config.machine_type)
+        if not hasattr(model.layers, 'machining_config'):
+            AutomaticCutterCompensation().execute(
+                model.layers.non_break_layer_iter(),
+                self._config.vars.General['automatic_cutter_compensation'],
+                self._config.machine_type)
         if optimize and self._optimizer_factory is not None:
             coordinates = self._config.vars.Plane_Coordinates
             optimizer = OptimizeRoutes(
@@ -60,7 +63,8 @@ class ExportDrawing:
                               model.shapes)
 
         for shape in model.shapes:
-            shape.stmove = self._prepare_shape(shape, config=self._config, build_preview=False)
+            if not isinstance(shape, CustomGCode):
+                shape.stmove = self._prepare_shape(shape, config=self._config, build_preview=False)
 
         ExportToolpath(self._postprocessor).execute(
             filename, output_filename, model.layers, postprocessor_index)
@@ -101,12 +105,15 @@ class DrawingSession:
         if not os.path.isfile(filename):
             return False
         self.filename = filename
-        result = self.import_drawing.execute(filename)
+        importer = self.import_drawing
+        if hasattr(self, 'build_config'):
+            importer = importer.with_configuration(self.build_config)
+        result = importer.execute(filename)
         self.diagnostics = result.diagnostics
         self.drawing = result.drawing
         model = BuildDrawingModel(
             drawing=result.drawing,
-            config=self.config,
+            config=getattr(self, 'build_config', self.config),
             shape_factory=Shape,
             split_line_segments=self.config.vars.General[
                 'split_line_segments'],
@@ -125,7 +132,7 @@ class DrawingSession:
         return True
 
 class ExportProject:
-    """Load a legacy .d2g model and export it without constructing Qt UI."""
+    """Load a versioned .d2g model and export it without constructing Qt UI."""
 
     def __init__(self, project_repository, config, postprocessor,
                  optimizer_factory=None, *, import_drawing, prepare_shape, decode_project):
@@ -143,6 +150,8 @@ class ExportProject:
         project = Project(session, self._config, decode=self._decode_project,
                           load_drawing=session.load)
         project_document = self._repository.load(project_filename)
+        if isinstance(project_document, MachiningProjectDocument):
+            session.build_config = ProjectConfiguration(project_document.machining)
         project.load(project_document)
         if not session.loaded:
             raise FileNotFoundError(
@@ -154,9 +163,15 @@ class ExportProject:
             source_filename = project_filename
         model = DrawingModel(session.entityRoot, session.layerContents,
                              session.shapes, session.excluded_layers)
+        export_config = self._config
+        if isinstance(project_document, MachiningProjectDocument):
+            machining = MachiningDrawing(project_document.machining, session.layerContents)
+            model.layers = machining.materialize()
+            model.shapes = [shape for layer in model.layers for shape in layer.shapes]
+            export_config = ProjectConfiguration(machining.project)
         exporter = ExportDrawing(
             import_drawing=None, build_model=None,
-            postprocessor=self._postprocessor, config=self._config,
+            postprocessor=self._postprocessor, config=export_config,
             optimizer_factory=self._optimizer_factory, prepare_shape=self._prepare_shape)
         exporter.export_model(model, source_filename, output_filename,
                               optimize, postprocessor_index)

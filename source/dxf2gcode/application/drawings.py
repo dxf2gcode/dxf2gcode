@@ -13,11 +13,17 @@ from dxf2gcode.domain.geometry.point import Point
 class DrawingModel:
     """Project model created from one imported drawing."""
 
-    def __init__(self, entity_root, layers, shapes, excluded_layers=()):
+    def __init__(self, entity_root, layers, shapes, excluded_layers=(), config=None):
         self.entity_root = entity_root
         self.layers = layers
         self.shapes = shapes
         self.excluded_layers = tuple(excluded_layers)
+        self.config = config
+
+    def machining_drawing(self):
+        """Snapshot the edited legacy model at the explicit migration boundary."""
+        from dxf2gcode.application.machining import MachiningDrawing
+        return MachiningDrawing.capture(self.layers, self.config)
 
 
 class BuildDrawingModel:
@@ -51,7 +57,7 @@ class BuildDrawingModel:
         self.layers.sort(key=lambda layer: layer.nr)
         excluded_layers = tuple(self.drawing.layers[nr].name
                                 for nr in sorted(self._excluded_layer_numbers))
-        return DrawingModel(root, self.layers, self.shapes, excluded_layers)
+        return DrawingModel(root, self.layers, self.shapes, excluded_layers, self.config)
 
     def _exclude_layer(self, layer_number):
         name = self.drawing.layers[layer_number].name

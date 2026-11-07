@@ -1,6 +1,6 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **06.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **07.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
 Dieses Dokument bewahrt abgeschlossene Implementierungen, deren dokumentierte
 Prüfergebnisse und die historische Ausgangslage. Die
@@ -12,6 +12,57 @@ Historische Testergebnisse gelten für den jeweils beschriebenen Stand.
 Insbesondere liegen die Vollsuite-Ergebnisse mit 775 Tests vor der späteren
 Darstellungskorrektur; diese wurde anschließend mit jeweils 21 gezielten
 Tests unter Qt5 und Qt6 abgesichert. Daraus folgt keine neue Paketabnahme.
+
+<a id="r3-r1b-p1-p3"></a>
+
+## R3/R1b P1–P3: Modell, Projektionen und Persistenz (07.11.2026)
+
+**P1:** Qt-freie Geometrie-, Werkzeugdefinitions-, Schritt- und
+Bearbeitungsidentitäten mit geordneten Einträgen, eigenständigen Starts und
+Richtungen sowie Resolver und Parameterherkunft implementiert. Gemäß D7 bleiben
+unklare alte Zahlenwerte eigene Werte. Gemäß der zusätzlichen Nutzerentscheidung
+D19 dürfen unterschiedliche Werkzeugdefinitionen dieselbe Ausgabenummer tragen.
+Die Definitions-ID bestimmt die gemeinsame Aktualisierung, nicht die Nummer.
+
+**P2:** Legacy-Shape/Layer-Zustand lässt sich in das Bearbeitungsmodell
+übernehmen. Getrennte Projektionen verwenden gemeinsame gespeicherte Werte für
+Planung, Vorschau und Export, ohne die Originalgeometrie bei ihrer Erzeugung zu
+ändern. Eigene Werkzeuge/Arten und freier G-Code begrenzen Migrationsschritte;
+die bisherige Reihenfolge sowie BREAKS-/Ignore-Semantik bleiben erhalten.
+Geladene Konflikte werden erhalten und durch bestehende Diagnosen blockiert.
+
+**P3:** UTF-8-JSON `.d2g` 2.0 mit validierten IDs, Konfiguration und Referenzen
+ergänzt; Leser 1.1–1.5 bleiben erhalten. GUI-Speichern, Projektladen, kleiner
+Transformationsreload, erneuter DXF-Import und CLI-Projektexport sind angebunden.
+Gespeicherte Werkzeug-/Bearbeitungsvorgaben bleiben von globalen Profiländerungen
+unabhängig. Neue Quellkonturen bleiben unzugeordnet; aktive fehlende oder
+mehrdeutige Verknüpfungen stoppen den gesamten Export vor der Ausgabe.
+Atomarer Dateiersatz schützt bestehende Dateien; migrierte Legacy-Dateien müssen
+zunächst unter neuem Namen gespeichert werden.
+
+**Lokaler Nachweis:** gezielte Integrationsgruppe mit **86 Tests unter PyQt5
+und 86 unter PyQt6** bestanden (Modell/Format, echter Qt-Workflow, Architektur,
+Importfilter, Bearbeitungsmodi, Legacy-Projekte, MainWindow, CLI und
+Exportreihenfolge). Die Migration 1.1–1.5 erhält im geprüften Konturfall die
+Programmausgabe. Der echte offscreen MainWindow-Workflow prüft zwei Bearbeitungen
+derselben Kontur mit unterschiedlichen Tiefen gegen den echten CLI-Export:
+Programmbefehle stimmen überein. Fehlreferenztest: CLI-Code 2, stdout leer,
+vorhandene Zieldatei unverändert. Weitere Fälle prüfen Mehrdeutigkeit,
+unabhängige Richtungen, Profilstabilität, doppelte Werkzeugnummern und atomaren
+fehlgeschlagenen Dateiersatz. Tests sind in der Fast-Auswahl registriert.
+`git diff --check` und strikter Zensical-Dokumentationsbuild bestanden.
+
+**Grenzen:** P4/P5/P6/P8 bleiben offen: dritter Tab, Zuordnungsbedienung,
+Verschieben/Kopieren mit Zielvalidierung/Undo, sichtbarer Reihenfolgevertrag,
+Profilübernahme mit Änderungsanzeige und integrierte Nutzerabnahme. Bis dahin
+synchronisiert eine begrenzte Brücke Eingaben des bestehenden Editors in den
+eindeutigen/ausdrücklich aktiven Arbeitsgang. Bei Mehrfachreferenzen ohne Kontext
+wird keine Bearbeitung willkürlich ausgewählt. Keine neue manuelle
+Stegregionenbedienung. Keine neuen GUI-Beschriftungen hinzugefügt. Keine neue
+Vollsuite-, Paket-, Debian-, GPU- oder Maschinenabnahme und kein Release.
+
+[Detailplan](../planning/r3-r1b-implementation-plan.md),
+[Zuordnungstabelle, Dateivertrag und Quellen](../documentation-notes/machining-project-format.md).
 
 <a id="develop-r3-checkpoint"></a>
 

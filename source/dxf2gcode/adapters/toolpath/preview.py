@@ -26,21 +26,27 @@ def default_preview_profile():
 
 def preview_result(shape, postprocessor=None, layers=None):
     """Always snapshot current values; no cached plan can survive an edit."""
+    if getattr(shape, 'machining_binding', None) is not None and getattr(shape, '_machining_view', None) is None:
+        from dxf2gcode.domain.toolpath.plan import ToolpathPlanningResult
+        shape.toolpath_plan = None
+        shape.toolpath_diagnostics = ()
+        return ToolpathPlanningResult(None, ())
+    config = getattr(shape, 'machining_config', None) or g.config
     if postprocessor is not None and not hasattr(postprocessor, "vars"):
         if getattr(postprocessor, "postprocessor_files", ()):
             postprocessor.getPostProVars(0)
     profile = getattr(postprocessor, "vars", None) or default_preview_profile()
-    plane = g.config.vars.Plane_Coordinates
+    plane = config.vars.Plane_Coordinates
     dialect = ProfileDialect(
         profile, (plane['axis1_start_end'], plane['axis2_start_end']),
-        g.config.vars.Depth_Coordinates['axis3_retract'],
-        diameter_factor=2 if g.config.machine_type == 'lathe' else 1)
+        config.vars.Depth_Coordinates['axis3_retract'],
+        diameter_factor=2 if config.machine_type == 'lathe' else 1)
     dialect.breaks = Breaks(layers) if layers is not None else getattr(postprocessor, "breaks", None)
-    if (g.config.machine_type == 'drag_knife'
-            and getattr(g.config.vars.Drag_Knife_Options, 'entry_mode', 'fixed') == 'previous'
+    if (config.machine_type == 'drag_knife'
+            and getattr(config.vars.Drag_Knife_Options, 'entry_mode', 'fixed') == 'previous'
             and layers is not None):
         _set_previous_knife_state(shape, layers, dialect)
-    request = ShapePlanningInputs(lambda: g.config).request(shape, dialect)
+    request = ShapePlanningInputs(lambda: config).request(shape, dialect)
     result = ToolpathPlanner(exit_geometry).plan(request)
     shape.toolpath_plan = result.plan
     shape.toolpath_diagnostics = result.diagnostics

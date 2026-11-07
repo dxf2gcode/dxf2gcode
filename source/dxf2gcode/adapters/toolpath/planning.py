@@ -117,7 +117,8 @@ class ShapePlanningInputs:
         self._config_provider = config_provider
 
     def request(self, shape, postprocessor):
-        config = self._config_provider()
+        shape = getattr(shape, '_machining_view', None) or shape
+        config = getattr(shape, 'machining_config', None) or self._config_provider()
         capabilities = snapshot_capabilities(postprocessor, config)
         if isinstance(shape, CustomGCode):
             return ToolpathRequest(

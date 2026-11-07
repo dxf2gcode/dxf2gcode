@@ -51,6 +51,8 @@ Werkzeugweg-Vorschau und Routenoptimierung.
 
 - `.d2g`-Versionen 1.1–1.5 sowie Anwendungs- und Postprozessorprofile bleiben
   lesbar und migrierbar.
+- Neue Projekt-Speicherungen verwenden JSON 2.0 mit eigenständigen Geometrie-,
+  Bearbeitungs- und Werkzeugidentitäten. [Modell, Herkunft und Übergangsgrenzen](documentation-notes/machining-project-format.md).
 - Für die bestehenden Golden-Fälle bleibt der G-Code bytegleich.
 - GUI-, CLI-, Vorschau- und Projektabläufe bleiben erhalten.
 - Alte Python-Importpfade sind kein unterstütztes API und werden nicht

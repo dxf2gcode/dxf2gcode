@@ -1313,8 +1313,11 @@ class MainWindow(QMainWindow):
 
         logger.info(self.tr('Loading file: %s') % self.filename)
 
-        import_result = ImportDrawing(
-            DxfReaderAdapter(self.application_context.config)).execute(self.filename)
+        import_config = self.application_context.config
+        if getattr(self.d2g, 'loading_machining_project', None) is not None:
+            from dxf2gcode.application.machining import ProjectConfiguration
+            import_config = ProjectConfiguration(self.d2g.loading_machining_project)
+        import_result = ImportDrawing(DxfReaderAdapter(import_config)).execute(self.filename)
         self.valuesDXF = import_result.drawing
         if not self.application_context.quiet:
             for diagnostic in import_result.diagnostics:
@@ -1332,7 +1335,7 @@ class MainWindow(QMainWindow):
         logger.info(self.tr('Loaded %i entity geometries; reduced to %i contours; used layers: %s; number of inserts %i')
                     % (len(self.valuesDXF.entities.geo), len(self.valuesDXF.entities.cont), layers, insert_nr))
 
-        self.setMeasurementUnits(g.config.metric, True)
+        self.setMeasurementUnits(import_config.metric, True)
 
         self.makeShapes()
         if plot:
@@ -1373,7 +1376,10 @@ class MainWindow(QMainWindow):
         """
         if self.filename:
             logger.info(self.tr("Reloading file: %s") % self.filename)
-            self.load()
+            if self.d2g.machining_drawing is not None:
+                self.d2g.reload()
+            else:
+                self.load()
 
     def makeShapes(self):
         """Build the project's shape and layer model through the application service."""
@@ -1386,9 +1392,13 @@ class MainWindow(QMainWindow):
                 shape.setEnableDisableCallback(
                     self.TreeHandler.updateShapeEnabling)
 
+        model_config = g.config
+        if getattr(self.d2g, 'loading_machining_project', None) is not None:
+            from dxf2gcode.application.machining import ProjectConfiguration
+            model_config = ProjectConfiguration(self.d2g.loading_machining_project)
         model = BuildDrawingModel(
             drawing=self.valuesDXF,
-            config=g.config,
+            config=model_config,
             shape_factory=DomainShape,
             translate=QtCore.QCoreApplication.translate,
             split_line_segments=g.config.vars.General['split_line_segments'],
@@ -1407,6 +1417,7 @@ class MainWindow(QMainWindow):
         self.layerContents = model.layers
         self.shapes = model.shapes
         self.newNumber = len(self.shapes)
+        self.d2g.machining_drawing = None
 
     def updateCanvasOverlay(self):
         """
@@ -1586,6 +1597,7 @@ class MainWindow(QMainWindow):
         Load all variables from file
         """
         project_document = LoadProject(self.project_repository).execute(filename)
+        self.d2g.project_filename = filename
         conflicts = self.d2g.load(project_document)
         MainWindow._show_machining_warnings(self, conflicts)
 
@@ -1647,8 +1659,8 @@ class MainWindow(QMainWindow):
             if not QtCore.QFile.exists(save_prj_filename):
                 save_prj_filename += c.PROJECT_EXTENSION
 
-        pyCode = self.d2g.export()
         try:
+            pyCode = self.d2g.export_current()
             # File open and write
             SaveProject(self.project_repository).execute(
                 save_prj_filename, str_encode(pyCode))

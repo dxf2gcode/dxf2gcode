@@ -25,8 +25,16 @@ def prepare_shape(shape, config=None, build_preview=True):
     from dxf2gcode.presentation.qt.qt_compat import QtCore
     from dxf2gcode.adapters.toolpath.preview import preview_plan
     from dxf2gcode.adapters.toolpath.planning import _existing_geometry
+    original = shape
+    binding = getattr(shape, 'machining_binding', None)
+    if binding is not None:
+        view = binding.active_view(shape)
+        shape._machining_view = view
+        if view is not None:
+            shape = view
+    config = getattr(shape, 'machining_config', None) or config or g.config
     source_tool = effective_tool(shape)
-    settings = replace(preparation_settings(config or g.config),
+    settings = replace(preparation_settings(config),
                        lead_in_mode=get_lead_in_mode(shape),
                        lead_out_mode=get_lead_out_mode(shape),
                        shape_overcut=get_overcut_enabled(shape),
@@ -35,9 +43,10 @@ def prepare_shape(shape, config=None, build_preview=True):
     prepared = StMove(shape, settings,
                       lambda context, text: QtCore.QCoreApplication.translate(context, text))
     shape.stmove = prepared
+    original.stmove = prepared
     if not build_preview:
         return prepared
-    plan = preview_plan(shape)
+    plan = preview_plan(original)
     # Compatibility data for callers displaying exit details: these values
     # are projections of the plan, never another lead/tab/pass calculation.
     prepared.exit_geos = Geos()

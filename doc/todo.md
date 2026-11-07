@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben
 
-Stand: **06.11.2026**.
+Stand: **07.11.2026**.
 
 Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
 Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
@@ -22,7 +22,7 @@ Eine gesonderte Paket-/Debian-Abnahme bleibt zurückgestellt.
 | Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
 | Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
 | Fachliche Rückmeldungen | [DOC1 – Dokumentationsabnahme](#doc1) | Konkrete Korrekturen zur veröffentlichten Anleitung |
-| Plan abgestimmt, Umsetzung offen | [R3 – Bedienmodell](#r3), [R1b – Gruppenwechsel](#r1b) | [Nach Develop-Release mit P1 beginnen](planning/r3-r1b-implementation-plan.md) |
+| Nächste Umsetzung P4/P5 | [R3 – Bedienmodell](#r3), [R1b – Gruppenwechsel](#r1b) | [Dritter Tab, Verschieben/Kopieren und Undo](planning/r3-r1b-implementation-plan.md#9-umsetzung-in-prüfbaren-etappen) |
 | Zurückgestellt | [Teilkonturen](#teilkonturen) | Mit dem neuen Bearbeitungsmodell abstimmen |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 | Optional | [GUI1 – Ribbon-Menüband](#gui1) | Bedienentwurf, Bibliothekswahl und Windows-/Linux-Kompatibilität |
@@ -61,24 +61,26 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 
 <a id="r3"></a>
 
-- [ ] **R3 – Geometrie und Bearbeitung trennen:** Bedienmodell mit
-  Bearbeitungsgruppen, referenzierten Konturen, Reihenfolge und Persistenz
-  gemeinsam entwerfen. Dritter Tab Bearbeitung; Originalkonturen in
+- [ ] **R3 – Bearbeitungsbedienung P4/P6/P8:** dritten Tab Bearbeitung ergänzen,
+  Auswahl/Canvas und Parameterherkunft anbinden; Originalkonturen in
   Entities/Layers erhalten. Manuelle Stegregionen, Automatik und Fang
   ausdrücklich erst als spätere Erweiterung planen.
   [Gemeinsamer Detailplan und Nutzerentscheidungen](planning/r3-r1b-implementation-plan.md),
-  [Anforderungen](planning/open-task-details.md#r3). Plan bestätigt;
-  Commit, Push und Develop-Release sind abgeschlossen; Umsetzung mit P1
-  kann im nächsten Auftrag beginnen.
+  [Anforderungen](planning/open-task-details.md#r3).
+  Modell, Projektformat und GUI-/CLI-Anbindung P1–P3 sind
+  [abgeschlossen](archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3).
+  Sichtbare Reihenfolge, Optimierung und neue Auswahlbedienung noch abnehmen;
+  Übergangsadapter nach Integration entfernen.
 
 <a id="r1b"></a>
 
-- [ ] **R1b – Gruppenwechsel:** gemeinsam mit R3 planen. Verschieben/Kopieren
+- [ ] **R1b – Gruppenwechsel P5:** gemeinsam mit R3 umsetzen. Verschieben/Kopieren
   mit eigenen Werten und Zielvererbung; je Schritt ein Werkzeug und eine
   Bearbeitungsart. Atomare Zielvalidierung, bewusste Zuordnung neuer Konturen
   und Rückgängig/Wiederholen sind festgelegt. Projektwerte bis bewusster
   Aktualisierung erhalten; Aktionen direkt mit Änderungsanzeige und Undo.
-  Gemeinsamer Plan bestätigt; Implementierung und Abnahme bleiben offen.
+  Bedienaktionen, Profilaktualisierung mit Änderungsanzeige und Undo sowie
+  integrierte Abnahme bleiben offen; P1–P3 liefern die Datenbasis.
   [Gemeinsamer Detailplan](planning/r3-r1b-implementation-plan.md),
   [Anforderungen](planning/open-task-details.md#r1b).
 

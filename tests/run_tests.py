@@ -15,6 +15,8 @@ sys.path[:0] = [TEST_DIR, os.path.join(REPO_DIR, "source")]
 FAST_MODULES = (
     "dxf2gcode_architecture_boundary_test",
     "dxf2gcode_machining_modes_test",
+    "dxf2gcode_machining_project_test",
+    "dxf2gcode_machining_gui_test",
     "dxf2gcode_release_policy_test",
     "dxf2gcode_import_contract_test",
     "dxf2gcode_git_hooks_test",

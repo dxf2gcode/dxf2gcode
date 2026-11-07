@@ -65,8 +65,16 @@ boundary does not imply removal of all shared application state.
 
 The old internal import namespaces were removed rather than kept as public
 aliases. File-format compatibility is a separate contract: the current readers
-support D2G 1.1–1.5, application configurations 9.11–9.19 and postprocessors
+support legacy D2G 1.1–1.5 and JSON D2G 2.0, application configurations 9.11–9.19 and postprocessors
 8–8.3. Do not infer arbitrary future-version support from those ranges.
+
+R3/R1b P1–P3 add `domain/project/machining_project.py` and the pure application
+bridge `application/machining.py`. Operations reference original geometry and
+resolve saved project/step/own values; tools use definition IDs independent of
+their output numbers. Detached shape/layer projections feed preview and export.
+The version 2.0 codec validates JSON and retains old readers. A temporary Qt
+editor bridge applies deltas to the active operation until the machining tab
+and move/copy/undo commands are implemented. These later UI stages are pending.
 
 ## Review behaviour end to end
 

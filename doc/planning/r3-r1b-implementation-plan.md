@@ -1,9 +1,8 @@
 # R3 und R1b: gemeinsamer Umsetzungsplan
 
-Stand: **06.11.2026**, untersucht auf `2acb289` mit vorhandenen lokalen
-Dokumentationsänderungen. **Plan vom Nutzer am 06.11.2026 bestätigt.**
-Vor der Umsetzung sind Commit, Push und ein Develop-Release beauftragt.
-Die Softwareimplementierung beginnt erst im anschließenden eigenen Auftrag.
+Stand: **07.11.2026**. **Plan vom Nutzer am 06.11.2026 bestätigt.**
+Commit, Push und Develop-Release vor der Umsetzung sind abgeschlossen.
+P1–P3 sind implementiert; [Nachweis und Grenzen](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3).
 Bestätigte Fachregeln und technische Umsetzungsvorschläge sind unterschieden.
 [Planungsabschluss](../archive/toolpath-refactoring-completed.md#r3-r1b-plan).
 
@@ -33,6 +32,7 @@ Ein Gruppenwechsel verändert nicht den ursprünglichen DXF-Layer.
 | D10 | Unpassende Geometrie beim Verschieben/Kopieren vorab erklären und die gesamte Aktion ohne Teiländerung ablehnen. | Vom Nutzer bestätigt |
 | D12 | Rückgängig/Wiederholen für die neuen Bearbeitungsaktionen gehört bereits zur ersten Version. | Vom Nutzer bestätigt |
 | D17 | Werkzeugdaten und Bearbeitungsvorgaben im Projekt erhalten; Änderungen externer Profile erst durch eine ausdrückliche Aktualisierung übernehmen. | Vom Nutzer bestätigt |
+| D19 | Unterschiedliche Werkzeugdefinitionen derselben Ausgabenummer weiterhin erlauben; keine Exportsperre allein wegen unterschiedlicher Durchmesser. Definitionen erhalten eigene Projekt-IDs. | Vom Nutzer am 07.11.2026 bestätigt |
 | D18 | Gültige Verschiebe-/Kopieraktionen direkt ausführen, wirksame Änderungen anzeigen und Undo anbieten; keine zusätzliche Bestätigungsabfrage. | Vom Nutzer bestätigt |
 | D13 | Bei der ersten Übernahme entspricht die Bearbeitungsstruktur dem Layerbaum; spätere Änderungen bleiben ausschließlich in Bearbeitung. | Bestätigt; Werkzeugtrennung nach D8 erfordert bei gemischten Alt-Layern getrennte Schritte |
 
@@ -189,10 +189,10 @@ gespeichert; ein erneutes Öffnen liest sie nicht still aus veränderten globale
 Profilen nach. Globale Werte dienen beim Anlegen als Ausgangswerte.
 
 Technischer Entwurf zur konsistenten Werkzeughaltung: eine projektinterne
-Werkzeugtabelle, auf die die Schritte verweisen. Eine Werkzeugnummer hat
-innerhalb eines Projekts eine eindeutige Werkzeugdefinition; Schritte mit
-demselben Werkzeug bekommen nicht unabhängig verschiedene Durchmesser.
-Eine bewusste Aktualisierung zeigt daher alle betroffenen Schritte und
+Werkzeugtabelle, auf die die Schritte über Definitions-IDs verweisen.
+Gemäß D19 dürfen verschiedene Definitionen dieselbe Ausgabenummer tragen,
+auch mit unterschiedlichen Durchmessern. Nur Schritte mit derselben
+Definitions-ID teilen ihre Werkzeugdaten. Eine bewusste Aktualisierung zeigt alle betroffenen Schritte und
 übernimmt die Werkzeugdefinition gemeinsam. Eigene Bearbeitungswerte werden
 dabei nicht zu geerbten Werten umgedeutet oder still zurückgesetzt.
 
@@ -201,7 +201,8 @@ dabei nicht zu geerbten Werten umgedeutet oder still zurückgesetzt.
 globalen Tabelle, bleiben seine gespeicherten Projektdaten erhalten; kein
 automatischer Ersatz durch Werkzeug 1. Diese Regel betrifft Bearbeitungs-
 und Werkzeugvorgaben, nicht allgemeine UI-Einstellungen wie Farben/Layout.
-Die endgültigen Datenfeldnamen werden in P1 festgelegt.
+Die Datenfelder und Herkunftsregeln sind in der
+[P1–P3-Zuordnungstabelle](../documentation-notes/machining-project-format.md) festgehalten.
 
 **Wichtiger Migrationsfall:** Eine alte gespeicherte Tiefe von −3 mm verrät
 nicht zuverlässig, ob sie früher bewusst gesetzt oder nur aus einem Standard
@@ -518,9 +519,9 @@ mit einer noch offenen fachlichen Entscheidung, von der ihr Verhalten abhängt.
 | Paket | Inhalt und hauptsächlich betroffene Bereiche | Abnahme / Voraussetzung |
 | --- | --- | --- |
 | P0 – Bedienvertrag, abgeschlossen | Regeln, Auswahl, Bearbeitungskonturen und Beispiele mit dem Nutzer abgestimmt. | [Planungsabschluss](../archive/toolpath-refactoring-completed.md#r3-r1b-plan); Implementierung und GUI-Abnahme folgen separat. |
-| P1 – Parameter und Identitäten | Herkunft aller Parameter erfassen; IDs, Referenzen, Gruppen und Resolver im reinen Domain-Modell ergänzen. | Eigene/geerbte Werte eindeutig, keine Qt-/Adapterimporte; keine Verhaltensänderung im bestehenden Einstieg. |
-| P2 – Gemeinsame Bearbeitungsgrundlage | Bestehende DrawingModel-/Shape-Daten über einen Adapter in Gruppen/Arbeitsgänge überführen. Pro Kontur zunächst ein Arbeitsgang; getrennte Start-/Richtungswerte. | Vorschau/Export benutzen denselben Resolver; bestehende positive Plan- und Golden-Verträge erhalten. |
-| P3 – Persistenz und Reload | Neuen Codec, Altprojektmigration, IDs und Wiederzuordnung implementieren; GUI- und CLI-Projektwege anbinden. | Roundtrip und alte Versionen 1.1–1.5; fehlende/mehrdeutige Referenzen blockieren zuverlässig. |
+| P1 – Parameter und Identitäten, implementiert | Herkunft, IDs, Referenzen, Gruppen und Resolver im reinen Domain-Modell. | [Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3); [Zuordnungstabelle](../documentation-notes/machining-project-format.md). |
+| P2 – Gemeinsame Bearbeitungsgrundlage, implementiert | Legacy-Migration und getrennte Shape-/Layer-Projektionen mit eigenen Starts/Richtungen. | Gemeinsamer Resolver für Vorschau/Export; [Nachweis und Übergangsgrenzen](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3). |
+| P3 – Persistenz und Reload, implementiert | JSON 2.0, Altprojektmigration, IDs, Referenzbindung und GUI-/CLI-Projektwege. | Roundtrip, Versionen 1.1–1.5 und Exportabbruch bei ungelösten Referenzen [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3). |
 | P4 – Dritter Tab | Bearbeitungsbaum hinzufügen, Auswahl/Canvas koppeln, Gruppenaktionen, Parameterdarstellung; bestehende Tabs gemäß D4 anbinden. | Datenmodell ist führend, kein zweiter UI-Zustand; DE/FR/RU und Qt5/Qt6. |
 | P5 – R1b | Atomare Mehrfachverschiebung, Sortieren, Einfügemarkierungen und alternative Menüaktionen; Kopieren mit eigenständiger Identität gemäß D2/D15; verpflichtendes Undo/Redo gemäß D12. | Verschieben erhält IDs/Anzahl; bewusstes Kopieren erzeugt neue Bearbeitungs-IDs bei gleicher Originalgeometrie; Zielvererbung und Roundtrip stimmen. |
 | P6 – Export und Optimierung | Bearbeitungsreihenfolge als verbindlichen Exportvertrag aktivieren; Gruppen-/G-Code-Grenzen, Werkzeuge und Routendarstellung anbinden. | Tatsächlicher G-Code folgt dem sichtbaren Baum; beide Optimierungsmodi bleiben erhalten; kompletter Exportabbruch bei Fehlern. |
@@ -568,13 +569,14 @@ laufen über den verpflichtenden Fast-Hook; volle CI auf Develop/PR gemäß
 Repositoryregeln. Übersetzungspflege ist Teil jeder GUI-Etappe. Manuelle
 GPU-, Paket-/Debian- und reale Maschinenabnahme bleiben eigene Aufträge.
 
-## 11. Nächster Schritt nach dem freigegebenen Plan
+## 11. Nächster Schritt nach P1–P3
 
-Zunächst den abgestimmten Plan committen, pushen und den aktuellen
-Softwarestand als Develop-Prerelease veröffentlichen. Dieser Release enthält
-noch keine R3-/R1b-Implementierung. Danach beginnt die Umsetzung mit P1:
-Parameterherkunft, Identitäten und reines Domain-Modell. Bestehende
-Arbeitsabläufe bleiben in dieser ersten Scheibe unverändert.
+P1–P3 liefern das reine Modell, gemeinsame Bearbeitungsprojektionen und
+JSON-Projekte der Version 2.0 einschließlich Legacy-Migration und Reload.
+Als Nächstes folgt P4: dritter Tab und ausdrücklicher Bearbeitungskontext.
+P5 ergänzt Verschieben/Kopieren mit Undo; P6 verbindet sichtbare Reihenfolge,
+Optimierung und Routenanzeige mit dem gespeicherten Bearbeitungsmodell.
+Die bisherige Eingabesynchronisierung ist eine Übergangsbrücke bis P4/P8.
 
 ## Quellen und Abgrenzung
 
