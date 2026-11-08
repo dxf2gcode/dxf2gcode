@@ -96,8 +96,13 @@ Die vier Spalten beider Gruppen sind bündig. Die gekürzte Zahlenanzeige
 ändert unveränderte Modellwerte nicht. „Bearbeitungswerkzeug“ benennt die
 Werkzeuggruppe. Entities und Layers liegen in zwei einklappbaren, vertikal
 verstellbaren Gruppen im Tab Geometrie. Rechtsklick zeigt zuerst ein Menü
-mit verknüpften Schritten. Erstellen bietet bei Auswahl Verschieben
-(vorbelegt), Kopieren oder einen leeren Schritt. Bei Schrittauswahl bearbeiten dieselben Felder
+mit verknüpften Schritten. „Bearbeitung zuordnen …“ öffnet in Canvas,
+Geometrie- und Bearbeitungsbaum denselben Dialog für Kopieren/Verschieben
+in vorhandene oder neue Schritte. Alle Felder bleiben sichtbar und an festen
+Positionen: bestehendes Ziel aktiviert die Schrittauswahl, neues Ziel
+Name/Art/Werkzeug. Die Dialoggröße wird einmal für das ganze Formular gesetzt;
+Zielwechsel ändern weder Aktion noch Eingaben. Toolbar-Erstellen behält den eigenen Dialog inklusive leerem Schritt.
+Bei Schrittauswahl bearbeiten dieselben Felder
 Schrittvorgaben, bei aktiver Kontur deren Werte. Sicherheits-/Rückzugshöhe und
 Werkzeugzuweisung bleiben schrittbezogen. Die Herkunft wird nicht aus bloßer
 Wertgleichheit erraten, und unveränderte Felder erzeugen keinen eigenen Wert.
@@ -126,12 +131,159 @@ Undo-Eintrag. Vorhandene Typ-/Maschinen-/Geometriesperren gelten weiterhin.
 Der Canvas löst ausschließlich eindeutige oder ausdrücklich aktive Zuordnungen
 auf; bei mehrdeutiger Originalauswahl sind die Aktionen deaktiviert.
 
+D32 erhält im Canvas die bisherigen Aktionsgruppen mit Trennlinien:
+Nullpunkt, Auswahl, Richtung/Konturstart, passende Bearbeitungsarten und
+Kompensation. „Bearbeitung zuordnen …“ steht als separate letzte Gruppe. Der zusätzliche
+Kontur-Modus-Eintrag bleibt im Bearbeitungsbaum; im Canvas führt das Abschalten
+einer aktiven Pocket-/Bohraktion zur Konturbearbeitung. Auswahl aktivieren/
+deaktivieren verändert nur die aufgelösten aktiven Zuordnungen.
+`edit_operation_paths` nutzt isolierte Bearbeitungsansichten für die vorhandenen
+Startpunktalgorithmen und speichert deren lokale Starts/Richtung atomar zurück.
+Originalgeometrie und andere Referenzen bleiben erhalten. Der 3D-Klickpunkt wird
+je effektiver Werkstückoberfläche aufgelöst. Manuelle Routenanzeige bleibt
+unabhängig von der Vorschau. Die vertrauten DE/FR/RU-Beschriftungen werden
+wiederverwendet.
+
+Der gemeinsame Zuordnungsdialog liest im Canvas ausdrücklich ausgewählte
+Bearbeitungszuordnungen statt nur einer aktiven Referenz je Original. Eine
+mehrdeutige Originalauswahl bleibt gesperrt. Bestehende Ziele werden durch ihre
+stabile Schritt-ID gewählt; Name, Art und Werkzeug des Zielschritts werden
+dabei nicht geändert. `assign_to_step` kombiniert Transfer und erstmalige
+Geometriezuordnung in einer Transaktion mit einem Undo-Schritt; neue Ziele
+verwenden denselben Vertrag über `create_step`. Eigene Werte bleiben erhalten,
+geerbte Werte stammen vom Ziel. Abbruch und Ablehnung verändern nichts.
+„Schritt bearbeiten“ und „Schrittvorgaben bearbeiten“ entfallen im Kontextmenü:
+Doppelklick/F2 und Zeilenauswahl übernehmen diese Funktionen. Die drei
+Profil-/G-Code-Verwaltungsaktionen stehen unter „Erweitert“ und sind bei
+mehrdeutiger Schrittauswahl gesperrt.
+
+## Werkzeugauswahl in der Oberfläche
+
+Änderungsdetails erscheinen über den vorhandenen Fensterlogger in der zentralen
+Meldungsausgabe unten im Hauptfenster (INFO); Warnungen und Ablehnungen dort
+als WARNING. Es gibt keine zusätzliche Meldungsfläche im Bearbeitungstab und
+keinen pauschalen Hinweis auf verfügbare Rückgängig-Aktionen. Deren Verfügbarkeit
+zeigt der Zustand der Historienknöpfe. Die eingestellte Fenster-Logstufe gilt
+auch für diese Meldungen.
+
+Die Historienaktionen im Bearbeitungstab verwenden gebogene Pfeile: links
+Rückgängig, rechts Wiederherstellen. Tooltips enthalten die Tastenkürzel
+Ctrl+Z/Ctrl+Shift+Z in der nativen Plattformschreibweise. Ohne verfügbare Aktion
+ist der jeweilige Knopf ausgegraut.
+
+Beim Umordnen von Schritten über Pfeile oder Drag-and-drop bleiben genau die
+verschobenen Schritte ausgewählt und die aktuelle ausgewählte Zeile behält
+den Tastaturfokus. Auch Undo/Redo stellt die zugehörige Auswahl wieder her;
+die vollständige Exportreihenfolge wird nicht als Auswahl interpretiert.
+
+Das Werkzeugfeld und der Schrittdialog verwenden dieselbe gemeinsame Liste
+ohne Quellgruppen. Einträge zeigen T-Nummer, Durchmesser und Projekteinheit.
+Vollständig gleiche Definitionen aus Projekt und Tabelle erscheinen einmal;
+die Gleichheit berücksichtigt sämtliche ungerundeten Werkzeugwerte nach
+Einheitenumrechnung. Beim Laden werden auch gleiche Projektdefinitionen unter
+einer Identität zusammengeführt. Abweichende Definitionen derselben Nummer
+bleiben mit Herkunft und abweichenden Daten erkennbar; Tooltips enthalten die
+weiteren Werkzeugwerte. Nur im Projekt vorhandene Werkzeuge bleiben verfügbar.
+
+Bei ausdrücklich gewählter Schrittzeile: Die Auswahl der passenden Tabellenvariante statt einer Projektabweichung
+ersetzt die Definition für alle Schritte, die genau dieses Projektwerkzeug
+verwenden. Andere Definitionen derselben Nummer bleiben erhalten. Ein Wechsel
+zu einer anderen Nummer gilt nur für den ausgewählten Schritt. Rückgängig stellt
+auch Werkzeugidentitäten und gemeinsame Zuordnungen wieder her. Das bloße
+Öffnen der Auswahl ändert keine Werkzeugdaten; spätere Änderungen der allgemeinen
+Tabelle verändern gespeicherte Projektwerte nicht automatisch.
+
+## Werkzeugkonflikte vor dem Export
+
+Bei einer oder mehreren ausgewählten Konturen bietet das Werkzeugfeld einen Wechsel nur für
+die ausgewählten Zuordnungen an. Zuerst wird ein vorhandener kompatibler
+Zielschritt gesucht; bei mehreren Treffern entscheidet der Nutzer. Ohne Treffer
+ändert sich bei Vollauswahl das Quellwerkzeug direkt, sonst entsteht unmittelbar
+nach der Quelle ein neuer Schritt gleicher Art/Vorgaben für die Auswahl. Eigene Werte und
+Zuordnungs-IDs bleiben erhalten; Undo/Redo behandelt alle Quellen gemeinsam.
+Gemischte Definitionen erscheinen als „Unterschiedliche Werkzeuge“. Andere
+Parameterfelder folgen der gemeinsamen Wertedarstellung und bleiben soweit
+anwendbar editierbar. Dies unterscheidet sich vom bewussten
+Definitionsersatz bei ausdrücklich ausgewählter Schrittzeile: Die Konturauswahl ändert
+keine nicht ausgewählten Benutzer derselben Projektwerkzeugdefinition.
+
+Für tatsächlich aktivierte Bearbeitungen müssen Werkzeugnummer und vollständige
+Projektdefinition mit der aktuellen Werkzeugtabelle übereinstimmen. Fehlende
+Nummern und abweichende Werte blockieren den gesamten Export vor einer Ausgabe,
+einschließlich CLI und historischen Projektdateien. Die Tabellenwerte werden
+aus ihrer tatsächlich vorliegenden Einheit (`tool_units_metric`) in die
+Projekteinheit umgerechnet; Anzeigepräzision und Bearbeitungswerte bleiben
+unverändert. Leere und vollständig deaktivierte Schritte sowie `ignored` und
+`break` verwenden für diesen Export kein zu prüfendes Werkzeug.
+
+Die übersetzte Diagnose nennt T-Nummer, betroffene Schritte und bei fehlenden
+Nummern sämtliche gespeicherten Werkzeugwerte; bei Abweichungen zeigt sie die
+unterschiedlichen Projekt-/Tabellenwerte. Sie schlägt vor, das Werkzeug in der
+Tabelle anzulegen/korrigieren oder ein vorhandenes Tabellenwerkzeug zuzuweisen.
+Das Anlegen bleibt eine bewusste Konfigurationsänderung. Vorschau, Speichern und
+Laden bleiben möglich; vorhandene G-Code-Zieldateien werden bei einer Sperre
+nicht verändert und stdout bleibt leer. Explizite eigene Bearbeitungswerte
+werden durch diese Definitionsprüfung nicht automatisch überschrieben.
+
+## Auswahl und Vorschau mehrerer Bearbeitungen
+
+Die Originalauswahl zeigt alle verknüpften tatsächlichen Werkzeugpläne. Jeder
+behält Leads, Endpunkte und Tiefen sowie die bisherigen semantischen Farben.
+Aktive/überfahrene Bearbeitungen werden nur durch Strichstärke hervorgehoben;
+Teilauswahl punktiert die Originalkontur und zeigt k/n. Canvas-Pfade und Labels
+sind direkt auswählbar, überlagerte Treffer bieten ein Menü, Strg schaltet die
+Mehrfachauswahl. Die aktive Bearbeitung steuert die Hervorhebung; Parameter
+aggregieren die gesamte Auswahl. Eigene Werte werden auf den ausgewählten
+Zuordnungen gesetzt/entfernt, gemeinsame Rückzugs-/Sicherheitswerte auf ihren
+Schritten. Jede Aktion ist atomar rückgängig zu machen. Ein lokales Start-X/Y
+ändert nur die jeweilige Koordinate; die andere bleibt individuell erhalten.
+Bei Originalgeometrie mit mehreren Verknüpfungen bleibt der Editor gesperrt,
+bis Bearbeitungszuordnungen ausdrücklich im Baum oder Canvas gewählt wurden.
+Eindeutig zugeordnete Originalkonturen dürfen gemeinsam bearbeitet werden.
+Exportrouten bleiben davon unabhängig. Bildschirmdarstellung verschiebt keine
+Geometrie: Das Overlay ist viewportfest, die 2D-Abbildung nutzt viewportTransform.
+G40 ohne Zusatz-Offset liegt deckungsgleich auf dem Original; fachliche
+Kompensationsabstände bleiben erhalten. Die 3D-Projektion behält tatsächliches Z.
+
+Labels zeigen Schrittname, übersetztes „Kontur“ mit Originalnummer aus dem
+Bearbeitungsbaum und T-Nummer; keine zusätzliche laufende Exportposition.
+Die 2D-Rahmenauswahl setzt alle betroffenen Zustände vor einer gemeinsamen
+Callback-Meldung. Dadurch werden Bäume und Pläne nicht einmal je Kontur neu
+aufgebaut. Abwahl der bisherigen Auswahl wird genauso gemeinsam gemeldet.
+
 ## Maßgebliche Quellen
+
+BREAKS-Schnittpunkte an einer Regionsecke werden nur einmal gezählt, auch wenn
+beide angrenzenden Kanten denselben Punkt liefern. Verwendet wird die
+Punktgleichheit des Geometriekerns; es kommt keine neue konfigurierbare
+Zeichnungstoleranz hinzu. Reine Eckberührung erzeugt keinen Nullbreiten-Steg.
+Außenreste an identischen Start-/Endpunkten werden nicht als neue Geometrie
+erzeugt. Siehe [Teilungsadapter](../../source/dxf2gcode/adapters/postprocessor/breaks.py)
+und [Eck-/Endpunktregressionen](../../tests/dxf2gcode_break_intersections_test.py).
+
+Automatische Art-/Werkzeugwechsel prüfen vorhandene Ziele vor jeder Neuanlage.
+Passend heißt gleiche Art, vollständige Werkzeugdefinition und identische
+gespeicherte Schrittvorgaben, einschließlich Vererbungsvertrag. Namen spielen
+keine Rolle. Genau ein Ziel wird wiederverwendet; mehrere führen über
+`MachiningTargetChoiceRequired` zur Zielauswahl. Die Auswahl gilt nur für den
+aktuellen Auftrag, Abbruch verwirft den gesamten Auftrag. IDs/eigene Werte
+bleiben erhalten, Einträge werden hinten angefügt, vorhandene Zielparameter
+werden nicht geändert. Explizite Neuanlage und Schrittbearbeitung bleiben
+ausdrückliche Aktionen; ohne passenden Zielschritt bleibt ein vollständig
+ausgewählter Werkzeug-Quellschritt bestehen, Teilmengen erhalten einen neuen.
+
+G40-Einfahrten werden im gemeinsamen Konturplan nach dem Eintauchen vor dem
+Konturschnitt ausgegeben, auch ohne interne Werkzeugradiuskorrektur. Vorschau
+und Export enthalten dieselbe vorbereitete Gerade beziehungsweise den Bogen.
+„Aus“ erzeugt keine Einfahrt. Die Korrektur vom 08.11.2026 ändert bereits
+geschriebene Dateien nicht: neu exportieren und den neuen Werkzeugweg prüfen.
 
 - [Reines Modell und Resolver](../../source/dxf2gcode/domain/project/machining_project.py)
 - [Migration, Bindung und Projektionen](../../source/dxf2gcode/application/machining.py)
 - [Atomare Befehle und History](../../source/dxf2gcode/application/machining_actions.py),
   [Bearbeitungstab](../../source/dxf2gcode/presentation/qt/machining_panel.py)
+- [Tabellenabgleich und Diagnose](../../source/dxf2gcode/application/tool_table.py),
+  [Exportregressionen](../../tests/dxf2gcode_tool_table_test.py)
 - [Wiederverwendete Felder und Herkunftssymbole](../../source/dxf2gcode/presentation/qt/machining_parameters.py)
 - [Codec](../../source/dxf2gcode/adapters/project/machining_d2g.py),
   [Dateispeicher](../../source/dxf2gcode/adapters/project/file_store.py)
@@ -141,3 +293,45 @@ auf; bei mehrdeutiger Originalauswahl sind die Aktionen deaktiviert.
   [echter Qt-Workflow](../../tests/dxf2gcode_machining_gui_test.py)
 - [Befehlsregressionen](../../tests/dxf2gcode_machining_actions_test.py),
   [echte Drops und Übersetzungen](../../tests/dxf2gcode_machining_panel_test.py)
+
+## Importierte Haltestege als Modifikatoren
+
+Die Oberfläche zeigt importierte BREAKS-Regionen nicht mehr als gewöhnliche
+Bearbeitungsschritte. Ihre bisherigen `kind='break'`-Einträge bleiben intern
+der Speicher- und Exportvertrag; die Projektformatversion ändert sich nicht.
+Globale Wirkung über Layer-/Schrittgrenzen sowie Z-Höhe und Vorschübe bleiben
+erhalten. Dieselbe Regions-ID kann unter mehreren Schritten erscheinen.
+
+Die Verknüpfungen werden aus tatsächlich wirksamen geplanten Stegbewegungen
+abgeleitet: `BreakGeo`, Geometriesnapshot und `ToolpathAction` transportieren
+die Regions-ID als zusätzliche Metadaten. Diese ändern keinen G-Code und
+werden nicht als zweiter Projektvertrag gespeichert. Gleiche Abschnitte
+über mehrere Tiefenpässe werden pro Bearbeitung nur einmal gezählt.
+Der Qt-Controller [TabModifiers](../../source/dxf2gcode/presentation/qt/tab_modifiers.py)
+verwaltet Referenzen, Stegmodus und bestehende atomare Befehle. Höhe/Vorschübe,
+Aktivierung und Entfernen sind rückgängig machbar; das Entfernen löst die
+Bearbeitungszuordnung, die Original-DXF-Geometrie bleibt erhalten.
+Neue manuell gezeichnete Formen und lokale Schritt-/Konturzuordnungen sind
+weiterhin P7 und werden nicht durch diese reine Darstellungszuordnung vorweggenommen.
+
+D41 ist implementiert: Polygonale Stegregionen werden an der Originalkontur
+ausgewertet. Interne Radiuskorrektur überträgt die Stellen entlang der
+Geradennormalen oder Bogenradien auf die Werkzeugmittelpunktbahn;
+Maschinenkorrektur erhält dieselben programmierten Originalkonturstellen.
+Keine tangentiale Radiuszugabe; die Regionsbreite definiert weiterhin keine
+garantierte Materialstegbreite. Eckverbindungen bleiben auf Steghöhe und
+Stegbögen erhalten ihre Bogenform. Der reine Dienst
+[tabs.py](../../source/dxf2gcode/domain/toolpath/tabs.py) liefert geteilte
+Wertgeometrien und ausgelassene Stege. Zusätzliche `tab_geometry`-Metadaten
+erhalten die wirkliche Kurve durch Umkehr, Exitadapter und Überfahrt.
+
+Nutzerentscheidung zu Sonderfällen: Nicht eindeutig zuordenbare Stege dort
+vollständig auslassen und warnen, Export weiterhin zulassen. Ein anderer
+gültiger Steg derselben Region bleibt erhalten. Nicht geschlossene/nicht
+polygonale Regionen werden ebenfalls mit Warnung ausgelassen. Die Warnung
+`tabs.unmapped` läuft über die gemeinsamen Plan-/Exportdiagnosen und DE/FR/RU.
+Taschen-Randkonturen verwenden D41, Rasterfüllbahnen ohne eindeutigen
+Originalkonturpartner behalten ihre räumliche Regionsauswertung; Schleppmesser
+bleiben unverändert. Projektformat/IDs ändern sich nicht. Bereits geschriebener
+G-Code bleibt bestehen; nach der Verhaltensänderung neu exportieren und prüfen.
+Siehe [Entscheidung und Abnahmefälle](../planning/r3-r1b-implementation-plan.md#6-reihenfolge-sonderfälle-und-haltestege).

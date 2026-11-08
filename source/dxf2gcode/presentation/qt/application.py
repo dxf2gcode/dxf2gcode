@@ -289,6 +289,9 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
 
         self.ui.setupUi(self)
+        self.ui.messageSplitter.setStretchFactor(0, 1)
+        self.ui.messageSplitter.setStretchFactor(1, 0)
+        self.ui.messageSplitter.setSizes([600, 100])
         # pyuic turns the UI's ICO into a single QPixmap; retain all ICO sizes.
         self.setWindowIcon(QIcon(":images/dxf2gcode.ico"))
         self.showMaximized()
@@ -304,6 +307,9 @@ class MainWindow(QMainWindow):
         self.machining_panel = MachiningPanel(self)
         from dxf2gcode.presentation.qt.geometry_panel import GeometryPanel
         self.geometry_panel = GeometryPanel(self)
+        self.ui.mytabWidget.setCurrentWidget(self.machining_panel)
+        from dxf2gcode.presentation.qt.window_layout import WindowLayout
+        self.layout_state = WindowLayout(self)
         self.configuration_changed.connect(self.TreeHandler.updateConfiguration)
         # The canvas overlays (e.g. the scale bar) depend on the configuration
         # and on the measurement units.
@@ -963,6 +969,7 @@ class MainWindow(QMainWindow):
         """
         flag = self.ui.actionShowPathDirections.isChecked()
         self.canvas.setShowPathDirections(flag)
+        self.machining_panel.refresh_preview()
         self.canvas_scene.update()
 
     def setShowDisabledPaths(self):
@@ -972,6 +979,7 @@ class MainWindow(QMainWindow):
         """
         flag = self.ui.actionShowDisabledPaths.isChecked()
         self.canvas_scene.setShowDisabledPaths(flag)
+        self.machining_panel.refresh_preview()
         self.canvas_scene.update()
 
     def liveUpdateExportRoute(self):
@@ -1470,6 +1478,9 @@ class MainWindow(QMainWindow):
         canvas = getattr(self, 'canvas', None)
         if canvas is None:
             return
+        preview = getattr(canvas, 'machining_preview', None)
+        if preview is not None:
+            preview.overlay.update()
         update = getattr(canvas, 'updateScaleBar', None)
         if callable(update):
             update()
@@ -1742,6 +1753,7 @@ class MainWindow(QMainWindow):
         self.settings.beginGroup("MainWindow")
         geometry = self.settings.value("geometry")
         state = self.settings.value("state")
+        self.layout_state.restore(self.settings)
         self.settings.endGroup()
         if (geometry is not None) and (state is not None):
             self.restoreGeometry(geometry)
@@ -1751,6 +1763,7 @@ class MainWindow(QMainWindow):
         self.settings.beginGroup("MainWindow")
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("state", self.saveState())
+        self.layout_state.save(self.settings)
         self.settings.endGroup()
 
 

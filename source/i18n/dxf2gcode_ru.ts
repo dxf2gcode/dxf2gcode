@@ -3527,6 +3527,58 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <source>An error occured while duplicating the postprocessor config file {0} ; do the operation manually and restart the software.</source>
         <translation>При копировании файла конфигурации пост-процессора {0} произошла ошибка ; выполните операцию вручную и перезапустите программу.</translation>
     </message>
+    <message>
+        <source>Diameter</source>
+        <translation>Диаметр</translation>
+    </message>
+    <message>
+        <source>Spindle speed</source>
+        <translation>Частота вращения шпинделя</translation>
+    </message>
+    <message>
+        <source>Start radius</source>
+        <translation>Начальный радиус</translation>
+    </message>
+    <message>
+        <source>Lead radius</source>
+        <translation>Радиус подхода</translation>
+    </message>
+    <message>
+        <source>Lead length</source>
+        <translation>Длина прямого участка</translation>
+    </message>
+    <message>
+        <source>Overcut length</source>
+        <translation>Длина перебега</translation>
+    </message>
+    <message>
+        <source>T{0} — steps: {1}</source>
+        <translation>T{0} — шаги: {1}</translation>
+    </message>
+    <message>
+        <source>Tool number is missing from the current tool table.</source>
+        <translation>Номер инструмента отсутствует в текущей таблице инструментов.</translation>
+    </message>
+    <message>
+        <source>Project tool differs from the current tool table.</source>
+        <translation>Инструмент проекта отличается от текущей таблицы инструментов.</translation>
+    </message>
+    <message>
+        <source>{0}: project {1} {2}</source>
+        <translation>{0}: проект {1} {2}</translation>
+    </message>
+    <message>
+        <source>{0}: project {1}; table {2} {3}</source>
+        <translation>{0}: проект {1}; таблица {2} {3}</translation>
+    </message>
+    <message>
+        <source>Add or correct the tool in the tool table, or assign an existing table tool to the affected steps.</source>
+        <translation>Добавьте или исправьте инструмент в таблице инструментов либо назначьте затронутым шагам существующий инструмент из таблицы.</translation>
+    </message>
+    <message>
+        <source>Export blocked: resolve the tool table conflicts first.</source>
+        <translation>Экспорт заблокирован: сначала устраните конфликты с таблицей инструментов.</translation>
+    </message>
 </context>
 <context>
     <name>OffArcGeo</name>
@@ -3812,6 +3864,10 @@ Skipped Geometries</source>
     <message>
         <source>Knife return alignment requires a lead out.</source>
         <translation>Для возврата ориентации ножа требуется отвод.</translation>
+    </message>
+    <message>
+      <source>Shape %i: %i holding tab(s) omitted because their region or nominal contour boundaries cannot be mapped uniquely to the toolpath.</source>
+      <translation>Контур %i: пропущено перемычек: %i, поскольку их область или границы на исходном контуре нельзя однозначно сопоставить с траекторией инструмента.</translation>
     </message>
 </context>
 <context>
@@ -5191,6 +5247,76 @@ Skipped Geometries</source>
         <source>{0} contours selected</source>
         <translation>Выбрано контуров: {0}</translation>
     </message>
+    <message>
+        <source>Project tools</source>
+        <translation>Инструменты проекта</translation>
+    </message>
+    <message>
+        <source>Tool table</source>
+        <translation>Таблица инструментов</translation>
+    </message>
+    <message>
+        <source>Selecting a table tool copies its values into the project.</source>
+        <translation>При выборе инструмента из таблицы его значения копируются в проект.</translation>
+    </message>
+    <message>
+        <source>Project deviation</source>
+        <translation>Отличие проекта</translation>
+    </message>
+    <message>
+        <source>Project only</source>
+        <translation>Только в проекте</translation>
+    </message>
+    <message>
+        <source>Replacing a project deviation with its table definition updates all steps using that project tool.</source>
+        <translation>Выбор этого определения из таблицы заменяет отличающийся инструмент проекта во всех шагах, где он используется.</translation>
+    </message>
+    <message>
+        <source>Select machining contours to change tools.</source>
+        <translation>Для смены инструмента выберите обрабатываемые контуры.</translation>
+    </message>
+
+    <message>
+        <source>Assign machining…</source>
+        <translation>Назначить обработку…</translation>
+    </message>
+    <message>
+        <source>Selected assignments: {0}</source>
+        <translation>Выбрано назначений: {0}</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Копировать</translation>
+    </message>
+    <message>
+        <source>Move</source>
+        <translation>Переместить</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Действие</translation>
+    </message>
+    <message>
+        <source>Existing step</source>
+        <translation>Существующий шаг</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation>Назначение</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation>Дополнительно</translation>
+    </message>
+
+    <message>
+        <source>Choose matching machining step</source>
+        <translation>Выбрать подходящий шаг обработки</translation>
+    </message>
+    <message>
+        <source>Several compatible steps exist. Select the target for "{0}".</source>
+        <translation>Найдено несколько подходящих шагов. Выберите назначение для «{0}».</translation>
+    </message>
 </context>
 <context>
     <name>MachiningParameters</name>
@@ -5258,6 +5384,249 @@ Skipped Geometries</source>
         <source>Tool</source>
         <translation>Инструмент</translation>
     </message>
+    <message>
+        <source>Different tools</source>
+        <translation>Разные инструменты</translation>
+    </message>
+    <message>
+        <source>{0} contours selected. Tool changes apply only to this selection.</source>
+        <translation>Выбрано контуров: {0}. Изменение инструмента применяется только к этому выделению.</translation>
+    </message>
+    <message>
+        <source>Entry</source>
+        <translation>Вход</translation>
+    </message>
+    <message>
+        <source>Exit</source>
+        <translation>Выход</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation>Радиус</translation>
+    </message>
+    <message>
+        <source>Straight</source>
+        <translation>Прямая</translation>
+    </message>
+    <message>
+        <source>Z clearances</source>
+        <translation>Зазоры Z</translation>
+    </message>
+    <message>
+        <source>Retract</source>
+        <translation>Отвод</translation>
+    </message>
+    <message>
+        <source>Safety</source>
+        <translation>Безопасность</translation>
+    </message>
+    <message>
+        <source>Cut depth</source>
+        <translation>Глубина резания</translation>
+    </message>
+    <message>
+        <source>Infeed</source>
+        <translation>Врезание</translation>
+    </message>
+    <message>
+        <source>Final</source>
+        <translation>Конечная</translation>
+    </message>
+    <message>
+        <source>Feed</source>
+        <translation>Подача</translation>
+    </message>
+    <message>
+        <source>Motion</source>
+        <translation>Перемещение</translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation>Длина</translation>
+    </message>
+    <message>
+        <source>Overcut</source>
+        <translation>Перебег</translation>
+    </message>
+    <message>
+        <source>{0} — own value for contour {1} in step "{2}": {3}</source>
+        <translation>{0} — собственное значение для контура {1} в шаге «{2}»: {3}</translation>
+    </message>
+    <message>
+        <source>{0} — own value in step "{1}": {2}</source>
+        <translation>{0} — собственное значение в шаге «{1}»: {2}</translation>
+    </message>
+    <message>
+        <source>{0} — inherited from {1}: {2}</source>
+        <translation>{0} — унаследовано от {1}: {2}</translation>
+    </message>
+    <message>
+        <source>Z height used for retracting and rapid travel.</source>
+        <translation>Высота Z для отвода и быстрых перемещений.</translation>
+    </message>
+    <message>
+        <source>Clearance above the workpiece before approaching a cut.</source>
+        <translation>Безопасный зазор над заготовкой перед подходом к резанию.</translation>
+    </message>
+    <message>
+        <source>Z coordinate of the workpiece surface.</source>
+        <translation>Координата Z поверхности заготовки.</translation>
+    </message>
+    <message>
+        <source>Maximum cutting depth per pass.</source>
+        <translation>Максимальная глубина резания за проход.</translation>
+    </message>
+    <message>
+        <source>Z coordinate reached by the final cutting pass.</source>
+        <translation>Координата Z, достигаемая последним проходом резания.</translation>
+    </message>
+    <message>
+        <source>XY feed: movement speed in the machining plane.</source>
+        <translation>Подача XY: скорость перемещения в плоскости обработки.</translation>
+    </message>
+    <message>
+        <source>Z feed: movement speed along the depth axis.</source>
+        <translation>Подача Z: скорость перемещения вдоль оси глубины.</translation>
+    </message>
+    <message>
+        <source>Additional contour allowance applied to the toolpath.</source>
+        <translation>Дополнительный припуск контура для траектории инструмента.</translation>
+    </message>
+    <message>
+        <source>Movement used to approach the contour.</source>
+        <translation>Движение для подхода к контуру.</translation>
+    </message>
+    <message>
+        <source>Movement used to leave the contour.</source>
+        <translation>Движение для выхода из контура.</translation>
+    </message>
+    <message>
+        <source>Whether the toolpath continues beyond the contour end.</source>
+        <translation>Определяет, продолжается ли траектория за концом контура.</translation>
+    </message>
+    <message>
+        <source>Pass from which holding-tab regions affect the contour.</source>
+        <translation>Проход, начиная с которого удерживающие перемычки влияют на контур.</translation>
+    </message>
+    <message>
+        <source>Spindle speed for this machining operation.</source>
+        <translation>Частота вращения шпинделя для этой операции.</translation>
+    </message>
+    <message>
+        <source>Radius of the approach or departure arc at the workpiece.</source>
+        <translation>Радиус дуги входа или выхода у заготовки.</translation>
+    </message>
+    <message>
+        <source>Length of the straight approach or departure segment.</source>
+        <translation>Длина прямого участка входа или выхода.</translation>
+    </message>
+    <message>
+        <source>Distance travelled beyond the contour end.</source>
+        <translation>Длина перемещения за концом контура.</translation>
+    </message>
+    <message>
+        <source>Z contact height for swivelling a drag knife.</source>
+        <translation>Контактная высота Z при повороте флюгерного ножа.</translation>
+    </message>
+    <message>
+        <source>Angle threshold for swivelling the drag knife.</source>
+        <translation>Пороговый угол для поворота флюгерного ножа.</translation>
+    </message>
+    <message>
+        <source>Tool radius compensation: G40 off, G41 left, G42 right.</source>
+        <translation>Коррекция радиуса инструмента: G40 выключена, G41 слева, G42 справа.</translation>
+    </message>
+    <message>
+        <source>Legacy entry radius; prefer the lead radius for new settings.</source>
+        <translation>Устаревший начальный радиус; для новых настроек используйте радиус подхода.</translation>
+    </message>
+
+    <message>
+        <source>Top</source>
+        <translation>Верх</translation>
+    </message>
+    <message>
+        <source>Legacy radius</source>
+        <translation>Прежний радиус</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Включено</translation>
+    </message>
+
+    <message>
+        <source>Speed</source>
+        <translation>Обороты</translation>
+    </message>
+    <message>
+        <source>Pass</source>
+        <translation>Проход</translation>
+    </message>
+    <message>
+        <source>Z values</source>
+        <translation>Значения Z</translation>
+    </message>
+    <message>
+        <source>Feeds</source>
+        <translation>Подачи</translation>
+    </message>
+    <message>
+        <source>Lead in/out</source>
+        <translation>Подвод/отвод</translation>
+    </message>
+    <message>
+        <source>Offset</source>
+        <translation>Смещение</translation>
+    </message>
+    <message>
+        <source>Compensation</source>
+        <translation>Коррекция</translation>
+    </message>
+    <message>
+        <source>Allowance</source>
+        <translation>Припуск</translation>
+    </message>
+    <message>
+        <source>Swivel</source>
+        <translation>Поворот</translation>
+    </message>
+    <message>
+        <source>Knife angle</source>
+        <translation>Угол ножа</translation>
+    </message>
+    <message>
+        <source>Start X</source>
+        <translation>Начало X</translation>
+    </message>
+    <message>
+        <source>Start Y</source>
+        <translation>Начало Y</translation>
+    </message>
+
+    <message>
+        <source>Different</source>
+        <translation>Разные</translation>
+    </message>
+    <message>
+        <source>Not jointly available</source>
+        <translation>Недоступно для всей выборки</translation>
+    </message>
+    <message>
+        <source>Select machining operations explicitly: selected geometry has multiple linked operations.</source>
+        <translation>Выберите операции явно: выбранная геометрия связана с несколькими операциями.</translation>
+    </message>
+    <message>
+        <source>{0} machining contours selected. Changes apply to the entire selection.</source>
+        <translation>Выбрано контуров обработки: {0}. Изменения применяются ко всей выборке.</translation>
+    </message>
+    <message>
+        <source>{0}: {1} own values, {2} inherited values.</source>
+        <translation>{0}: собственных значений — {1}, унаследованных — {2}.</translation>
+    </message>
+    <message>
+        <source>Changes affect all contours in {0} selected steps.</source>
+        <translation>Изменения затрагивают все контуры в {0} выбранных шагах.</translation>
+    </message>
 </context>
 <context>
     <name>GeometryPanel</name>
@@ -5274,4 +5643,98 @@ Skipped Geometries</source>
         <translation>Слои</translation>
     </message>
 </context>
+<context>
+    <name>MachiningPreview</name>
+    <message>
+        <source>Start: X {0} · Y {1} · Z {2} {3}</source>
+        <translation>Начало: X {0} · Y {1} · Z {2} {3}</translation>
+    </message>
+    <message>
+        <source>End: X {0} · Y {1} · Z {2} {3}</source>
+        <translation>Конец: X {0} · Y {1} · Z {2} {3}</translation>
+    </message>
+    <message>
+        <source>Final depth: {0} {1}</source>
+        <translation>Конечная глубина: {0} {1}</translation>
+    </message>
+    <message>
+        <source>No toolpath: {0}</source>
+        <translation>Нет траектории: {0}</translation>
+    </message>
+    <message>
+        <source>Choose machining operation</source>
+        <translation>Выбрать операцию обработки</translation>
+    </message>
+</context>
+  <context>
+    <name>TabModifiers</name>
+    <message>
+      <source>Holding tabs</source>
+      <translation>Перемычки</translation>
+    </message>
+    <message>
+      <source>Imported region — global. Changes affect every linked machining operation.</source>
+      <translation>Импортированная область — глобальная. Изменения влияют на все связанные операции.</translation>
+    </message>
+    <message>
+      <source>Tab top</source>
+      <translation>Верх перемычки</translation>
+    </message>
+    <message>
+      <source>XY feed</source>
+      <translation>Подача XY</translation>
+    </message>
+    <message>
+      <source>Z feed</source>
+      <translation>Подача Z</translation>
+    </message>
+    <message>
+      <source>Region enabled</source>
+      <translation>Область включена</translation>
+    </message>
+    <message>
+      <source>Remove region</source>
+      <translation>Удалить область</translation>
+    </message>
+    <message>
+      <source>Holding tabs — {0} regions, {1} segments</source>
+      <translation>Перемычки — областей: {0}, участков: {1}</translation>
+    </message>
+    <message>
+      <source>Imported tab regions — currently ineffective</source>
+      <translation>Импортированные области перемычек — сейчас без действия</translation>
+    </message>
+    <message>
+      <source>Tab region {0} · global</source>
+      <translation>Область перемычки {0} · глобальная</translation>
+    </message>
+    <message>
+      <source>Disabled</source>
+      <translation>Отключена</translation>
+    </message>
+    <message>
+      <source>Source: {0}</source>
+      <translation>Источник: {0}</translation>
+    </message>
+    <message>
+      <source>Effective tab segments: {0}. Pass selection belongs to the machining contour.</source>
+      <translation>Действующих участков перемычек: {0}. Выбор проходов относится к контуру обработки.</translation>
+    </message>
+    <message>
+      <source>Enter a finite number.</source>
+      <translation>Введите конечное число.</translation>
+    </message>
+    <message>
+      <source>Edit imported tab regions</source>
+      <translation>Изменить импортированные области перемычек</translation>
+    </message>
+    <message>
+      <source>Finish tab editing</source>
+      <translation>Завершить редактирование перемычек</translation>
+    </message>
+    <message>
+      <source>Tab edit mode</source>
+      <translation>Режим редактирования перемычек</translation>
+    </message>
+  </context>
 </TS>

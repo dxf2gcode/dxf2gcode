@@ -5,13 +5,154 @@ import unittest
 
 from dxf2gcode_leadmove_golden_test import GoldenTestBase, build_shape
 from dxf2gcode.application.machining import MachiningDrawing
-from dxf2gcode.application.machining_actions import MachiningCommands
+from dxf2gcode.application.machining_actions import MachiningCommands, MachiningTargetChoiceRequired
 from dxf2gcode.domain.project.machining_project import LiteralAction, new_id
 from dxf2gcode.domain.project.layercontent import Layers, Shapes
 import dxf2gcode.bootstrap.runtime_state as g
 
 
 class TestMachiningActions(GoldenTestBase):
+    def test_sequential_pocket_changes_reuse_target_and_preserve_undo_ids(self):
+        commands = self.setup_commands(count=3)
+        source = commands.binding.project.steps[0]
+        ids = [entry.id for entry in source.entries]
+        commands.set_operation_mode([ids[0]], 'pocket')
+        pocket = commands.binding.project.steps[1]
+        target_id = pocket.id
+        before = commands.binding.project.to_dict()
+        count = len(commands.undo_stack)
+        commands.set_operation_mode([ids[1]], 'pocket')
+        self.assertEqual(len(commands.binding.project.steps), 2)
+        self.assertEqual(commands.binding.project.steps[1].id, target_id)
+        self.assertEqual([entry.id for entry in commands.binding.project.steps[1].entries], ids[:2])
+        self.assertEqual(commands.selection, (ids[1],))
+        self.assertEqual(len(commands.undo_stack), count+1)
+        after = commands.binding.project.to_dict()
+        commands.undo(); self.assertEqual(commands.binding.project.to_dict(), before)
+        commands.redo(); self.assertEqual(commands.binding.project.to_dict(), after)
+
+    def test_tool_changes_reuse_matching_target_including_whole_source_selection(self):
+        commands = self.setup_commands(count=3)
+        source = commands.binding.project.steps[0]
+        ids = [entry.id for entry in source.entries]
+        tool = replace(commands.binding.project.tools[source.tool_id], tool_nr=2, tool_diameter=4)
+        commands.set_operation_tool([ids[0]], tool)
+        target_id = commands.binding.project.steps[1].id
+        for identity in ids[1:]:
+            commands.set_operation_tool([identity], tool)
+            self.assertEqual(len(commands.binding.project.steps), 2)
+            self.assertEqual(commands.binding.project.steps[1].id, target_id)
+        self.assertFalse(commands.binding.project.steps[0].entries)
+        self.assertEqual([entry.id for entry in commands.binding.project.steps[1].entries], ids)
+        commands.create_step('Explicit new', 'contour', commands.binding.project.steps[1].tool_id)
+        self.assertEqual(len(commands.binding.project.steps), 3)
+
+    def test_reuse_rejects_different_defaults_and_same_number_different_tool(self):
+        commands = self.setup_commands(count=2)
+        source = commands.binding.project.steps[0]
+        tool = replace(commands.binding.project.tools[source.tool_id], tool_nr=2, tool_diameter=4)
+        for name, definition, defaults in (
+                ('Different clearance', tool, dict(source.defaults, axis3_retract=99)),
+                ('Different diameter', replace(tool, tool_diameter=6), deepcopy(source.defaults))):
+            commands.create_step(name, 'contour', definition)
+            step = commands.binding.project.steps[-1]
+            commands.edit_step(step.id, name, step.kind, step.tool_id, defaults)
+        before = commands.binding.project.to_dict()
+        commands.set_operation_tool([source.entries[0].id], tool)
+        self.assertEqual(len(commands.binding.project.steps), 4)
+        target = commands.binding.project.steps[1]
+        self.assertEqual(target.defaults, source.defaults)
+        self.assertEqual(commands.binding.project.tools[target.tool_id], tool)
+        commands.undo(); self.assertEqual(commands.binding.project.to_dict(), before)
+
+    def test_multiple_compatible_targets_require_explicit_choice_without_partial_changes(self):
+        commands = self.setup_commands(count=2)
+        source = commands.binding.project.steps[0]
+        identity = source.entries[0].id
+        targets = []
+        for _ in range(2):
+            commands.create_step('Same name', 'pocket', source.tool_id)
+            step = commands.binding.project.steps[-1]
+            commands.edit_step(step.id, step.name, step.kind, step.tool_id, deepcopy(source.defaults))
+            targets.append(step.id)
+        before, count = commands.binding.project.to_dict(), len(commands.undo_stack)
+        with self.assertRaises(MachiningTargetChoiceRequired) as raised:
+            commands.set_operation_mode([identity], 'pocket')
+        self.assertEqual([candidate[0] for candidate in raised.exception.candidates], targets)
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        self.assertEqual(len(commands.undo_stack), count)
+        commands.target_choices[raised.exception.key] = targets[1]
+        commands.set_operation_mode([identity], 'pocket')
+        self.assertEqual(len(commands.binding.project.steps), 3)
+        self.assertEqual(commands.binding.project.steps[-1].entries[0].id, identity)
+        commands.undo(); self.assertEqual(commands.binding.project.to_dict(), before)
+    def test_existing_target_mixed_assignment_is_one_atomic_command(self):
+        commands = self.setup_commands(count=2)
+        source = commands.binding.project.steps[0]
+        a, b = source.entries
+        unassigned = commands.binding.sources[b.geometry_id]
+        commands.remove([b.id])
+        commands.create_step('Target', 'contour', source.tool_id)
+        target = commands.binding.project.steps[-1].id
+        before, count = commands.binding.project.to_dict(), len(commands.undo_stack)
+        commands.assign_to_step([a.id], [unassigned], target, copy=True)
+        self.assertEqual(len(commands.undo_stack), count+1)
+        entries = commands.binding.project.steps[-1].entries
+        self.assertEqual(len(entries), 2)
+        self.assertNotEqual(entries[0].id, a.id)
+        self.assertEqual(entries[1].geometry_id, b.geometry_id)
+        self.assertEqual(commands.binding.project.steps[0].entries[0].id, a.id)
+        after = commands.binding.project.to_dict()
+        commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        commands.redo()
+        self.assertEqual(commands.binding.project.to_dict(), after)
+        commands.undo()
+        count = len(commands.undo_stack)
+        with self.assertRaises(ValueError):
+            commands.assign_to_step([a.id], [object()], target, copy=False)
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        self.assertEqual(len(commands.undo_stack), count)
+
+    def test_selected_shared_clearance_updates_once_and_undo_restores_all(self):
+        commands = self.setup_commands(count=3)
+        source = commands.binding.project.steps[0]
+        identities = [entry.id for entry in source.entries]
+        commands.create_step('Second', 'contour', source.tool_id)
+        commands.transfer([identities[1]], commands.binding.project.steps[-1].id)
+        before = commands.binding.project.to_dict()
+        count = len(commands.undo_stack)
+        commands.update_selected_step_defaults(identities[:2], {'axis3_retract': 19.123456789})
+        self.assertEqual(len(commands.undo_stack), count+1)
+        for step in commands.binding.project.steps:
+            self.assertEqual(step.defaults['axis3_retract'], 19.123456789)
+        for step, entry in commands.entries(commands.binding.project, identities):
+            self.assertNotIn('axis3_retract', entry.overrides)
+        self.assertEqual(commands.selection, tuple(identities[:2]))
+        commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        with self.assertRaises(ValueError):
+            commands.update_selected_step_defaults(identities[:2], {'axis3_mill_depth': -8})
+        self.assertEqual(commands.binding.project.to_dict(), before)
+
+    def test_batch_start_coordinate_preserves_other_axes_and_rejects_invalid_batch(self):
+        commands = self.setup_commands(count=3)
+        identities = [entry.id for entry in commands.binding.project.steps[0].entries]
+        commands.update_entries([identities[1]], start=(40, 27))
+        before = commands.binding.project.to_dict()
+        commands.update_start_coordinate(identities[:2], 0, 12.123456789)
+        entries = [entry for _, entry in commands.entries(commands.binding.project, identities)]
+        self.assertEqual(entries[0].start[0], 12.123456789)
+        self.assertEqual(entries[1].start, (12.123456789, 27))
+        self.assertEqual(entries[2].start, tuple(before['steps'][0]['entries'][2]['start']))
+        commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        count = len(commands.undo_stack)
+        with self.assertRaises(ValueError):
+            commands.update_start_coordinate(identities[:2], 0, float('nan'))
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        self.assertEqual(len(commands.undo_stack), count)
+
     def setup_commands(self, count=1, circle=False):
         shape, layer = build_shape(cut_cor=40, done_by_machine=False, tool_diameter=2,
                                   layer_settings=dict(lead_in_mode='off', lead_out_mode='off'))
@@ -34,6 +175,109 @@ class TestMachiningActions(GoldenTestBase):
         binding = MachiningDrawing.capture(Layers([layer]), g.config)
         binding.bind_legacy_editor()
         return MachiningCommands(binding)
+
+    def test_canvas_start_and_direction_edit_only_selected_assignment_and_undo(self):
+        commands = self.setup_commands()
+        source = commands.binding.project.steps[0]
+        entry = source.entries[0]
+        commands.create_step('Finish', 'contour', source.tool_id)
+        commands.transfer([entry.id], commands.binding.project.steps[-1].id, copy=True)
+        copied = commands.binding.project.steps[-1].entries[0]
+        before = commands.binding.project.to_dict()
+        shape = commands.binding.sources[entry.geometry_id]
+        geometries = [geo.save_v1() for geo in shape.geos]
+        point = shape.start_point_candidates()[2]
+        commands.edit_operation_paths([copied.id], 'nearest', {copied.id: (point.x, point.y)})
+        self.assertEqual(commands.binding.project.steps[-1].entries[0].start, (point.x, point.y))
+        self.assertEqual(commands.binding.project.steps[0].entries[0].start, entry.start)
+        self.assertEqual([geo.save_v1() for geo in shape.geos], geometries)
+        commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+
+        commands.edit_operation_paths([copied.id], 'reverse')
+        self.assertNotEqual(commands.binding.project.steps[-1].entries[0].clockwise, entry.clockwise)
+        self.assertEqual(commands.binding.project.steps[0].entries[0].clockwise, entry.clockwise)
+        commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+
+    def test_selected_tool_change_splits_only_partial_steps_and_undo_restores_ids(self):
+        commands = self.setup_commands(3)
+        first = commands.binding.project.steps[0]
+        entries = first.entries
+        entries[0].overrides['f_g1_plane'] = 123
+        old_tool = commands.binding.project.tools[first.tool_id]
+        tool = replace(old_tool, tool_nr=2, tool_diameter=4, lead_radius=3)
+        before = commands.binding.project.to_dict()
+        selected = [entry.id for entry in entries[:2]]
+        commands.set_operation_tool(selected, tool)
+        source, target = commands.binding.project.steps
+        self.assertEqual([entry.id for entry in source.entries], [entries[2].id])
+        self.assertEqual([entry.id for entry in target.entries], selected)
+        self.assertEqual(target.defaults, first.defaults)
+        self.assertEqual(target.entries[0].overrides['f_g1_plane'], 123)
+        self.assertEqual(commands.binding.project.tools[source.tool_id], old_tool)
+        self.assertEqual(commands.binding.project.tools[target.tool_id], tool)
+        after = commands.binding.project.to_dict()
+        commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        commands.redo()
+        self.assertEqual(commands.binding.project.to_dict(), after)
+        commands.undo()
+        commands.set_operation_tool([entry.id for entry in commands.binding.project.steps[0].entries], tool)
+        self.assertEqual(len(commands.binding.project.steps), 1)
+        self.assertEqual(commands.binding.project.steps[0].id, first.id)
+
+    def test_multi_step_tool_change_is_atomic_and_keeps_source_defaults(self):
+        commands = self.setup_commands(3)
+        first = commands.binding.project.steps[0]
+        commands.create_step('Second', 'contour', first.tool_id)
+        second = commands.binding.project.steps[-1]
+        commands.transfer([first.entries[2].id], second.id)
+        first, second = commands.binding.project.steps
+        second.defaults['axis3_retract'] = 99
+        selected = [first.entries[0].id, second.entries[0].id]
+        tool = replace(commands.binding.project.tools[first.tool_id], tool_nr=2)
+        before = commands.binding.project.to_dict()
+        commands.set_operation_tool(selected, tool)
+        self.assertEqual(len(commands.binding.project.steps), 3)
+        self.assertEqual(commands.binding.project.steps[-1].id, second.id)
+        self.assertEqual(commands.binding.project.steps[-1].defaults['axis3_retract'], 99)
+        commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        with self.assertRaises(ValueError):
+            commands.set_operation_tool(selected + ['foreign'], tool)
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        commands.binding.project.steps[-1].kind = 'ignored'
+        special = commands.binding.project.to_dict()
+        with self.assertRaisesRegex(ValueError, 'Select machining contours'):
+            commands.set_operation_tool(selected, tool)
+        self.assertEqual(commands.binding.project.to_dict(), special)
+
+    def test_canvas_start_uses_local_coordinates_under_entity_transform(self):
+        from dxf2gcode.domain.geometry.point import Point
+        from dxf2gcode.domain.project.entitycontent import EntityContent
+        for closed in (True, False):
+            shape, layer = build_shape(closed=closed, cut_cor=40, done_by_machine=False)
+            shape.parentEntity = EntityContent(0, 'Root', None, Point(13, -7), Point(), [2, 2, 1], .4)
+            for geo in shape.geos:
+                geo.make_abs_geo(shape.parentEntity)
+            layer.shapes = Shapes([shape])
+            layer.exp_order_complete = [0]
+            commands = MachiningCommands(MachiningDrawing.capture(Layers([layer]), g.config))
+            commands.binding.bind_legacy_editor()
+            entry = commands.binding.project.steps[0].entries[0]
+            local = shape.geos[-1].get_start_end_points(True if closed else False)
+            point = shape.start_point_candidates()[-1]
+            geometry = [geo.save_v1() for geo in shape.geos]
+            before = commands.binding.project.to_dict()
+            commands.edit_operation_paths([entry.id], 'nearest', {entry.id: (point.x, point.y)})
+            updated = commands.binding.project.steps[0].entries[0]
+            self.assertEqual(updated.start, (local.x, local.y))
+            view = commands.binding.materialize()[0].shapes[0]
+            self.assertLess(view.get_start_end_points(True).distance(point), 1e-10)
+            self.assertEqual([geo.save_v1() for geo in shape.geos], geometry)
+            commands.undo()
+            self.assertEqual(commands.binding.project.to_dict(), before)
 
     def test_selected_kind_change_splits_step_preserving_ids_defaults_and_undo(self):
         commands = self.setup_commands(2)
@@ -103,14 +347,15 @@ class TestMachiningActions(GoldenTestBase):
         self.assertEqual(target.entries[0].overrides['cut_cor'], 40)
         self.assertTrue(commands.binding.materialize()[1].shapes[0].Drill)
         commands.set_operation_mode([entry.id], compensation=42)
-        target = commands.binding.project.steps[2]
+        target = commands.binding.project.steps[0]
+        self.assertEqual(len(commands.binding.project.steps), 2)
         self.assertEqual(target.kind, 'contour')
-        self.assertEqual(target.entries[0].id, entry.id)
-        self.assertEqual(target.entries[0].overrides['cut_cor'], 42)
-        view = commands.binding.materialize()[2].shapes[0]
+        self.assertEqual(target.entries[-1].id, entry.id)
+        self.assertEqual(target.entries[-1].overrides['cut_cor'], 42)
+        view = commands.binding.materialize()[0].shapes[-1]
         self.assertFalse(view.Drill or view.Pocket)
         self.assertEqual(view.cut_cor, 42)
-        self.assertEqual(len(commands.binding.project.steps[0].entries), 1)
+        self.assertEqual(len(commands.binding.project.steps[0].entries), 2)
 
     def test_copy_move_own_values_target_inheritance_and_stable_history(self):
         commands = self.setup_commands()
@@ -206,6 +451,35 @@ class TestMachiningActions(GoldenTestBase):
         commands.refresh_tool(step.tool_id, replace(tool, speed=1234))
         self.assertEqual(commands.binding.materialize()[0].shapes[0].tool_override.speed, 1234)
         commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+
+    def test_replace_shared_tool_merges_all_users_and_preserves_other_definitions(self):
+        from dxf2gcode.domain.project.machining_project import MachiningProject
+        commands = self.setup_commands()
+        first = commands.binding.project.steps[0]
+        old_id = first.tool_id
+        original = commands.binding.project.tools[old_id]
+        commands.create_step('Shared', 'contour', old_id)
+        replacement = replace(original, speed=1234)
+        commands.create_step('Table definition already present', 'contour', replacement)
+        canonical = commands.binding.project.steps[-1].tool_id
+        commands.create_step('Another definition of same T-number', 'contour', replace(original, speed=9876))
+        other_id = commands.binding.project.steps[-1].tool_id
+        before = commands.binding.project.to_dict()
+        commands.edit_step(first.id, first.name, first.kind, canonical, replace_shared_tool=True)
+        project = commands.binding.project
+        self.assertEqual([step.tool_id for step in project.steps], [canonical]*3 + [other_id])
+        self.assertNotIn(old_id, project.tools)
+        self.assertEqual(MachiningProject.from_dict(project.to_dict()).to_dict(), project.to_dict())
+        after = project.to_dict()
+        commands.undo()
+        self.assertEqual(commands.binding.project.to_dict(), before)
+        commands.redo()
+        self.assertEqual(commands.binding.project.to_dict(), after)
+        commands.undo()
+        # Invalid simultaneous kind edit rejects the complete replacement.
+        with self.assertRaises(ValueError):
+            commands.edit_step(first.id, 'Invalid drill', 'drill', canonical, replace_shared_tool=True)
         self.assertEqual(commands.binding.project.to_dict(), before)
 
     def test_optimizer_keeps_literal_barriers_and_both_relative_modes(self):

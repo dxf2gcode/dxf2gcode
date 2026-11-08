@@ -57,10 +57,7 @@ def prepare_shape(shape, config=None, build_preview=True):
                 height = action.args[0]
             if action.role in ('lead_out', 'overcut'):
                 in_exit = True
-            if in_exit and action.role == 'tab' and action.kind == 'linear_xy':
-                prepared.exit_geos.append(_existing_geometry(PathGeometry(
-                    'break', action.args[0], action.args[1], height=height)))
-            if action.role not in ('lead_out', 'overcut'):
+            if action.role not in ('lead_out', 'overcut') and not (in_exit and action.role == 'tab'):
                 continue
             args = action.args
             if action.kind == 'linear_xy':
@@ -72,5 +69,8 @@ def prepare_shape(shape, config=None, build_preview=True):
                                    end_angle=args[4] + (1 if args[8] > 0 else -1) * pi / 2)
             else:
                 continue
+            if action.role == 'tab':
+                geo = replace(geo, kind='break', tab_geometry=geo, height=height,
+                              modifier_id=action.modifier_id)
             prepared.exit_geos.append(_existing_geometry(geo))
     return prepared

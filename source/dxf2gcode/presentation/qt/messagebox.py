@@ -49,7 +49,7 @@ class MessageBox(QTextBrowser):
         @param parent: This is the reference to the parent class initialized
         previously.
         """
-        super(MessageBox, self).__init__()
+        super(MessageBox, self).__init__(parent)
         self.setOpenExternalLinks(True)
 
         self.append(self.tr("You are using DXF2GCODE"))

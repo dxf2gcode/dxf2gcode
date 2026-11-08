@@ -226,4 +226,14 @@ class MachiningProject:
                     raise ValueError('Unknown machining entry type')
             result.steps.append(MachiningStep(**fields))
         result.validate()
+        # Equal complete definitions share one project identity after loading.
+        canonical = {}
+        for identity, tool in list(result.tools.items()):
+            if tool in canonical:
+                for step in result.steps:
+                    if step.tool_id == identity:
+                        step.tool_id = canonical[tool]
+                del result.tools[identity]
+            else:
+                canonical[tool] = identity
         return result

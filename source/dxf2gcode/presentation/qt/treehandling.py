@@ -453,6 +453,12 @@ class TreeHandler(QWidget):
                     for row in range(view.model().rowCount(item_index)):
                         collect(view.model().index(row, 0, item_index))
                 collect(index)
+                if shapes and all(shape.parentLayer.isBreakLayer() for shape in shapes):
+                    menu = QMenu(view)
+                    menu.addAction(panel.modifiers.tr('Edit imported tab regions'),
+                                   lambda: panel.modifiers.open_from_geometry(shapes))
+                    menu.exec(view.viewport().mapToGlobal(position))
+                    return
                 if shapes and not all(shape.isSelected() for shape in shapes):
                     view.selectionModel().clearSelection()
                     view.selectionModel().select(index, QItemSelectionModel.SelectionFlag.Select |
@@ -1728,6 +1734,8 @@ class TreeHandler(QWidget):
     @staticmethod
     def setShapeSelected(shape, selected):
         """Synchronize a domain selection with its optional 2D item."""
+        if shape.parentLayer.isBreakLayer():
+            selected = False
         scene = getattr(g.window, 'canvas_scene', None)
         if scene is not None and hasattr(scene, 'set_shape_selected'):
             scene.set_shape_selected(shape, selected)
@@ -1951,6 +1959,9 @@ class TreeHandler(QWidget):
             return
         label.setVisible(visible)
         combo.setVisible(visible)
+        origin = getattr(self.ui, 'breaksPassOrigin', None)
+        if origin is not None:
+            origin.setVisible(visible)
         if not visible:
             return
 

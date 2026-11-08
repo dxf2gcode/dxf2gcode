@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben
 
-Stand: **07.11.2026**.
+Stand: **08.11.2026**.
 
 Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
 Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
@@ -73,12 +73,39 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
   [R3-UI-Nachweis](archive/toolpath-refactoring-completed.md#r3-ui)). Aktuelle Screenshots
   ergänzen und verbliebene
   Legacy-Kompatibilitätsaufrufer vor Entfernung prüfen.
+  Die Werkzeugkonfliktmeldung und die bewusste Auflösung fehlender/abweichender
+  Tabellenwerkzeuge im realen Projektablauf ebenfalls abnehmen.
+  Mehrfachvorschau und direkte Canvas-Auswahl, unveränderte Bewegungsfarben,
+  Deckungsgleichheit nach Zoom/Pan, zweispaltige Parametergruppen und Maschinenfilter
+  sowie feste Seiten-/Meldungsgrößen beim Skalieren und nach Neustart prüfen.
+  G40-Einfahrt mit Gerade/Bogen einschließlich neu exportiertem G-Code prüfen.
+  Konturlabels mit dem Baum vergleichen und Rahmenauswahl größerer Zeichnungen
+  im praktischen Ablauf auf Reaktionszeit prüfen.
+  Gemeinsame Parameteränderungen/Rücksetzen bei gleichen und gemischten Werten,
+  Schrittwert-Wirkung sowie die Sperre mehrdeutiger Originalauswahl abnehmen.
+  „Bearbeitung zuordnen …“ aus Canvas und Baum mit vorhandenen/neuen Zielen,
+  Kopieren/Verschieben und Abbruch im eigenen Projektablauf prüfen.
+  Ziel mehrfach wechseln: unveränderte Dialoggröße, Feldpositionen und Eingaben prüfen.
+  Wiederholte Taschen-/Werkzeugwechsel mit vorhandenen passenden Schritten,
+  mehreren Treffern und Abbruch der Zielauswahl praktisch abnehmen.
+  `BreakExample.dxf` nach der Steg-Eckpunktkorrektur mit dem eigenen Profil
+  öffnen und exportieren; Haltestege fachlich kontrollieren.
+  Haltesteg-Gruppen und Stegmodus bedienen: globale Region ändern, deaktivieren,
+  entfernen und rückgängig machen; Wirkung auf mehrere Schritte prüfen.
+  D41 mit schmalen Regionen nur auf der Originalkontur, G41/G42, Bögen und
+  eckübergreifenden Stegen fachlich prüfen; Warnungen ausgelassener Stege beachten.
   P1–P6 sind [implementiert und lokal geprüft](archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6).
   [Gemeinsamer Detailplan](planning/r3-r1b-implementation-plan.md),
   [R3-Anforderungen](planning/open-task-details.md#r3) und [R1b](planning/open-task-details.md#r1b).
 - [ ] **R3 – Stegregionen P7, später:** manuelle Regionen, Geometriefang und
   automatische Platzierung separat abstimmen; bestehende BREAKS:-Funktion
-  bleibt Teil des Grundumfangs. [Folgepaket](planning/r3-r1b-implementation-plan.md).
+  ist als globale Modifikatorverwaltung vorhanden. Neue Regionen zeichnen,
+  verschieben und lokal zuordnen bleibt das [Folgepaket](planning/r3-r1b-implementation-plan.md).
+- [ ] **R3-IGNORE – Bedienung ignorierter Geometrie abstimmen:** Empfehlung:
+  „Ignoriert“ nicht als neue Bearbeitungsart anbieten; `IGNORE:`-Import und
+  gespeicherte Projekte erhalten und die wirkungslose Exportaktivierung klar
+  darstellen. Noch keine Änderung der Bedienung beauftragt.
+  [Untersuchung](planning/r3-r1b-implementation-plan.md#r3-ui-followups).
 
 <a id="teilkonturen"></a>
 

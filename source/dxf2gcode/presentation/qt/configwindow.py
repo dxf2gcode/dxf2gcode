@@ -82,7 +82,7 @@ import dxf2gcode.bootstrap.runtime_state as g
 
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QVBoxLayout, QHBoxLayout, QLayout, QFrame, \
     QLabel, QLineEdit, QTextEdit, QCheckBox, QSpinBox, QDoubleSpinBox, QComboBox, QTableWidget, QTableWidgetItem, \
-    QPushButton, QAbstractItemView, QWidget, QSizePolicy, QListWidget, QStackedWidget, QSplitter
+    QPushButton, QAbstractItemView, QWidget, QSizePolicy, QListWidget, QStackedWidget, QSplitter, QHeaderView
 from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon, QPixmap, QValidator, QRegularExpressionValidator
 from dxf2gcode.presentation.qt.qt_compat.QtCore import QLocale, QRegularExpression
 from dxf2gcode.presentation.qt.qt_compat import QtCore
@@ -187,6 +187,13 @@ class ConfigWindow(QDialog):
         #No modification in progress for now
         self.setEditInProgress(False)
         self.resize(1000, 700)
+        # Apply against the final dialog geometry, rather than the initial
+        # pre-layout size which can give the navigation half of the window.
+        self._initial_splitter_timer = QtCore.QTimer(self)
+        self._initial_splitter_timer.setSingleShot(True)
+        self._initial_splitter_timer.timeout.connect(lambda: splitter.setSizes(
+            [list_widget.minimumWidth(), max(1, splitter.width()-list_widget.minimumWidth())]))
+        self._initial_splitter_timer.start(0)
 
 
     def keyPressEvent(self, event):
@@ -842,8 +849,6 @@ class CfgSubtitle(CfgDummy):
         layout.addWidget(separator)
 
         self.setLayout(layout, False)
-        if text is not None:
-            layout.itemAt(0).widget().setWordWrap(False)
 
 
 class CfgNote(CfgDummy):
@@ -946,7 +951,9 @@ class CfgSpinBox(CfgBase):
         self.label = QLabel(text, parent)
 
         self.spinbox = QSpinBox(parent)
-        self.spinbox.setMinimumWidth(200)  # Provide better alignment with other items
+        self.spinbox.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
+        self.spinbox.setMinimumWidth(80)
+        self.spinbox.setMaximumWidth(160)
 
         if unit is not None:
             self.setUnit(unit)
@@ -1028,6 +1035,7 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
 
     def __init__(self, parent = None):
         QDoubleSpinBox.__init__(self, parent)
+        self.setButtonSymbols(QDoubleSpinBox.ButtonSymbols.NoButtons)
         self._original_value = None
         self.display_config = None
         self.display_precision = None
@@ -1042,6 +1050,17 @@ class CorrectedDoubleSpinBox(QDoubleSpinBox):
         if local_decimal_separator == '.':
             local_decimal_separator = ''
         self.lineEdit().setValidator(QRegularExpressionValidator(QRegularExpression("-?[0-9]*[.{0}]?[0-9]*.*".format(local_decimal_separator)), self))
+
+    def sizeHint(self):
+        hint = QDoubleSpinBox.sizeHint(self)
+        # Internal storage precision must not reserve hundreds of characters.
+        hint.setWidth(self.fontMetrics().horizontalAdvance('-123456.12345' + self.suffix()) + 20)
+        return hint
+
+    def minimumSizeHint(self):
+        hint = self.sizeHint()
+        hint.setWidth(80)
+        return hint
 
     def setDecimals(self, places):
         """Compatibility API for display precision, never storage precision."""
@@ -1126,7 +1145,8 @@ class CfgDoubleSpinBox(CfgSpinBox):
         self.label = QLabel(text, parent)
 
         self.spinbox = CorrectedDoubleSpinBox(parent)
-        self.spinbox.setMinimumWidth(200)  # Provide better alignment with other items
+        self.spinbox.setMinimumWidth(80)
+        self.spinbox.setMaximumWidth(160)
         self.spinbox.number_kind = 'angle' if unit == '°' else 'feed' if unit and ('/min' in unit or 'IPS' in unit) else 'length'
         if unit and 'mm' in unit:
             self.spinbox.number_units = 'mm'
@@ -1760,12 +1780,23 @@ class CfgTableToolParameters(CfgTable):
         self.knife_offset = self.knife_mode()
         self.max_tool_number = 0
         CfgTable.__init__(self, text, columns, parent)
+        header = self.tablewidget.horizontalHeader()
+        header.setStretchLastSection(False)
+        header.setMinimumSectionSize(48)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def setSpec(self, spec):
         super().setSpec(spec)
         if self.knife_offset and 'diameter' in self.keys:
             self.tablewidget.horizontalHeaderItem(self.keys.index('diameter')).setText(
                 self.tr("Knife offset"))
+        self._wrap_headers()
+
+    def _wrap_headers(self):
+        for column in range(self.tablewidget.columnCount()):
+            item = self.tablewidget.horizontalHeaderItem(column)
+            item.setToolTip(item.text().replace('\n', ' '))
+            item.setText(item.text().replace('_', '\n'))
 
     def showEvent(self, event):
         mode = self.knife_mode()
@@ -1777,6 +1808,7 @@ class CfgTableToolParameters(CfgTable):
                 self.tablewidget.horizontalHeaderItem(self.keys.index('diameter')).setText(
                     self.tr("Knife offset"))
             self.setValue(values)
+            self._wrap_headers()
         super().showEvent(event)
 
     def setCellValue(self, line, column, value):
@@ -1802,6 +1834,7 @@ class CfgTableToolParameters(CfgTable):
         else:
             #tool number is an integer
             spinbox = QSpinBox()
+            spinbox.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
             spinbox.setMinimum(0)
             spinbox.setMaximum(1000000000) #Default value is 99
 

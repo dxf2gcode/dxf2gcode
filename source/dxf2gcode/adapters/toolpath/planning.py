@@ -18,6 +18,7 @@ from dxf2gcode.domain.toolpath.leadmove import (
     get_lead_in_mode, get_lead_out_mode, get_overcut_enabled)
 from dxf2gcode.domain.toolpath.pocketmove import PocketMove
 from dxf2gcode.domain.toolpath.stmove import RapidPos
+from dxf2gcode.domain.toolpath.tabs import TabRegion, map_tabs
 
 
 def _xy(point):
@@ -42,7 +43,8 @@ def _snapshot_geometry_value(geo):
     if isinstance(geo, BreakGeo):
         return PathGeometry(
             "break", start, end, length, height=geo.height,
-            xy_feed=geo.xyfeed, z_feed=geo.zfeed)
+            xy_feed=geo.xyfeed, z_feed=geo.zfeed, modifier_id=geo.modifier_id,
+            tab_geometry=geo.tab_geometry)
     if isinstance(geo, PocketMove):
         return PathGeometry(
             "pocket", start, end, length, xy_feed=geo.feedXY, z_feed=geo.feedZ,
@@ -63,7 +65,7 @@ def _existing_geometry(geo):
     """Adapt immutable geometry values to the established exit algorithms."""
     start, end = Point(*geo.start), Point(*geo.end)
     if geo.kind == "break":
-        return BreakGeo(start, end, geo.height, geo.xy_feed, geo.z_feed)
+        return BreakGeo(start, end, geo.height, geo.xy_feed, geo.z_feed, geo.modifier_id, geo.tab_geometry)
     if geo.kind == "pocket":
         result = PocketMove(start, end)
         result.setZMove(geo.z_feed, geo.xy_feed, geo.safe_depth, geo.depth,
@@ -174,10 +176,42 @@ class ShapePlanningInputs:
             return replace(snapshot_geometry(geo),
                            role=role or ("pocket" if id(geo) in pocket_ids else "cut"))
 
-        split = tuple(frozen(part, "pocket" if id(geo) in pocket_ids else "cut")
-                      for geo in cut_geos
-                      for part in (breaks.getNewGeos(Geos([geo]))
-                                   if breaks is not None else (geo,)))
+        def legacy_split(geometries):
+            return tuple(frozen(part, 'pocket' if id(geo) in pocket_ids else 'cut')
+                         for geo in geometries for part in
+                         (breaks.getNewGeos(Geos([geo])) if breaks is not None else (geo,)))
+
+        split = None
+        skipped_tabs = 0
+        if breaks is not None and settings.machine_type != 'drag_knife' and not shape.Drill:
+            regions = []
+            unsupported = 0
+            for break_layer in breaks.breakLayers:
+                for region in break_layer.shapes.not_disabled_iter():
+                    edges = tuple(region.geos.abs_iter())
+                    if (region.closed and len(edges) >= 3 and all(isinstance(edge, LineGeo) for edge in edges)
+                            and all(edge.Pe.distance(next_edge.Ps) <= config.point_tolerance
+                                    for edge, next_edge in zip(edges, edges[1:]+edges[:1]))):
+                        regions.append(TabRegion(tuple(_xy(edge.Ps) for edge in edges),
+                            region.axis3_mill_depth, region.f_g1_plane, region.f_g1_depth,
+                            getattr(region, 'operation_id', '')))
+                    else:
+                        unsupported += 1
+            nominal = tuple(snapshot_geometry(geo).resolved for geo in contour)
+            if all(geo.kind in ('line', 'arc') for geo in nominal):
+                # Boundary contours use nominal contact points in both modes.
+                # Pocket raster passes have no one-to-one contour counterpart;
+                # their existing spatial region intersections remain unchanged.
+                boundary = tuple(frozen(geo) for geo in cut_geos if id(geo) not in pocket_ids)
+                offset = (settings.tool_radius + getattr(shape, 'milling_offset', 0.0)
+                          if software_comp and shape.cut_cor != 40 else 0.)
+                mapped, skipped = map_tabs(nominal, boundary, tuple(regions), offset,
+                                          shape.closed, max(1e-8, config.point_tolerance))
+                fill = legacy_split(geo for geo in cut_geos if id(geo) in pocket_ids)
+                split = mapped + fill
+                skipped_tabs = len(skipped) + unsupported
+        if split is None:
+            split = legacy_split(cut_geos)
         return ToolpathRequest(
             shape.nr, settings, capabilities,
             contour=tuple(snapshot_geometry(geo) for geo in contour),
@@ -189,6 +223,7 @@ class ShapePlanningInputs:
             closed=shape.closed, compensation=shape.cut_cor,
             pocket=shape.Pocket, drill=shape.Drill,
             has_break_layers=bool(getattr(breaks, "breakLayers", ())),
+            skipped_tabs=skipped_tabs,
             start_error=getattr(shape.stmove, "start_move_error", ""),
             initial_state=PlanningState(postprocessor.feed, postprocessor.ze,
                                         postprocessor.lz,

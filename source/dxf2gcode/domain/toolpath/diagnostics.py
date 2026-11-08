@@ -27,6 +27,9 @@ MISSING_LEAD = QT_TRANSLATE_NOOP(
     "radius compensation with a movement in the XY plane "
     "- the shape is NOT milled! Use the lead in mode "
     "'startmove', 'straight' or 'radius'.")
+TAB_UNMAPPED = QT_TRANSLATE_NOOP(
+    "Shape", "Shape %i: %i holding tab(s) omitted because their region or nominal "
+    "contour boundaries cannot be mapped uniquely to the toolpath.")
 
 
 def diagnostic(request, code, source, *args, severity="error"):

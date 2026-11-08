@@ -55,6 +55,8 @@ def worker():
     QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, str(folder))
     app = QApplication([])
     window = app_module.MainWindow(app)
+    # Explicit file settings keep persistence tests out of the Windows registry.
+    window.settings = QtCore.QSettings(str(folder / 'window.ini'), QtCore.QSettings.Format.IniFormat)
     app_module.options = SimpleNamespace(post_pro=window.MyPostProcessor.output_text[0])
     g.window = window
     from dxf2gcode.adapters.project.machining_d2g import decode_project
@@ -96,9 +98,18 @@ def worker():
         assert program(output) == program(cli_output)
         assert output.read_text().count('* SHAPE Nr:') == 2, output.read_text()
         saved_diameter = window.shapes[0].tool_override.tool_diameter
-        g.config.vars.Tool_Parameters['1']['diameter'] = 999
+        table_diameter = g.config.vars.Tool_Parameters['1']['diameter']
+        g.config.var_dict['Tool_Parameters']['1']['diameter'] = 999
         window.TreeHandler.updateConfiguration()
         assert window.shapes[0].tool_override.tool_diameter == saved_diameter
+        existing_program = output.read_bytes()
+        assert not window.exportShapes(saveas=str(output))
+        assert output.read_bytes() == existing_program
+        assert warning.called and 'T1' in warning.call_args.args[2]
+        warning.reset_mock()
+        g.config.var_dict['Tool_Parameters']['1']['diameter'] = table_diameter
+        g.config.update_config()
+        assert window.exportShapes(saveas=str(output))
         window.cont_dx = 7
         window.d2g.small_reload()
         assert window.d2g.machining_drawing.project.steps[0].id == step_id

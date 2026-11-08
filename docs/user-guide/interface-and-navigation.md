@@ -26,6 +26,10 @@ and open it through **File → Open...**.
 | Drawing view, right | Inspect geometry, select contours and display toolpath aids |
 | Message pane, bottom | Read import information, warnings and operation results |
 
+Drag the horizontal divider immediately above the message pane up or down
+to change its height. The drawing and sidebar share the remaining space;
+resizing preserves the messages and project values.
+
 The **Entities** tab follows the imported entity/block structure. The
 **Layers** tab groups contours by layer and is the useful starting point for
 selecting an entire source layer. Both show the same drawing rather
@@ -60,6 +64,9 @@ for the separate order, display and optimization controls.
 
 ## Move around the 2D view
 
+The application starts with the **Machining** tab selected. Switch to
+**Geometry** whenever you need the original entity or layer selection.
+
 | Action | Control |
 | --- | --- |
 | Zoom in or out | Mouse wheel over the drawing |
@@ -74,6 +81,13 @@ the workpiece origin are separate operations.
 The tree's expand/collapse buttons reveal or hide child rows without changing
 their enablement. With focus in either tree, **Ctrl + Shift + Right** expands
 that entire active tree; **Ctrl + Shift + Left** collapses it.
+
+Resizing the main window keeps the left pane width and message-pane height;
+the canvas receives the extra space. Within Machining, the tree receives extra
+height while the parameter pane retains its height. Drag the splitters manually
+to choose another distribution. Pane sizes and collapsed geometry
+sections are remembered across restarts. The minimum window size protects the
+canvas from being squeezed away.
 
 ## Read the preview and parameters together
 

@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from dxf2gcode.domain.toolpath.depths import calculate_depth_passes
 from dxf2gcode.domain.toolpath.diagnostics import (
-    EXIT_ERROR, INITIAL_DEPTH, INVERTED_RANGE, MISSING_LEAD, ZERO_SLICE, diagnostic)
+    EXIT_ERROR, INITIAL_DEPTH, INVERTED_RANGE, MISSING_LEAD, ZERO_SLICE, TAB_UNMAPPED, diagnostic)
 from dxf2gcode.domain.toolpath.inputs import reverse_chain
 from dxf2gcode.domain.toolpath.movements import MovementPlan
 from dxf2gcode.domain.toolpath.plan import ToolpathPlanningResult
@@ -18,6 +18,9 @@ class ContourStrategy:
         settings, caps = request.settings, request.capabilities
         output = MovementPlan(request)
         diagnostics = []
+        if request.skipped_tabs and settings.break_pass != 0:
+            diagnostics.append(diagnostic(request, 'tabs.unmapped', TAB_UNMAPPED,
+                request.shape_number, request.skipped_tabs, severity='warning'))
         compensation = request.compensation
         software_comp = ((compensation != 40 or request.pocket) and
                          not settings.machine_compensation and not request.drill)
@@ -80,9 +83,19 @@ class ContourStrategy:
 
         safe = settings.workpiece_top + abs(settings.safe_margin)
 
-        def emit_contour(chain, depth):
+        def emit_contour(chain, depth, role='cut'):
+            pending = []
             for geo in chain:
                 geo = geo.resolved
+                if geo.kind == 'break':
+                    if pending and (geo.height, geo.xy_feed, geo.z_feed) != (pending[0].height, pending[0].xy_feed, pending[0].z_feed):
+                        output.tab_chain(pending, depth, restore=False, feed=settings.feed_xy)
+                        pending = []
+                    pending.append(geo)
+                    continue
+                if pending:
+                    output.tab_chain(pending, depth, feed=settings.feed_xy)
+                    pending = []
                 if geo.kind == "pocket":
                     geo = replace(
                         geo, z_feed=settings.feed_depth,
@@ -90,7 +103,13 @@ class ContourStrategy:
                         retract_depth=settings.retract_depth)
                     output.geometry(geo)
                 else:
-                    output.cut_geometry(geo, drill=request.drill)
+                    output.cut_geometry(geo, drill=request.drill, role=role)
+            if pending:
+                output.tab_chain(pending, depth, restore=False, feed=settings.feed_xy)
+
+        def entry_depth(chain, depth):
+            first = chain[0].resolved if chain else None
+            return max(depth, first.height) if first is not None and first.kind == 'break' else depth
 
         output.geometry(request.prepared_path[0].resolved, role="approach")
         output.add("pre_cut")
@@ -102,21 +121,24 @@ class ContourStrategy:
                 output.geometry(geo, role="lead_in")
         output.add("rapid_z", safe, role="approach")
         output.add("feed", settings.feed_depth)
-        output.add("drill" if request.drill else "linear_z", depths[0], role="plunge")
+        first_geos = pass_geometries(1) if not request.drill else ()
+        output.add("drill" if request.drill else "linear_z", entry_depth(first_geos, depths[0]), role="plunge")
         last_geos = ()
         if not request.drill:
             output.add("feed", settings.feed_xy)
             if compensation != 40 and not caps.compensation_outside_piece:
                 for geo in g40_lead:
                     output.geometry(geo, role="lead_in")
-            elif software_comp:
+            elif compensation == 40:
+                # Both software compensation and native G40 enter along the
+                # prepared tool-centre lead after plunging to cutting depth.
                 for geo in request.lead_in:
                     output.cut_geometry(geo, role="lead_in")
             if compensation != 40:
                 output.add("compensation_on", compensation)
             for geo in nominal_lead:
                 output.geometry(geo, role="lead_in")
-            last_geos = pass_geometries(1)
+            last_geos = first_geos
             emit_contour(last_geos, depths[0])
             if compensation != 40 and caps.cancel_compensation_for_depth:
                 output.add("compensation_off")
@@ -130,7 +152,7 @@ class ContourStrategy:
                 continue
             last_geos = current
             output.add("feed", settings.feed_depth)
-            output.add("linear_z", depth, role="plunge")
+            output.add("linear_z", entry_depth(current, depth), role="plunge")
             output.add("feed", settings.feed_xy)
             if compensation != 40:
                 if not request.closed and not caps.cancel_compensation_for_depth:
@@ -165,8 +187,7 @@ class ContourStrategy:
                     EXIT_ERROR,
                     request.shape_number, message))
                 return ToolpathPlanningResult(None, tuple(diagnostics))
-            for geo in exit_geos:
-                output.cut_geometry(geo, role="lead_out")
+            emit_contour(exit_geos, depths[-1], role='lead_out')
         output.add("feed", settings.feed_depth)
         output.add("linear_z", safe, role="retract")
         output.add("rapid_z", settings.retract_depth, role="retract")

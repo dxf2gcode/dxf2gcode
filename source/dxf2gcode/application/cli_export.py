@@ -169,6 +169,10 @@ class ExportProject:
             model.layers = machining.materialize()
             model.shapes = [shape for layer in model.layers for shape in layer.shapes]
             export_config = ProjectConfiguration(machining.project)
+        else:
+            # Legacy projects follow the same live-table policy as GUI migration.
+            model.layers.machining_project = MachiningDrawing.capture(
+                session.layerContents, self._config).project
         exporter = ExportDrawing(
             import_drawing=None, build_model=None,
             postprocessor=self._postprocessor, config=export_config,

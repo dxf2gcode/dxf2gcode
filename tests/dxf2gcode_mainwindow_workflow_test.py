@@ -135,25 +135,27 @@ def _check_startpoint_route_display(window, app):
         original_start = shape.get_start_end_points(True)
         for live in (False, True):
             window.ui.actionLiveUpdateExportRoute.setChecked(live)
-            for visible in ((False, True) if not live else (True,)):
-                window.deleteG0Paths()
-                if visible:
+            for source in ('Set Nearest StartPoint', 'Set Sharpest StartPoint'):
+                for visible in ((False, True) if not live else (True,)):
+                    window.deleteG0Paths()
+                    if visible:
+                        window.updateExportRoute()
+                    routes = tuple(scene.routearrows)
+                    point = shape.start_point_candidates()[len(shape.geos)//2]
+                    with patch.object(QMenu, 'exec', return_value=None):
+                        menu = MyDropDownMenu(scene, QPoint(), point)
+                    action = next(a for a in menu.actions() if a.text() == menu.tr(source))
+                    assert action.isEnabled()
+                    action.trigger()
+                    app.processEvents()
+                    assert shape.get_start_end_points(True) == original_start
+                    if live:
+                        assert scene.routearrows and tuple(scene.routearrows) != routes
+                    else:
+                        assert tuple(scene.routearrows) == routes
+                    assert [(layer.nr, list(layer.exp_order_complete)) for layer in window.layerContents] == order
                     window.updateExportRoute()
-                routes = tuple(scene.routearrows)
-                point = shape.geos[len(shape.geos)//2].Ps
-                from types import SimpleNamespace
-                with patch('dxf2gcode.presentation.qt.popupdialog.PopUpDialog',
-                           return_value=SimpleNamespace(result=[point.x, point.y])):
-                    panel.start_point()
-                app.processEvents()
-                assert shape.get_start_end_points(True) == original_start
-                if live:
-                    assert scene.routearrows and tuple(scene.routearrows) != routes
-                else:
-                    assert tuple(scene.routearrows) == routes
-                assert [(layer.nr, list(layer.exp_order_complete)) for layer in window.layerContents] == order
-                window.updateExportRoute()
-                assert scene.routearrows and scene.routetext
+                    assert scene.routearrows and scene.routetext
         return
 
     for live in (False, True):

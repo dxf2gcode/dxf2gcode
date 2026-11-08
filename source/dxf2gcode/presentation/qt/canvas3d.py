@@ -212,10 +212,18 @@ class GLWidget(CanvasBase):
                 epos = event.position()
             else:
                 epos = event.pos()
+            preview = getattr(self, 'machining_preview', None)
+            if preview is not None and preview.try_select(epos.toPoint() if hasattr(epos, 'toPoint') else epos,
+                    bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier)):
+                self._lastPos = epos
+                return
             clicked, offset, tol = self.getClickedDetails(epos)
             xyForZ = {}
             anyHit = False
             for shape in self.shapes:
+                if shape.parentLayer.isBreakLayer():
+                    shape.selected = False
+                    continue
                 hit = False
                 z = shape.axis3_start_mill_depth
                 if z not in xyForZ:
@@ -396,15 +404,26 @@ class GLWidget(CanvasBase):
         GL.glTranslatef(self.posX, self.posY, self.posZ)
         GL.glScalef(self.scale, self.scale, self.scale)
         for shape in self.shapes.selected_iter():
+            if shape.parentLayer.isBreakLayer():
+                continue
             if not shape.disabled:
                 self.setColor(GLWidget.COLOR_STMOVE)
-                GL.glCallList(shape.drawStMove)
+                if getattr(shape, 'geometry_id', None) not in getattr(self, 'machining_overlay_geometries', ()):
+                    GL.glCallList(shape.drawStMove)
                 self.setColor(GLWidget.COLOR_SELECT)
+                counts = getattr(self, 'machining_selection_counts', {}).get(getattr(shape, 'geometry_id', None), (0, 0))
+                if 0 < counts[0] < counts[1]:
+                    GL.glEnable(GL.GL_LINE_STIPPLE)
+                    GL.glLineStipple(1, 0x3333)
                 GL.glCallList(shape.drawObject)
+                if 0 < counts[0] < counts[1]:
+                    GL.glDisable(GL.GL_LINE_STIPPLE)
             elif self.showDisabledPaths:
                 self.setColor(GLWidget.COLOR_SELECT_DISABLED)
                 GL.glCallList(shape.drawObject)
         for shape in self.shapes.not_selected_iter():
+            if shape.parentLayer.isBreakLayer():
+                continue
             if not shape.disabled:
                 if shape.parentLayer.isBreakLayer():
                     self.setColor(GLWidget.COLOR_BREAK)
@@ -417,7 +436,8 @@ class GLWidget(CanvasBase):
                 GL.glCallList(shape.drawObject)
                 if self.showPathDirections:
                     self.setColor(GLWidget.COLOR_STMOVE)
-                    GL.glCallList(shape.drawStMove)
+                    if getattr(shape, 'geometry_id', None) not in getattr(self, 'machining_overlay_geometries', ()):
+                        GL.glCallList(shape.drawStMove)
             elif self.showDisabledPaths:
                 self.setColor(GLWidget.COLOR_NORMAL_DISABLED)
                 GL.glCallList(shape.drawObject)
@@ -445,6 +465,10 @@ class GLWidget(CanvasBase):
 
         # direction arrows
         for shape in self.shapes:
+            if shape.parentLayer.isBreakLayer():
+                continue
+            if getattr(shape, 'geometry_id', None) in getattr(self, 'machining_overlay_geometries', ()):
+                continue
             if shape.selected and (not shape.disabled or self.showDisabledPaths) or\
                self.showPathDirections and not shape.disabled:
                 if hasattr(shape, 'machining_binding') and getattr(shape, '_machining_view', None) is None:

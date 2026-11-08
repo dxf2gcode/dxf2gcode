@@ -242,6 +242,7 @@ class MachiningDrawing:
         configuration = ProjectConfiguration(self.project)
         layers = Layers()
         layers.machining_config = configuration
+        layers.machining_project = self.project
         for step in self.project.steps:
             source_layer = next((self.sources[e.geometry_id].parentLayer for e in step.entries
                 if isinstance(e, MachiningOperation) and e.geometry_id in self.sources), None)

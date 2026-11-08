@@ -36,6 +36,25 @@ from toolpath_test_support import serialize_gcode
 
 
 class TestMachiningProject(GoldenTestBase):
+    def test_load_unifies_only_complete_equal_tool_definitions(self):
+        _, binding = self.captured()
+        project = binding.project
+        tool_id = project.steps[0].tool_id
+        tool = project.tools[tool_id]
+        duplicate = new_id()
+        project.tools[duplicate] = tool
+        step = deepcopy(project.steps[0])
+        step.id = new_id()
+        step.entries = []
+        step.tool_id = duplicate
+        project.steps.append(step)
+        different = new_id()
+        project.tools[different] = replace(tool, lead_length=tool.lead_length + 1e-9)
+        loaded = MachiningProject.from_dict(project.to_dict())
+        self.assertEqual(loaded.steps[0].tool_id, loaded.steps[-1].tool_id)
+        self.assertNotIn(duplicate, loaded.tools)
+        self.assertIn(different, loaded.tools)
+
     def drawing(self):
         shape, layer = build_shape(cut_cor=40, done_by_machine=False,
             tool_diameter=2, layer_settings=dict(lead_in_mode='off', lead_out_mode='off'))
@@ -285,6 +304,30 @@ class TestMachiningProject(GoldenTestBase):
             self.assertEqual(result.returncode, 0, result.stderr.decode(errors='replace'))
             self.assertTrue(output.exists())
             self.assertIn('G', output.read_text())
+            # Missing current-table tools block the complete headless export.
+            tool_id = document.machining.steps[0].tool_id
+            document.machining.tools[tool_id] = replace(document.machining.tools[tool_id], tool_nr=99)
+            path.write_text(encode_project(document.values, document.machining), encoding='utf-8')
+            output.write_text('original program')
+            rejected = subprocess.run([sys.executable, str(ROOT / 'source/dxf2gcode.py'),
+                '--cfg', 'r3', '--quiet', '--export', str(output), str(path)],
+                env=env, cwd=folder, capture_output=True, timeout=30)
+            self.assertEqual(rejected.returncode, 2)
+            self.assertEqual(rejected.stdout, b'')
+            self.assertEqual(output.read_text(), 'original program')
+            self.assertIn('T99', rejected.stderr.decode(errors='replace'))
+            # Historical project files must not bypass the same export gate.
+            legacy_parent = _ParentStub(state.layerContents)
+            legacy_parent.filename = state.filename
+            state.layerContents[0].shapes[0].tool_override = document.machining.tools[tool_id]
+            path.write_text(LegacyProject(legacy_parent, g.config, decode=decode_d2g).export(), encoding='utf-8')
+            legacy_rejected = subprocess.run([sys.executable, str(ROOT / 'source/dxf2gcode.py'),
+                '--cfg', 'r3', '--quiet', '--export', str(output), str(path)],
+                env=env, cwd=folder, capture_output=True, timeout=30)
+            self.assertEqual(legacy_rejected.returncode, 2)
+            self.assertEqual(legacy_rejected.stdout, b'')
+            self.assertEqual(output.read_text(), 'original program')
+            self.assertIn('T99', legacy_rejected.stderr.decode(errors='replace'))
 
     def test_same_tool_number_can_keep_distinct_diameters(self):
         shape, layers = self.drawing()

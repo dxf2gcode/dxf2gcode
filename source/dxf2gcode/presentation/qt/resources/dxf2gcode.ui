@@ -29,6 +29,16 @@
      <number>2</number>
     </property>
     <item>
+     <widget class="QSplitter" name="messageSplitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="childrenCollapsible">
+       <bool>false</bool>
+      </property>
+      <property name="handleWidth">
+       <number>6</number>
+      </property>
      <widget class="QSplitter" name="splitter">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -1195,24 +1205,23 @@
        </property>
       </widget>
      </widget>
-    </item>
-    <item>
      <widget class="MessageBox" name="messageBox">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="maximumSize">
+      <property name="minimumSize">
        <size>
-        <width>16777215</width>
-        <height>100</height>
+        <width>0</width>
+        <height>48</height>
        </size>
       </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOn</enum>
       </property>
+     </widget>
      </widget>
     </item>
    </layout>

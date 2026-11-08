@@ -26,6 +26,10 @@ def default_preview_profile():
 
 def preview_result(shape, postprocessor=None, layers=None):
     """Always snapshot current values; no cached plan can survive an edit."""
+    if getattr(shape, 'parentLayer', None) is not None and shape.parentLayer.isBreakLayer():
+        from dxf2gcode.domain.toolpath.plan import ToolpathPlanningResult
+        shape.toolpath_plan, shape.toolpath_diagnostics = None, ()
+        return ToolpathPlanningResult(None, ())
     if getattr(shape, 'machining_binding', None) is not None and getattr(shape, '_machining_view', None) is None:
         from dxf2gcode.domain.toolpath.plan import ToolpathPlanningResult
         shape.toolpath_plan = None

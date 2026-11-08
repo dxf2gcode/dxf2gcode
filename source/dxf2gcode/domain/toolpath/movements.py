@@ -1,6 +1,7 @@
 """Expand prepared geometry into semantic movements without an exporter."""
 
 from math import asin, pi, sqrt
+from dataclasses import replace
 
 from dxf2gcode.domain.toolpath.plan import (
     ToolpathAction, ToolpathMove, ToolpathPass, ToolpathPlan)
@@ -16,8 +17,8 @@ class MovementPlan:
         self.z_word = request.initial_state.z_word
         self.last_z = request.initial_state.last_absolute_z
 
-    def add(self, kind, *args, role="cut"):
-        self.actions.append(ToolpathAction(kind, tuple(args), role))
+    def add(self, kind, *args, role="cut", modifier_id=''):
+        self.actions.append(ToolpathAction(kind, tuple(args), role, modifier_id))
         if kind == "feed":
             self.feed = args[0]
         elif kind in ("rapid_z", "linear_z", "drill", "drill_retract"):
@@ -47,23 +48,36 @@ class MovementPlan:
             self.add("linear_z", geo.depth, role="pocket")
             self.add("feed", geo.xy_feed, role="pocket")
         elif geo.kind == "break":
-            old_z, old_feed = self.z_word, self.feed
-            if geo.height <= old_z:
-                self.add("linear_xy", geo.start, geo.end, role="tab")
-                return
-            self.add("feed", geo.z_feed, role="tab")
-            self.add("linear_z", geo.height, role="tab")
-            self.add("feed", geo.xy_feed, role="tab")
-            self.add("linear_xy", geo.start, geo.end, role="tab")
-            self.add("feed", geo.z_feed, role="tab")
-            self.add("linear_z", old_z, role="tab")
-            self.add("feed", old_feed, role="tab")
+            self.tab_chain((geo,))
         elif geo.kind == "arc":
             self._arc(geo, role)
         elif geo.kind == "line":
             self.add("linear_xy", geo.start, geo.end, role=role)
         else:
             raise ValueError("unsupported planning geometry: %s" % geo.kind)
+
+    def tab_chain(self, geometries, depth=None, restore=True, feed=None):
+        """Traverse adjacent tab pieces without a plunge at their shared corner."""
+        first = geometries[0]
+        old_z = self.z_word if depth is None else depth
+        old_feed = self.feed if feed is None else feed
+        raised = first.height > old_z
+        if raised:
+            self.add('feed', first.z_feed, role='tab')
+            self.add('linear_z', first.height, role='tab')
+            self.add('feed', first.xy_feed, role='tab')
+        for geo in geometries:
+            path = geo.tab_geometry or replace(geo, kind='line', tab_geometry=None)
+            start = len(self.actions)
+            self.geometry(path, role='tab')
+            if raised:
+                for index in range(start, len(self.actions)):
+                    self.actions[index] = replace(self.actions[index], modifier_id=geo.modifier_id)
+        if raised:
+            if restore:
+                self.add('feed', first.z_feed, role='tab')
+                self.add('linear_z', old_z, role='tab')
+            self.add('feed', old_feed, role='tab')
 
     def cut_geometry(self, geo, drill=False, role="cut"):
         if role == "cut":
@@ -79,7 +93,7 @@ class MovementPlan:
         if (geo.kind == "hole" or
                 round(geo.start[0], decimals) != round(geo.end[0], decimals) or
                 round(geo.start[1], decimals) != round(geo.end[1], decimals) or
-                (geo.kind == "arc" and
+                ((geo.kind == "arc" or geo.tab_geometry is not None and geo.tab_geometry.kind == 'arc') and
                  geo.length > 0.5 * 0.1 ** decimals * pi)):
             self.geometry(geo, role)
 

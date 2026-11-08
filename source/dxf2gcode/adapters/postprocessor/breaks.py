@@ -80,9 +80,12 @@ class Breaks(object):
                 if len(intersections) == 2:
                     (near, far) = self.classifyIntersections(lineGeo, intersections)
                     logger.debug("Line %s broken from (%f, %f) to (%f, %f)" % (lineGeo.to_short_string(), near.x, near.y, far.x, far.y))
-                    newGeos.extend(self.breakLineGeo(LineGeo(lineGeo.Ps, near)))
-                    newGeos.append(BreakGeo(near, far, breakShape.axis3_mill_depth, breakShape.f_g1_plane, breakShape.f_g1_depth))
-                    newGeos.extend(self.breakLineGeo(LineGeo(far, lineGeo.Pe)))
+                    if lineGeo.Ps != near:
+                        newGeos.extend(self.breakLineGeo(LineGeo(lineGeo.Ps, near)))
+                    newGeos.append(BreakGeo(near, far, breakShape.axis3_mill_depth, breakShape.f_g1_plane, breakShape.f_g1_depth,
+                                            getattr(breakShape, 'operation_id', '')))
+                    if far != lineGeo.Pe:
+                        newGeos.extend(self.breakLineGeo(LineGeo(far, lineGeo.Pe)))
                     return newGeos
         return [lineGeo]
 
@@ -99,9 +102,12 @@ class Breaks(object):
                 if len(intersections) == 2:
                     (near, far) = self.classifyIntersections(arcGeo, intersections)
                     logger.debug("Arc %s broken from (%f, %f) to (%f, %f)" % (arcGeo.toShortString(), near.x, near.y, far.x, far.y))
-                    newGeos.extend(self.breakArcGeo(ArcGeo(Ps=arcGeo.Ps, Pe=near, O=arcGeo.O, r=arcGeo.r, s_ang=arcGeo.s_ang, direction=arcGeo.ext)))
-                    newGeos.append(BreakGeo(near, far, breakShape.axis3_mill_depth, breakShape.f_g1_plane, breakShape.f_g1_depth))
-                    newGeos.extend(self.breakArcGeo(ArcGeo(Ps=far, Pe=arcGeo.Pe, O=arcGeo.O, r=arcGeo.r, e_ang=arcGeo.e_ang, direction=arcGeo.ext)))
+                    if arcGeo.Ps != near:
+                        newGeos.extend(self.breakArcGeo(ArcGeo(Ps=arcGeo.Ps, Pe=near, O=arcGeo.O, r=arcGeo.r, s_ang=arcGeo.s_ang, direction=arcGeo.ext)))
+                    newGeos.append(BreakGeo(near, far, breakShape.axis3_mill_depth, breakShape.f_g1_plane, breakShape.f_g1_depth,
+                                            getattr(breakShape, 'operation_id', '')))
+                    if far != arcGeo.Pe:
+                        newGeos.extend(self.breakArcGeo(ArcGeo(Ps=far, Pe=arcGeo.Pe, O=arcGeo.O, r=arcGeo.r, e_ang=arcGeo.e_ang, direction=arcGeo.ext)))
                     return newGeos
         return [arcGeo]
 
@@ -124,7 +130,17 @@ class Breaks(object):
                 intersection_types = getattr(QLineF, "IntersectionType", QLineF)
                 if res == intersection_types.BoundedIntersection:
                     intersections.append(Point(intersection.x(), intersection.y()))
-        return intersections
+        return self._unique_intersections(intersections)
+
+    @staticmethod
+    def _unique_intersections(points):
+        # A polygon vertex belongs to two edges but is one crossing/contact.
+        # Point equality uses the geometry kernel's established tolerance.
+        result = []
+        for point in points:
+            if point not in result:
+                result.append(point)
+        return result
 
     def intersectArcGeometry(self, arcGeo, breakShape):
         """
@@ -160,7 +176,7 @@ class Breaks(object):
                             intersections.append(p2)
                         if arcGeo.O.distance(breakGeo.Pe) >= arcGeo.r and self.point_belongs_to_arc(p1, arcGeo):
                             intersections.append(p1)
-        return intersections
+        return self._unique_intersections(intersections)
 
     def point_belongs_to_arc(self, point, arcGeo):
         ang = arcGeo.dif_ang(arcGeo.Ps, point, arcGeo.ext)

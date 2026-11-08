@@ -344,6 +344,16 @@ class MyPostProcessor(ProfileDialect):
                 return
         else:
             self.initialize_export_vars()
+        project = getattr(LayerContents, 'machining_project', None)
+        if project is not None:
+            from dxf2gcode.application.tool_table import project_tool_errors
+            errors = project_tool_errors(project, g.config, self.tr)
+            if errors:
+                self.export_errors = errors
+                self.export_failed = True
+                for message in errors:
+                    logger.error('%s', message)
+                return
         self.breaks = Breaks(LayerContents)
 
         exstr = self.write_gcode_be(load_filename)

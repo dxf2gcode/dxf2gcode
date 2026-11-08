@@ -14,11 +14,16 @@ has one machining kind and one tool definition. Mixed legacy tools/kinds are
 split into consecutive steps, retaining their previous export sequence.
 
 1. Select a layer in the **Layers** section of Geometry to select its contours.
-2. Right-click and choose **Create machining step…**, or use **Create…** at
-   the top of Machining. The menu also lists linked existing steps for navigation.
-3. Enter a name, such as Roughing or Finishing, and choose kind and tool.
-4. Choose **Move existing assignments** (the default), **Additional machining**
-   to copy, or **Do not use selection — create empty step**. Cancel changes nothing.
+2. Right-click and choose **Assign machining…**. The same dialog is available
+   from the drawing and machining tree. Geometry menus also list linked steps
+   for navigation.
+3. Choose **Copy** or **Move**, then **Existing step** or **New step**.
+4. For an existing step, choose its name, kind and tool from the target list.
+   For a new step, enter its name and choose kind/tool. All fields remain
+   visible at fixed positions: existing targets enable the step selector,
+   new targets enable name/kind/tool. The initial action is set only when the
+   dialog opens. Switching targets never changes Copy/Move or any entered
+   values, and the dialog size stays fixed. Cancel changes nothing.
 
 Moving retains the existing operation identities. Additional machining creates
 independent operations referencing the same original contours. The original
@@ -26,28 +31,143 @@ DXF-layer membership does not change. When a selected contour already has
 several assignments, activate the intended source operation before using it
 for a new step.
 
-**Create…** without a selection creates an empty step. **Edit step** in the
-context menu, or **F2** with the tree focused, changes its name, kind and tool. The tool list includes saved project definitions and explicit options
-to import a current profile tool. Different definitions may share one output
-tool number, including different diameters.
+**Create…** in the toolbar retains the dedicated creation dialog, including
+an empty step or an unused current selection. Without a selection it creates
+an empty step. Double-click a step, or press **F2** with the tree focused, to
+change its name, kind and tool. Selecting its row already exposes its defaults;
+there are no redundant Edit step/Edit step defaults context-menu commands.
+Both tool lists combine saved tools and the current tool table. Identical
+complete definitions appear once. Entries show the T-number, diameter and
+project unit. Saved definitions that differ from the table are marked
+**Project deviation**; the matching **Tool table** variant remains available.
+Differing spindle speeds or lead values appear as additional details. Hover
+over an entry for its further values.
+
+With a step row selected, selecting the matching table variant replaces that project definition in
+**all steps using it**. Other definitions of the same T-number remain unchanged.
+Choosing a different T-number changes only the selected step. Undo restores
+the previous assignments and definitions. Project files retain their tool
+values; later table changes are never applied automatically. Loading a project
+unifies fully equal saved definitions without rounding their values.
+
+To change the tool for one or several selected machining contours, use the same tool
+dropdown. Only the selected assignments change. The application first looks for
+an existing step with the same kind, complete target tool definition and exact
+stored source-step defaults. One matching step is reused; multiple matches open
+a target chooser. Cancel changes nothing. Names alone do not prevent reuse.
+Without a match, a fully selected step changes its tool in place; a partial
+selection moves to a new step directly after its source. Own values and
+assignment identities remain intact. Different tools/defaults remain separate.
+Explicit **New step** always creates a step. Undo/Redo restores the complete action together. Mixed
+tools show **Different tools**. Other applicable parameters can also be edited
+for the whole selection. Explicitly clicking an operation in the canvas changes
+its preview emphasis while retaining a Ctrl-selected group; parameter edits
+still apply to the whole selected group. This selection-based change does not replace tool
+definitions for unselected steps.
 
 ## Choose which operation to edit
 
+### Imported holding tabs
+
+Imported **BREAKS:** regions appear in a special **Holding tabs** group under
+each machining step whose planned path they actually affect. These are references
+to the same global regions, not additional contours or operations. They have no
+tool, export checkbox or position in the machining sequence. The group distinguishes
+the number of source regions from the resulting tab segments; repeated depth passes
+do not multiply the segment count. Regions without an effective tab appear under
+**Imported tab regions — currently ineffective**.
+
+Normal canvas clicks, rectangle selection and original-layer selection skip these
+regions. Select a region in its holding-tab group, or enable **Tab edit mode** in
+the machining toolbar, to display region outlines in the existing magenta colour.
+Its icon shows a dashed region with a pencil and sits directly beside **Create**
+on the left, with the machining actions. Tree expand/collapse controls remain
+on the right. The button stays highlighted while tab editing is active.
+In this mode, clicking an outline selects a region. Its editor offers tab-top Z,
+XY/Z feeds, activation and removal. Changes affect **every machining operation**
+using that global region. Undo/Redo restores the complete change. Removing a region
+removes its machining assignment while retaining the original DXF geometry.
+The original BREAKS layer also offers **Edit imported tab regions** in its context
+menu. Exit using the toolbar toggle or **Finish tab editing** in the canvas menu.
+
+The effective tab movements remain part of the normal planned toolpath and export;
+pass selection belongs to the machining contour. Drawing new regions, changing
+their outlines and assigning new local regions are reserved for a later step.
+
+Use a **closed polygon**, for example a rectangle, for a tab region. Tab boundaries
+are determined on the **original contour**. With software cutter compensation,
+the corresponding points are transferred to the tool-centre path along line
+normals or arc radii. With machine compensation, those same original contour
+points are programmed. A region therefore does not have to reach the offset path.
+There is no additional tangential allowance for the cutter radius: the region
+does not guarantee a particular remaining material width.
+
+A tab spanning a corner keeps the entire connecting offset curve raised, without
+a plunge between its pieces. Arc portions remain arcs. If a tab boundary has
+vanished or has multiple possible counterparts, the affected connected tab is
+**omitted with a warning** and export continues. Other valid tabs remain. A boundary
+exactly at a round offset join can also be ambiguous. Open or non-polygonal regions
+are omitted with a warning. Review these warnings and the resulting paths before use.
+
+Pocket boundary contours use this same reference; pocket raster passes retain
+their existing spatial-region behaviour because they have no one-to-one original
+contour counterpart. Drag-knife tab processing is unchanged. Existing project files
+remain readable. Previously generated G-code is unchanged: export again to obtain
+the new behaviour. Physical controller compensation still needs separate acceptance.
+
+### Select machining contours
+
 Selecting original geometry marks every linked operation. When several
 operations use a contour, this does not arbitrarily activate one. Click an
-operation in Machining to activate its editing context and preview. Its row
-is bold, and **Active** identifies its step and tool.
+operation in Machining, or its path/label in the canvas, to activate its editing
+context. Its row is bold. There is no additional context line between the tree
+and the parameters; context and selection hints remain available as tooltips.
+With multiple selected assignments, the parameter area shows the complete
+editing selection rather than only the active contour's values.
+All linked previews remain visible when the original contour is selected,
+including each operation's actual leads, start/end and depth information.
+Ctrl-click adds or removes operations. Overlapping paths offer a chooser;
+cancelling it leaves the selection unchanged. Partial selection dots the
+original outline and shows a count such as **1/2**. Paths keep the established
+movement colours; active/hovered operations use thicker lines. There are no
+colour changes for selection. Unselected operations use thin dashed 0.6-pixel lines
+and marker outlines; selected operations retain their normal line widths. There are no
+artificial offsets to separate overlapping operations. Disabled previews follow
+**Show disabled paths**; export-route display remains a separate action.
+
+Canvas labels use **step name · contour number · tool**, for example
+**7 · Contour 0 · T5**. The contour number matches the machining tree;
+it is not an additional export-position number. A rectangle selection updates
+the linked views once for the whole selection.
+
+Multiple original contours with one machining assignment each can be edited
+together directly. If any selected original contour has multiple linked
+operations, the parameters and tool selector stay read-only until you explicitly
+select the intended assignments in Machining or through canvas paths/labels.
+
+For a multiple selection, equal inherited values are grey; equal values with
+own overrides use the normal text colour. Different values show an editable
+**Different** placeholder. Editing a field sets that parameter for every selected
+assignment in one undo action; other parameters and unselected assignments stay
+unchanged. Confirming a placeholder or leaving an untouched field changes
+nothing. Dropdowns follow the same rule. A parameter that is not supported by
+the entire selection shows **Not jointly available** and only that field is
+disabled. Provenance symbols show the counts and sources of own/inherited values.
+**Use step default** removes selected operation overrides, restoring each
+operation's own inherited default, which may differ between steps.
 
 The familiar tool and contour parameter fields are located directly in
 Machining. Select a step to edit its defaults, or activate a contour assignment
 to edit its operation values. The former parameter table has been removed.
 
 A small **chain** indicates an inherited value; a **pencil** indicates an own
-value in the current editing context. Hover over the symbol or field for the
-source and effective value. Editing an operation value creates an own value.
+value in the current editing context. Hover over the symbol for the parameter,
+source and effective value, including the contour/step for own values. Hover
+over the input field for an explanation of its function. Editing an operation
+value creates an own value.
 Open the symbol’s dropdown menu and choose **Use step default** to remove
-an own operation value. Each row has one symbol button. The **Machining tool**
-and contour fields share the same label, unit, value and status columns. Refreshing or leaving
+an own operation value. Each value has one symbol button. The **Machining tool**
+and contour fields share aligned group/unit columns and compact value areas. Refreshing or leaving
 an unchanged field does not create an override. Changing step defaults leaves
 explicit operation overrides intact. The default display uses **3 decimal places for mm** and **5 for inches**,
 for lengths. **Feeds and angles each default to 1 decimal place**, with
@@ -58,52 +178,90 @@ dialogs. Focusing a numeric input shows its full value. Confirming or leaving an
 unchanged input retains the stored precision; entering extra places retains
 those places in the floating-point value used for planning and export.
 
-The left pane starts at a width derived from the widest content in each
-column. Drag the divider to change its width. Labels, units and input columns
-resize together across both parameter groups; only the symbol column stays
-fixed. Labels wrap on narrow panes instead of pushing the symbol controls
-outside the visible form.
+The left pane starts at a width derived from the compact rows. Drag the divider
+to change its width. A shared scrolling form starts with the tool selector and
+spindle speed, followed by four group boxes: **Z values**, **Feeds**,
+**Lead in/out** and **Offset**. Two values are placed side by side in each row.
+Short labels include their units directly. Every provenance button follows its
+input immediately; the extra space comes after that button.
+
+Numeric fields provide approximately eight visible characters and still accept
+full-precision input, scrolling their text when necessary. Leads and overcut
+settings edit machining values rather than the tool definition. An explicit,
+distinct legacy start radius remains available as a legacy field. Knife angle
+and swivel depth appear only for drag knives; standard milling leads/overcut
+are hidden for lathe and drag-knife machines.
+
+Drag the horizontal divider between the machining tree and the whole parameter
+area to change their heights. There is no divider between tool and contour
+parameters and no separate parameter collapse headers. The four group boxes
+share one scrollbar and remain at the top, with unused space below. Resizing
+does not change machining values or the undo history.
 
 Retract height and safety margin always edit the step defaults, including
 when an operation is active. Tool selection also belongs to the step. The
-tool-value fields can show operation overrides for speed and lead dimensions.
-Direction and local start point belong to the active operation. **Edit step
-defaults** in the context menu selects the step in this same form.
+machining fields can show operation overrides for speed and lead dimensions.
+The two clearance fields affect all contours of the selected steps; their symbol
+help states this scope. Local start coordinates can be changed together, with
+the other coordinate preserved separately for each selected operation.
+Direction commands belong to the active operation. Selecting a step row
+shows its defaults in this same form.
 
 Old depths and feeds whose origin cannot be established are retained as own
 values. Equality with a default does not prove inheritance.
 
 ## Change a selected operation's machining mode
 
-Right-click a contour assignment in **Machining**, or right-click the drawing
-with its intended operation active. The menu includes **Contour**, **Pocket
-Mill**, **Drill Bore** and **Cutter compensation → G40 / G41 / G42**. Checkmarks
+Right-click a contour assignment in **Machining** for **Contour**, **Pocket
+Mill**, **Drill Bore** and **Cutter compensation → G40 / G41 / G42**.
+The drawing menu provides the applicable Pocket/Drill actions and compensation
+for the active operation in its familiar grouping. Checkmarks
 show the current state. Selecting original geometry with several references
 requires an explicitly active operation before the drawing menu can edit it.
 
-Changing kind moves the selected assignments into a new step immediately after
-their source step. The new step keeps the source tool and defaults; own values,
-operation identities and original geometry references remain. Other assignments
-stay in the original step. Selecting operations from different steps creates a
-separate new step for each source, keeping their tools and defaults distinct.
-You can rename the generated steps afterward. One action is one undo entry.
+Changing kind first looks for an existing step with the target kind, the same
+complete tool definition and exact stored step defaults. One match is reused;
+several matches require you to choose the target. Entries append to that step,
+retaining own values, identities and geometry references. Cancelling rejects the
+whole action. A new step is created after the source only when there is no
+compatible target. Different source steps may share a target when their tools
+and defaults match. Other assignments stay in their source steps. One action
+is one undo entry; existing target names and settings remain unchanged.
 
 Drilling explicitly selects G40. Selecting compensation on a drilling circle
-returns that assignment to contour machining in a new step. Clicking an already
+returns that assignment to a matching contour step, creating one if necessary. Clicking an already
 checked Pocket/Drill action returns to Contour. Invalid selections are rejected
 as a whole: drilling needs a point/circle, and pockets need closed contours in
 milling mode with internal compensation. The original layer membership does
 not change. Special holding-tab/ignored assignments retain their kind.
 
+The drawing context menu keeps this order, with separators between groups:
+
+1. Move workpiece zero here (available with or without selection).
+2. Invert selection; disable/enable the selected machining assignments.
+3. Reverse direction; set the contour start nearest the clicked point or at
+   the sharpest corner.
+4. Applicable pocket/drilling actions, followed by the compensation submenu.
+5. Assign machining as a separate group at the bottom.
+
+Contour starts and direction change only the active assignments. Original
+geometry and other assignments of the same contour remain intact. Start
+candidates respect entity transformations and the clicked plane in 3D. These
+changes use the machining undo history; manually displayed export routes stay
+manual. The workpiece zero action remains separate from contour-start actions.
+
 ## Move, copy, reorder and undo
 
 - Drag operation rows into a target step or before/after a row. A line marks
   the insertion position. Hold **Ctrl** while dropping to copy.
-- The context menu provides **Move to step** and **Copy to step**. These also
-  assign selected **Unassigned** contours to an existing step.
+- **Assign machining…** in the drawing/tree context menu combines copying,
+  moving and new-step creation. It also assigns selected **Unassigned**
+  contours. Mixed assigned/unassigned selections are one atomic action;
+  an incompatible selection is rejected as a whole.
 - The top toolbar separates creation, ordering, history and tree-view actions.
   Collapse/expand controls sit to the right; unavailable actions are disabled.
-- **Reverse**, **Edit step** and **Remove** are in the tree context menu.
+- **Reverse** and **Remove** are in the tree context menu. Profile updates and
+  custom G-code are grouped under **Advanced**; double-click edits the step.
   **Move workpiece zero here…** belongs to the drawing context menu and is
   available with or without a selection. It changes the workpiece origin;
   it does not edit an individual contour’s machining start. **Delete** removes the selected entry while the tree has focus.
@@ -113,8 +271,10 @@ not change. Special holding-tab/ignored assignments retain their kind.
   the same identities.
 
 Own depths, feeds and leads are retained when moving or copying. Inherited
-values, tool and machining kind come from the target. Changes are reported
-after execution. An incompatible selection is rejected as a whole: for
+values, tool and machining kind come from the target. Changes are reported after execution in
+the main window's message pane below the drawing. Available Undo/Redo actions
+are indicated by their enabled toolbar buttons. There is no separate status
+message area below the machining fields. An incompatible selection is rejected as a whole: for
 example, open contours cannot enter a pocket step, and drilling requires a
 point/circle and G40. Later planning errors remain visible and block export.
 
@@ -138,9 +298,10 @@ Profiles declaring managed tool-change return states retain their existing
 restriction against opaque custom G-code.
 
 The existing tool-change contract is retained: a tool-change block is emitted
-only when the output tool number changes. For consecutive T1 steps, different
-saved definitions or spindle speeds do not themselves cause another block or
-spindle-speed command. Check the chosen profile and the generated program.
+only when the output tool number changes. Different saved tool definitions
+must first be resolved against the tool table before export. For consecutive
+T1 steps, own spindle-speed overrides do not themselves cause another block
+or spindle-speed command. Check the chosen profile and the generated program.
 
 Route display is separate from preview and optimization. Its machining
 endpoints come from the planned approach and final position, including leads
@@ -149,6 +310,20 @@ and overcut. Preview-only actions do not activate manual route display.
 ## Saved values and changed drawings
 
 Projects retain saved tool/default values when external profiles change.
+Before export, every tool used by an enabled machining step must match the
+current tool table. A missing tool number or different definition blocks the
+whole export, preserving an existing output file and leaving stdout empty.
+Empty, disabled, ignored and holding-tab-only steps do not block export.
+
+The diagnostic identifies the tool number and affected steps. For missing
+numbers it lists the saved definition; for differing tools it compares the
+project and table values. Add or correct the tool through the tool-table
+configuration, or choose an existing table tool for the affected steps.
+Selecting the matching table definition replaces the deviation in all steps
+sharing it. Tools are not created automatically. Preview and project saving
+remain available while the conflict is unresolved. The rule also applies to
+CLI exports and historical project files.
+
 The context menu offers explicit **Update tool from profile** and **Update
 step defaults from profile** actions, with undo. Own operation values remain
 own values. Existing explicit machine-type/tolerance commands still change

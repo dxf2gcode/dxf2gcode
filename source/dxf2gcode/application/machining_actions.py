@@ -18,6 +18,16 @@ class MachiningChange:
     selection: tuple = ()
 
 
+class MachiningTargetChoiceRequired(ValueError):
+    """Let a presentation choose among equally compatible existing steps."""
+    def __init__(self, source, kind, candidates, project):
+        super().__init__('Choose a matching machining step')
+        self.key = (source.id, kind)
+        self.source_name = source.name
+        self.candidates = tuple((step.id, step.name, step.kind, project.tools[step.tool_id].tool_nr)
+                                for step in candidates)
+
+
 def default_step_values(project):
     config = project.configuration
     result = dict(config['Depth_Coordinates'], **config['Feed_Rates'],
@@ -65,6 +75,7 @@ class MachiningCommands:
         self.selection = ()
         self.undo_stack = []
         self.redo_stack = []
+        self.target_choices = {}
 
     def _state(self):
         return deepcopy(self.binding.project), dict(self.binding.active_operations), self.selection
@@ -138,7 +149,8 @@ class MachiningCommands:
             return MachiningChange('create', result.changes, result.selection + tuple(assigned) or (step_id,))
         return self.perform('create', change)
 
-    def edit_step(self, identity, name, kind, tool_id, defaults=None, resolve_conflict=False):
+    def edit_step(self, identity, name, kind, tool_id, defaults=None, resolve_conflict=False,
+                  replace_shared_tool=False):
         def change(project):
             step = self.step(project, identity)
             old_kind = step.kind
@@ -148,6 +160,17 @@ class MachiningCommands:
                           if isinstance(entry, MachiningOperation)}
             step.name, step.kind = name, kind
             step.tool_id = _register_tool(project, tool_id) if isinstance(tool_id, ToolSettings) else tool_id
+            tool_changes = []
+            if replace_shared_tool and old_tool_id != step.tool_id:
+                old_tool, new_tool = project.tools[old_tool_id], project.tools[step.tool_id]
+                delta = {key: (getattr(old_tool, key), getattr(new_tool, key))
+                         for key in ToolSettings.__dataclass_fields__
+                         if getattr(old_tool, key) != getattr(new_tool, key)}
+                for other in project.steps:
+                    if other.tool_id == old_tool_id or other.id == identity:
+                        other.tool_id = step.tool_id
+                        tool_changes.append((other.id, delta))
+                del project.tools[old_tool_id]
             if defaults is not None:
                 step.defaults = dict(defaults)
             if old_kind != step.kind or old_tool_id != step.tool_id or resolve_conflict:
@@ -163,7 +186,7 @@ class MachiningCommands:
                 for entry in step.entries:
                     if isinstance(entry, MachiningOperation):
                         entry.legacy_conflict = ()
-            changes = []
+            changes = tool_changes
             for entry in step.entries:
                 if isinstance(entry, MachiningOperation):
                     old = old_values[entry.id]
@@ -224,6 +247,15 @@ class MachiningCommands:
         return self.perform('copy' if copy else 'move',
                             lambda p: self._transfer(p, identities, target_id, position, copy))
 
+    def assign_to_step(self, identities, shapes, target_id, copy=False):
+        """Transfer assignments and add unassigned geometry in one transaction."""
+        def change(project):
+            result = self._transfer(project, identities, target_id, None, copy)
+            assigned = self._assign(project, shapes, self.step(project, target_id))
+            return MachiningChange('copy' if copy else 'move', result.changes,
+                                   result.selection + tuple(assigned))
+        return self.perform('copy' if copy else 'move', change)
+
     def _assign(self, project, shapes, step):
         shapes = tuple(shapes)
         originals = {shape for layer in self.binding.source_layers for shape in layer.shapes}
@@ -279,14 +311,60 @@ class MachiningCommands:
             return result
         return self.perform('remove', change)
 
-    def reorder_steps(self, identities):
+    def reorder_steps(self, identities, selection=None):
+        selection = tuple(self.selection if selection is None else selection)
         def change(project):
             if len(identities) != len(project.steps) or set(identities) != {s.id for s in project.steps}:
                 raise ValueError('Invalid step order')
             by_id = {s.id: s for s in project.steps}
             project.steps[:] = [by_id[i] for i in identities]
-            return MachiningChange('order', selection=tuple(identities))
+            return MachiningChange('order', selection=selection)
         return self.perform('order', change)
+
+    def edit_operation_paths(self, identities, action, points=None):
+        """Apply the familiar contour-start algorithms to isolated operation views."""
+        if action not in ('reverse', 'nearest', 'sharpest'):
+            raise ValueError('Invalid operation setting')
+        def change(project):
+            views = {shape.operation_id: shape for layer in self.binding.materialize(allow_unresolved=True)
+                     for shape in layer.shapes if hasattr(shape, 'operation_id')}
+            for step, entry in self.entries(project, identities):
+                if not isinstance(entry, MachiningOperation) or entry.id not in views:
+                    raise ValueError('unresolved source contour')
+                view = views[entry.id]
+                if action == 'reverse':
+                    entry.clockwise = not entry.clockwise
+                    continue
+                if not view.geos:
+                    continue
+                if action == 'nearest':
+                    from dxf2gcode.domain.geometry.point import Point
+                    view.setNearestStPoint(Point(*points[entry.id]))
+                elif view.closed:
+                    view.setSharpestStPoint()
+                else:
+                    continue
+                start = view.geos[0].get_start_end_points(True)
+                entry.start = (start.x, start.y)
+                entry.clockwise = view.cw
+            return MachiningChange('path', selection=tuple(identities))
+        return self.perform('path', change)
+
+    def _matching_target(self, project, source, kind, tool_id):
+        definition = project.tools[tool_id]
+        candidates = [step for step in project.steps if step.id != source.id and
+                      step.kind == kind and project.tools[step.tool_id] == definition and
+                      step.defaults == source.defaults]
+        key = (source.id, kind)
+        chosen = self.target_choices.get(key)
+        if chosen is not None:
+            target = next((step for step in candidates if step.id == chosen), None)
+            if target is None:
+                raise ValueError('Chosen machining target is no longer compatible')
+            return target
+        if len(candidates) > 1:
+            raise MachiningTargetChoiceRequired(source, kind, candidates, project)
+        return candidates[0] if candidates else None
 
     def set_operation_mode(self, identities, kind=None, compensation=None, names=None):
         """Change only selected assignments; keep each step's kind homogeneous."""
@@ -312,10 +390,12 @@ class MachiningCommands:
                 else:
                     key = (source.id, target_kind)
                     if key not in groups:
-                        target = MachiningStep(new_id(), source.name + ' · ' + (names or {}).get(target_kind, target_kind),
-                                               target_kind, source.tool_id, deepcopy(source.defaults))
+                        target = self._matching_target(project, source, target_kind, source.tool_id)
+                        if target is None:
+                            target = MachiningStep(new_id(), source.name + ' · ' + (names or {}).get(target_kind, target_kind),
+                                                   target_kind, source.tool_id, deepcopy(source.defaults))
+                            project.steps.insert(project.steps.index(source)+1, target)
                         groups[key] = target
-                        project.steps.insert(project.steps.index(source)+1, target)
                     target = groups[key]
                 if compensation is not None or target_kind == 'drill':
                     entry.overrides['cut_cor'] = compensation if compensation is not None else 40
@@ -337,6 +417,49 @@ class MachiningCommands:
                 raise ValueError('\n'.join(errors))
             return MachiningChange('mode', tuple(differences), tuple(identities))
         return self.perform('mode', change)
+
+    def set_operation_tool(self, identities, tool):
+        """Change selected assignments only, splitting partially selected steps."""
+        identities = tuple(identities)
+        def change(project):
+            selected = self.entries(project, identities)
+            if not selected or any(not isinstance(entry, MachiningOperation) or
+                    source.kind in ('break', 'ignored') for source, entry in selected):
+                raise ValueError('Select machining contours to change tools')
+            tool_id = _register_tool(project, tool) if isinstance(tool, ToolSettings) else tool
+            definition = project.tools[tool_id]
+            groups = {}
+            for source, entry in selected:
+                groups.setdefault(source.id, (source, []))[1].append(entry)
+            differences = []
+            for source, entries in groups.values():
+                old_tool = project.tools[source.tool_id]
+                if old_tool == definition:
+                    continue
+                before = {entry.id: project.resolve(source, entry)[0] for entry in entries}
+                target = self._matching_target(project, source, source.kind, tool_id)
+                if target is None:
+                    if len(entries) == len(source.entries):
+                        target = source
+                        target.tool_id = tool_id
+                    else:
+                        target = MachiningStep(new_id(), source.name + ' · T%d' % definition.tool_nr,
+                            source.kind, tool_id, deepcopy(source.defaults))
+                        project.steps.insert(project.steps.index(source)+1, target)
+                for entry in entries:
+                    validate_target(self.binding, project, target, entry, source.kind)
+                    after = project.resolve(target, entry)[0]
+                    delta = {key: (before[entry.id].get(key), after.get(key))
+                             for key in before[entry.id].keys() | after.keys()
+                             if before[entry.id].get(key) != after.get(key)}
+                    delta.update(tool=(old_tool.tool_nr, definition.tool_nr),
+                                 diameter=(old_tool.tool_diameter, definition.tool_diameter))
+                    differences.append((entry.id, delta))
+                    if target is not source:
+                        source.entries.remove(entry)
+                        target.entries.append(entry)
+            return MachiningChange('tool', tuple(differences), identities)
+        return self.perform('tool', change)
 
     def update_entries(self, identities, overrides=None, **state):
         def change(project):
@@ -361,12 +484,50 @@ class MachiningCommands:
             return MachiningChange('parameters', selection=tuple(identities))
         return self.perform('parameters', change)
 
+    def update_selected_step_defaults(self, identities, values):
+        """Change shared clearance once per step in one selection command."""
+        if not values or set(values) - {'axis3_retract', 'axis3_safe_margin'}:
+            raise ValueError('Invalid shared clearance parameter')
+        def change(project):
+            selected = self.entries(project, identities)
+            if any(not isinstance(entry, MachiningOperation) for _, entry in selected):
+                raise ValueError('Select machining operations')
+            steps = {step.id: step for step, _ in selected}
+            changes = []
+            for step in steps.values():
+                old = {key: project.resolve(step, MachiningOperation('', ''))[0].get(key) for key in values}
+                step.defaults.update(values)
+                changes.append((step.id, {key: (old[key], value) for key, value in values.items()}))
+            return MachiningChange('parameters', tuple(changes), tuple(identities))
+        return self.perform('parameters', change)
+
+    def update_start_coordinate(self, identities, coordinate, value):
+        """Edit one local start coordinate without replacing the other axis."""
+        if coordinate not in (0, 1):
+            raise ValueError('Invalid start coordinate')
+        def change(project):
+            for _, entry in self.entries(project, identities):
+                if not isinstance(entry, MachiningOperation):
+                    raise ValueError('Select machining operations')
+                point = list(entry.start)
+                point[coordinate] = value
+                entry.start = tuple(point)
+            return MachiningChange('parameters', selection=tuple(identities))
+        return self.perform('parameters', change)
+
     def refresh_tool(self, identity, tool):
         def change(project):
             old = project.update_tool(identity, tool)
             delta = {key: (getattr(old, key), getattr(tool, key)) for key in ToolSettings.__dataclass_fields__
                      if getattr(old, key) != getattr(tool, key)}
-            return MachiningChange('tool', tuple((s.id, delta) for s in project.steps if s.tool_id == identity))
+            affected = [s for s in project.steps if s.tool_id == identity]
+            canonical = next((key for key, value in project.tools.items()
+                              if key != identity and value == tool), identity)
+            if canonical != identity:
+                for step in affected:
+                    step.tool_id = canonical
+                del project.tools[identity]
+            return MachiningChange('tool', tuple((s.id, delta) for s in affected))
         return self.perform('tool', change)
 
     def update_literal(self, identity, name, gcode):

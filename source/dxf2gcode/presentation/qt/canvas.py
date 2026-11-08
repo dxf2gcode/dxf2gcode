@@ -109,6 +109,12 @@ class CanvasBase(CanvasObject()):
 
         self.setMouseTracking (True)
 
+    def update(self, *args):
+        super().update(*args)
+        preview = getattr(self, 'machining_preview', None)
+        if preview is not None:
+            preview.overlay.update()
+
 
     def updateModifiers(self, event):
         """
@@ -163,10 +169,35 @@ class MyDropDownMenu(QMenu):
 
         panel = getattr(getattr(g, 'window', None), 'machining_panel', None)
         if panel is not None and panel.binding is not None:
+            if panel.modifiers.mode:
+                self.clear()
+                self.addAction(panel.modifiers.tr('Finish tab editing'), lambda: panel.modifiers.set_mode(False))
+                if panel.modifiers.context is not None:
+                    self.addAction(panel.modifiers.tr('Remove region'), panel.modifiers.remove)
+                self.exec(position)
+                return
             if self.selectedItems:
-                panel.add_machining_actions(self, panel.canvas_operation_ids(self.selectedItems))
-                self.addAction(panel.tr('From selection'), panel.from_selection)
+                identities = panel.canvas_operation_ids(self.selectedItems)
+                enabled = bool(identities)
+                self.addSeparator()
                 self.addAction(self.tr('Invert Selection'), self.invertSelection)
+                for text, value in (('Disable Selection', False), ('Enable Selection', True)):
+                    action = self.addAction(self.tr(text))
+                    action.setEnabled(enabled)
+                    action.triggered.connect(lambda checked=False, value=value:
+                                             panel.execute(lambda: panel.commands.update_entries(identities, enabled=value)))
+                self.addSeparator()
+                for text, operation in (('Switch Direction', 'reverse'), ('Set Nearest StartPoint', 'nearest'),
+                                        ('Set Sharpest StartPoint', 'sharpest')):
+                    action = self.addAction(self.tr(text))
+                    action.setEnabled(enabled)
+                    action.triggered.connect(lambda checked=False, operation=operation:
+                                             self.editMachiningPaths(panel, identities, operation))
+                self.addSeparator()
+                panel.add_machining_actions(self, identities, canvas_style=True)
+                self.addSeparator()
+                self.addAction(panel.tr('Assign machining…'), lambda checked=False:
+                               panel.assign_machining(shapes=self.selectedItems, global_position=position))
             self.exec(position)
             return
 
@@ -256,6 +287,17 @@ class MyDropDownMenu(QMenu):
         """
         return str(QtCore.QCoreApplication.translate('MyDropDownMenu',
                                                            string_to_translate))
+
+    def editMachiningPaths(self, panel, identities, operation):
+        points = {}
+        if operation == 'nearest':
+            for step, entry in panel.commands.entries(panel.binding.project, identities):
+                point = self.clicked
+                if self.offset is not None:
+                    depth = panel.binding.project.resolve(step, entry)[0]['axis3_start_mill_depth']
+                    point = self.canvas_scene.determineSelectedPosition(self.clicked, depth, self.offset)
+                points[entry.id] = (point.x, point.y)
+        panel.execute(lambda: panel.commands.edit_operation_paths(identities, operation, points))
 
     def moveWorkpieceZeroHere(self):
         point = self.clicked

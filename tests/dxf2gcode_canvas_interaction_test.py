@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "source"))
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 from dxf2gcode.presentation.qt.qt_compat.QtGui import QMouseEvent
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (
-    QApplication, QGraphicsScene, QGraphicsView)
+    QApplication, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsItem)
 import dxf2gcode.bootstrap.runtime_state as g
 
 with patch.object(g, "config", SimpleNamespace(mode3d=False)):
@@ -72,6 +72,46 @@ class TestCanvasMouseEvents(unittest.TestCase):
         self.assertIsNone(self.view.mppos)
         self.release()
         self.assertTrue(self.view.rubberBand.isHidden())
+
+    def test_multi_selection_notifies_once_with_the_complete_final_state(self):
+        notifications = []
+        items = []
+
+        class Contour(QGraphicsRectItem):
+            def __init__(self, x):
+                super().__init__(x, 0, 10, 10)
+                self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+                self.model = SimpleNamespace(selectionChangedCallback=lambda model, selected:
+                    notifications.append(tuple(item.isSelected() for item in items)))
+
+            def setSelected(self, selected, blockSignals=True):
+                super().setSelected(selected)
+                if not blockSignals:
+                    self.model.selectionChangedCallback(self.model, selected)
+
+            def contains_point(self, point):
+                return 0 if self.rect().contains(point) else 1000
+
+        for x in (0, 30, 60):
+            item = Contour(x)
+            items.append(item)
+            self.view.scene().addItem(item)
+        self.view.resize(300, 200)
+        self.view.show()
+        self.view.fitInView(QtCore.QRectF(-10, -10, 100, 50))
+        _APP.processEvents()
+        self.press()
+        self.view.rubberBand.setGeometry(self.view.viewport().rect())
+        self.view.rubberBand.show()
+        self.release((290, 190))
+        self.assertEqual(notifications, [(True, True, True)])
+        # Clearing the previous selection also emits one complete state,
+        # rather than replanning after each of the three deselections.
+        notifications.clear()
+        point = self.view.mapFromScene(QtCore.QPointF(90, 30))
+        self.press((point.x(), point.y()))
+        self.release((point.x(), point.y()))
+        self.assertEqual(notifications, [(False, False, False)])
 
     def test_mixed_selection_icon_is_available(self):
         self.assertFalse(mixedSelectionIcon().isNull())

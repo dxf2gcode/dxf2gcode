@@ -3303,6 +3303,58 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <source>An error occured while duplicating the postprocessor config file {0} ; do the operation manually and restart the software.</source>
         <translation>Une erreur est survenue lors de la duplication du fichier de configuration du post-processeur {0} ; effectuez l'opération manuellement et redémarrez le logiciel.</translation>
     </message>
+    <message>
+        <source>Diameter</source>
+        <translation>Diamètre</translation>
+    </message>
+    <message>
+        <source>Spindle speed</source>
+        <translation>Vitesse de broche</translation>
+    </message>
+    <message>
+        <source>Start radius</source>
+        <translation>Rayon de départ</translation>
+    </message>
+    <message>
+        <source>Lead radius</source>
+        <translation>Rayon d’approche</translation>
+    </message>
+    <message>
+        <source>Lead length</source>
+        <translation>Longueur droite</translation>
+    </message>
+    <message>
+        <source>Overcut length</source>
+        <translation>Longueur de dépassement</translation>
+    </message>
+    <message>
+        <source>T{0} — steps: {1}</source>
+        <translation>T{0} — étapes : {1}</translation>
+    </message>
+    <message>
+        <source>Tool number is missing from the current tool table.</source>
+        <translation>Le numéro d’outil est absent de la table des outils actuelle.</translation>
+    </message>
+    <message>
+        <source>Project tool differs from the current tool table.</source>
+        <translation>L’outil du projet diffère de la table des outils actuelle.</translation>
+    </message>
+    <message>
+        <source>{0}: project {1} {2}</source>
+        <translation>{0} : projet {1} {2}</translation>
+    </message>
+    <message>
+        <source>{0}: project {1}; table {2} {3}</source>
+        <translation>{0} : projet {1} ; table {2} {3}</translation>
+    </message>
+    <message>
+        <source>Add or correct the tool in the tool table, or assign an existing table tool to the affected steps.</source>
+        <translation>Ajoutez ou corrigez l’outil dans la table des outils, ou affectez un outil existant de la table aux étapes concernées.</translation>
+    </message>
+    <message>
+        <source>Export blocked: resolve the tool table conflicts first.</source>
+        <translation>Exportation bloquée : résolvez d’abord les conflits avec la table des outils.</translation>
+    </message>
 </context>
 <context>
     <name>OffArcGeo</name>
@@ -3569,6 +3621,10 @@ La longueur doit être supérieure à la tolérance</translation>
     <message>
         <source>Knife return alignment requires a lead out.</source>
         <translation>Le retour à l’orientation de départ nécessite une sortie.</translation>
+    </message>
+    <message>
+      <source>Shape %i: %i holding tab(s) omitted because their region or nominal contour boundaries cannot be mapped uniquely to the toolpath.</source>
+      <translation>Contour %i : %i attache(s) omise(s), car leur région ou leurs limites sur le contour original ne peuvent pas être associées sans ambiguïté au parcours d’outil.</translation>
     </message>
 </context>
 <context>
@@ -4935,6 +4991,76 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
         <source>{0} contours selected</source>
         <translation>{0} contours sélectionnés</translation>
     </message>
+    <message>
+        <source>Project tools</source>
+        <translation>Outils du projet</translation>
+    </message>
+    <message>
+        <source>Tool table</source>
+        <translation>Table des outils</translation>
+    </message>
+    <message>
+        <source>Selecting a table tool copies its values into the project.</source>
+        <translation>La sélection d’un outil de la table copie ses valeurs dans le projet.</translation>
+    </message>
+    <message>
+        <source>Project deviation</source>
+        <translation>Variante du projet</translation>
+    </message>
+    <message>
+        <source>Project only</source>
+        <translation>Uniquement dans le projet</translation>
+    </message>
+    <message>
+        <source>Replacing a project deviation with its table definition updates all steps using that project tool.</source>
+        <translation>La sélection de cette définition de la table remplace l’outil différent du projet dans toutes les étapes qui l’utilisent.</translation>
+    </message>
+    <message>
+        <source>Select machining contours to change tools.</source>
+        <translation>Sélectionnez des contours d’usinage pour changer d’outil.</translation>
+    </message>
+
+    <message>
+        <source>Assign machining…</source>
+        <translation>Affecter l’usinage…</translation>
+    </message>
+    <message>
+        <source>Selected assignments: {0}</source>
+        <translation>Affectations sélectionnées : {0}</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Copier</translation>
+    </message>
+    <message>
+        <source>Move</source>
+        <translation>Déplacer</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Action</translation>
+    </message>
+    <message>
+        <source>Existing step</source>
+        <translation>Étape existante</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation>Destination</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation>Avancé</translation>
+    </message>
+
+    <message>
+        <source>Choose matching machining step</source>
+        <translation>Choisir une étape d’usinage compatible</translation>
+    </message>
+    <message>
+        <source>Several compatible steps exist. Select the target for "{0}".</source>
+        <translation>Plusieurs étapes compatibles existent. Choisissez la destination pour « {0} ».</translation>
+    </message>
 </context>
 <context>
     <name>MachiningParameters</name>
@@ -5002,6 +5128,249 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
         <source>Tool</source>
         <translation>Outil</translation>
     </message>
+    <message>
+        <source>Different tools</source>
+        <translation>Outils différents</translation>
+    </message>
+    <message>
+        <source>{0} contours selected. Tool changes apply only to this selection.</source>
+        <translation>{0} contours sélectionnés. Le changement d’outil s’applique uniquement à cette sélection.</translation>
+    </message>
+    <message>
+        <source>Entry</source>
+        <translation>Entrée</translation>
+    </message>
+    <message>
+        <source>Exit</source>
+        <translation>Sortie</translation>
+    </message>
+    <message>
+        <source>Radius</source>
+        <translation>Rayon</translation>
+    </message>
+    <message>
+        <source>Straight</source>
+        <translation>Droite</translation>
+    </message>
+    <message>
+        <source>Z clearances</source>
+        <translation>Dégagements Z</translation>
+    </message>
+    <message>
+        <source>Retract</source>
+        <translation>Retrait</translation>
+    </message>
+    <message>
+        <source>Safety</source>
+        <translation>Sécurité</translation>
+    </message>
+    <message>
+        <source>Cut depth</source>
+        <translation>Profondeur</translation>
+    </message>
+    <message>
+        <source>Infeed</source>
+        <translation>Passe</translation>
+    </message>
+    <message>
+        <source>Final</source>
+        <translation>Finale</translation>
+    </message>
+    <message>
+        <source>Feed</source>
+        <translation>Avance</translation>
+    </message>
+    <message>
+        <source>Motion</source>
+        <translation>Mouvement</translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation>Longueur</translation>
+    </message>
+    <message>
+        <source>Overcut</source>
+        <translation>Dépassement</translation>
+    </message>
+    <message>
+        <source>{0} — own value for contour {1} in step "{2}": {3}</source>
+        <translation>{0} — valeur propre au contour {1} dans l’étape « {2} » : {3}</translation>
+    </message>
+    <message>
+        <source>{0} — own value in step "{1}": {2}</source>
+        <translation>{0} — valeur propre à l’étape « {1} » : {2}</translation>
+    </message>
+    <message>
+        <source>{0} — inherited from {1}: {2}</source>
+        <translation>{0} — hérité de {1} : {2}</translation>
+    </message>
+    <message>
+        <source>Z height used for retracting and rapid travel.</source>
+        <translation>Hauteur Z utilisée pour le retrait et les déplacements rapides.</translation>
+    </message>
+    <message>
+        <source>Clearance above the workpiece before approaching a cut.</source>
+        <translation>Distance de sécurité au-dessus de la pièce avant l’approche de la coupe.</translation>
+    </message>
+    <message>
+        <source>Z coordinate of the workpiece surface.</source>
+        <translation>Coordonnée Z de la surface de la pièce.</translation>
+    </message>
+    <message>
+        <source>Maximum cutting depth per pass.</source>
+        <translation>Profondeur de coupe maximale par passe.</translation>
+    </message>
+    <message>
+        <source>Z coordinate reached by the final cutting pass.</source>
+        <translation>Coordonnée Z atteinte par la dernière passe de coupe.</translation>
+    </message>
+    <message>
+        <source>XY feed: movement speed in the machining plane.</source>
+        <translation>Avance XY : vitesse de déplacement dans le plan d’usinage.</translation>
+    </message>
+    <message>
+        <source>Z feed: movement speed along the depth axis.</source>
+        <translation>Avance Z : vitesse de déplacement le long de l’axe de profondeur.</translation>
+    </message>
+    <message>
+        <source>Additional contour allowance applied to the toolpath.</source>
+        <translation>Surépaisseur supplémentaire appliquée au parcours de la fraise.</translation>
+    </message>
+    <message>
+        <source>Movement used to approach the contour.</source>
+        <translation>Mouvement utilisé pour approcher le contour.</translation>
+    </message>
+    <message>
+        <source>Movement used to leave the contour.</source>
+        <translation>Mouvement utilisé pour quitter le contour.</translation>
+    </message>
+    <message>
+        <source>Whether the toolpath continues beyond the contour end.</source>
+        <translation>Détermine si le parcours continue au-delà de la fin du contour.</translation>
+    </message>
+    <message>
+        <source>Pass from which holding-tab regions affect the contour.</source>
+        <translation>Passe à partir de laquelle les attaches affectent le contour.</translation>
+    </message>
+    <message>
+        <source>Spindle speed for this machining operation.</source>
+        <translation>Vitesse de broche pour cette opération d’usinage.</translation>
+    </message>
+    <message>
+        <source>Radius of the approach or departure arc at the workpiece.</source>
+        <translation>Rayon de l’arc d’entrée ou de sortie au niveau de la pièce.</translation>
+    </message>
+    <message>
+        <source>Length of the straight approach or departure segment.</source>
+        <translation>Longueur du segment droit d’entrée ou de sortie.</translation>
+    </message>
+    <message>
+        <source>Distance travelled beyond the contour end.</source>
+        <translation>Distance parcourue au-delà de la fin du contour.</translation>
+    </message>
+    <message>
+        <source>Z contact height for swivelling a drag knife.</source>
+        <translation>Hauteur de contact Z pour le pivotement d’un couteau traînant.</translation>
+    </message>
+    <message>
+        <source>Angle threshold for swivelling the drag knife.</source>
+        <translation>Seuil angulaire pour le pivotement du couteau traînant.</translation>
+    </message>
+    <message>
+        <source>Tool radius compensation: G40 off, G41 left, G42 right.</source>
+        <translation>Correction du rayon d’outil : G40 désactivée, G41 à gauche, G42 à droite.</translation>
+    </message>
+    <message>
+        <source>Legacy entry radius; prefer the lead radius for new settings.</source>
+        <translation>Ancien rayon d’entrée ; préférer le rayon d’approche pour les nouveaux réglages.</translation>
+    </message>
+
+    <message>
+        <source>Top</source>
+        <translation>Surface</translation>
+    </message>
+    <message>
+        <source>Legacy radius</source>
+        <translation>Ancien rayon</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Actif</translation>
+    </message>
+
+    <message>
+        <source>Speed</source>
+        <translation>Rotation</translation>
+    </message>
+    <message>
+        <source>Pass</source>
+        <translation>Passe</translation>
+    </message>
+    <message>
+        <source>Z values</source>
+        <translation>Valeurs Z</translation>
+    </message>
+    <message>
+        <source>Feeds</source>
+        <translation>Avances</translation>
+    </message>
+    <message>
+        <source>Lead in/out</source>
+        <translation>Entrée/sortie</translation>
+    </message>
+    <message>
+        <source>Offset</source>
+        <translation>Décalage</translation>
+    </message>
+    <message>
+        <source>Compensation</source>
+        <translation>Correction</translation>
+    </message>
+    <message>
+        <source>Allowance</source>
+        <translation>Surépaisseur</translation>
+    </message>
+    <message>
+        <source>Swivel</source>
+        <translation>Pivotement</translation>
+    </message>
+    <message>
+        <source>Knife angle</source>
+        <translation>Angle du couteau</translation>
+    </message>
+    <message>
+        <source>Start X</source>
+        <translation>Départ X</translation>
+    </message>
+    <message>
+        <source>Start Y</source>
+        <translation>Départ Y</translation>
+    </message>
+
+    <message>
+        <source>Different</source>
+        <translation>Différent</translation>
+    </message>
+    <message>
+        <source>Not jointly available</source>
+        <translation>Non disponible en commun</translation>
+    </message>
+    <message>
+        <source>Select machining operations explicitly: selected geometry has multiple linked operations.</source>
+        <translation>Sélectionnez explicitement les opérations : la géométrie choisie possède plusieurs opérations liées.</translation>
+    </message>
+    <message>
+        <source>{0} machining contours selected. Changes apply to the entire selection.</source>
+        <translation>{0} contours d’usinage sélectionnés. Les modifications concernent toute la sélection.</translation>
+    </message>
+    <message>
+        <source>{0}: {1} own values, {2} inherited values.</source>
+        <translation>{0} : {1} valeurs propres, {2} valeurs héritées.</translation>
+    </message>
+    <message>
+        <source>Changes affect all contours in {0} selected steps.</source>
+        <translation>Les modifications concernent tous les contours de {0} étapes concernées.</translation>
+    </message>
 </context>
 <context>
     <name>GeometryPanel</name>
@@ -5018,4 +5387,98 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Calques</translation>
     </message>
 </context>
+<context>
+    <name>MachiningPreview</name>
+    <message>
+        <source>Start: X {0} · Y {1} · Z {2} {3}</source>
+        <translation>Début : X {0} · Y {1} · Z {2} {3}</translation>
+    </message>
+    <message>
+        <source>End: X {0} · Y {1} · Z {2} {3}</source>
+        <translation>Fin : X {0} · Y {1} · Z {2} {3}</translation>
+    </message>
+    <message>
+        <source>Final depth: {0} {1}</source>
+        <translation>Profondeur finale : {0} {1}</translation>
+    </message>
+    <message>
+        <source>No toolpath: {0}</source>
+        <translation>Aucun parcours : {0}</translation>
+    </message>
+    <message>
+        <source>Choose machining operation</source>
+        <translation>Choisir une opération d’usinage</translation>
+    </message>
+</context>
+  <context>
+    <name>TabModifiers</name>
+    <message>
+      <source>Holding tabs</source>
+      <translation>Attaches</translation>
+    </message>
+    <message>
+      <source>Imported region — global. Changes affect every linked machining operation.</source>
+      <translation>Région importée — globale. Les modifications affectent toutes les opérations liées.</translation>
+    </message>
+    <message>
+      <source>Tab top</source>
+      <translation>Sommet de l’attache</translation>
+    </message>
+    <message>
+      <source>XY feed</source>
+      <translation>Avance XY</translation>
+    </message>
+    <message>
+      <source>Z feed</source>
+      <translation>Avance Z</translation>
+    </message>
+    <message>
+      <source>Region enabled</source>
+      <translation>Région activée</translation>
+    </message>
+    <message>
+      <source>Remove region</source>
+      <translation>Supprimer la région</translation>
+    </message>
+    <message>
+      <source>Holding tabs — {0} regions, {1} segments</source>
+      <translation>Attaches — {0} régions, {1} segments</translation>
+    </message>
+    <message>
+      <source>Imported tab regions — currently ineffective</source>
+      <translation>Régions d’attaches importées — actuellement sans effet</translation>
+    </message>
+    <message>
+      <source>Tab region {0} · global</source>
+      <translation>Région d’attache {0} · globale</translation>
+    </message>
+    <message>
+      <source>Disabled</source>
+      <translation>Désactivée</translation>
+    </message>
+    <message>
+      <source>Source: {0}</source>
+      <translation>Source : {0}</translation>
+    </message>
+    <message>
+      <source>Effective tab segments: {0}. Pass selection belongs to the machining contour.</source>
+      <translation>Segments d’attache effectifs : {0}. Le choix des passes appartient au contour d’usinage.</translation>
+    </message>
+    <message>
+      <source>Enter a finite number.</source>
+      <translation>Saisir un nombre fini.</translation>
+    </message>
+    <message>
+      <source>Edit imported tab regions</source>
+      <translation>Modifier les régions d’attaches importées</translation>
+    </message>
+    <message>
+      <source>Finish tab editing</source>
+      <translation>Terminer l’édition des attaches</translation>
+    </message>
+    <message>
+      <source>Tab edit mode</source>
+      <translation>Mode d’édition des attaches</translation>
+    </message>
+  </context>
 </TS>

@@ -1,27 +1,59 @@
 """The machining tab: one document, explicit editing context and command history."""
 
 import json
+import logging
 from dxf2gcode.presentation.qt.numeric_display import format_number
 from dataclasses import replace
 from uuid import uuid4
 
 import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.application.machining import MachiningDrawing, ProjectConfiguration
-from dxf2gcode.application.machining_actions import MachiningCommands
+from dxf2gcode.application.machining_actions import MachiningCommands, MachiningTargetChoiceRequired
 from dxf2gcode.domain.project.layercontent import Layers
 from dxf2gcode.domain.project.machining_project import MachiningOperation, LiteralAction, PARAMETERS
 from dxf2gcode.domain.project.tool_settings import ToolSettings
 from dxf2gcode.presentation.qt.qt_compat import QtCore
-from dxf2gcode.presentation.qt.qt_compat.QtGui import QDrag, QAction, QKeySequence, QGuiApplication, QIcon
+from dxf2gcode.presentation.qt.qt_compat.QtGui import (
+    QDrag, QAction, QKeySequence, QGuiApplication, QIcon, QPainter, QPainterPath, QPen, QPixmap, QPalette)
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout, QTreeWidget, QTreeWidgetItem,
     QAbstractItemView, QLabel, QToolBar, QStyle, QHeaderView, QSizePolicy,
-    QDialog, QDialogButtonBox, QLineEdit, QComboBox, QMenu, QInputDialog, QScrollArea, QFrame)
+    QDialog, QDialogButtonBox, QLineEdit, QComboBox, QMenu, QInputDialog, QSplitter, QFrame)
 
 Qt = QtCore.Qt
 ROLE = Qt.ItemDataRole.UserRole
 SOURCE_ROLE = int(ROLE) + 1
+TABLE_TOOL_ROLE = int(ROLE) + 2
 MIME = 'application/x-dxf2gcode-machining'
+logger = logging.getLogger(__name__)
+
+
+def history_icon(palette, redo=False):
+    """Render mirrored curved arrows with explicit normal/disabled colors."""
+    icon = QIcon()
+    for mode, group in ((QIcon.Mode.Normal, QPalette.ColorGroup.Active),
+                        (QIcon.Mode.Disabled, QPalette.ColorGroup.Disabled)):
+        for size in (16, 18, 24, 32, 48):
+            pixmap = QPixmap(size, size)
+            pixmap.fill(Qt.GlobalColor.transparent)
+            painter = QPainter(pixmap)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            painter.scale(size / 24, size / 24)
+            if redo:
+                painter.translate(24, 0)
+                painter.scale(-1, 1)
+            painter.setPen(QPen(palette.color(group, QPalette.ColorRole.ButtonText), 1.8,
+                               Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+            path = QPainterPath()
+            path.moveTo(19, 19)
+            path.cubicTo(26, 7, 13, -1, 5, 9)
+            path.moveTo(5, 3)
+            path.lineTo(5, 9)
+            path.lineTo(11, 9)
+            painter.drawPath(path)
+            painter.end()
+            icon.addPixmap(pixmap, mode)
+    return icon
 
 
 class MachiningTree(QTreeWidget):
@@ -142,8 +174,8 @@ class MachiningPanel(QWidget):
                 ('new', self.tr('Create…'), QStyle.StandardPixmap.SP_FileIcon, self.new_step),
                 ('up', self.tr('Move up'), QStyle.StandardPixmap.SP_ArrowUp, lambda: self.nudge(-1)),
                 ('down', self.tr('Move down'), QStyle.StandardPixmap.SP_ArrowDown, lambda: self.nudge(1)),
-                ('undo', self.tr('Undo'), QStyle.StandardPixmap.SP_ArrowBack, self.undo),
-                ('redo', self.tr('Redo'), QStyle.StandardPixmap.SP_ArrowForward, self.redo),
+                ('undo', self.tr('Undo'), None, self.undo),
+                ('redo', self.tr('Redo'), None, self.redo),
                 ('collapse', self.tr('Collapse all'), QStyle.StandardPixmap.SP_TitleBarShadeButton, lambda: self.tree.collapseAll()),
                 ('expand', self.tr('Expand all'), QStyle.StandardPixmap.SP_TitleBarUnshadeButton, lambda: self.tree.expandAll())):
             if key == 'collapse':
@@ -152,13 +184,17 @@ class MachiningPanel(QWidget):
                 bar.addWidget(spacer)
             if key in ('up', 'undo', 'collapse'):
                 bar.addSeparator()
-            action = bar.addAction(self.style().standardIcon(icon), text)
+            action_icon = history_icon(self.palette(), key == 'redo') if key in ('undo', 'redo') else self.style().standardIcon(icon)
+            action = bar.addAction(action_icon, text)
             action.triggered.connect(callback)
             action.setObjectName('machining_' + key)
             self.buttons[key] = action
         self.buttons['collapse'].setIcon(window.ui.layersCollapsePushButton.icon())
         self.buttons['expand'].setIcon(window.ui.layersExpandPushButton.icon())
         self.buttons['new'].setToolTip(self.tr('Create machining step…'))
+        for key, shortcut in (('undo', 'Ctrl+Z'), ('redo', 'Ctrl+Shift+Z')):
+            keys = QKeySequence(shortcut).toString(QKeySequence.SequenceFormat.NativeText)
+            self.buttons[key].setToolTip('%s (%s)' % (self.buttons[key].text(), keys))
         bar.widgetForAction(self.buttons['new']).setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.tree = MachiningTree(self)
         self.tree.setColumnCount(3)
@@ -173,22 +209,28 @@ class MachiningPanel(QWidget):
         self.tree.itemSelectionChanged.connect(self.selection_changed)
         self.tree.itemChanged.connect(self.checked)
         self.tree.itemDoubleClicked.connect(self.edit_item)
-        layout.addWidget(self.tree, 2)
-        self.context_label = QLabel(self.tr('Select a machining operation to edit its values.'), self)
-        self.context_label.setWordWrap(True)
-        self.context_label.setTextFormat(Qt.TextFormat.PlainText)
-        layout.addWidget(self.context_label)
+        self.splitter = QSplitter(Qt.Orientation.Vertical, self)
+        self.splitter.setObjectName('machiningTreeParametersSplitter')
+        self.splitter.setChildrenCollapsible(False)
+        self.splitter.addWidget(self.tree)
+        self.tree.setMinimumHeight(60)
+        layout.addWidget(self.splitter, 1)
+        parameter_pane = QWidget(self.splitter)
+        parameter_layout = QVBoxLayout(parameter_pane)
+        parameter_layout.setContentsMargins(0, 0, 0, 0)
         from dxf2gcode.presentation.qt.machining_parameters import MachiningParameters
         self.parameter_editor = MachiningParameters(self)
-        self.parameter_scroll = QScrollArea(self)
-        self.parameter_scroll.setWidgetResizable(True)
-        self.parameter_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.parameter_scroll.setWidget(self.parameter_editor.frame)
-        layout.addWidget(self.parameter_scroll, 3)
-        self.notice = QLabel('', self)
-        self.notice.setWordWrap(True)
-        self.notice.setTextFormat(Qt.TextFormat.PlainText)
-        layout.addWidget(self.notice)
+        parameter_layout.addWidget(self.parameter_editor.frame, 1)
+        from dxf2gcode.presentation.qt.tab_modifiers import TabModifiers, tab_mode_icon
+        self.modifiers = TabModifiers(self)
+        parameter_layout.addWidget(self.modifiers.editor, 1)
+        self.buttons['tabs'] = QAction(tab_mode_icon(self.palette()), self.modifiers.tr('Tab edit mode'), self)
+        after_create = bar.actions()[bar.actions().index(self.buttons['new'])+1]
+        bar.insertAction(after_create, self.buttons['tabs'])
+        self.buttons['tabs'].setObjectName('machining_tabs')
+        self.buttons['tabs'].setCheckable(True)
+        self.buttons['tabs'].triggered.connect(self.modifiers.set_mode)
+        self.splitter.setSizes([250, 350])
         for text, shortcut, callback in ((self.tr('Undo machining action'), 'Ctrl+Z', self.undo),
                                           (self.tr('Redo machining action'), 'Ctrl+Shift+Z', self.redo),
                                           (self.tr('Move up'), 'Alt+Up', lambda: self.nudge(-1)),
@@ -206,10 +248,14 @@ class MachiningPanel(QWidget):
             action.triggered.connect(callback)
             self.tree.addAction(action)
         window.ui.mytabWidget.addTab(self, self.tr('Machining'))
+        from dxf2gcode.presentation.qt.machining_preview import MachiningPreview
+        self.canvas_preview = MachiningPreview(self)
         self.setEnabled(False)
         QtCore.QTimer.singleShot(0, self.initial_sidebar_width)
 
     def initial_sidebar_width(self):
+        if self.window.settings.contains('MainWindow/sidebarWidth'):
+            return
         self.parameter_editor.update_preferred_columns()
         splitter = self.window.ui.splitter
         sizes = splitter.sizes()
@@ -231,7 +277,12 @@ class MachiningPanel(QWidget):
             self.window.layerContents.machining_binding = binding
             binding.bind_legacy_editor()
         if binding is not self.binding:
+            self.canvas_preview.records.clear()
+            self.canvas_preview.counts.clear()
+            self.canvas_preview.anchors.clear()
             self.binding = binding
+            self.modifiers.reset()
+            self.selection_from_geometry = False
             self.commands = MachiningCommands(binding)
             self.context = None
             self.token = str(uuid4())
@@ -240,6 +291,7 @@ class MachiningPanel(QWidget):
         self.refresh()
 
     def freeze_original_trees(self):
+        from dxf2gcode.presentation.qt.treehandling import SHAPE_OBJECT, LAYER_OBJECT
         for view in (self.window.ui.layersShapesTreeView, self.window.ui.entitiesTreeView):
             view.setDragEnabled(False)
             view.setAcceptDrops(False)
@@ -251,6 +303,11 @@ class MachiningPanel(QWidget):
             view.setColumnHidden(3, True)
             def walk(parent):
                 for row in range(parent.rowCount()):
+                    first = parent.child(row, 0)
+                    shape = getattr(first.data(SHAPE_OBJECT), 'shapeobj', None)
+                    layer = first.data(LAYER_OBJECT)
+                    modifier = (shape is not None and shape.parentLayer.isBreakLayer()) or (
+                        layer is not None and layer.isBreakLayer())
                     for col in range(parent.columnCount()):
                         item = parent.child(row, col)
                         if item is not None:
@@ -259,6 +316,9 @@ class MachiningPanel(QWidget):
                             item.setEditable(False)
                             item.setDragEnabled(False)
                             item.setDropEnabled(False)
+                            if modifier:
+                                item.setSelectable(False)
+                                item.setToolTip(self.modifiers.scope.text())
                     walk(parent.child(row, 0))
             walk(model.invisibleRootItem())
             model.blockSignals(blocked)
@@ -273,18 +333,25 @@ class MachiningPanel(QWidget):
         if self.binding is None:
             return
         selected = set(selection if selection is not None else self.commands.selection)
+        current = self.tree.currentItem()
+        current_key = current.data(0, ROLE) if current is not None else None
         self.busy = True
         self.generation += 1
         expanded = {self.tree.topLevelItem(i).data(0, ROLE): self.tree.topLevelItem(i).isExpanded()
                     for i in range(self.tree.topLevelItemCount())}
+        self.modifiers.groups, self.modifiers.nodes = [], {}
         self.tree.clear()
         self.entry_items = {}
+        tree_items = {}
         project = self.binding.project
         for step in project.steps:
+            if step.kind == 'break':
+                continue
             tool = project.tools[step.tool_id]
             root = QTreeWidgetItem(self.tree, ['%s · %s · T%d' % (step.name, self.kind_text(step.kind), tool.tool_nr)])
             root.setToolTip(0, '%s · Ø%s' % (root.text(0), format_number(tool.tool_diameter, project.units)))
             root.setData(0, ROLE, ('step', step.id))
+            tree_items[('step', step.id)] = root
             for entry in step.entries:
                 if isinstance(entry, LiteralAction):
                     text, source = entry.name, self.tr('Custom G-code')
@@ -299,6 +366,7 @@ class MachiningPanel(QWidget):
                         source += ' · ' + self.tr('Conflicting machining settings')
                 item = QTreeWidgetItem(root, [text])
                 item.setData(0, ROLE, ('entry', entry.id))
+                tree_items[('entry', entry.id)] = item
                 item.setData(0, SOURCE_ROLE, source)
                 item.setToolTip(0, source)
                 self.entry_items[entry.id] = item
@@ -316,7 +384,7 @@ class MachiningPanel(QWidget):
         unassigned = list(self.binding.unassigned)
         by_geometry = self.binding.operations_by_geometry()
         unassigned += [shape for identity, shape in self.binding.sources.items() if not by_geometry.get(identity)]
-        self.unassigned = list(dict.fromkeys(unassigned))
+        self.unassigned = [shape for shape in dict.fromkeys(unassigned) if not shape.parentLayer.isBreakLayer()]
         if self.unassigned:
             root = QTreeWidgetItem(self.tree, [self.tr('Unassigned')])
             root.setData(0, ROLE, ('unassigned', ''))
@@ -326,8 +394,14 @@ class MachiningPanel(QWidget):
                 item.setData(0, ROLE, ('geometry', str(index)))
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
             root.setExpanded(expanded.get(root.data(0, ROLE), True))
+        if current_key not in tree_items or current_key[1] not in selected:
+            current_key = next((key for key in tree_items if key[1] in selected), None)
+        if current_key is not None:
+            self.tree.setCurrentItem(tree_items[current_key], 0,
+                                     QtCore.QItemSelectionModel.SelectionFlag.NoUpdate)
         self.buttons['undo'].setEnabled(bool(self.commands.undo_stack))
         self.buttons['redo'].setEnabled(bool(self.commands.redo_stack))
+        self.modifiers.populate_tree()
         self.busy = False
         self.update_tree_actions()
         self.show_parameters()
@@ -335,7 +409,8 @@ class MachiningPanel(QWidget):
     def update_tree_actions(self, *unused):
         if self.busy:
             return
-        roots = [self.tree.topLevelItem(i) for i in range(self.tree.topLevelItemCount())]
+        roots = [self.tree.topLevelItem(i) for i in range(self.tree.topLevelItemCount())
+                 if self.tree.topLevelItem(i).data(0, ROLE)[0] == 'step']
         self.buttons['collapse'].setEnabled(any(i.childCount() and i.isExpanded() for i in roots))
         self.buttons['expand'].setEnabled(any(i.childCount() and not i.isExpanded() for i in roots))
         items = self.tree.selectedItems()
@@ -343,7 +418,8 @@ class MachiningPanel(QWidget):
             movable = False
             if items and all(i.parent() is items[0].parent() for i in items):
                 parent = items[0].parent()
-                siblings = [parent.child(i) for i in range(parent.childCount())] if parent else roots
+                siblings = [parent.child(i) for i in range(parent.childCount())
+                            if parent.child(i).data(0, ROLE)[0] == 'entry'] if parent else roots
                 movable = any(0 <= index+direction < len(siblings) and siblings[index+direction] not in items
                               for index, item in enumerate(siblings) if item in items and item.data(0, ROLE)[0] in ('step', 'entry'))
             self.buttons[key].setEnabled(movable)
@@ -370,11 +446,27 @@ class MachiningPanel(QWidget):
         return None
 
     def execute(self, callback):
+        self.commands.target_choices = {}
         try:
-            result = callback()
+            while True:
+                try:
+                    result = callback()
+                    break
+                except MachiningTargetChoiceRequired as request:
+                    labels = ['%d · %s · %s · T%d' % (index+1, name, self.kind_text(kind), number)
+                              for index, (_, name, kind, number) in enumerate(request.candidates)]
+                    choice, accepted = QInputDialog.getItem(self, self.tr('Choose matching machining step'),
+                        self.tr('Several compatible steps exist. Select the target for "{0}".').format(request.source_name),
+                        labels, editable=False)
+                    if not accepted:
+                        self.show_parameters()
+                        return False
+                    self.commands.target_choices[request.key] = request.candidates[labels.index(choice)][0]
         except (ValueError, KeyError, StopIteration) as error:
-            self.notice.setText(self.tr('Action rejected: {0}').format(self.error_text(error)))
+            self.report_warning(self.tr('Action rejected: {0}').format(self.error_text(error)))
             return False
+        finally:
+            self.commands.target_choices = {}
         selected = self.commands.selection
         g.config.machine_type = self.binding.project.configuration['General']['machine_type']
         if bool(g.config.metric) != (self.binding.project.units == 'mm'):
@@ -383,8 +475,12 @@ class MachiningPanel(QWidget):
             entry = next((e for s in self.binding.project.steps for e in s.entries
                           if e.id == selected[0] and isinstance(e, MachiningOperation)), None)
             if entry is not None and entry.geometry_id in self.binding.sources:
-                self.binding.activate_operation(entry.id)
-                self.context = entry.id
+                if any(step.kind == 'break' and entry in step.entries for step in self.binding.project.steps):
+                    self.modifiers.context = entry.id
+                    self.context = None
+                else:
+                    self.binding.activate_operation(entry.id)
+                    self.context = entry.id
             elif entry is None:
                 self.context = None
         if self.context and not any(e.id == self.context for s in self.binding.project.steps for e in s.entries):
@@ -402,9 +498,13 @@ class MachiningPanel(QWidget):
                 return (step.name if step else '') + (' / ' + item.text(0) if item else '')
             details = '\n'.join(description(identity) + ': ' + ', '.join('%s: %s → %s' % (field_name(k), *v) for k, v in delta.items())
                                 for identity, delta in result.changes)
-            self.notice.setText(self.tr('Machining updated. Undo is available.') + ('\n' + details if details else ''))
+            if details:
+                logger.info('%s', details)
         self.refresh_preview()
         return True
+
+    def report_warning(self, message):
+        logger.warning('%s', message)
 
     def refresh_preview(self):
         scene = getattr(self.window, 'canvas_scene', None)
@@ -432,6 +532,8 @@ class MachiningPanel(QWidget):
                         item.setIcon(0, self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning) if messages else QIcon())
                     if hasattr(scene, 'set_shape_disabled'):
                         scene.set_shape_disabled(shape, shape.disabled)
+            self.canvas_preview.refresh(self.binding.preview_layers)
+            self.modifiers.update_usage(self.binding.preview_layers)
         scene.update()
         if self.window.TreeHandler.auto_update_export_order:
             self.draw_route()
@@ -440,6 +542,13 @@ class MachiningPanel(QWidget):
         self.update_tree_actions()
         if self.busy or self.binding is None:
             return
+        self.canvas_edit_context = False
+        self.selection_from_geometry = False
+        current = self.tree.currentItem()
+        if current is not None and current.data(0, ROLE)[0] == 'modifier':
+            self.modifiers.select(current.data(0, ROLE)[1])
+            return
+        self.modifiers.context = None
         ids = self.selected_entries()
         self.commands.selection = tuple(item.data(0, ROLE)[1] for item in self.tree.selectedItems()
                                         if item.data(0, ROLE)[0] in ('step', 'entry'))
@@ -487,9 +596,12 @@ class MachiningPanel(QWidget):
     def geometry_selected(self):
         if self.busy or self.binding is None:
             return
-        geometries = {getattr(s, 'geometry_id', None) for s in self.window.shapes if s.isSelected()}
+        self.canvas_edit_context = False
+        self.selection_from_geometry = True
+        self.modifiers.context = None
+        geometries = {getattr(s, 'geometry_id', None) for s in self.window.shapes
+                      if s.isSelected() and not s.parentLayer.isBreakLayer()}
         by_geometry = self.binding.operations_by_geometry()
-        previous = dict(self.binding.active_operations)
         self.binding.active_operations.update({key: options[0][1].id for key, options in by_geometry.items()
                                                if len(options) == 1})
         for key in geometries:
@@ -501,10 +613,35 @@ class MachiningPanel(QWidget):
         self.context = ids[0] if len(ids) == 1 else None
         self.commands.selection = tuple(ids)
         self.refresh(ids)
-        if previous != self.binding.active_operations:
-            self.refresh_preview()
+        self.refresh_preview()
+
+    def select_canvas_operation(self, identity, toggle=False):
+        ids = set(self.selected_entries()) if toggle else set()
+        if toggle and identity in ids:
+            ids.remove(identity)
+            active = self.context if self.context in ids else next((entry.id
+                for step in self.binding.project.steps for entry in step.entries if entry.id in ids), None)
+        else:
+            ids.add(identity)
+            active = identity
+        self.commands.selection = tuple(entry.id for step in self.binding.project.steps for entry in step.entries
+                                        if entry.id in ids)
+        self.context = active
+        if active is not None:
+            self.binding.activate_operation(active)
+        self.refresh(ids)
+        self.busy = True
+        self.tree.setCurrentItem(self.entry_items.get(active), 0, QtCore.QItemSelectionModel.SelectionFlag.NoUpdate)
+        self.busy = False
+        self.selection_changed()
+        self.canvas_edit_context = active is not None
+        self.show_parameters()
 
     def show_parameters(self):
+        if self.modifiers.show():
+            self.parameter_editor.frame.hide()
+            return
+        self.parameter_editor.frame.show()
         self.parameter_editor.refresh()
 
     def reverse(self):
@@ -548,21 +685,15 @@ class MachiningPanel(QWidget):
         name.setObjectName('stepName')
         form.addRow(self.tr('Name'), name)
         kinds = QComboBox(dialog)
-        for key in ('contour', 'pocket', 'drill', 'break', 'ignored'):
+        for key in ('contour', 'pocket', 'drill', 'ignored'):
             kinds.addItem(self.kind_text(key), key)
         kinds.setCurrentIndex(kinds.findData(step.kind) if step else 0)
         kinds.setProperty('explicit_kind', False)
         kinds.activated.connect(lambda index: kinds.setProperty('explicit_kind', True))
         form.addRow(self.tr('Kind'), kinds)
         tools = QComboBox(dialog)
-        for index, (identity, tool) in enumerate(self.binding.project.tools.items()):
-            tools.addItem('T%d · Ø%s · %s rpm · #%d' % (tool.tool_nr, format_number(tool.tool_diameter, self.binding.project.units), format_number(tool.speed, kind='integer'), index+1), identity)
-        for number in g.config.vars.Tool_Parameters:
-            profile = g.config.vars.Tool_Parameters[number]
-            tools.addItem(self.tr('Import profile tool T{0}').format(number),
-                          self.profile_tool(number, profile))
-        if step:
-            tools.setCurrentIndex(tools.findData(step.tool_id))
+        selected_tool = step.tool_id if step else next(iter(self.binding.project.tools), None)
+        self.populate_tool_combo(tools, selected_tool, shared_replacement=step is not None)
         form.addRow(self.tr('Tool definition'), tools)
         mode = QComboBox(dialog)
         mode.setObjectName('assignmentMode')
@@ -587,10 +718,128 @@ class MachiningPanel(QWidget):
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return None
         return (name.text(), kinds.currentData(), tools.currentData(),
-                mode.currentData() if from_selection else 'empty', bool(kinds.property('explicit_kind')))
+                mode.currentData() if from_selection else 'empty', bool(kinds.property('explicit_kind')),
+                self.replaces_shared_tool(tools, step))
 
     def new_step(self):
         self.from_selection()
+
+    def assignment_dialog(self, identities, shapes, global_position=None):
+        dialog = QDialog(self)
+        dialog.setObjectName('machiningAssignmentDialog')
+        dialog.setWindowTitle(self.tr('Assign machining…'))
+        form = QFormLayout(dialog)
+        form.addRow(QLabel(self.tr('Selected assignments: {0}').format(len(identities)+len(shapes)), dialog))
+        action = QComboBox(dialog)
+        action.setObjectName('assignmentAction')
+        action.addItem(self.tr('Copy'), 'copy')
+        action.addItem(self.tr('Move'), 'move')
+        form.addRow(self.tr('Action'), action)
+        target_type = QComboBox(dialog)
+        target_type.setObjectName('assignmentTargetType')
+        has_selection = bool(identities or shapes)
+        if self.binding.project.steps and has_selection:
+            target_type.addItem(self.tr('Existing step'), 'existing')
+        target_type.addItem(self.tr('New step'), 'new')
+        form.addRow(self.tr('Target'), target_type)
+        action.setCurrentIndex(action.findData('move' if target_type.currentData() == 'new' else 'copy'))
+        action.setEnabled(has_selection)
+        target = QComboBox(dialog)
+        target.setObjectName('assignmentTargetStep')
+        for step in self.binding.project.steps:
+            if step.kind == 'break':
+                continue
+            tool = self.binding.project.tools[step.tool_id]
+            target.addItem('%s · %s · T%d' % (step.name, self.kind_text(step.kind), tool.tool_nr), step.id)
+        form.addRow(self.tr('Target step'), target)
+        name = QLineEdit(self.tr('New step'), dialog)
+        name.setObjectName('assignmentStepName')
+        form.addRow(self.tr('Name'), name)
+        kinds = QComboBox(dialog)
+        kinds.setObjectName('assignmentStepKind')
+        for kind in ('contour', 'pocket', 'drill', 'ignored'):
+            kinds.addItem(self.kind_text(kind), kind)
+        sources = self.commands.entries(self.binding.project, identities)
+        kinds_used = {step.kind for step, _ in sources}
+        if len(kinds_used) == 1:
+            kinds.setCurrentIndex(kinds.findData(next(iter(kinds_used))))
+        form.addRow(self.tr('Kind'), kinds)
+        tools = QComboBox(dialog)
+        tools.setObjectName('assignmentStepTool')
+        tool_id = sources[0][0].tool_id if sources else next(iter(self.binding.project.tools), None)
+        self.populate_tool_combo(tools, tool_id)
+        form.addRow(self.tr('Tool definition'), tools)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel, dialog)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        form.addRow(buttons)
+        def update():
+            new = target_type.currentData() == 'new'
+            for field, enabled in ((target, not new), (name, new), (kinds, new), (tools, new)):
+                field.setEnabled(enabled)
+                form.labelForField(field).setEnabled(enabled)
+            buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(
+                bool(name.text().strip()) if new else target.currentData() is not None)
+        target_type.currentIndexChanged.connect(update)
+        name.textChanged.connect(update)
+        update()
+        dialog.ensurePolished()
+        dialog.setFixedSize(dialog.sizeHint())
+        if global_position is not None:
+            screen = QGuiApplication.screenAt(global_position) or self.window.screen()
+            if screen is not None:
+                area = screen.availableGeometry()
+                dialog.move(max(area.left(), min(global_position.x(), area.right()-dialog.width()-12)),
+                            max(area.top(), min(global_position.y(), area.bottom()-dialog.height()-36)))
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+        return (target_type.currentData(), target.currentData(), action.currentData(),
+                name.text().strip(), kinds.currentData(), tools.currentData())
+
+    def assign_machining(self, shapes=None, identities=None, global_position=None):
+        if not self.binding:
+            return
+        def change_selection():
+            if identities is not None:
+                if getattr(self, 'selection_from_geometry', False):
+                    linked = self.binding.operations_by_geometry()
+                    for _, entry in self.commands.entries(self.binding.project, identities):
+                        if isinstance(entry, MachiningOperation) and len(linked[entry.geometry_id]) > 1:
+                            shape = self.binding.sources[entry.geometry_id]
+                            raise ValueError(self.tr('Select an active operation for contour {0}.').format(shape.nr))
+                unassigned = [self.unassigned[int(item.data(0, ROLE)[1])] for item in self.tree.selectedItems()
+                              if item.data(0, ROLE)[0] == 'geometry']
+                return list(identities), unassigned
+            selected_shapes = list(shapes) if shapes is not None else [s for s in self.window.shapes if s.isSelected()]
+            explicit = set(self.selected_entries()) if not getattr(self, 'selection_from_geometry', False) else set()
+            linked = self.binding.operations_by_geometry()
+            ids, unassigned = [], []
+            for shape in selected_shapes:
+                options = linked.get(getattr(shape, 'geometry_id', None), ())
+                chosen = [entry.id for _, entry in options if entry.id in explicit]
+                if chosen:
+                    ids.extend(chosen)
+                elif len(options) == 1:
+                    ids.append(options[0][1].id)
+                elif options:
+                    raise ValueError(self.tr('Select an active operation for contour {0}.').format(shape.nr))
+                else:
+                    unassigned.append(shape)
+            return ids, unassigned
+        try:
+            ids, unassigned = change_selection()
+        except ValueError as error:
+            self.report_warning(str(error))
+            return
+        data = self.assignment_dialog(ids, unassigned, global_position)
+        if data is None:
+            return
+        new, target, action, name, kind, tool = data
+        if new == 'new':
+            self.execute(lambda: self.commands.create_step(name, kind, tool, identities=ids,
+                                                          copy=action == 'copy', geometries=unassigned))
+        else:
+            self.execute(lambda: self.commands.assign_to_step(ids, unassigned, target, copy=action == 'copy'))
 
     def from_selection(self, shapes=None, global_position=None):
         if not self.binding:
@@ -609,8 +858,8 @@ class MachiningPanel(QWidget):
 
     def build_geometry_menu(self, shapes, global_position):
         menu = QMenu(self)
-        create = menu.addAction(self.tr('Create machining step…'))
-        create.triggered.connect(lambda: self.from_selection(shapes, global_position))
+        create = menu.addAction(self.tr('Assign machining…'))
+        create.triggered.connect(lambda: self.assign_machining(shapes=shapes, global_position=global_position))
         related = menu.addMenu(self.tr('Related machining steps'))
         geometries = {getattr(shape, 'geometry_id', None) for shape in shapes}
         for step in self.binding.project.steps:
@@ -667,7 +916,8 @@ class MachiningPanel(QWidget):
             return
         data = self.step_dialog(step)
         if data:
-            self.execute(lambda: self.commands.edit_step(step.id, *data[:3], resolve_conflict=data[4]))
+            self.execute(lambda: self.commands.edit_step(step.id, *data[:3], resolve_conflict=data[4],
+                         replace_shared_tool=len(data) > 5 and data[5]))
 
     def edit_item(self, item, column):
         kind, identity = item.data(0, ROLE)
@@ -681,11 +931,14 @@ class MachiningPanel(QWidget):
                     self.execute(lambda: self.commands.update_literal(identity, entry.name, code))
 
     def remove(self):
+        if self.modifiers.context is not None:
+            self.modifiers.remove()
+            return
         items = self.tree.selectedItems()
         steps = [i.data(0, ROLE)[1] for i in items if i.data(0, ROLE)[0] == 'step']
         if steps:
             if len(steps) != 1 or len(items) != 1:
-                self.notice.setText(self.tr('Select one step to remove.'))
+                self.report_warning(self.tr('Select one step to remove.'))
                 return
             step = self.commands.step(self.binding.project, steps[0])
             if step.entries:
@@ -727,19 +980,21 @@ class MachiningPanel(QWidget):
         if not items:
             return
         if all(i.data(0, ROLE)[0] == 'step' for i in items):
-            ids = [s.id for s in self.binding.project.steps]
+            ids = [s.id for s in self.binding.project.steps if s.kind != 'break']
             selected = {i.data(0, ROLE)[1] for i in items}
             indices = range(len(ids)) if direction < 0 else range(len(ids)-1, -1, -1)
             for index in indices:
                 target = index + direction
                 if ids[index] in selected and 0 <= target < len(ids) and ids[target] not in selected:
                     ids[index], ids[target] = ids[target], ids[index]
-            self.execute(lambda: self.commands.reorder_steps(ids))
+            self.execute(lambda: self.commands.reorder_steps(self.complete_step_order(ids), selection=[i for i in ids if i in selected]))
             return
         ids = self.selected_entries()
+        if not ids:
+            return
         steps = [s for s in self.binding.project.steps if any(e.id in ids for e in s.entries)]
         if len(steps) != 1:
-            self.notice.setText(self.tr('Select entries from one step to reorder.'))
+            self.report_warning(self.tr('Select entries from one step to reorder.'))
             return
         step = steps[0]
         rows = [i for i, e in enumerate(step.entries) if e.id in ids]
@@ -750,7 +1005,7 @@ class MachiningPanel(QWidget):
         if payload['kind'] == 'step':
             if kind != 'step' or copy:
                 return False
-            ids = [s.id for s in self.binding.project.steps]
+            ids = [s.id for s in self.binding.project.steps if s.kind != 'break']
             if identity in payload['ids']:
                 return False
             selected = [i for i in ids if i in payload['ids']]
@@ -759,7 +1014,7 @@ class MachiningPanel(QWidget):
             remaining = [i for i in ids if i not in selected]
             pos = remaining.index(identity) + int(after)
             remaining[pos:pos] = selected
-            return self.execute(lambda: self.commands.reorder_steps(remaining))
+            return self.execute(lambda: self.commands.reorder_steps(self.complete_step_order(remaining), selection=selected))
         if kind == 'step':
             target, position = identity, None
         else:
@@ -767,6 +1022,10 @@ class MachiningPanel(QWidget):
             target = step.id
             position = next(i for i, e in enumerate(step.entries) if e.id == identity) + int(after)
         return self.execute(lambda: self.commands.transfer(payload['ids'], target, position, copy))
+
+    def complete_step_order(self, visible):
+        order = iter(visible)
+        return [step.id if step.kind == 'break' else next(order) for step in self.binding.project.steps]
 
     def canvas_operation_ids(self, shapes):
         """Resolve original selection only when each machining context is clear."""
@@ -784,12 +1043,24 @@ class MachiningPanel(QWidget):
             identities.append(selected)
         return identities
 
-    def add_machining_actions(self, menu, identities):
+    def add_machining_actions(self, menu, identities, canvas_style=False):
         """Shared actions for the machining tree and the drawing context menu."""
         pairs = self.commands.entries(self.binding.project, identities)
         eligible = bool(pairs) and all(isinstance(entry, MachiningOperation) and
                                       step.kind in ('contour', 'pocket', 'drill') for step, entry in pairs)
+        before_modes = len(menu.actions())
         for kind, source in (('contour', None), ('pocket', 'Pocket Mill'), ('drill', 'Drill Bore')):
+            if canvas_style:
+                if kind == 'contour':
+                    continue
+                if eligible and not any(step.kind == kind for step, entry in pairs):
+                    from dxf2gcode.application.machining_actions import validate_target
+                    try:
+                        for step, entry in pairs:
+                            candidate = replace(entry, overrides=dict(entry.overrides, cut_cor=40)) if kind == 'drill' else entry
+                            validate_target(self.binding, self.binding.project, replace(step, kind=kind), candidate, step.kind)
+                    except ValueError:
+                        continue
             text = self.kind_text(kind) if source is None else QtCore.QCoreApplication.translate('MyDropDownMenu', source)
             action = menu.addAction(text)
             action.setData(('kind', kind))
@@ -800,7 +1071,12 @@ class MachiningPanel(QWidget):
             # Clicking a checked pocket/drilling action returns to contour mode.
             action.triggered.connect(lambda checked=False, kind=kind, active=active:
                                      self.change_operation_mode(identities, 'contour' if active and kind != 'contour' else kind))
-        compensation = menu.addMenu(self.tr('Cutter compensation'))
+        if canvas_style and self.binding.project.configuration['General']['machine_type'] == 'drag_knife':
+            return None
+        if canvas_style and len(menu.actions()) > before_modes:
+            menu.addSeparator()
+        title = QtCore.QCoreApplication.translate('MyDropDownMenu', 'Cutter Compensation') if canvas_style else self.tr('Cutter compensation')
+        compensation = menu.addMenu(title)
         compensation.setEnabled(eligible and self.binding.project.configuration['General']['machine_type'] != 'drag_knife')
         values = [self.binding.project.resolve(step, entry)[0]['cut_cor'] for step, entry in pairs
                   if isinstance(entry, MachiningOperation)]
@@ -827,23 +1103,30 @@ class MachiningPanel(QWidget):
             self.tree.setCurrentItem(clicked)
             clicked.setSelected(True)
         menu = QMenu(self)
+        if clicked is not None and clicked.data(0, ROLE)[0] in ('modifier', 'modifier_group'):
+            if clicked.data(0, ROLE)[0] == 'modifier':
+                menu.addAction(self.modifiers.tr('Remove region'), self.modifiers.remove)
+            menu.exec(self.tree.viewport().mapToGlobal(position))
+            return
         identities = [item.data(0, ROLE)[1] for item in self.tree.selectedItems()
                       if item.data(0, ROLE)[0] == 'entry']
         self.add_machining_actions(menu, identities)
         menu.addSeparator()
-        for text, callback in ((self.tr('Create machining step…'), self.new_step),
-                               (self.tr('Edit step'), self.edit_step),
+        for text, callback in ((self.tr('Assign machining…'), lambda: self.assign_machining(
+                                   identities=tuple(self.selected_entries()), global_position=self.tree.viewport().mapToGlobal(position))),
                                (self.tr('Remove'), self.remove),
-                               (self.tr('Reverse'), self.reverse),
-                               (self.tr('Move to step'), lambda: self.choose_target(False)),
-                               (self.tr('Copy to step'), lambda: self.choose_target(True)),
-                               (self.tr('Edit step defaults'), self.edit_defaults),
-                               (self.tr('Update step defaults from profile'), self.refresh_defaults),
-                               (self.tr('Update tool from profile'), self.refresh_tool),
-                               (self.tr('Add custom G-code'), self.add_literal)):
+                               (self.tr('Reverse'), self.reverse)):
             action = menu.addAction(text, callback)
             if callback == self.reverse:
                 action.setEnabled(self.context is not None)
+        menu.addSeparator()
+        advanced = menu.addMenu(self.tr('Advanced'))
+        one_step = self.current_step() is not None and len({step.id for step, _ in
+            self.commands.entries(self.binding.project, self.selected_entries())}) <= 1
+        for text, callback in ((self.tr('Update step defaults from profile'), self.refresh_defaults),
+                               (self.tr('Update tool from profile'), self.refresh_tool),
+                               (self.tr('Add custom G-code'), self.add_literal)):
+            advanced.addAction(text, callback).setEnabled(one_step)
         menu.exec(self.tree.viewport().mapToGlobal(position))
 
     def edit_defaults(self):
@@ -863,7 +1146,7 @@ class MachiningPanel(QWidget):
         tool = self.binding.project.tools[step.tool_id]
         profile = g.config.vars.Tool_Parameters[str(tool.tool_nr)]
         if profile is None:
-            self.notice.setText(self.tr('The tool is absent from the current profile. Saved values are retained.'))
+            self.report_warning(self.tr('The tool is absent from the current profile. Saved values are retained.'))
             return
         self.execute(lambda: self.commands.refresh_tool(step.tool_id, self.profile_tool(tool.tool_nr, profile)))
 
@@ -880,15 +1163,82 @@ class MachiningPanel(QWidget):
         defaults['drag_angle'] = g.config.vars.Drag_Knife_Options['drag_angle']
         self.execute(lambda: self.commands.edit_step(step.id, step.name, step.kind, step.tool_id, defaults))
 
+    def populate_tool_combo(self, combo, selected_tool, shared_replacement=False):
+        """Show each complete definition once, keeping project deviations visible."""
+        units = self.binding.project.units
+        project_tools = list(self.binding.project.tools.items())
+        table_tools = []
+        for number in g.config.vars.Tool_Parameters:
+            tool = self.profile_tool(number, g.config.vars.Tool_Parameters[number])
+            table_tools.append((tool, tool))
+        all_tools = [tool for _, tool in project_tools + table_tools]
+        fields = ('speed', 'start_radius', 'lead_radius', 'lead_length', 'overcut_length')
+
+        def label(tool):
+            text = 'T%d · Ø%s %s' % (tool.tool_nr, format_number(tool.tool_diameter, units), units)
+            peers = [other for other in all_tools if other.tool_nr == tool.tool_nr]
+            # Include differing saved values, rather than an internal list index.
+            for key in fields:
+                if len({getattr(other, key) for other in peers}) <= 1:
+                    continue
+                value = getattr(tool, key)
+                kind, unit = ('integer', 'rpm') if key == 'speed' else ('length', units)
+                rendered = format_number(value, units, kind) if value is not None else '—'
+                if value is not None and any(getattr(other, key) != value and
+                        format_number(getattr(other, key), units, kind) == rendered
+                        for other in peers if getattr(other, key) is not None):
+                    rendered = str(value)
+                text += ' · %s: %s %s' % (self.parameter_label(key), rendered, unit)
+            if len({other.tool_diameter for other in peers}) > 1 and any(
+                    other.tool_diameter != tool.tool_diameter and
+                    format_number(other.tool_diameter, units) == format_number(tool.tool_diameter, units)
+                    for other in peers):
+                text = text.replace('Ø' + format_number(tool.tool_diameter, units), 'Ø' + str(tool.tool_diameter), 1)
+            return text
+
+        combo.clear()
+        table_values = {tool for _, tool in table_tools}
+        seen = set()
+        selected_index = -1
+        selected_value = self.binding.project.tools.get(selected_tool)
+        for identity, tool in table_tools + project_tools:
+            if tool in seen:
+                continue
+            seen.add(tool)
+            table = tool in table_values
+            identity = next((key for key, value in project_tools if value == tool), identity)
+            text = label(tool)
+            same_number = {other for other in all_tools if other.tool_nr == tool.tool_nr}
+            has_table_number = any(other.tool_nr == tool.tool_nr for other in table_values)
+            if not table and not has_table_number:
+                text += ' · ' + self.tr('Project only')
+            elif len(same_number) > 1:
+                text += ' · ' + (self.tr('Tool table') if table else self.tr('Project deviation'))
+            combo.addItem(text, identity)
+            index = combo.count()-1
+            tooltip = '\n'.join('%s: %s %s' % (self.parameter_label(key), getattr(tool, key),
+                'rpm' if key == 'speed' else units) for key in fields)
+            if table:
+                hint = (self.tr('Replacing a project deviation with its table definition updates all steps using that project tool.')
+                        if shared_replacement else self.tr('Selecting a table tool copies its values into the project.'))
+                tooltip = hint + '\n' + tooltip
+            combo.setItemData(index, tooltip, Qt.ItemDataRole.ToolTipRole)
+            combo.setItemData(index, table, TABLE_TOOL_ROLE)
+            if tool == selected_value:
+                selected_index = index
+        combo.setCurrentIndex(selected_index)
+
+    def replaces_shared_tool(self, combo, step):
+        if step is None or not combo.currentData(TABLE_TOOL_ROLE):
+            return False
+        choice = combo.currentData()
+        tool = choice if isinstance(choice, ToolSettings) else self.binding.project.tools[choice]
+        old = self.binding.project.tools[step.tool_id]
+        return old.tool_nr == tool.tool_nr and old != tool
+
     def profile_tool(self, number, profile):
-        tool = ToolSettings.from_profile(number, profile)
-        metric = self.binding.project.units == 'mm'
-        if metric != bool(g.config.metric):
-            factor = 25.4 if metric else 1/25.4
-            tool = replace(tool, **{key: getattr(tool, key) * factor for key in (
-                'tool_diameter', 'start_radius', 'lead_radius', 'lead_length', 'overcut_length')
-                if getattr(tool, key) is not None})
-        return tool
+        from dxf2gcode.application.tool_table import table_tool
+        return table_tool(g.config, number, self.binding.project.units)
 
     def parameter_label(self, key):
         return {
@@ -921,6 +1271,7 @@ class MachiningPanel(QWidget):
             'literal actions require a machining step': self.tr('Literal actions require a machining step.'),
             'unresolved source contour': self.tr('The original contour is missing or ambiguous.'),
             'special-layer assignments cannot change kind': self.tr('Holding-tab and ignored assignments must retain their kind.'),
+            'Select machining contours to change tools': self.tr('Select machining contours to change tools.'),
             'drilling requires a point/circle and G40': self.tr('Drilling requires a point or circle and G40.'),
             'a drilling point is not a milling contour': self.tr('A drilling point cannot be used as a milling contour.'),
             'pocketing requires a closed contour and internal milling compensation': self.tr('Pocketing requires a closed contour, milling mode and internal compensation.'),
@@ -974,7 +1325,7 @@ class MachiningPanel(QWidget):
                         raise ValueError('; '.join(d.message for d in result.diagnostics))
                     shape.route_endpoints = plan_route_endpoints(result.plan)
         except ValueError as error:
-            self.notice.setText(str(error))
+            self.report_warning(str(error))
             scene.delete_opt_paths()
             return
         shapes = [s for layer in layers for s in layer.shapes]
