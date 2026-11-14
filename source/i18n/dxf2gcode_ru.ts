@@ -5345,6 +5345,14 @@ Skipped Geometries</source>
         <source>Several compatible steps exist. Select the target for "{0}".</source>
         <translation>Найдено несколько подходящих шагов. Выберите назначение для «{0}».</translation>
     </message>
+    <message>
+        <source>Excluded</source>
+        <translation>Исключено</translation>
+    </message>
+    <message>
+        <source>Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.</source>
+        <translation>Игнорируемая геометрия всегда исключена из экспорта. Для временного исключения обычных операций используйте флажок экспорта.</translation>
+    </message>
 </context>
 <context>
     <name>MachiningParameters</name>

@@ -419,6 +419,12 @@ does not cover every historical CAD or configuration action.
 
 The **Export** checkbox controls inclusion independently for each operation.
 It is available only in Machining. Selecting geometry is not an export filter.
+Imported or saved **Ignored** steps are a special exclusion: their rows show
+**Excluded** instead of an Export checkbox and offer no optimization checkbox.
+They remain selectable and retain their saved data, but cannot be enabled for
+export. Ignored is not offered when creating normal steps; existing ignored
+steps retain their kind when edited. Use a normal operation's Export checkbox
+for temporary exclusion.
 The drawing's disabled style/visibility reflects whether any linked operation
 is enabled. Unassigned contours have no machining preview or export assignment.
 

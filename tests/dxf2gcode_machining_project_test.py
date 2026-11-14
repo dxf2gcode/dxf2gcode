@@ -36,6 +36,26 @@ from toolpath_test_support import serialize_gcode
 
 
 class TestMachiningProject(GoldenTestBase):
+    def test_ignore_import_and_old_project_roundtrip_remain_excluded(self):
+        for legacy in (False, True):
+            with self.subTest(legacy=legacy):
+                shape, layers = self.drawing()
+                layers[0].name = 'IGNORE:helpers'
+                parent = _ParentStub(layers)
+                session = Project(parent)
+                if legacy:
+                    text = LegacyProject(parent, g.config, decode=decode_d2g).export()
+                    session.load(text, compleet=False)
+                text = session.export_current()
+                document = decode_project(text)
+                self.assertEqual(document.machining.steps[0].kind, 'ignored')
+                before = document.machining.to_dict()
+                session.load(text, compleet=False)
+                self.assertEqual(session.machining_drawing.project.to_dict(), before)
+                view = session.machining_drawing.materialize()[0]
+                self.assertFalse(view.exp_order_complete)
+                self.assertTrue(all(s.disabled for s in view.shapes))
+
     def test_load_unifies_only_complete_equal_tool_definitions(self):
         _, binding = self.captured()
         project = binding.project

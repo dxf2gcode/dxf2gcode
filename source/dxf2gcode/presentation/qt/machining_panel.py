@@ -381,6 +381,8 @@ class MachiningPanel(QWidget):
             tool = project.tools[step.tool_id]
             root = QTreeWidgetItem(self.tree, ['%s · %s · T%d' % (step.name, self.kind_text(step.kind), tool.tool_nr)])
             root.setToolTip(0, '%s · Ø%s' % (root.text(0), format_number(tool.tool_diameter, project.units)))
+            if step.kind == 'ignored':
+                root.setToolTip(0, self.tr('Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.'))
             root.setData(0, ROLE, ('step', step.id))
             tree_items[('step', step.id)] = root
             for entry in step.entries:
@@ -401,10 +403,15 @@ class MachiningPanel(QWidget):
                 item.setData(0, SOURCE_ROLE, source)
                 item.setToolTip(0, source)
                 self.entry_items[entry.id] = item
-                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                item.setCheckState(1, Qt.CheckState.Checked if entry.enabled else Qt.CheckState.Unchecked)
-                if isinstance(entry, MachiningOperation):
-                    item.setCheckState(2, Qt.CheckState.Checked if entry.optimize else Qt.CheckState.Unchecked)
+                if step.kind == 'ignored':
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
+                    item.setText(1, self.tr('Excluded'))
+                    item.setToolTip(1, self.tr('Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.'))
+                else:
+                    item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                    item.setCheckState(1, Qt.CheckState.Checked if entry.enabled else Qt.CheckState.Unchecked)
+                    if isinstance(entry, MachiningOperation):
+                        item.setCheckState(2, Qt.CheckState.Checked if entry.optimize else Qt.CheckState.Unchecked)
                 item.setSelected(entry.id in selected)
                 if self.context == entry.id:
                     font = item.font(0)
@@ -739,6 +746,9 @@ class MachiningPanel(QWidget):
             return
         kind, identity = item.data(0, ROLE)
         if kind == 'entry':
+            step, _ = self.commands.entries(self.binding.project, [identity])[0]
+            if step.kind == 'ignored':
+                return
             key = 'enabled' if column == 1 else 'optimize'
             value = item.checkState(column) == Qt.CheckState.Checked
             commands = self.commands
@@ -758,8 +768,9 @@ class MachiningPanel(QWidget):
         name.setObjectName('stepName')
         form.addRow(self.tr('Name'), name)
         kinds = QComboBox(dialog)
-        for key in ('contour', 'pocket', 'drill', 'ignored'):
+        for key in (('ignored',) if step and step.kind == 'ignored' else ('contour', 'pocket', 'drill')):
             kinds.addItem(self.kind_text(key), key)
+        kinds.setEnabled(not step or step.kind != 'ignored')
         kinds.setCurrentIndex(kinds.findData(step.kind) if step else 0)
         kinds.setProperty('explicit_kind', False)
         kinds.activated.connect(lambda index: kinds.setProperty('explicit_kind', True))
@@ -830,11 +841,11 @@ class MachiningPanel(QWidget):
         form.addRow(self.tr('Name'), name)
         kinds = QComboBox(dialog)
         kinds.setObjectName('assignmentStepKind')
-        for kind in ('contour', 'pocket', 'drill', 'ignored'):
+        for kind in ('contour', 'pocket', 'drill'):
             kinds.addItem(self.kind_text(kind), kind)
         sources = self.commands.entries(self.binding.project, identities)
         kinds_used = {step.kind for step, _ in sources}
-        if len(kinds_used) == 1:
+        if len(kinds_used) == 1 and 'ignored' not in kinds_used:
             kinds.setCurrentIndex(kinds.findData(next(iter(kinds_used))))
         form.addRow(self.tr('Kind'), kinds)
         tools = QComboBox(dialog)

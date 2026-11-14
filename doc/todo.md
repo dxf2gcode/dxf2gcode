@@ -22,7 +22,7 @@ Die Paket-/Installationsabnahme ist für den aktuellen Featureabschluss eingepla
 | Releaseabschluss | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Windows/Ubuntu/Debian gemäß bestätigtem Plan; stabile Veröffentlichung bleibt getrennt |
 | Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
 | Vor Develop-Release | [DOC1 – Dokumentationsabnahme](#doc1) | Anleitung einschließlich aktueller Bilder gemäß Abschlussplan |
-| Integration/Release | [Featureabschluss und Develop-Release](planning/maschining-project-release-plan.md) | Nutzerabnahme abgeschlossen; IGNORE, Anleitung/Bilder und Installationsumfang gem?? Plan |
+| Integration/Release | [Featureabschluss und Develop-Release](planning/maschining-project-release-plan.md) | Nutzerabnahme und IGNORE abgeschlossen; Anleitung/Bilder und Installationsumfang gemäß Plan |
 | Zurückgestellt | [Teilkonturen](#teilkonturen) | Mit dem neuen Bearbeitungsmodell abstimmen |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 | Optional, später | [PP1 – Separater Drehzahlblock](#pp1) | Postprozessorvertrag für Drehzahländerungen bei gleicher Werkzeugnummer abstimmen |
@@ -64,15 +64,10 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 <a id="r3"></a>
 <a id="r1b"></a>
 
-- [ ] **Integration/Develop-Release:** IGNORE-Entscheidung, aktuelle Anleitung
-  einschlie?lich Bilder, festgelegte Installationsabnahme und gepr?fte Integration
-  von `maschining-project` nach `develop` durchf?hren; anschlie?end Develop-Prerelease.
+- [ ] **Integration/Develop-Release:** aktuelle Anleitung einschließlich Bilder,
+  festgelegte Installationsabnahme und geprüfte Übernahme des vorbereiteten
+  Integrationszweigs nach `develop` durchführen; anschließend Develop-Prerelease.
   [Abschluss- und Releaseplan](planning/maschining-project-release-plan.md).
-- [ ] **R3-IGNORE – vor Merge korrigieren, vom Nutzer bestätigt:**
-  „Ignoriert“ nicht als neue Bearbeitungsart anbieten; `IGNORE:`-Import und
-  gespeicherte Projekte erhalten und die wirkungslose Exportaktivierung klar
-  darstellen. [Umfang und Prüfungen](planning/maschining-project-release-plan.md#ignore).
-  [Untersuchung](planning/r3-r1b-implementation-plan.md#r3-ui-followups).
 
 <a id="teilkonturen"></a>
 

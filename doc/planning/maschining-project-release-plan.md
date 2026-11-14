@@ -1,6 +1,7 @@
 # Abschluss von maschining-project und nächster Develop-Release
 
-Stand: **14.11.2026**. Planungsauftrag; noch kein Merge, Push, Build oder Release.
+Stand: **14.11.2026**. Schritt 1 lokal umgesetzt: Integrationsbasis zusammengeführt
+und IGNORE korrigiert. Noch kein Push, Merge nach `develop`, Paketbuild oder Release.
 
 ## 1. Bestätigte Entscheidungen
 
@@ -52,6 +53,17 @@ Den Featurezweig bis zur erfolgreichen Veröffentlichung erhalten.
 
 **Ergebnis:** kleiner Funktionscommit, ohne Änderung der eigentlichen
 Werkzeugwegplanung. Kein größeres Refactoring als Teil dieses Zwischenreleases.
+
+**Umgesetzt:** isolierter Zweig `integration/maschining-project-release`, Basis
+`develop` samt Fehlerdialog-Fix `8aeef7f`, Feature einschließlich Planungscommit
+`3e05281` mit Mergecommit `f696631` integriert. Konflikt im Abschlussarchiv unter
+Erhalt beider Nachweise gelöst; Programmcode automatisch zusammengeführt.
+Neue Schritt-/Zuordnungsdialoge bieten nur normale Bearbeitungsarten an.
+Bestehende ignorierte Schritte behalten ihre Art, zeigen „Ausgeschlossen“ ohne
+Export-/Optimierungscheckbox und können nicht über die GUI aktiviert werden.
+Gespeicherte Aktivierungswerte und Altprojekte werden nicht umgeschrieben.
+Je 31 fokussierte Qt5-/Qt6-Prüfungen bestanden; Details im Abschlussarchiv.
+Nächste Umsetzungsetappe ist DOC1 samt aktuellen Bildern.
 
 <a id="doc1"></a>
 
@@ -151,9 +163,10 @@ korrigieren, dann Anleitung/Bilder, danach Kandidaten-/Installationsprüfung und
 zuletzt Merge/Veröffentlichung. Funktionskorrekturen bei der Abnahme als konkrete
 kleine Folgeänderungen behandeln; keine neuen Features vor diesem Zwischenrelease.
 
-IGNORE-Korrektur und Matrix Windows/Ubuntu/Debian sind ausdrücklich bestätigt.
+IGNORE-Korrektur ist umgesetzt; Matrix Windows/Ubuntu/Debian ist ausdrücklich bestätigt.
 DOC1 wird als Abgleich der Anleitung samt echten Bildern und Sicht-/Buildprüfung
 vorgeschlagen. Die Etappen nacheinander ausführen, statt einen großen Quellcode-,
 Dokumentations- und Releaseblock zu vermischen. Der Planungsauftrag hat noch
-keine Implementierung, umfangreiche Prüfung, SSH-Installation oder Veröffentlichung
-gestartet. Als erste Umsetzungsetappe ist die begrenzte IGNORE-Korrektur vorgesehen.
+keine Paket-/Installationsprüfung, SSH-Abnahme oder Veröffentlichung gestartet.
+Nach dem anschließenden Auftrag für Schritt 1 ist die begrenzte IGNORE-Korrektur
+auf der isolierten Integrationsbasis umgesetzt. Als Nächstes folgt die Dokumentation.

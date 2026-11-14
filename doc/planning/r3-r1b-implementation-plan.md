@@ -11,7 +11,7 @@ Bestätigte Fachregeln und technische Umsetzungsvorschläge sind unterschieden.
 [Planungsabschluss](../archive/toolpath-refactoring-completed.md#r3-r1b-plan).
 
 **Arbeitszweig seit 07.11.2026:** `maschining-project`.
-Der lokale P1–P3-Commit `5415018` und der fortgef?hrte R3/R1b-Stand
+Der lokale P1–P3-Commit `5415018` und der fortgeführte R3/R1b-Stand
 liegen auf diesem Zweig. Weitere Arbeiten erfolgen dort. `develop` und
 GitHub-`develop` bleiben auf `4346709`; die spätere Integration ist ein
 separater Auftrag. Der neue Zweig ist bislang lokal, ohne Push oder Release.
@@ -967,6 +967,10 @@ anschließend ausdrücklich beauftragt; Leerraum weiterhin für später:
   Empfehlung; insbesondere keine Umdeutung gespeicherter ignorierter Schritte.
   Aktualisierung 14.11.2026: Der Nutzer hat die begrenzte Korrektur vor Merge
   bestätigt; [aktueller Umsetzungsumfang](maschining-project-release-plan.md#ignore).
+  Umsetzung auf der isolierten Integrationsbasis abgeschlossen: nicht neu
+  anbietbare Sonderart, vorhandene Art beim Bearbeiten gesperrt, ausgeschlossene
+  Exportdarstellung ohne Checkbox. Altimport und Roundtrip erhalten die Daten;
+  kein Eingriff in die Werkzeugwegplanung. [Nachweis](../archive/toolpath-refactoring-completed.md#r3-ignore-complete).
 
 Untersuchungsnachweis R3-IGNORE: lokaler Modell-/Befehlsversuch mit bestehender
 Testfixture; leeres Anlegen erfolgreich, Verschieben einer normalen Kontur

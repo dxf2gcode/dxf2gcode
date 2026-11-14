@@ -2,6 +2,43 @@
 
 Stand: **14.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+<a id="r3-ignore-complete"></a>
+
+## Schritt 1: Integrationsbasis und IGNORE-Korrektur (14.11.2026)
+
+Die offenen Abschluss-/Planungsdokumente sind auf `maschining-project` mit
+`3e05281` gesichert. Nach Aktualisierung der Remote-Referenzen wurde eine isolierte
+Arbeitskopie auf Basis des lokalen `develop` angelegt. Der Integrationszweig
+`integration/maschining-project-release` enthält mit Mergecommit `f696631` sowohl
+den Featurestand als auch den zusätzlichen Develop-Fix `8aeef7f`. Einziger
+Mergekonflikt war das Abschlussarchiv; beide Nachweise bleiben enthalten.
+Der eigentliche `develop`-Zeiger wurde nicht geändert.
+
+IGNORE ist begrenzt korrigiert: Neue Schritt-/Zuordnungsdialoge bieten
+`ignored` nicht an. Vorhandene ignorierte Schritte zeigen ihre unveränderbare
+Art beim Bearbeiten weiter an. Ihre Konturen bleiben auswählbar, zeigen in
+der Exportspalte „Ausgeschlossen“ statt einer Checkbox und bieten keine
+Optimierungscheckbox. Hinweistext erklärt den dauerhaften Ausschluss und die
+normale Exportcheckbox für vorübergehendes Ausschließen. Der Checkbox-Handler
+übernimmt auch programmatisch keine Aktivierungsänderung für ignorierte Einträge.
+Gespeicherte `enabled`-/Optimierungswerte werden nicht normalisiert; Import,
+Altprojektmigration und Speichern bleiben erhalten. Planung und Exportregel
+für `IGNORE:` wurden nicht verändert.
+
+Nachweis: Der neue GUI-Fall reproduzierte vor dem Fix die bedienbare Checkbox.
+Danach je 31 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden: echte Panel-/
+Dialogabläufe, Modell/Altprojekt-Roundtrip, Exportausschluss und die übernommenen
+Startup-Fehlerdialogtests. DE/FR/RU einschließlich QM aktualisiert und geladen
+geprüft. Strenger Dokumentationsbuild und Diff-Prüfung bestanden.
+
+Der Integrationscommit bestand den verpflichtenden Fast-Hook mit 314 Tests.
+Dessen erster Versuch scheiterte an den in einer neuen Arbeitskopie fehlenden,
+nicht versionierten Qt-UI-/Ressourcenmodulen; nach Übernahme der zum identischen
+UI-Quellstand generierten Module bestand der Hook. Der IGNORE-Funktionscommit
+verwendet ebenfalls den verpflichtenden Hook. Keine manuelle Wiederholung einer
+bereits bestandenen Fast-Suite. Keine Paket-/Debian-/Maschinenabnahme, kein Push
+oder Release. Nächste Etappe: vollständiger Anleitungs-/Bildabgleich gemäß Plan.
+
 ## R3/R1b fachlich abgenommen und Abschlussumfang festgelegt (14.11.2026)
 
 Der Nutzer erklärt das Feature `maschining-project` für fertig und die

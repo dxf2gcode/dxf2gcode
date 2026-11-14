@@ -5126,6 +5126,14 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
         <source>Several compatible steps exist. Select the target for "{0}".</source>
         <translation>Mehrere passende Schritte vorhanden. Ziel für „{0}“ auswählen.</translation>
     </message>
+    <message>
+        <source>Excluded</source>
+        <translation>Ausgeschlossen</translation>
+    </message>
+    <message>
+        <source>Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.</source>
+        <translation>Ignorierte Geometrie ist immer vom Export ausgeschlossen. Zum vorübergehenden Ausschließen normaler Bearbeitungen deren Exportcheckbox verwenden.</translation>
+    </message>
 </context>
 <context>
     <name>MachiningParameters</name>
