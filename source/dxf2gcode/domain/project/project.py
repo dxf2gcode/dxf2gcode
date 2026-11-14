@@ -170,7 +170,7 @@ class Project(object):
                            'shapes': shapes})
 
         pyCode = Project.header % str(Project.version) + '''
-d2g.file = "''' + self.parent.filename + '''"
+d2g.file = ''' + repr(self.parent.filename) + '''
 d2g.point_tol = ''' + str(self.config.point_tolerance) + '''
 d2g.fitting_tol = ''' + str(self.config.fitting_tolerance) + '''
 d2g.scale = ''' + str(self.parent.cont_scale) + '''

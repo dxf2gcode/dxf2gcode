@@ -12,6 +12,7 @@ nav = [
   { "User guide" = [
     { "Interface and navigation" = "user-guide/interface-and-navigation.md" },
     { "Import drawings and save projects" = "user-guide/import-and-projects.md" },
+    { "Machining steps" = "user-guide/machining-steps.md" },
     { "Shapes, layers and tree order" = "user-guide/shapes-layers-and-order.md" },
     { "Route optimization" = "user-guide/route-optimization.md" },
     { "Machining parameters" = "user-guide/machining-parameters.md" },

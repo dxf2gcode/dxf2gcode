@@ -1,6 +1,1022 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **07.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **14.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+
+## R3/R1b fachlich abgenommen und Abschlussumfang festgelegt (14.11.2026)
+
+Der Nutzer erklärt das Feature `maschining-project` für fertig und die
+Nutzerabnahme R3/R1b/P8 für durchgeführt und akzeptiert. Dieser Abnahmeblock
+ist aus der aktiven Todo entfernt. Der aktuelle Stegumfang ist ausreichend;
+eine zusätzliche selbsttätige Stegverteilung wird nicht weiter verfolgt.
+Dies schließt die alte offene P7-Erweiterungsplanung durch Umfangsentscheidung,
+ohne einen nicht implementierten Verteilungsalgorithmus als fertig auszugeben.
+
+Die optionale Wiederverwendung historischer Fremdinhalte einschließlich ihrer
+Rechteklärung wird verworfen. Keine ungeklärten Originale werden damit zur
+Übernahme freigegeben. Teilkonturen bleiben ausdrücklich offen.
+
+Der [Abschluss-/Releaseplan](../planning/maschining-project-release-plan.md)
+trennt IGNORE, Anleitung/Bilder, Installationsnachweis und Merge/Develop-Prerelease.
+Bestätigt sind die begrenzte IGNORE-Korrektur vor dem Merge und die Matrix
+Windows-ZIP/MSI, Ubuntu Qt5/Qt6 sowie Debian-Wheel. macOS bleibt separat.
+DOC1 erhält einen konkreten Vorschlag zum Abgleich der gesamten betroffenen
+Anleitung mit echten aktuellen Screenshots. Die eigenständige Develop-Korrektur
+`8aeef7f` muss bei der Integration zusätzlich zum Featurestand `69f9767` erhalten
+bleiben; diese Commitangaben beschreiben den lokalen Planungsstand.
+
+Die Nutzerabnahme ersetzt keinen Paket-/Installations- oder physischen
+Maschinennachweis. Im Planungsauftrag nur Aufgaben-/Planungsdokumente geändert;
+Dokumentationsbuild und lokale Link-/Diff-Prüfung bestanden. Keine Quellcode-
+Tests, Installation, SSH-Abnahme, Merge, Push oder Veröffentlichung gestartet.
+
+## R3/D48: verbindliche Zielauswahl vor Steganlage (14.11.2026)
+
+Nutzerregel umgesetzt: Ohne vorherige Originalkontur-/Bearbeitungsauswahl wird
+kein neuer Steg erzeugt. Originalkontur umfasst alle verknüpften Bearbeitungen,
+einzelne oder mehrere Bearbeitungen nur sich selbst, ein Schritt seine enthaltenen
+Konturen. Die Zeichen-Zielauswahl bleibt bei fortlaufender Anlage und beim
+Inspizieren der entstandenen Region erhalten. Normale neue Auswahl ersetzt sie;
+Leerraumklick löscht sie. Eine Ziehbewegung ohne Ziele legt keine Region an.
+
+Anlage verwendet ausschließlich überschneidende ausgewählte Originalkonturen;
+keine automatische Fremdzuordnung oder nachträgliche Auswahl eines beliebigen
+Ziels. Unterschiedliche automatische Quadratmaße ergeben getrennte Regionen
+für die betreffenden Bearbeitungen. Gleiche Quadrate können ihre Zuordnung teilen.
+Alle resultierenden Regionen werden in einem atomaren, validierten Befehl mit
+gemeinsamem Undo/Redo erzeugt. Bestehende Stegbearbeitung bleibt unabhängig davon
+möglich; kein weiteres persistentes Feld oder Format.
+
+Nachweis: je 30 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden (Panel,
+Regionsmodell, Canvas-Interaktion, Architektur). Reale Ereignisse decken Auswahl
+einer Bearbeitung, Mehrfachauswahl, Originalkontur mit zwei Verknüpfungen,
+Schrittauswahl, fehlende Auswahl, fremde ausgewählte Kontur und zwei Werkzeuge
+mit getrennten automatischen Größen ab. Batch-Anlage hat einen Undo-Schritt,
+Redo erhält den ganzen Satz; ein Fehler im Batch übernimmt keine Teilmenge.
+Eine zunächst veraltete Baum-ID wird bei transienter Zielaufnahme ignoriert,
+statt eine Qt-Slot-Ausnahme auszulösen. DE/FR/RU-Hinweise ergänzt, QM regeneriert
+und geladen geprüft. Strenger Dokumentationsbuild und Diff-Prüfung bestanden.
+P8-Fachabnahme bleibt offen; kein Commit/Push und keine Vollsuite oder
+Paket-/GPU-/Maschinenabnahme.
+
+## R3/D47: Auswahl vor Ziehen und Maßfelder nur bei ruhender Auswahl (13.11.2026)
+
+Bestätigten Ablauf umgesetzt: Erstklick auf eine Stegregion wählt sie aus.
+Auch Ziehen während dieses ersten Drucks verändert keine Vertices und erzeugt
+keinen Undo-Eintrag. Bereits ausgewählte Regionen lassen sich anschließend
+verschieben oder über Eckgriffe ändern. Bei Überlagerungen wird die aktuelle
+Auswahl bevorzugt. Nicht ausgewählte Regionen verwenden eine kleinere Rand-
+Treffertoleranz und zeigen noch keine aktiven Eckgriffe. Doppelklick öffnet
+weiterhin den Regionsdialog; direktes fortlaufendes Anlegen bleibt erhalten.
+
+Maßfelder erscheinen ausschließlich an ruhender Auswahl. Jede Zeichnungs-,
+Verschiebe- oder Größenänderungsgeste blendet sie aus; nach Loslassen erscheinen
+sie wieder. Explizite Maßeingabe schaltet automatisch auf manuell, auch wenn
+derselbe Zahlenwert erneut eingetippt wird. Unverändertes Bestätigen ohne
+Eingabe, ungültige Werte und Abbruch verändern weder Modus noch Geometrie.
+
+Nachweis: je sieben fokussierte Panel-/Canvas-Prüfungen unter PyQt5/PyQt6
+bestanden. Echte Mausereignisse prüfen Erstklick samt Bewegung ohne Mutation,
+Auswahl ohne Undo, anschließende Bearbeitung, Doppelklick und verborgene Maße
+während Zeichnen/Größenändern/Strg-Ziehen. Eingabe desselben Werts, Wechsel auf
+manuell und Undo sind ebenfalls abgedeckt. Bestehende DE/FR/RU-Texte unverändert
+wiederverwendet und geladen geprüft. Strenger Dokumentationsbuild und Diff-Prüfung
+bestanden. Fachliche P8-Abnahme bleibt offen; kein Commit/Push, keine Vollsuite
+oder Paket-/GPU-/Maschinenabnahme.
+
+## R3: direkte Stegzugänge und spezielles Kontextmenü entfernt (13.11.2026)
+
+Bestätigte Ergänzungen umgesetzt: Neben dem Stegmodus-Schalter erscheint im
+aktiven Modus eine Auswahl Fang/Manuell für neue Regionen. Sie aktualisiert die
+vorbereitete nächste Region, ohne den Modus eines vorhandenen ausgewählten Stegs
+zu ändern. Dessen individuelle Einstellung bleibt im Doppelklick-Dialog.
+„Zuordnung entfernen“ ist direkt im Regionsparameterbereich verfügbar und nur
+beim Bezug zu einer konkreten betroffenen Bearbeitung aktiv; globale Regions-
+Auswahl aktiviert den Button nicht. Das Entfernen bleibt lokal und Undo-fähig.
+
+Das spezielle Steg-Kontextmenü ist aus Canvas, Bearbeitungsbaum und Regionsliste
+entfernt. Im Stegmodus wird kein Ersatzmenü geöffnet. Doppelklick, Löschbutton/
+Entf, Aktivierungshäkchen und Modusschalter übernehmen die übrigen Aktionen.
+Das normale Canvas-Menü außerhalb des Stegmodus bleibt erhalten. Keine Änderung
+von Projektformat oder Werkzeugwegplanung.
+
+Nachweis: je 21 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden (Panel,
+Canvas-Interaktion, 3D-Adapter mit Fake-GL). Reale Tests wechseln den nächsten
+Anlegemodus, prüfen unveränderte vorhandene Regionen, deaktivierten Zuordnungs-
+Button ohne Bezug, lokale Entfernung per Button/Undo und das Ausbleiben von
+Kontextmenüs im Canvas und an Regionsknoten. Regionsliste verhindert Kontextmenüs,
+die Modusauswahl wird beim Verlassen ausgeblendet. DE/FR/RU-Kataloge bereinigt,
+QM regeneriert und geladen geprüft. Strenger Dokumentationsbuild und Diff-Prüfung
+bestanden. Reale GPU-/P8-/Paket-/Maschinenabnahme bleibt getrennt; kein Commit/Push.
+
+## R3: Stegmodus startet unmittelbar das Zeichnen (13.11.2026)
+
+Einschalten über den Schalter in der Bearbeitungs-Werkzeugleiste startet eine
+vorbereitete Zeichensitzung, ohne vorherige Kontextmenüaktion. Ausschalten
+beendet sie weiterhin. Der gewählte Startmodus und die bestehende fortlaufende
+Regionserstellung bleiben erhalten. Programmatische Auswahl/Bearbeitung alter
+Regionen benötigt dadurch keinen erzwungenen Neustart einer Zeichensitzung.
+
+Nachweis: je sieben fokussierte Panel-/Canvas-Prüfungen unter PyQt5/PyQt6 bestanden.
+Der reale Ablauf aktiviert den Modus über die Toolbar-Aktion und zeichnet die
+erste sowie eine weitere Region ohne Kontextmenü. Bestehende Katalogtexte werden
+unverändert verwendet und geladen geprüft. Strenger Dokumentationsbuild und
+Diff-Prüfung bestanden. Kein Commit/Push und keine Vollsuite oder Maschinenabnahme.
+
+Menüprüfung: Bearbeiten per Doppelklick, Löschen per Entf/Button, Aktivierung per
+Häkchen und Beenden über den Schalter sind direkt erreichbar. Eine Auswahl
+Fang/Manuell für neue Regionen und „Zuordnung entfernen“ im Parameterbereich
+wurden als noch fehlende direkte Zugänge vorgeschlagen. Diese Ergänzungen und
+vollständiges Entfernen gegenüber optionalem Beibehalten des speziellen Menüs
+sind ausdrücklich zur Nutzerentscheidung offen; das Menü bleibt vorerst erhalten.
+
+## R3/D46: Werkzeugnachführung automatischer Stege und Kantenmaße (13.11.2026)
+
+Automatische Regionen folgen dem geänderten Werkzeugdurchmesser. Der gemeinsame
+Befehlsabschluss erfasst Werkzeugwechsel, Projektwerkzeug-Aktualisierung und
+Werkzeugzuweisung über andere Schritte; die aktuelle konfigurierte Steglänge wird
+in Projekteinheiten addiert. Manuelle Regionen bleiben unverändert. Nach bestätigter
+Nutzerentscheidung werden gemeinsam verwendete automatische Regionen bei Bedarf
+je Bearbeitung aufgeteilt. Unbetroffene Verwendungen behalten ihre Form; Änderung
+und neue Regions-IDs sind Bestandteil desselben Undo-/Redo-Eintrags.
+Scopes vor dem Werkzeugwechsel erhalten die Zuordnung auch beim Verschieben
+einer Kontur in einen neuen Werkzeugschritt. Einheitenwechsel lösen diese
+Nachführung nicht zusätzlich aus. Kein weiteres Speicherfeld erforderlich.
+
+Maßfelder sitzen mittig auf oberer und rechter Kante, ohne Breite-/Höhe-Präfix;
+Zahl und Einheit sowie volle Eingabegenauigkeit bleiben erhalten. Eckgriff- und
+Maßklick unterscheiden sich anhand der nächstliegenden Griff-/Textmitte.
+
+Nachweis: je 55 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden
+(Regions-/Projektmodell, Panel, Canvas, Architektur). Neue Fälle: Werkzeugwechsel
+und Werkzeugaktualisierung mit 4+2=6, unveränderte manuelle Region, bedarfsgerechte
+Aufteilung einer gemeinsamen Region, atomare Undo-/Redo-Snapshots sowie echter
+GUI-Werkzeugwechsel und exakte Kantenpositionen. Paneltests zoomen für die
+Griff-/Maßbedienung gezielt auf die Region; die Werkzeugwechsel-Fixture hält
+ihren vorhandenen Lead-Radius gültig. DE/FR/RU-Kataloge bereinigt, QM regeneriert
+und geladen geprüft. Native Windows-Aufnahme der neuen Maßpositionen visuell
+geprüft. Strenger Dokumentationsbuild und Diff-Prüfung bestanden. P8-Fachabnahme
+bleibt offen; keine Vollsuite, Paket-/GPU-/Maschinenabnahme und kein Commit/Push.
+
+## R3/D45 präzisiert: Aufziehen, Modus je Steg und Doppelklick (13.11.2026)
+
+Die nachträgliche Nutzerpräzisierung ersetzt den bisherigen Klick-/Dialogablauf:
+Beide Modi beginnen durch Aufziehen eines Rechtecks. Beim Loslassen wird die
+Region direkt erzeugt; Fang stellt sie auf das konfigurierte Quadratmaß samt
+nominaler Ausrichtung, manuell behält die aufgezogene Form. Nur eine mehrdeutige
+Bearbeitungs-/Werkzeugwahl fragt nach dem Ziel. Zeichnen bleibt anschließend aktiv.
+Der Regionsdialog öffnet per Doppelklick im Canvas, im Bearbeitungsbaum und in der
+Regionsliste; Original-Regionsknoten öffnen ihn ebenfalls. Bearbeitungsaktionen
+im Kontextmenü/Parameterbereich öffnen denselben Dialog.
+
+Jede Region speichert `placement_mode` als `snap` oder `manual`. Vorhandene/importierte
+Regionen ohne Feld bleiben manuell. Moduswechsel über Regionsmenü oder Dialog gilt
+nur für diesen Steg. Fang beim Umschalten/Größenändern übernimmt das aktuelle Maß;
+direkte Maßeingabe setzt manuell, damit eigene Maße erhalten bleiben. Normales
+Verschieben oder bloße Konfigurationsänderung skaliert Regionen nicht. Das optionale
+Feld ergänzt das noch unveröffentlichte Format 2.1 und ist validiert/Undo-fähig.
+
+Nachweis: je 53 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden (Panel,
+Regions-/Projektmodell, Canvas, Architektur). Neue/angepasste reale Abläufe:
+direkte Anlage ohne Dialog, Fang/Handeingabe durch Aufziehen, Quadrat beim
+Größenändern, Moduswechsel je Steg, direkte Maßeingabe, Doppelklick-Dialog,
+Zielwahl/Abbruch, Undo sowie Rundlauf und Altdatei-Default des neuen Felds.
+Ein Qt6-Test berechnet seine Mausposition nach Ansichtsänderungen erneut;
+der anschließende Panelablauf bestand unter beiden Bindings. Bestehende
+DE/FR/RU-Texte wiederverwendet und mit geladenen QM-Katalogen geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. P8-Fachabnahme bleibt
+offen; keine Vollsuite, Paket-/GPU-/Maschinenabnahme, kein Commit/Push.
+
+## R3/D45: werkzeugabhängiges Fangquadrat und Konfigurationsvorgaben (13.11.2026)
+
+Nutzerentscheidung umgesetzt: Fang per Konturklick erzeugt ein Quadrat mit
+Seitenlänge Werkzeugdurchmesser plus verbleibender Steglänge. Ø4 mm und 2 mm
+Steglänge ergeben 6 × 6 mm. Die gewählte Originalkontur liefert Position und
+Ausrichtung; mehrere mögliche Bearbeitungen erfordern eine Werkzeug-/Zielwahl,
+wenn keine davon ausdrücklich aktiv ist. Der Regionsdialog bestätigt anschließend
+Werte und Zuordnung. Fortlaufendes Anlegen und vorhandene Maßeingabe bleiben erhalten.
+
+Neue Anwendungskonfiguration `Tab_Regions`: `creation_mode` mit Default `snap`
+und Alternative `manual`, `tab_length` mit Default 2 in Konfigurationseinheiten.
+Kontextmenü bietet beide Modi für die laufende Sitzung an. Die Länge wird vor
+Addition des Projekt-Werkzeugdurchmessers in Zeichnungseinheiten umgerechnet.
+Gespeicherte Regionen behalten ihre tatsächlichen Vertices bei Werkzeug- oder
+Vorgabenänderung; kein neues Projektformat. Z-Oberkante bleibt separat.
+
+Nachweis: je 36 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden, einschließlich
+Regionsmodell, echtem Panel-/Klickablauf, Konfigurationspersistenz/-übersetzungen,
+Canvas und Architekturgrenzen. Neue Fälle prüfen das 4+2=6-Beispiel, Klick statt
+Aufziehen, zwei Konfigurationseinheiten, Zielwahl/Abbruch bei Mehrfachbearbeitungen,
+Sitzungsumschaltung, fortlaufende Anlage und Undo. Ein anfänglicher Testfehler
+(`ConfigObj.Section.update` erwartet ein Dictionary) wurde korrigiert; der betroffene
+Test und Panelablauf bestanden anschließend erneut unter beiden Bindings.
+Neue Texte/Hilfen in DE/FR/RU ergänzt, QM regeneriert und geladen geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Fachliche Abnahme bleibt
+P8, insbesondere reale Reststege an Ecken/engen Bögen. Keine Vollsuite,
+Paket-/GPU-/Maschinenabnahme und kein Commit/Push.
+
+## R3: fortlaufende Stegsitzung, Konturwechsel und Regionszählung (13.11.2026)
+
+Zeichnen bleibt nach bestätigter Neuanlage aktiv. Weitere Regionen können an
+anderen Originalkonturen angelegt werden, ohne den Modus neu zu starten.
+Konturklick wählt die entsprechende Originalgeometrie, Leerraumklick löst
+Regionsauswahl und abgeleitete Markierungen; der Stegmodus bleibt offen.
+Maßfelder und Eckgriffe der ausgewählten Region bleiben bedienbar.
+Die Zahl am Konturknoten zählt nun die darunter aufgeführten Regionsobjekte.
+Ursache der Abweichung war das Zählen einzelner geplanter Stegabschnitte;
+eine einzelne Region kann mehrere davon erzeugen.
+
+Nachweis: je sieben fokussierte Panel-/Canvas-Prüfungen unter PyQt5/PyQt6
+bestanden. Echte Mausereignisse prüfen Konturwechsel im Zeichnen, Leerraum-
+Abwahl, direkte zweite Neuanlage an anderer Kontur und Undo. Ein zusätzlicher
+Planabschnitt derselben Region erhöht die Baumzahl nicht mehr. Bestehende
+Maßeingabe/Strg-Ausrichtung sowie Katalogübersetzungen bleiben geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Keine Vollsuite,
+Paket-/GPU-/Maschinenabnahme, kein Commit/Push. Die zusätzliche Konfiguration
+für Fang/Handeingabe und Standardmaß war hier noch offen; anschließend durch
+D45 entschieden und umgesetzt (siehe obigen Nachweis).
+
+## R3/D44: Live-Maße, direkte Maßeingabe und Strg-Ausrichtung (13.11.2026)
+
+Bestätigte Bedienung umgesetzt: Breite und Höhe rechteckiger Stegregionen werden
+beim Zeichnen/Größenändern und an der Auswahl angezeigt. Maße folgen der
+Projekteinheit und Anzeigepräzision. Hover hebt die Zahl hervor, Klick öffnet
+eine Eingabe mit voller Genauigkeit. Positive endliche Maße werden mit Enter
+symmetrisch um die Mitte übernommen; die andere Kantenlänge bleibt erhalten.
+Escape oder Fokuswechsel verwerfen die Eingabe. Maßfelder verdecken keine
+Eckgriffe und werden beim Editieren über der Vorschau dargestellt.
+
+Strg beim Ziehen richtet die Breitenachse an der Verbindung genau zweier
+Originalkontur-Schnittpunkte aus und setzt die Mitte zwischen die Kontakte.
+Die aktuellen Kantenlängen bleiben erhalten. Ein eindeutiges Ziel wirkt live;
+mehrere Originalkonturen erfordern beim Loslassen eine Auswahl. Abbruch erhält
+das normale Ziehergebnis. Wiederholte Bearbeitungen derselben Originalkontur
+werden als Fangziel zusammengefasst; ohne geeignetes Kontaktpaar bleibt die
+Ziehbewegung erhalten und eine Meldung erklärt den ausgelassenen Fang.
+Geraden und Bögen verwenden dieselbe nominale Schnittgrundlage wie D41.
+Jede bestätigte Änderung bleibt ein vorhandener Regions-/Undo-Befehl;
+keine zusätzlichen persistenten Felder oder Formatänderungen.
+
+Nachweis: jeweils 44 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden
+(Regionsmodell, nominale Stege, Architektur, Panel und Canvas-Interaktion).
+Neue Fälle prüfen exakte Maßübernahme, Mittelpunkt/andere Kante, ungültige Werte,
+Hover/Klick/Enter/Escape, reale Strg-Ziehereignisse und Undo, Geraden-/Kreiskontakte,
+Mehrfachverwendungs-Deduplizierung sowie Auswahl/Abbruch bei mehreren Fangzielen.
+DE/FR/RU ergänzt, QM regeneriert und geladen geprüft; native Windows-Aufnahmen
+für Maßanzeige und Eingabefeld visuell geprüft. Strenger Dokumentationsbuild und
+Diff-Prüfung bestanden. Fachliche Bedienabnahme bleibt P8; automatische Platzierung,
+reale GPU-/Paket-/Maschinenabnahme bleiben getrennt. Kein Commit oder Push.
+
+## R3: Regionszuordnung auf überschneidende Konturen begrenzt (12.11.2026)
+
+Der bestätigte Vorschlag ist umgesetzt: Nur Bearbeitungen mit einem positiven
+Originalkonturabschnitt im Regionsinneren stehen zur Zuordnung bereit. Der
+nominale D41-Schnittdienst liefert dieselbe geometrische Grundlage; reine
+Rand-/Eckkontakte erzeugen dort keinen Steg. Mehrfachbearbeitungen bleiben
+getrennte Ziele. Schrittlisten enthalten nur Schritte mit passenden Konturen.
+Genau ein Kandidat wird beim Neuanlegen vorbelegt. Ohne Schnitt zeigt der Dialog
+den Hinweis und sperrt „OK“ beim Neuanlegen; Abbruch ändert nichts.
+
+Global zeigt die passenden Bearbeitungen als mitumfasst an und erhält lokale
+Ausnahmen. Geometrische Kandidaten hängen nicht von Fräserradius, Z-/Passwahl,
+Aktivierung oder momentanem Scope ab. Bereits gespeicherte unwirksame Regionen
+werden nicht gelöscht. Vorhandene Kandidatenwahl bleibt beim Wechsel zwischen
+Global/Schritt/Bearbeitungen erhalten.
+
+Nachweis: je 63 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden, einschließlich
+Regionsmodell, D41, Passregeln, Architektur und echtem Panelablauf. Neue Fälle:
+Durchlauf statt Rand-/Eckkontakt, zwei Bearbeitungen derselben Kontur als getrennte
+Ziele, Ausschluss einer fremden Kontur im Dialog, ein vorausgewählter Treffer,
+leere Liste mit gesperrter Neuanlage selbst bei Global sowie unveränderte Daten
+bei Abbruch. Bestehende Eckpunkt-Abnahmeregion wurde auf echten Durchlauf bis
+zur Ecke präzisiert; der zuvor nur auf dem Rand liegende Fall gilt nun als Kontakt.
+Hinweis in DE/FR/RU ergänzt, QM-Dateien regeneriert und geladen geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Kein Commit/Push;
+keine Vollsuite oder Maschinenabnahme.
+
+## R3: sprachabhängiger Namensvorschlag für neue Stegregionen (12.11.2026)
+
+Neue Regionen erhalten den ersten freien Namen nach übersetztem Schema:
+„Steg 1“, „Steg 2“ usw.; Englisch „Tab“, Französisch „Attache“, Russisch
+„Перемычка“. Die Prüfung berücksichtigt bereits gespeicherte Regionsnamen.
+Der vorgeschlagene Name bleibt frei änderbar; bestehende Namen werden durch
+Sprachwechsel nicht verändert. DE/FR/RU-Kataloge und QM-Dateien aktualisiert.
+Je zwei fokussierte Paneltests unter PyQt5/PyQt6 bestanden, einschließlich
+geladenen Übersetzungen, konkreten Vorschlägen in allen drei Sprachen und
+vorbelegtem, weiterhin überschreibbarem Namensfeld im echten Anlegedialog.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Kein Commit/Push.
+
+## R3/D43: einheitliche Regions- und Schrittauswahl (12.11.2026)
+
+Die bestätigte Auswahlregel ist umgesetzt: BREAKS-Layer und Regionsgruppen
+verwenden die Vereinigung ihrer Regionsbezüge und heben alle wirksam verknüpften
+Bearbeitungen hervor. Globale Regionen zeigen Bezüge auch in anderen Schritten.
+Wiederholte Klicks bleiben stabil, Doppelklicks auf Gruppen klappen auf/zu.
+Einzelne Regionsreferenzen springen nicht mehr zum ersten Vorkommen im Baum.
+
+Schrittnachfahren und Regionsbezüge erscheinen als hellere abgeleitete
+Baummarkierungen. Die tatsächliche Auswahl bleibt unverändert als Vertrag für
+Parameter und Drag-and-drop: Schrittvorgaben bei Schrittwahl, Regionswerte bei
+Regionswahl, gesperrte Zusammenfassung bei Regionsgruppen. Die Vorschau hebt
+deren referenzierte Werkzeugbahnen mit den bestehenden Farben hervor. Rot für
+Originalauswahl, Blau für Werkzeugbahn und Magenta für Stege bleiben erhalten.
+Zuordnungsänderungen aktualisieren den Bezug sofort, einschließlich Auslassen
+einer zuvor hervorgehobenen Bearbeitung. Kein gespeicherter Projektzustand wird
+durch reine Bezugsauswahl geändert.
+
+Nachweis: je 21 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden: Panelablauf,
+Canvasinteraktion und 3D-Befehle/Projektion. Erweiterte echte Mausereignisse an
+`BreakExample_Circle.dxf` prüfen wiederholte Layerklicks/Doppelklicks, einzelne
+Originalregionen, Regionsgruppen, Schritte sowie eine globale Region mit
+Referenz in einem zweiten Schritt. Geprüft sind Vorschauauswahl, Baumrollen,
+Erhalt des geklickten Knotens, Kontext, Drag-Payload, unveränderte Projektdaten
+und History. Windows-Bilder für Schritt-/Gruppenmarkierung visuell kontrolliert.
+Gruppenhinweis in DE/FR/RU ergänzt, QM-Dateien regeneriert und geladen geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Kein Commit/Push;
+keine Vollsuite, reale GPU- oder Maschinenabnahme.
+
+<a id="r3-manual-regions"></a>
+
+## R3/D42: Konturverknüpfung und manuelle Stegregionen (12.11.2026)
+
+Der bestätigte Vorschlag und die drei Nutzerentscheidungen sind umgesetzt:
+Regionen folgen der gesamten Zeichnungstransformation, Bearbeiten erfolgt in
+2D und jede neue Region endet mit einem Bestätigungsdialog für Name, Höhe,
+Vorschübe und Zuordnung. In der 3D-Hauptansicht öffnet ein separater 2D-Editor.
+Die erste neue Höhe ist Werkstückoberkante, danach der zuletzt verwendete bzw.
+zuletzt gespeicherte manuelle Wert. Vorschübe stammen aus der Auswahl.
+
+Stegregionsobjekte besitzen eigene IDs, Quelldaten oder eigene Polygonpunkte,
+Scope global/Schritt/Bearbeitungen und lokale Ausnahmen. Format 2.1 liest
+weiterhin 2.0 und Legacy; alte BREAKS-Bearbeitungen werden mit ID-/Werterhalt
+übernommen. Die Materialisierung filtert Regionen vor der gemeinsamen Planung
+nach Scope/Ausnahmen. Undo/Redo stellt Form, Werte und Zuordnungen gemeinsam her.
+
+Bearbeitungsbäume referenzieren Regionen direkt unter der betroffenen Kontur;
+die Kontur zeigt die Anzahl wirksamer Stegabschnitte. Der Geometrie-Tab besitzt
+einen eigenen einklappbaren Regionsbereich mit Herkunft/Wirkung. BREAKS-Originale
+haben Regionsnamen/-symbole, entfernte Regionszuordnungen sind durchgestrichen.
+Normale Konturauswahl blendet die wirksamen Rechtecke automatisch gestrichelt
+magenta ein. Regionauswahl hebt zugehörige Konturen hervor, ohne selbst den
+Editiermodus einzuschalten. Die bisherigen Bewegungsfarben bleiben erhalten.
+
+Im Stegmodus: Rechteck aufziehen, Vorschau mit demselben Planer, Werte bestätigen,
+Umriss verschieben und Eckgriffe ziehen. Erst Loslassen erzeugt eine Undo-Aktion.
+Esc/Dialogabbruch ändern nichts. „Zuordnung entfernen“ schließt nur diese
+Bearbeitung aus; globales Löschen benötigt die Rückfrage mit Betroffenenzahl.
+Original-DXF-Geometrie bleibt erhalten. Während der Sichtprüfung wurde außerdem
+die D41-Teilung absolut transformierter Geometrie korrigiert: Original und
+Werkzeugbahn werden vor der Teilung in denselben absoluten Raum aufgelöst.
+
+Nachweis: je 116 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden, inklusive
+sechs neuer Regionsmodellprüfungen und erweitertem echten Panelablauf mit
+`BreakExample_Circle.dxf`: automatischer Regionsanzeige, Originalbaumauswahl,
+Zeichnen mit Modalbestätigung, Vorschau, Verschieben, Eckgriffen, Esc,
+Zuordnungsausnahme, Löschabbruch/Löschen, Undo, .d2g-2.1-Wiederladen und
+G-Code mit gespeicherter Stegoberkante. Die 2D-Editoransicht wurde ohne realen
+GL-Kontext geöffnet/geprüft. Tests sichern außerdem Transformation/Inverse,
+Migrationswerte/IDs, Scopes, Undo/Redo und D41-Absolutkoordinaten.
+DE/FR/RU ergänzt, QM-Dateien regeneriert und geladen verifiziert. Deutsche
+Windows-Baumansichten und Regionsdialog visuell kontrolliert. Strenger
+Dokumentationsbuild und Diff-Prüfung bestanden.
+
+Offen bleiben Nutzer-/reale GPU-/Maschinenabnahme, Fang und automatische
+Platzierung. Keine Vollsuite, Debian- oder Paketabnahme. Kein Commit/Push.
+
+Commit-Vorprüfung: Der erste Fast-Hook-Lauf mit 313 Prüfungen meldete eine
+fehlgeschlagene Panelprüfung: Überlauf wurde bei zufällig verfügbarer
+Fensterhöhe vorausgesetzt. Der Test verkleinert den Parameterbereich jetzt
+ausdrücklich, prüft die Scrollleiste und stellt die vorherige Größe wieder
+her. Beide fokussierten Paneltests bestehen danach; keine Produktänderung.
+Der Folgelauf fand eine weitere Randannahme desselben Tests: Ziehen gegen die
+bereits erreichte Mindesthöhe kann die Größe nicht ändern. Die echte
+Mausbewegung nutzt jetzt den tatsächlich verfügbaren Splitterbereich.
+Die Werkzeugreihenfolge wird anhand echter `Tn M6`-Zeilen geprüft; eine
+Teilstringsuche nach `T1` hatte auch den Zeitstempel `T14:…` getroffen.
+Der verpflichtende Hook wird beim erneuten Commit vollständig ausgeführt.
+
+## R3: gewähltes Stegmodus-Symbol bei den Bearbeitungsaktionen (08.11.2026)
+
+Nutzerwahl Variante 2 umgesetzt: gestrichelte Region, kreuzende Kontur und
+Bearbeitungsstift. Das Symbol wird wie die History-Icons mit Palette und
+mehreren Auflösungen gezeichnet; deaktivierte Zustände erhalten eigene
+Palettenfarben. Der umschaltbare Button steht unmittelbar nach „Erstellen“
+links bei den Bearbeitungsaktionen. Die Baumdarstellungsbuttons bleiben rechts.
+Vorhandene übersetzte Beschriftung und Funktion bleiben unverändert.
+
+Nachweis: je zwei bestehende echte Panel-/Übersetzungsprüfungen unter PyQt5
+und PyQt6 bestanden. Neue Position und aktive Darstellung im erzeugten
+deutschen Windows-Fensterbild visuell geprüft. Das Aufnahmehilfsskript endete
+anschließend mit Exitcode 1 ohne weiteren Trace; dies ist kein erfolgreicher
+Gesamtworkflow-Nachweis des Hilfsskripts. Die getrennten Panelprüfungen sind
+erfolgreich. Strenger Dokumentationsbuild und Diff-Prüfung bestanden.
+Keine Vollsuite, Veröffentlichung oder zusätzliche Plattformabnahme.
+
+<a id="d41"></a>
+
+## D41: einheitlicher Stegbezug an der Originalkontur (08.11.2026)
+
+Geschlossene polygonale BREAKS-Regionen werden auf der Originalkontur ausgewertet.
+Der reine Wertdienst `domain/toolpath/tabs.py` überträgt deren zusammenhängende
+Intervalle über Geradennormalen bzw. konzentrische Bogenradien auf die vorbereitete
+Werkzeugmittelpunktbahn. Interne und maschinenseitige Korrektur verwenden damit
+dieselben nominalen Bezugsstellen, ohne tangentiale Radiuszugabe. Die Region muss
+die Offsetbahn nicht erreichen. Aufmaß ändert den Bezug ebenfalls nicht.
+
+Vom Nutzer entschiedene Sonderfälle: Mehrdeutige/verschwundene Grenzen oder
+getrennte Offsetteile lassen den dortigen zusammenhängenden Steg vollständig
+entfallen und erzeugen eine Warnung; der Export bleibt erlaubt. Andere gültige
+Stege derselben Region bleiben erhalten. Eckübergreifende Stege halten die
+Verbindung durchgehend auf Steghöhe. Auch am geschlossenen Konturstart wird
+nicht erst durch den Steg auf Frästiefe eingetaucht. Stegbögen bleiben Bögen;
+Geometrie, Zuordnung und Kurvenform überstehen Umkehr, Exitadapter und Überfahrt.
+Die Modifikatoranzeige zählt auch wirksame Bogenabschnitte.
+
+Taschen-Randkonturen verwenden D41; Rasterfüllungen ohne Originalkonturpartner
+behalten ihre räumliche Regionsauswertung. Schleppmesser bleiben unverändert.
+Offene/nicht polygonale Regionen werden gewarnt und ausgelassen. Globale
+Zuordnung, Z-Höhen, Vorschübe, Passauswahl und Speicherformat bleiben erhalten.
+Bestehender G-Code wird nicht geändert, sondern muss neu exportiert werden.
+
+Nachweis: je 103 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden, davon
+17 D41-Prüfungen mit Unterfällen. Enthalten: G40/G41/G42 intern/maschinell,
+verschiedene Radien und Aufmaß, schmale/schräge Regionen, Geraden und echte
+Offsetbögen, Eckverbindung ohne Zustich, Konturstart, Richtung/kollineare
+Zusammenfassung, Tangentialkontakt, fehlende/mehrdeutige Grenzen, getrennte
+Offsetteile und Erhalt anderer Stege. Gemeinsamer Plan mit gleicher Vorschau
+und G-Code-Ausgabe geprüft; bestehende Steg-/Pass-/Lead-/Überfahrt-/Slice-
+Goldens und echte Panelabläufe bestanden. Warnung in DE/FR/RU ergänzt,
+QM-Dateien regeneriert und geladen geprüft. Strenger Dokumentationsbuild und
+Diff-Prüfung bestanden. Keine Vollsuite, Paket-, Debian-, reale GPU- oder
+Maschinenabnahme; Nutzerabnahme P8 bleibt offen. Keine Veröffentlichung.
+
+## R3: Stegmodus-Mausauswahl unter Qt6 korrigiert (08.11.2026)
+
+Der gemeldete `QPainterPath.contains(QPoint)`-Absturz wurde mit echten
+Canvas-Mausereignissen unter PyQt6 reproduziert. Die Trefferprüfung wandelt
+die Eingabeposition jetzt ausdrücklich in `QPointF` um. Der bisherige direkte
+Test über `pointAtPercent()` lieferte bereits `QPointF` und deckte den realen
+Ereignistyp deshalb nicht ab. Der Paneltest klickt nun zwei verschiedene
+Stegregionen über das Viewport an und prüft Regionskontext und Baumzeile.
+
+Nachweis: vor Korrektur gleicher TypeError; danach je zwei fokussierte
+Paneltests unter PyQt5/PyQt6 bestanden, einschließlich der vorhandenen
+Stegverwaltungs-, Export-/Undo- und Übersetzungsprüfungen. Diff-Prüfung
+bestanden. Keine GUI-Texte geändert; keine Vollsuite, Paket- oder
+Plattformabnahme. D41 bleibt eine separate vorgemerkte Algorithmusänderung.
+
+## R3: importierte Haltestege als Modifikatoren (08.11.2026)
+
+Nutzerentscheidung D40, Variante 1: BREAKS-Regionen erscheinen in besonderen
+Haltesteg-Gruppen unter den tatsächlich betroffenen Bearbeitungsschritten.
+Dieselbe globale Region wird referenziert, nicht kopiert. Die tatsächlichen
+Planbewegungen liefern Zuordnung und Anzahl wirksamer Stegabschnitte;
+Tiefenpass-Wiederholungen werden dedupliziert. Unwirksame/deaktivierte Regionen
+bleiben separat erreichbar. Normale Canvas-/Rahmen-/Originalbaumauswahl
+überspringt Stegregionen. Keine Werkzeuge, Exportcheckboxen, normale
+Konturaktionen oder Reihenfolgeaktionen für die Modifikatorzeilen.
+
+Ein eigener Stegmodus zeigt Umrisse in bestehendem Magenta und erlaubt
+Stegoberkante, XY-/Z-Vorschübe, Aktivierung und Entfernen mit Undo/Redo.
+Die Herkunft und globale Wirkung sind ausdrücklich sichtbar. Bestehende
+globale Exportwirkung und Projektformat bleiben erhalten; Metadaten am Plan
+verändern keine Ausgabe. Zeichnen, Formänderungen, lokale Zuordnung, Fang
+und automatische Platzierung bleiben P7.
+
+Nachweis: je 53 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden:
+Stegschnittpunkte und Passregeln, echte Panelereignisse, Canvasinteraktion
+und 3D-Befehle/Projektion. Enthalten sind BreakExample, normale Auswahlsperre,
+Regionsauswahl/-eigenschaften, Aktivierung/Entfernen mit Undo, identische
+G-Code-Ausgabe danach, globale Referenz in zwei Schritten und JSON-Modell-
+Roundtrip geänderter Werte. Neue Texte in DE/FR/RU ergänzt, QM-Dateien
+regeneriert und geladen geprüft. Deutsche Windows-Darstellung visuell
+kontrolliert. Strenger Dokumentationsbuild und Diff-Prüfung bestanden.
+3D verwendet einen simulierten GL-Kontext; reale GPU-, Nutzerprofil-, Paket-,
+Debian- und Maschinenabnahme bleiben offen. Keine Vollsuite oder Veröffentlichung.
+
+## BREAKS: Endlosrekursion an Steg-Eckpunkten verhindert (08.11.2026)
+
+Der Nutzertrace beim Laden von `dxf/BreakExample.dxf` endet wiederholt in
+`breakLineGeo`. Der ursächliche Randfall wurde gezielt reproduziert: Ein
+Polygon-Eckpunkt wird von seinen beiden Kanten zweimal als derselbe Schnitt
+gemeldet. Das erzeugte einen Steg ohne Länge und erneute Teilung desselben
+Reststücks bis zum RecursionError. Schnittpunkte werden jetzt mit der
+bestehenden Geometrie-Punkttoleranz dedupliziert. Ein reiner Eckkontakt bleibt
+ohne Steg; zwei unterschiedliche Eckdurchgänge erzeugen einen echten Steg.
+An Originalendpunkten werden keine leeren Linienreste bzw. unbeabsichtigten
+Vollkreis-Bogenreste erzeugt. Steghöhe und Vorschübe bleiben erhalten.
+
+Nachweis: je 34 fokussierte Prüfungen unter Qt5/Qt6 bestanden (fünf neue
+Schnittpunktregressionen, 27 bestehende Stegdurchgangsprüfungen, zwei
+Paneltests). Enthalten sind beide Linienrichtungen, Endpunkte, Bogenende,
+Import/Vorschau der Beispieldatei sowie Laden und Export aus dem echten
+Hauptfenster mit weiterhin enthaltenem Steg-Z-Hub. Ursächlicher Eckkontakt
+vorher mit derselben Rekursion reproduziert. Die frische Testkonfiguration
+ersetzt keine Abnahme mit dem Nutzerprofil; dieses ist nicht übernommen worden.
+Keine Vollsuite, Paket-, Debian- oder Maschinenabnahme. Diff-Prüfung bestanden.
+
+## R3: Zuordnungsdialog mit stabiler Größe und Werterhalt (08.11.2026)
+
+Alle Felder im Zuordnungsdialog bleiben sichtbar und an festen Positionen.
+Vorhandenes Ziel aktiviert nur die Schrittauswahl, neues Ziel Name/Art/Werkzeug;
+die jeweils anderen Felder samt Labels sind ausgegraut. Die Größe wird einmal
+aus dem vollständigen Formular bestimmt und fixiert. Zielwechsel sowie
+Namenseingaben lösen kein `adjustSize()` mehr aus. Die Aktion wird nur beim
+Öffnen vorbelegt; selbst ein noch unberührtes „Kopieren“ bleibt beim Wechsel
+zu „Neuer Schritt“ erhalten. Alle gewählten/geänderten Werte bleiben gespeichert.
+
+Nachweis: je zwei fokussierte Paneltests unter Qt5/Qt6 bestanden, einschließlich
+echtem modalem Dialog, mehrfacher Umschaltung, konstanten Fenster-/Feld-/
+Buttonpositionen und Erhalt von Aktion, Name, Art, Werkzeug und vorhandenem
+Ziel. Bestehende Zuordnungs-/Undo-/Abbruchabläufe bleiben geprüft. Deutsche
+Windows-Darstellung in beiden Zielzuständen visuell kontrolliert. Vorhandene
+DE/FR/RU-Texte unverändert weiterverwendet. Strenger Dokumentationsbuild und
+Diff-Prüfung bestanden. Keine Vollsuite oder Paket-/Plattformabnahme.
+
+## R3: passende Schritte vor automatischer Neuanlage wiederverwenden (08.11.2026)
+
+Artwechsel, etwa Taschenfräsen/Bohren, und Konturwerkzeugwechsel prüfen zuerst
+vorhandene Schritte. Kompatibel sind gleiche Zielart, vollständige
+Werkzeugdefinition und identische gespeicherte Schrittvorgaben. Gleiche
+T-Nummer allein reicht nicht; Namen sind kein Ausschlusskriterium. Ein Treffer
+wird genutzt, bei mehreren wird gemäß Nutzerentscheidung ein Ziel verlangt.
+Gleich benannte Ziele bleiben in der Auswahlliste eindeutig unterscheidbar.
+Auswahlen gelten nur für einen Auftrag; Abbruch lässt Projekt/History unverändert.
+
+Zuordnungen behalten IDs, Geometriereferenzen und eigene Werte und werden dem
+Ziel hinten angefügt. Bestehende Ziele behalten Name und Vorgaben. Ohne Treffer
+gelten die bisherigen Neu-/Aufteilungsregeln; bei vollständig ausgewähltem
+Werkzeug-Quellschritt bleibt dessen Identität ohne Treffer erhalten. Explizit
+„Neuer Schritt“ erzeugt weiterhin einen Schritt. Auch die Rückkehr von Bohren
+zu Kontur kann nun den ursprünglichen passenden Konturschritt nutzen.
+
+Nachweis: je 30 fokussierte Befehls-/Paneltests unter Qt5 und Qt6 bestanden:
+wiederholte Taschenaktionen, Teil-/Vollauswahl beim Werkzeugwechsel, abweichende
+Defaults und gleiche T-Nummer mit unterschiedlichem Durchmesser, explizite
+Neuanlage, Zielwahl bei mehreren Treffern, Abbruch, Undo/Redo und unveränderte
+Parameter-/Exportabläufe. DE/FR/RU ergänzt, QM-Dateien regeneriert und
+Übersetzungen geprüft. Strenger Dokumentationsbuild und Diff-Prüfung bestanden.
+Keine Vollsuite, Paket-, Debian- oder Maschinenabnahme; praktische Abnahme P8 offen.
+
+## R3: gemeinsamer Zuordnungsdialog, Menüvariante 2 (08.11.2026)
+
+„Bearbeitung zuordnen …“ öffnet aus Canvas, Geometrie- und Bearbeitungsbaum
+denselben Dialog: Kopieren/Verschieben sowie vorhandener/neuer Zielschritt.
+Vorhandene Ziele zeigen Name, Art und Werkzeug; neue Ziele ergänzen die
+editierbaren Felder. Bestehendes Ziel ist mit Kopieren vorbelegt, neues mit
+Verschieben, bis die Aktion ausdrücklich gewählt wird. Explizit ausgewählte
+mehrere Referenzen derselben Geometrie bleiben vollständig erhalten;
+mehrdeutige Originalauswahl muss zuerst aufgelöst werden.
+
+Im Bearbeitungsmenü entfallen Schritt bearbeiten, Schrittvorgaben bearbeiten
+sowie die getrennten Erstellen-/Kopieren-/Verschieben-Einträge. Doppelklick/F2
+und Zeilenauswahl bleiben. Profilaktualisierung und freier G-Code sind unter
+„Erweitert“ gebündelt. Das Canvas behält seine sonstigen Aktionsgruppen und
+Trennlinien; Toolbar-Erstellen bleibt für den bisherigen Erstellungsablauf.
+Gemischter Transfer/Erstzuordnung wird als eine Transaktion ausgeführt:
+Abbruch/Ablehnung ohne Änderung, ein gemeinsamer Undo-Schritt, stabile Redo-IDs,
+Originalgeometrie unverändert und eigene Werte/Zielvererbung erhalten.
+
+Nachweis: je 26 fokussierte Befehls-/Paneltests unter Qt5 und Qt6 bestanden;
+nach abschließender Textkorrektur die beiden Paneltests je Bindung erneut.
+Prüft bestehende/neue Ziele, Kopieren/Verschieben, dynamische Feldsichtbarkeit,
+Abbruch, Undo/Redo, gemischte Zuordnung mit atomarer Ablehnung, ausdrückliche
+Mehrfachreferenzen, Canvas-Aktionsanbindung, Menübereinigung und Doppelklick.
+DE/FR/RU ergänzt, QM-Dateien regeneriert und Übersetzungen geprüft. Deutsche
+Dialogdarstellung nativ kontrolliert. Strenger Dokumentationsbuild und
+Diff-Prüfung bestanden. Keine Vollsuite, Paket-, Debian- oder Maschinenabnahme;
+praktische Abnahme im eigenen Projektablauf bleibt P8.
+
+## R3: nicht ausgewählte Bearbeitungsbahnen gestrichelt (08.11.2026)
+
+Nicht ausgewählte Bahnen sind zusätzlich zu 0,6 Pixel Strichstärke gestrichelt.
+Die Originalkontur bleibt regulär durchgezogen, bei Teilauswahl gepunktet mit
+k/n; vorhandene Deaktivierungsdarstellung bleibt erhalten. Ausgewählte und
+aktive/Hover-Bahnen behalten ihre bisherigen Linienarten und Farben. Die zwei
+fokussierten Qt5-Paneltests und Diff-Prüfung bestanden.
+
+## R3: nicht ausgewählte Bearbeitungen dünner zeichnen (08.11.2026)
+
+Nicht ausgewählte Bearbeitungsbahnen und ihre Markierungsumrisse verwenden
+0,6 Pixel Strichstärke. Ausgewählte Bearbeitungen, aktive/Hover-Hervorhebung,
+Farben und Linienarten bleiben erhalten. Die beiden fokussierten Qt5-Paneltests
+und Diff-Prüfung bestanden. Keine Änderung an Geometrie, Planung oder Export.
+
+## R3: Kontextzeile zwischen Baum und Parametern entfernt (08.11.2026)
+
+Die zusätzliche Zeile „Schrittvorgaben: …“ beziehungsweise „Aktiv: …“ entfällt.
+Der Parameterbereich beginnt unmittelbar unter dem Baumtrenner. Kontext- und
+Sperrhinweise bleiben als Tooltip der Parameterfläche beziehungsweise des
+Werkzeugfelds erreichbar. Vorhandene Übersetzungen werden weiterverwendet.
+Die beiden fokussierten Qt5-Paneltests und Diff-Prüfung bestanden; keine
+Änderung an Auswahl-, Parameter- oder Exportlogik.
+
+## R3: gemeinsame Parameterbearbeitung und eindeutige Auswahl (08.11.2026)
+
+Mehrfachauswahl ist wieder gemeinsam editierbar: gleiche geerbte Werte grau,
+gleiche Werte mit eigenen Overrides normal, unterschiedliche Werte als
+editierbarer Platzhalter. Maßgeblich sind ungerundete Werte und gespeicherte
+Herkunft. Symbole unterscheiden eigene/geerbte/gemischte Herkunft und nennen
+Zähler, Quellen sowie tatsächliche Werte. Dropdowns zeigen gemischte Werte
+ausdrücklich; nicht für alle anwendbare Felder bleiben einzeln gesperrt.
+
+Eine Eingabe ändert nur diesen Parameter aller ausgewählten Zuordnungen;
+Rücksetzen entfernt deren Overrides zugunsten individueller Schrittvorgaben.
+Platzhalter/Fokuswechsel/unveränderte Bestätigungen schreiben nichts. Volle
+Zahlengenauigkeit bleibt erhalten. Gemeinsame Rückzugs-/Sicherheitsänderungen
+werden einmal je betroffenem Schritt gesetzt und ihr größerer Wirkungsbereich
+am Symbol erläutert. Start-X/Y lässt die jeweils andere Koordinate individuell.
+Jede Sammelaktion ist ein Undo-Schritt; Auswahl und Werkzeugdefinitionen bleiben.
+
+Eindeutige Originalkonturen können direkt gemeinsam editiert werden. Bei
+Originalgeometrie mit Mehrfachverknüpfungen bleiben auch Werkzeugwechsel
+gesperrt, bis die gewünschten Zuordnungen ausdrücklich im Baum oder Canvas
+gewählt wurden. Die aktive Bearbeitung hebt nur die Vorschau hervor; die
+Parameter gelten bei Mehrfachauswahl für die gesamte Auswahl.
+
+Nachweis: je 25 fokussierte Befehls-/Paneltests unter Qt5 und Qt6 bestanden.
+Geprüft sind Sammeländerung, Reset, Undo/Redo, unveränderte Bestätigungen,
+Präzision, gemischte Herkunft, beide Auswahlwege, gemeinsame Schrittwerte,
+Startkoordinaten und atomare Ablehnung ungültiger Batches. DE/FR/RU ergänzt,
+QM-Dateien regeneriert und Übersetzungen geprüft. Deutsche Windows-Darstellung
+visuell kontrolliert; strenger Dokumentationsbuild und Diff-Prüfung bestanden.
+Keine Vollsuite, Paket-, Debian- oder Maschinenabnahme; praktische Abnahme P8
+bleibt offen.
+
+## R3: Bearbeitung als Startansicht (08.11.2026)
+
+Das Hauptfenster öffnet standardmäßig den Tab „Bearbeitung“, nachdem beide
+Tabgruppen aufgebaut wurden. Ein späterer manueller Tabwechsel bleibt erhalten;
+das Laden einer Zeichnung erzwingt keinen erneuten Wechsel. Bestehender lokaler
+Qt5-Panelablauf mit echtem Hauptfenster bestanden. Keine
+neuen GUI-Texte oder Formatänderungen.
+
+## R3: verständliche Konturlabels und gebündelte Rahmenauswahl (08.11.2026)
+
+Canvas-Beschriftungen verwenden jetzt Schrittname, dieselbe Konturnummer wie
+im Bearbeitungsbaum und Werkzeug, beispielsweise „7 · Kontur 0 · T5“. Die
+zusätzliche ab eins laufende Schritt-/Zuordnungsposition entfällt; bestehende
+DE/FR/RU-Übersetzungen für „Kontur“ werden wiederverwendet.
+
+Ursache der trägen Mehrfachauswahl: Die 2D-Rahmenauswahl meldete jeden
+einzelnen Auswahl-/Abwahlwechsel an die Bäume. Jeder Callback berechnete die
+gesamte Bearbeitungsvorschau neu. Die Auswahl wird jetzt vollständig gesetzt
+und anschließend einmal gemeinsam gemeldet. Keine über Bearbeitungsänderungen
+hinweg gespeicherten Werkzeugpläne und keine Änderung an Exportreihenfolge
+oder Exportroutenbedienung.
+
+Lokale Profilierung mit `dxf/1997.DXF`: sechs Konturen, sechs auf eine
+Vorschau-Aktualisierung; einschließlich Ereignisverarbeitung etwa 0,617 auf
+0,117 Sekunden. Das sind Vergleichswerte dieses Laufs unter Qt5/offscreen mit
+Profilierungsaufwand, keine garantierte Reaktionszeit anderer Systeme.
+Je sieben fokussierte echte Qt-Ereignis-/Paneltests unter Qt5 und Qt6 bestanden:
+Rahmenauswahl und gemeinsames Leeren melden genau einen vollständigen Zustand,
+Labels stimmen mit dem Baum überein, bestehende Auswahl-/Undo-/Exportabläufe
+und Übersetzungen bleiben geprüft. Dokumentationsbuild und Diff-Prüfung
+bestanden. Praktische Bedienabnahme bleibt P8; keine Vollsuite oder Paketabnahme.
+
+## R3: fehlende G40-Einfahrt in gemeinsamem Plan korrigiert (08.11.2026)
+
+Die Einfahrgeometrie für G40 wurde korrekt vorbereitet, aber die Konturstrategie
+übernahm sie nur bei interner Werkzeugradiuskorrektur in den Werkzeugplan.
+Bei normalem G40 fehlten Gerade und Bogen damit sowohl in der Vorschau als
+auch im G-Code. Die G40-Verzweigung übernimmt jetzt auch diese vorbereitete
+Einfahrt nach dem Eintauchen und vor dem ersten Konturschnitt. „Aus“ bleibt
+ohne Einfahrt; Ausfahrt sowie G41/G42 behalten ihr Verhalten.
+
+Regression zuerst mit zwölf fehlgeschlagenen Unterfällen reproduziert, danach
+bestanden: offene/geschlossene Konturen, beide Kompensationskonfigurationen und
+Aus/Gerade/Radius/Startbewegung. Prüft Planreihenfolge, 2D-/3D-Projektion,
+2D-Leadpfad sowie erste tatsächlich exportierte XY-Bewegung und Bogenbefehle.
+Je 64 fokussierte Vorschau-/Leadmodus-/Golden-Tests und zwei Paneltests unter
+Qt5 und Qt6 bestanden. Strenger Dokumentationsbuild und Diff-Prüfung bestanden.
+Kein vollständiger Testlauf, keine Controller-/Maschinenabnahme. Bestehende
+G-Code-Dateien bleiben unverändert; zur Übernahme erneut exportieren und prüfen.
+
+## R3: gemeinsame Parameterfläche mit vier Group Boxes (08.11.2026)
+
+Nach erneuter Nutzerpräzisierung entfällt der innere Werkzeug-/Konturtrenner
+einschließlich separater Klapp-/Scrollbereiche. Der Trenner zwischen Baum und
+dem gesamten Eingabebereich bleibt. Ein gemeinsamer Scrollbereich zeigt
+Werkzeugauswahl/Drehzahl sowie Z-Werte, Vorschübe, Lead in/out und Offset in
+normalen Group Boxes. Jeweils zwei Werte stehen nebeneinander; kurze Labels
+tragen die Einheit direkt. Herkunftssymbole folgen mit 2 Pixel Abstand auf das
+Feld, zusätzlicher Leerraum erst danach. Maschinenfilter, Vererbung, volle
+Zahlengenauigkeit und Befehlsverlauf bleiben erhalten. Alte gespeicherte innere
+Trenner-/Klappzustände werden ignoriert; äußere Größen bleiben gespeichert.
+
+Nachweis: je zwei fokussierte Paneltests unter Qt5 und Qt6 bestanden, mit
+echten Auswahl-/Bearbeitungs-/Undo-/Exportabläufen, Vererbung, Maschinenfiltern,
+Zahlenpräzision, zwei Werten je Zeile und direkt angrenzenden Symbolen bei
+breiter und schmaler Ansicht. DE/FR/RU ergänzt und QM-Dateien regeneriert;
+Übersetzungen geprüft. Deutsche Windows-Darstellung visuell kontrolliert.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Keine Vollsuite,
+Paket-, Debian- oder Maschinenabnahme; praktische Bedienabnahme bleibt P8.
+
+<a id="r3-preview-layout"></a>
+
+## R3: Mehrfachvorschau, Canvas-Auswahl und korrigiertes Formular (08.11.2026)
+
+Originalauswahl stellt alle verknüpften Bearbeitungspläne mit tatsächlichen
+Leads, Start/Ende und Tiefen dar. Direkte Pfad-/Labelauswahl, Strg-Umschaltung,
+Treffermenü bei Überlagerung und Hover-Hilfe synchronisieren Baum und Canvas.
+Eine aktive Bearbeitung zeigt ihre Parameter; Werkzeugwechsel wirken auf die
+gesamte markierte Auswahl. Teilauswahl punktiert die Originalkontur mit k/n.
+Die zunächst zusätzlich eingeführten Schrittfarben wurden nach Nutzerkorrektur
+entfernt: bestehende semantische Bewegungsfarben bleiben, Hervorhebung nutzt
+Strichstärke. Keine künstlichen Bahnverschiebungen oder automatische Exportroute.
+
+Der reproduzierte 2D-Versatz entstand durch Qt-Scrolling von Viewport-Kindern:
+Das Overlay wurde zusätzlich zur bereits umgerechneten Zeichenposition bewegt.
+`scrollContentsBy` verankert es wieder im Viewport; die Abbildung verwendet die
+gleiche Fließkommatransformation wie die Szene. G40 ohne Zusatz-Offset ist am
+Originalpfad geprüft; berechnete Kompensationsabstände bleiben unverändert.
+
+Drehzahl, Leads, Überfahrt und gegebenenfalls ein expliziter abweichender
+Alt-Startradius stehen ausschließlich im Konturbereich. Die Werkzeuggruppe
+zeigt die Auswahl samt Durchmesser. Alle Werte bleiben untereinander in
+ausgerichteten Gruppen, mit kurzen Zahlenfeldern und eigenen Herkunftssymbolen.
+Messerparameter nur bei Dragknife; Standard-Fräsleads/Überfahrt nicht bei Drehen
+oder Dragknife. Der Filter umfasst ganze Zeilen. R3-ROWS ist damit erledigt.
+
+Fenstervergrößerung hält linke Breite und untere Meldungshöhe konstant. Im
+Bearbeitungstab wächst der Baum statt des Parameterbereichs. QSettings merkt
+manuelle Trennergrößen und Klappzustände; Mindestmaße schützen den Canvas.
+
+Nachweis: je 20 fokussierte Panel-/Canvas-/3D-Tests unter Qt5 und Qt6 bestanden.
+Darunter echte Qt-Auswahl-/Scrollereignisse, G40-Koordinaten, bestehende Farben,
+gestapelte Spalten bei breiter/schmaler Ansicht, Maschinenfilter, unveränderte
+Projektwerte sowie Speichern/Wiederherstellen der Fensteraufteilung. DE/FR/RU
+ergänzt, QM-Dateien erzeugt und Übersetzungen geprüft. Deutsche native Windows-
+Ansicht visuell kontrolliert. Strenger Dokumentationsbuild und `git diff --check`
+bestanden. Die 3D-Projektionsmathematik und Zeichenbefehle
+sind geprüft; reale GPU-/Treiberdarstellung bleibt Teil von P8. Keine Vollsuite,
+Paket-, Debian- oder Maschinenabnahme. Nutzeraufgaben stehen im
+[P8-Prüfablauf](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check).
+
+## R3: bündige Eingabespalten und getrennte Tooltips (08.11.2026)
+
+Die kompakten Zeilen verwenden gemeinsame Unterbeschriftungs-, Eingabe- und
+Symbolspalten über beide Parametergruppen. Erste und zweite Eingabefelder
+stehen jeweils bündig; auch die Werkzeugauswahl beginnt an der ersten
+Eingabespalte. Zahlenfelder sind auf ungefähr acht Zeichen plus Rahmen
+begrenzt, Dropdowns dürfen breiter sein. Bei Platzmangel wechseln alle
+Wertepaare gemeinsam auf zwei Zeilen. Lange Eingaben bleiben per Textscrollen
+vollständig editierbar; die Modellwerte werden nicht gerundet oder geändert.
+
+Feld-Tooltips erklären ausschließlich die Parameterfunktion. Herkunft steht
+nur am Symbol: Parametername, eigener Konturwert samt Kontur/Schritt oder
+eigener Schrittwert beziehungsweise geerbte Quelle aus Schritt/Werkzeug/
+Projektvorgabe und der wirksame Wert. DE/FR/RU-Texte und QM-Dateien ergänzt.
+
+Nachweis: je zwei Paneltests unter Qt5/Qt6 bestanden, einschließlich exakter
+Spaltenpositionen bei breiter/schmaler Darstellung, kollektivem Umbruch,
+Zahlenfeldbreite und getrennter Feld-/Symbolhilfe. Die fünf Zahlenanzeigetests
+je Bindung bestanden ebenfalls; nach der abschließenden Layoutanpassung wurden
+die betroffenen Paneltests erneut geprüft. Deutsche Windows-Darstellung
+visuell kontrolliert. Keine Vollsuite oder Paketabnahme.
+
+## R3: kompakte und responsive Parameterpaare (08.11.2026)
+
+Gemäß Nutzerfreigabe sind Zahlenfelder schriftabhängig schmaler und verwandte
+Werte in gemeinsamen Zeilen angeordnet: Vorschub XY/Z, Einfahrt/Ausfahrt,
+Zustellung/Endtiefe und Rückzug/Sicherheit; beim Werkzeug Radius/Gerade.
+Werkzeugauswahl, Drehzahl, Überfahrlänge, Werkstückoberfläche, Zusatz-Offset und
+Überfahrtwahl bleiben separat. Der Durchmesser steht nur noch in der
+Werkzeugauswahl. Jeder Wert behält seinen eigenen Herkunftsknopf und die
+bestehenden Eingabeschnittstellen. Kurze Labels erhalten erklärende Tooltips.
+
+`CompactFields` stellt Paare bei genügend Breite nebeneinander, sonst
+untereinander dar. Die vorhandenen Widgets werden umgeordnet, nicht ihre Werte.
+Zahlenfelder erlauben weiter vollständige Eingaben mit horizontalem Textscrollen.
+Beschriftungen erhalten bei Umbruch ausreichend Höhe; Einheiten bleiben zusammen.
+Optionale versteckte Felder halten keine leeren Wertecontainer offen.
+
+Nachweis: je sieben fokussierte Panel-/Zahlenanzeigetests unter Qt5 und Qt6
+bestanden. Geprüft sind breite/schmale Anordnung, sichtbare feste Herkunftsknöpfe,
+beschriftungsabhängige Höhe, Wegfall der Durchmesserzeile, unveränderte
+Projektwerte beim Skalieren und bestehende Eingabe-/Undo-/Exportabläufe.
+DE/FR/RU ergänzt, QM-Dateien regeneriert und GUI-Übersetzungen geprüft.
+Die deutsche Darstellung wurde nativ unter Windows visuell kontrolliert.
+Keine Vollsuite, Paket-/Debian- oder Maschinenabnahme.
+
+## R3: Auswahl beim Umordnen von Schritten erhalten (08.11.2026)
+
+`reorder_steps` übernahm fälschlich die gesamte neue Schrittfolge als Auswahl.
+Pfeil- und Drop-Aktionen übergeben jetzt die tatsächlich verschobenen Schritte;
+ohne ausdrückliche Angabe behält der Befehl seine vorherige Auswahl. Beim
+Neuaufbau des Baums wird außerdem die aktuelle ausgewählte Zeile mit
+`NoUpdate` wiederhergestellt, ohne zusätzliche Zeilen zu markieren.
+
+Nachweis: je zwei Paneltests unter Qt5/Qt6 bestanden. Echte Pfeilaktionen nach
+oben/unten, Schritt-Drop und Undo/Redo behalten genau die ausgewählte
+Schritt-ID und die aktuelle Zeile; Reihenfolge und Projekt-Roundtrip bleiben
+geprüft. Keine neuen GUI-Texte, keine Vollsuite oder Paketabnahme.
+
+## R3: leere Haltestegzeile zwischen Tiefe und Vorschub entfernen (08.11.2026)
+
+Die optionale Zeile „Haltestege ab Durchgang bearbeiten“ wurde ohne aktive
+Haltestege bereits ausgeblendet, ihr Herkunftsknopf jedoch nicht. Dieser hielt
+die Zeile zwischen Frästiefe und XY-Vorschub offen. Der Herkunftsknopf folgt jetzt
+derselben Sichtbarkeitsentscheidung wie Beschriftung und Auswahlfeld, sowohl bei
+der Erstellung als auch beim Aktualisieren. Die Haltestegfunktion bleibt erhalten.
+
+Nachweis: je zwei Paneltests unter Qt5/Qt6 bestanden; sichtbare/ausgeblendete
+Haltestegzeile einschließlich Herkunftsknopf, zusammenfallender Abstand zwischen
+Tiefe und Vorschub und unveränderte Projektwerte geprüft. Keine neuen GUI-Texte,
+keine Vollsuite oder Paketabnahme. Der separat vorgemerkte Werkzeugformular-
+Leerraum R3-ROWS bleibt offen.
+
+## R3: Werkzeugwechsel einer Einzelkontur auf Auswahl begrenzen (08.11.2026)
+
+Die bisherige Mehrfachauswahl-Korrektur ließ den Einzelkonturpfad unverändert;
+dieser änderte weiterhin das Werkzeug des ganzen Schritts. Jetzt verwendet auch
+eine einzelne aktive Bearbeitungskontur den auswahlbezogenen Werkzeugbefehl.
+Enthält die Quelle weitere Einträge, wird nur die Kontur in einen neuen Schritt
+gleichen Typs und mit vollständig kopierten Quellvorgaben verschoben. Eigene
+Konturwerte und IDs bleiben unverändert. Ein vollständig gewählter Schritt
+bleibt bestehen. Die ausdrücklich gewählte Schrittzeile und der explizite
+Profilaktualisierungsbefehl behalten ihre schritt-/definitionsweite Wirkung;
+die Werkzeug-Tooltips unterscheiden die Kontexte.
+
+Nachweis: je zwei Paneltests unter Qt5 und Qt6 bestanden. Echte Listenaktivierung
+mit einer beziehungsweise mehreren ausgewählten Konturen prüft vollständigen
+Werterhalt der Zuordnungen, Quellvorgaben, ungewählte Konturen und Undo/Redo
+einschließlich stabiler IDs. Keine neuen Übersetzungstexte oder Vollsuite.
+
+## R3: Werkzeugwechsel für mehrere ausgewählte Konturen (08.11.2026)
+
+Die Werkzeugauswahl bleibt bei mehreren ausgewählten Bearbeitungszuordnungen
+bedienbar. Gemäß Nutzerentscheidung betrifft der Wechsel nur die Auswahl:
+vollständig ausgewählte Schritte behalten ihre Identität und bekommen das neue
+Werkzeug; Teilauswahlen erhalten unmittelbar hinter ihrem Quellschritt einen
+neuen Schritt gleicher Art und mit denselben Vorgaben. Kontur- und Geometrie-IDs,
+eigene Werte, Start/Richtung, Export- und Optimierungsflags bleiben erhalten.
+Mehrere Quellen werden getrennt behandelt. Die gesamte Aktion ist atomar und
+bildet einen Undo-/Redo-Schritt. Nicht ausgewählte Zuordnungen und andere
+Benutzer derselben Werkzeugdefinition bleiben unverändert.
+
+Bei gemischten Werkzeugen zeigt die Auswahl einen entsprechenden Platzhalter.
+Die übrigen Parameterfelder bleiben bei Mehrfachauswahl gesperrt, damit kein
+beliebiger Einzelwert als gemeinsamer Wert erscheint. Die ausdrücklich
+ausgewählte einzelne Schrittzeile verwendet weiterhin den Vorgabeneditor.
+Einzelkontur-/Schrittauswahl und der dort vereinbarte gemeinsame Ersatz einer
+Projektwerkzeugdefinition bleiben unverändert.
+
+Nachweis: 21 Befehlsregressionen unter Qt5 sowie je zwei Paneltests unter Qt5
+und Qt6 bestanden. Enthalten sind echte Werkzeuglisten-Aktivierung mit Teil-/
+Gesamtauswahl, mehrere Quellschritte, eigene Werte/Vorgaben, stabile Undo-/Redo-IDs
+und atomarer Abbruch bei fremden beziehungsweise unpassenden Zuordnungen.
+DE/FR/RU einschließlich QM-Dateien aktualisiert und im GUI-Workflow geprüft.
+Keine Vollsuite, Paket-/Debian- oder Maschinenabnahme.
+
+## Hauptfenster: Meldungsausgabe per Trenner skalieren (08.11.2026)
+
+Ein vertikaler Splitter trennt jetzt Zeichen-/Bearbeitungsbereich und zentrale
+Meldungsausgabe. Der sechs Pixel breite Griff oberhalb der Ausgabe lässt sich
+ziehen; die frühere feste Begrenzung auf 100 Pixel entfällt. Anfangshöhe etwa
+100 Pixel, Mindesthöhe 48 Pixel; die Bereiche klappen beim Ziehen nicht vollständig
+zu. Der Meldungsinhalt bleibt erhalten. MessageBox berücksichtigt nun ihren
+übergebenen Qt-Elternknoten. Die UI-Quelle wurde geändert und die lokalen
+Qt5-/Qt6-Module neu erzeugt; generierte Dateien bleiben ignoriert.
+
+Nachweis: je zwei fokussierte Paneltests unter Qt5 und Qt6 bestanden,
+einschließlich echter Mausereignisse am neuen Splittergriff, erhaltener
+Meldungsausgabe und unverändertem Projekt/Befehlsverlauf. Keine neuen GUI-Texte,
+keine Vollsuite oder Paketabnahme.
+
+## R3: Änderungsdetails in der zentralen Meldungsausgabe (08.11.2026)
+
+Die separate Meldungsfläche unter den Bearbeitungsfeldern wurde entfernt.
+Vorliegende Änderungsdetails laufen als INFO über den vorhandenen Fensterlogger
+in die Meldungsausgabe unten im Hauptfenster; Warnungen und abgelehnte Aktionen
+verwenden WARNING am selben Ort. Der allgemeine Hinweis „Bearbeitung geändert.
+Rückgängig ist verfügbar.“ entfällt. Die aktivierten/deaktivierten
+Historienknöpfe zeigen die verfügbaren Aktionen weiterhin an.
+
+Nachweis: je zwei fokussierte Panel-/Übersetzungstests unter Qt5 und Qt6
+bestanden. Ein echter Werkzeugwechsel der Projektdefinition schreibt seine
+Wertänderung über einen StreamHandler in die vorhandene MessageBox; eine
+abgelehnte Aktion meldet dort den Grund und erhält den Projektzustand.
+Rückgängig stellt den Projektstand wieder her. Keine neue GUI-Beschriftung,
+keine Vollsuite oder Paketabnahme.
+
+## Konfiguration: kompakte Zahlenfelder ohne Pfeiltasten (08.11.2026)
+
+Die Zahlenfelder der Konfiguration und Werkzeugtabelle zeigen keine
+Hoch-/Runter-Knöpfe mehr; direkte Eingabe, Validierung und vollständige
+Speichergenauigkeit bleiben erhalten. Die Formularfelder können zwischen
+80 und 160 Pixeln liegen. Die interne Double-Präzision von 323 Stellen bestimmt
+nicht mehr die bevorzugte Feldbreite. Die Werkzeugspalten teilen sich die
+verfügbare Tabellenbreite; lange technische Spaltennamen werden umgebrochen.
+Die anfängliche Dialogaufteilung wird nach der Layoutberechnung gesetzt und
+Abschnittsüberschriften können umbrechen. Der Layout-Timer gehört dem Dialog
+und wird bei dessen Zerstörung mit entfernt.
+
+Nachweis: sechs Konfigurations-/Übersetzungstests sowie zwölf Zahlenanzeige-/
+Präzisionstests je Qt5/Qt6 bestanden; nach der abschließenden Headeranpassung
+den betroffenen Layouttest je Bindung erneut bestanden. Standardbreite 1000,
+schmalere bestehende Prüffälle und DE/FR/RU/Englisch berücksichtigt. Alle Seiten
+und die Werkzeugtabelle passen bei Standardgröße ohne horizontales Scrollen;
+unter nativem Windows visuell bestätigt. Keine neuen GUI-Texte, keine erneute
+QM-Erzeugung erforderlich. Keine Vollsuite oder Paket-/Plattformabnahme.
+
+## R3: gebogene Pfeile für Rückgängig/Wiederherstellen (08.11.2026)
+
+Die Navigationswinkel im Bearbeitungstab sind durch gespiegelte gebogene
+Pfeile ersetzt: links Rückgängig, rechts Wiederherstellen. Vektorpfade werden
+für mehrere Symbolgrößen und aktive/deaktivierte Palettenfarben gerendert.
+Tooltips zeigen Aktionsname und natives Tastenkürzel für Ctrl+Z beziehungsweise
+Ctrl+Shift+Z. Die bisherigen Tastaturaktionen und die Deaktivierung bei leerer
+Historie bleiben erhalten. DE/FR/RU-Beschriftungen vereinheitlicht und QM-Dateien
+regeneriert. Je zwei bestehende Panel-/Übersetzungstests unter Qt5 und Qt6
+bestanden; aktive und ausgegraute Symbole visuell geprüft. Keine Paketabnahme.
+
+## R3-TOOLS: Exportsperre bei Werkzeugkonflikten (08.11.2026)
+
+Gemäß ergänzender Nutzerentscheidung prüft der gemeinsame Exportweg nur die
+Werkzeuge aktivierter Bearbeitungen gegen die aktuelle Werkzeugtabelle.
+Abweichende Definitionen und vollständig fehlende Nummern sperren den gesamten
+Export vor der Ausgabe. Leere, vollständig deaktivierte, ignorierte und reine
+Steg-Schritte bleiben ausgenommen. Die Vorschau und gespeicherte Projektwerte
+bleiben nutzbar. Die DE/FR/RU-Diagnose nennt Nummer, Schritte und die gespeicherten
+Werte beziehungsweise die Projekt-/Tabellenunterschiede; sie schlägt ausdrücklich
+Anlegen/Korrigieren in der Werkzeugtabelle oder Zuweisen eines vorhandenen
+Werkzeugs vor. Es erfolgt kein automatisches Anlegen oder Ersetzen.
+
+Der gleiche Abgleich gilt für GUI, CLI und historische Projektdateien.
+Vorhandene Zieldateien werden bei einer Sperre nicht geöffnet oder überschrieben;
+stdout bleibt leer. Die tatsächliche Einheit der geladenen Tabellenwerte wird
+berücksichtigt; gerundete Anzeigeübereinstimmung genügt nicht. Die zuvor
+erlaubten unterschiedlichen gespeicherten Definitionen bleiben erhalten,
+müssen vor ihrer Verwendung aber mit der Tabelle abgeglichen werden.
+
+Nachweis: sechs fokussierte Policy-/Postprozessor-/Übersetzungstests jeweils
+unter Qt5 und Qt6 bestanden; zusätzlich zwei Paneltests je Bindung mit echtem
+GUI-Exportabbruch, erhaltener Datei und erfolgreichem Export nach Korrektur.
+26 Projektregressionen unter Qt5 bestanden, einschließlich erfolgreichem
+CLI-Export und echtem CLI-Abbruch mit fehlendem T99 für neue und historische
+Dateien. Vollständige Wertvergleiche, mm/inch, aktive/gemischte Aufträge und
+ausgenommene Schritte sind abgedeckt. DE/FR/RU-QM-Dateien regeneriert und ihre
+Diagnosen im Qt-Übersetzungssystem geprüft. Keine Vollsuite, Debian-, Paket-
+oder Maschinenabnahme. Die praktische Nutzerabnahme bleibt Teil von P8.
+
+<a id="r3-tools"></a>
+
+## R3-TOOLS: gemeinsame Werkzeugliste und geteilter Ersatz (07.11.2026)
+
+Die anschließende Nutzerentscheidung ersetzt die unten dokumentierte
+Gruppierung: eine gemeinsame Liste ohne getrennte Projekt-/Tabellengruppen.
+Vollständig gleiche Definitionen erscheinen einmal; beim Laden werden gleiche
+Projektdefinitionen zusammengeführt. Der Vergleich verwendet Nummer und alle
+ungerundeten Werkzeugwerte nach Einheitenumrechnung. Abweichende Definitionen
+bleiben mit Herkunft und abweichenden Werten erkennbar. Beim Ersatz einer
+Projektabweichung durch die passende Tabellendefinition wechseln alle Schritte
+mit dieser Projektdefinition gemeinsam; andere Definitionen derselben Nummer
+bleiben erhalten. Der Wechsel zu einer anderen Nummer betrifft nur den
+ausgewählten Schritt. Gemeinsamer Ersatz, Zusammenführung und die übrigen
+Dialogänderungen bilden eine atomare Undo-Aktion. Explizite Konturwerte bleiben
+erhalten; spätere Tabellenänderungen werden nicht automatisch übernommen.
+
+Nachweis: 47 fokussierte Modell-/Befehls-/Paneltests unter PyQt5 und zwei
+Paneltests unter PyQt6 bestanden. Abgedeckt sind vollständige Gleichheit gegen
+kleine ungerundete Unterschiede, mm/inch, gemeinsame Benutzer versus separate
+Definitionen derselben Nummer, Zusammenführung mit bereits vorhandenem Ziel,
+GUI-Auswahl, Undo/Redo, Roundtrip und atomarer Abbruch bei ungültiger
+Bearbeitungsart. DE/FR/RU und QM-Dateien aktualisiert. Keine Vollsuite,
+Paket-/Debian- oder Maschinenabnahme; R3-ROWS und R3-IGNORE bleiben offen.
+
+## R3-TOOLS: verständliche Werkzeugauswahl (07.11.2026)
+
+Werkzeugfeld und Schrittdialog verwenden dieselbe Auswahlliste mit nicht
+auswählbaren Überschriften „Projektwerkzeuge“ und „Werkzeugtabelle“.
+Einträge zeigen T-Nummer, Durchmesser und Projekteinheit statt interner
+Reihenfolgezusätze wie `#1`. Bei gleicher Nummer unterscheiden zusätzliche
+Angaben die gespeicherten Drehzahl-/Einfahrwerte; verdeckt die Anzeigepräzision
+einen Unterschied, wird der betreffende Wert vollständig angezeigt.
+Tooltips zeigen die weiteren Werkzeugdaten und erklären die Übernahme aus der
+Tabelle. Projektwerte, erlaubte unterschiedliche Definitionen derselben Nummer
+und der bisherige Werkzeugwechselvertrag bleiben erhalten.
+
+Nachweis: jeweils zwei fokussierte Paneltests unter PyQt5 und PyQt6 bestanden,
+einschließlich mm/inch, nahezu gleicher Definitionen, nicht auswählbarer
+Gruppentitel, Schrittdialog, realer Auswahl/Übernahme von T10 und Undo ohne
+Änderung der Originallayer-Werkzeuge. DE/FR/RU ergänzt, QM-Dateien regeneriert
+und im Qt-Workflow gegen die Katalogtexte geprüft. `git diff --check` bestanden.
+Keine vollständige Suite, Paket-/Debian- oder Maschinenabnahme. Der mögliche
+Formularleerraum R3-ROWS bleibt eine gesonderte offene Aufgabe.
+
+## R3: Bearbeitungsart „Ignoriert“ untersucht (07.11.2026)
+
+Quellcode und ein lokaler Modell-/Befehlsversuch bestätigen die bestehende
+Ausschlusswirkung für `IGNORE:`-Importe: Die projizierte Kontur bleibt unabhängig
+vom gespeicherten Aktivierungsflag deaktiviert; ihre Exportreihenfolge ist leer.
+Ein neuer leerer `ignored`-Schritt ist zulässig, das Verschieben einer normalen
+Kontur dorthin wird jedoch atomar abgelehnt. Der Dialog und die Exportcheckbox
+stellen diesen Sonderstatus derzeit nicht eindeutig dar. Keine Quellcodeänderung,
+keine neue vollständige Export-, GUI-, Paket- oder Maschinenabnahme.
+Die [Bedienentscheidung R3-IGNORE](../planning/r3-r1b-implementation-plan.md#r3-ui-followups)
+bleibt offen; Werkzeugmenü und möglicher Formularleerraum sind dort ebenfalls
+ausdrücklich für später vorgemerkt.
 
 Dieses Dokument bewahrt abgeschlossene Implementierungen, deren dokumentierte
 Prüfergebnisse und die historische Ausgangslage. Die
@@ -26,6 +1042,474 @@ eine echte QMessageBox; geprüft werden Icon, Titel, Fehlertext und Beenden.
 Der Quiet-Startpfad beendet ohne Dialog mit Fehlercode 2. Die Tests ersetzen
 die Konfiguration und schließen den Dialog ohne interaktive Bedienung.
 Keine Vollsuite, Paket-/Debian- oder Maschinenabnahme; GUI-Texte unverändert.
+
+## R3/R1b: Arbeiten auf Feature-Zweig isoliert (07.11.2026)
+
+Auf Nutzerauftrag wurde `maschining-project` bei `5415018`
+(`feat(core): introduce project-owned machining operations`) angelegt und
+als aktiver Zweig ausgecheckt. Anschließend wurde ausschließlich der lokale
+`develop`-Zeiger auf dessen Vorgänger `4346709` gesetzt. Dieser entspricht dem
+live per `ls-remote` geprüften GitHub-Stand. Es war kein Umschreiben eines
+veröffentlichten Commits und kein Remote-Push erforderlich.
+
+Alle 53 zuvor geänderten/unversionierten Pfade blieben erhalten; vor/nach der
+Trennung stimmen Statusliste und SHA256 des vollständigen getrackten Diffs
+überein. `develop...origin/develop` ist `0/0`. Der aktuelle Arbeitsstand bleibt
+uncommittet auf dem aktiven Feature-Zweig; dieser ist bislang nur lokal.
+Plan und Abschlussnotiz halten den zukünftigen Arbeitszweig fest. Keine
+Quellcodeänderung, deshalb kein Testlauf oder Build für die Branch-Trennung.
+
+## R3: Gruppenhöhe auf tatsächlichen Inhalt begrenzen (07.11.2026)
+
+Die Nutzerpräzisierung zu D33 begrenzt geöffnete Parametergruppen auf ihre
+vollständige Inhaltshöhe. Die nächste Überschrift folgt direkt darunter;
+überschüssiger Platz bleibt unter den Gruppen. `ParameterSplitter` verwendet
+die Inhaltsgrenzen als bevorzugte Gesamthöhe. `ParameterSection` berechnet
+die Obergrenze bei Auswahl- und Breitenänderungen neu. Ein Verkleinern per
+Trenner mit Scrollen bleibt möglich. Das gilt auch ohne aktive Bearbeitung.
+
+**Nachweis:** je **2 Paneltests unter Qt5 und Qt6** bestanden. Geprüft sind
+beide Auswahlzustände mit großem freien Bereich, vollständige Werkzeugfelder,
+direkt folgende Konturüberschrift, Größenbegrenzung, unveränderte Werte und
+History sowie weiterhin bewegliche Trenner/Scrollbereiche. Native Windows-Qt-
+Ansicht mit geöffneter Werkzeug- und eingeklappter Konturgruppe verdeckt
+visuell geprüft. Keine neuen GUI-Texte. Strikter Dokumentationsbuild und
+Diff-Prüfung ohne Fehler. Kein Commit/Push; `develop` unverändert.
+
+## R3: Bereiche oben statt mittig ausrichten (07.11.2026)
+
+Bei komplett eingeklappten Gruppen zentrierte das Layout den verkleinerten
+Splitter im freien Bereich. Bearbeitungs- und Geometriegruppen werden in
+diesem Zustand nun oben ausgerichtet; Leerraum bleibt darunter. Beim Öffnen
+füllen die Splitter wieder die verfügbare Höhe. Auch die Formularlayouts
+bleiben innerhalb großer Scrollbereiche oben ausgerichtet.
+
+**Nachweis:** je **2 Paneltests plus 1 Baum-Bedientest unter Qt5 und Qt6**
+bestanden. Geprüft sind Position und Abstand beider eingeklappten Überschriften,
+oben bleibende Eingabefelder nach Vergrößerung, Geometriegruppen, Wiederöffnen
+und weiterhin bewegliche Trenner. Der gemeldete Zustand wurde zusätzlich
+mit nativer Windows-Qt-Darstellung verdeckt gerendert und visuell geprüft.
+Keine neuen GUI-Texte. Strikter Dokumentationsbuild und Diff-Prüfung ohne
+Fehler. Kein Commit/Push; Änderungen nur auf `maschining-project`.
+
+## R3: verstellbare und einklappbare Bearbeitungsbereiche (07.11.2026)
+
+D33 ergänzt im Bearbeitungstab einen vertikalen Splitter zwischen Baum und
+Eingabebereich. Ein weiterer Splitter trennt Bearbeitungswerkzeug und
+Konturwerte. Beide Gruppen haben Klapppfeile wie im Geometrie-Tab und eigene
+Scrollbereiche. Die Überschriften bleiben beim Einklappen erreichbar;
+Wiederöffnen stellt die vorherige Höhenverteilung her. Klappzustände bleiben
+bei Auswahlwechsel/Refresh erhalten. Ohne aktive Bearbeitung sind die Werte
+deaktiviert, die Überschriften bleiben bedienbar. Die bisherige kompakte
+Zeilendichte und gleich ausgerichtete Spalten bleiben erhalten.
+
+**Nachweis:** je **25 gezielte Tests unter Qt5 und Qt6** bestanden (Panel,
+MainWindow, GUI-/CLI-Projektweg, Genauigkeit und Übersetzungen). Geprüft sind
+echte Mausereignisse an beiden Splittergriffen, Ein-/Ausklappen einzeln und
+gemeinsam, Wiederherstellung der Größen, Erhalt bei Refresh, Bedienbarkeit
+ohne aktiven Arbeitsgang, scrollbare Inhalte und unveränderte Projektwerte/
+History. Native Windows-Qt-Ansicht verdeckt gerendert und visuell geprüft.
+Bestehende DE/FR/RU-Bereichstitel werden wiederverwendet, keine neuen Texte.
+Strikter Dokumentationsbuild und Diff-Prüfung ohne Fehler. Nutzerprüfung auf
+eigener Auflösung/Skalierung bleibt P8. Kein Commit/Push; `develop` unverändert.
+
+## R3: kompakte Formularzeilen wiederhergestellt (07.11.2026)
+
+Die Nutzerbeobachtung betrifft das Parameterformular: Beim Umbau waren
+4 zusätzliche Pixel zwischen den Zeilen hinzugekommen. Dieser Abstand ist
+wieder entfernt. Die Symbolknöpfe bleiben 32 Pixel breit, ihre Höhe folgt
+dem zugehörigen Feld statt einer festen Höhe, die unter Qt6 zusätzliche
+Zeilenhöhe verursachen konnte. Skalierbare Spalten und nötiger Textumbruch
+bleiben erhalten; am Baum selbst wurde keine Zeilenhöhe geändert.
+
+**Nachweis:** je **2 gezielte Paneltests unter Qt5 und Qt6** bestanden,
+einschließlich tatsächlicher Zeilenzellabstände und schmaler/breiter Formulare.
+Native Windows-Qt-Messung: Z-Eingabefelder jeweils 24 Pixel hoch; Abstand der
+Feldanfänge von 28 auf 24 Pixel reduziert, wie in der ursprünglichen UI.
+Gemessene Baumzeilen: Bearbeitung 22, Original-Layers 24 Pixel, somit keine
+vergrößerten Baumzeilen. Strikter Dokumentationsbuild und Diff-Prüfung ohne
+Fehler. Nutzerbildschirm/DPI bleibt Teil der Sichtprüfung P8. Kein Commit/Push.
+
+## R3: vertraute Canvas-Kontextmenüstruktur (07.11.2026)
+
+D32 setzt die Nutzerkorrektur anhand der beiden Screenshots um: Das Canvas-Menü
+hat wieder die bisherigen Beschriftungen, Reihenfolge und Trennlinien zwischen
+Nullpunkt, Auswahl, Richtung/Konturstart sowie Bearbeitungsarten/Kompensation.
+„Bearbeitungsschritt erstellen …“ steht in einer getrennten Gruppe am Ende.
+Der Canvas zeigt passende Pocket-/Bohraktionen; der zusätzliche Kontur-Eintrag
+bleibt im Bearbeitungsbaum. Keine Änderung an `develop`; Arbeitszweig ist
+`maschining-project`.
+
+Auswahl aktivieren/deaktivieren sowie Richtung und nächster/schärfster
+Konturstart sind wieder verfügbar und ändern atomar die aktiven Zuordnungen.
+Die Startpunktalgorithmen laufen auf isolierten Bearbeitungsansichten;
+gespeichert werden lokale Startkoordinaten und Richtung. Andere Referenzen
+und Originalgeometrien bleiben erhalten. Die 3D-Auflösung verwendet je
+Bearbeitung die effektive Werkstückoberfläche. Undo und manuelle Routenanzeige
+bleiben erhalten. Nullpunkt bleibt unabhängig von der Auswahl verfügbar.
+
+**Nachweis:** je **45 gezielte Tests unter Qt5 und Qt6** bestanden (Befehle,
+Baum-/Canvas-Menüs, GUI-/CLI-Projektweg, MainWindow und Modusregeln). Geprüft
+sind die konkrete Aktions-/Separatorenfolge, Aktivierung und Richtung einer
+geteilten Kontur, Startpunktaktionen über echte QAction-Signale, lokale Starts
+bei gedrehter/skalierten sowie offenen/geschlossenen Geometrien, Undo und
+manuelle/live Routenanzeige. Deutsche native Windows-Qt-Menüansicht mit
+`1997.DXF` verdeckt gerendert und visuell mit der bisherigen Struktur
+verglichen. **14 bestehende Menütexte je DE/FR/RU** gegen fertige TS-Einträge
+und geladene QM-Kataloge geprüft; neue Übersetzungstexte waren nicht nötig.
+Strikter Dokumentationsbuild und Diff-Prüfung ohne Fehler. Kein Commit/Push,
+keine zusätzliche Vollsuite-/Paket-/Debian-/Maschinenabnahme. Der praktische
+Menüvergleich auf dem Nutzerbildschirm bleibt P8.
+
+## R3: Nullpunkt ausschließlich im Canvas-Menü (07.11.2026)
+
+D31 klärt den Nutzerbegriff: Gemeint ist der Werkstücknullpunkt. Der
+missverständliche „Startpunkt“-Eintrag für den Bearbeitungsstart einer
+Kontur ist aus dem Kontextmenü des Bearbeitungsbaums entfernt.
+„Werkstücknullpunkt hierher …“ bleibt ausschließlich im Canvas-Menü und
+ist bei geladener Zeichnung mit und ohne Konturauswahl verfügbar. Die
+vorhandenen Nullpunkt-/Fangfunktionen bleiben bestehen. Konturstarts
+werden dadurch nicht verändert.
+
+**Nachweis:** je **3 gezielte Tests unter Qt5 und Qt6** bestanden
+(Panel und Nullpunkt-Workflow). Nach zusätzlicher expliziter Assertion
+für vorhandene Auswahl den **Nullpunkttest je Bindung** erneut bestanden.
+Baummenü ohne Startpunkt, Canvas mit/ohne Auswahl, Dialog/Abbruch,
+mm/inch und unveränderte Konturstarts sind abgedeckt. Bestehende übersetzte
+Nullpunkt-Texte werden weiterverwendet. Strikter Dokumentationsbuild
+und Diff-Prüfung ohne Fehler. Kein Commit/Push; P8 bleibt Nutzerabnahme.
+
+## R3: Bearbeitungs-Kontextaktionen wiederhergestellt (07.11.2026)
+
+D30 ist nach ausdrücklicher Nutzerentscheidung umgesetzt: Kontur,
+Taschenfräsen, Bohren und G40/G41/G42 stehen im Bearbeitungsbaum und im
+Canvas wieder bereit. Die Aktionen ändern ausgewählte Bearbeitungszuordnungen.
+Bei Artwechsel entstehen neue Schritte unmittelbar nach dem jeweiligen
+Quellschritt, mit dessen Werkzeugdefinition und Vorgaben. Arbeitsgang- und
+Geometrie-IDs, eigene Werte, Start und Richtung bleiben erhalten. Andere
+Bearbeitungen derselben Originalkontur bleiben unverändert. Mehrere
+Quellschritte/Werkzeuge bleiben getrennt. Rückgängig stellt die gesamte Aktion
+wieder her; Wiederherstellen erhält auch neue Schritt-IDs.
+
+Bohren setzt bewusst G40. Kompensationswahl auf einer Bohrkreis-Zuordnung
+kehrt zur Konturbearbeitung zurück. Ungültige Geometrie-/Maschinenkombinationen
+werden ohne Teiländerungen abgelehnt. Mehrdeutige Canvas-Auswahl ohne aktive
+Bearbeitung deaktiviert die Aktionen, statt willkürlich eine Referenz zu wählen.
+Die fachlichen Konfliktregeln bleiben erhalten; keine Original-Shape-Mutation
+über die alten Signalpfade.
+
+**Nachweis:** je **43 gezielte Qt5-/Qt6-Tests** bestanden (Befehle, echte
+Baum-/Canvas-Menüaktionen, GUI-/CLI-Projektweg, MainWindow und Modusregeln).
+Zusätzlich je **3 betroffene Tests** mit Assertions für aktive Taschenvorschau
+und materialisierte Bohr-/Konturzustände bestanden. Abgedeckt sind stabile
+IDs, Quellvorgaben, getrennte Werkzeuge, Einzelzuordnung einer mehrfach
+bearbeiteten Kontur, atomarer Abbruch und Undo/Redo. Sieben vorhandene
+Menütexte werden wiederverwendet und in DE/FR/RU gegen fertige TS-Übersetzungen
+und geladene QM-Dateien geprüft. Strikter Dokumentationsbuild und Diff-Prüfung
+ohne Fehler. Keine neue Vollsuite-, Paket-, Debian- oder Maschinenabnahme;
+kein Commit/Push. Die Sicht-/Bedienprüfung bleibt Teil von P8.
+
+[Anleitung](../../docs/user-guide/machining-steps.md),
+[Entscheidung und Nutzerprüfung](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check).
+
+## R3: Vorschub-/Winkelanzeige präzisiert (07.11.2026)
+
+Die spätere Nutzerkorrektur zu D28 ersetzt den Vorschub-/Winkelstandard des
+folgenden Nachweises: Längen bleiben bei mm 3 / inch 5 Nachkommastellen;
+**Vorschübe und Winkel erhalten jeweils Standard 1**, unabhängig von mm/inch.
+Beide sind unter Zahlenanzeige getrennt von 0–12 konfigurierbar. Schema 9.21
+ergänzt `Display.decimals_feed`; gespeicherte individuelle Anzeigeeinstellungen
+bleiben erhalten. Ein bereits gespeicherter Winkelwert 3 wird daher nicht
+ungefragt überschrieben. Formular und Konfigurationsfelder verwenden die
+getrennten Einstellungen ohne Änderung der Eingabe-/Speichergenauigkeit.
+
+**Nachweis:** je **20 gezielte Tests unter Qt5 und Qt6** bestanden
+(Anzeige, Konfigurationsfelder, Eingabe-/Exportpräzision, Altprofile und Panel).
+Vorschub-/Winkelstandard, unabhängige Änderung, beide Längeneinheiten und
+vollständige Werte bleiben abgesichert. Neuer Config-Text DE/FR/RU übersetzt,
+QM-Dateien regeneriert und geladene Übersetzungen geprüft. Strikter
+Dokumentationsbuild und Diff-Prüfung ohne Fehler. Kein Commit/Push.
+
+<a id="r3-numeric-layout"></a>
+
+## R3: Anzeigepräzision und skalierende Formularbreiten (07.11.2026)
+
+Nutzerkorrektur D28/D29 ist umgesetzt. Zahlenfelder zeigen standardmäßig
+3 Nachkommastellen für mm und 5 für inch. Vorschübe folgen der Einheit;
+Winkel verwenden eine eigene Vorgabe mit Standard 3. Ganzzahlige
+Werkzeugnummern/Drehzahlen bleiben ganzzahlig. Unter Konfiguration → Allgemeine
+Einstellungen → Zahlenanzeige sind die drei Werte von 0 bis 12 einstellbar.
+Konfigurationsversion 9.20 übernimmt alte unterstützte Profile mit 3/5/3.
+
+Die gemeinsame Formatierung gilt für Bearbeitungsfelder, Werkzeugwerte,
+Konfiguration, numerische Popups und numerische Entities-Einträge. Beim
+Bearbeiten wird der vollständige Float-Wert sichtbar. Unveränderte Felder
+schreiben keinen gerundeten Anzeigetext zurück. Die bisherigen Spinbox-
+Begrenzungen betreffen nun nur die Anzeige; zusätzliche Eingabestellen und
+Schritte verwenden die vollständigen Werte. Auch der Startpunktdialog nutzt
+jetzt die gemeinsame Eingabe statt `%g` mit verkürzten Rückgabewerten.
+Anzeigeeinstellungen verändern weder Projektwerte noch Exportpräzision.
+
+Beschriftungen, Einheiten und Wertfelder beider Parametergruppen skalieren
+über gemeinsame Spaltengewichte. Die Startbreite links ergibt sich aus den
+jeweils breitesten Inhalten. Beschriftungen umbrechen bei Bedarf, Einheiten
+sind gleich ausgerichtet, die Symbolspalte bleibt 32 Pixel breit. Das gesamte
+Formular wird beim Verkleinern nicht mehr seitlich aus dem Sichtbereich
+hinausgeschoben.
+
+**Nachweis:** je **47 gezielte Tests unter PyQt5 und PyQt6** bestanden.
+Nach abschließender Einheiten-/Startbreitenanpassung die **2 Paneltests je
+Bindung** erneut bestanden. Enthalten sind volle zusätzliche Eingabestellen,
+unveränderte Übernahme, kleine Werte unterhalb der Anzeigeauflösung,
+mm/inch/Winkel, Punkt/Komma, Konfigurations-/Projekt-/Export-Roundtrip,
+3/5/3-Migration für unterstützte Altprofile, Anzeigeänderung ohne
+Projektmutation sowie breites/schmales Formular mit bündigen Spalten und
+sichtbaren Symbolen. **6 neue Texte je DE/FR/RU-Katalog**, QM-Dateien neu
+kompiliert und neue Übersetzungen gegen geladene Kataloge geprüft. Native
+Windows-Qt-Ansichten in mm/inch und mit 620/340 Pixel Seitenleistenbreite
+verdeckt gerendert und visuell kontrolliert. Strikter Dokumentationsbuild
+und Diff-Prüfung ohne Fehler.
+
+[Bedienung](../../docs/user-guide/machining-steps.md),
+[technische Notizen](../documentation-notes/gui-numeric-display.md).
+Die [Nutzerprüfung](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check)
+auf realem Monitor/Skalierung bleibt P8. Kein Commit, Push, Release oder
+zusätzlicher Vollsuite-/Paket-/Debian-/Maschinenlauf.
+
+<a id="r3-ui"></a>
+
+## R3-UI: Geometrieansicht und Bedienkorrektur (07.11.2026)
+
+Nach ausdrücklicher Nutzerfreigabe sind D23–D27 umgesetzt. Die zwei Original-
+Auswahlbäume liegen unverändert in den einklappbaren, vertikal verstellbaren
+Gruppen Entities und Layers im Tab Geometrie. Bearbeitung ist der zweite Tab.
+Die ursprünglichen Layers-Sortierpfeile entfallen aus der Originalansicht.
+
+R3-MENU öffnet in beiden Originalbäumen zunächst ein Kontextmenü an der
+Viewport-Klickposition. Verknüpfte Schritte sind in Bearbeitungsreihenfolge
+anspringbar. Erst die Erstellen-Aktion öffnet den Dialog nahe dem Auslöser.
+Ohne Auswahl entsteht ein leerer Schritt; mit Auswahl ist Verschieben
+vorbelegt, Kopieren und „Auswahl nicht verwenden“ sind Alternativen.
+Navigation und Abbruch verändern weder Projekt noch Befehlsverlauf.
+
+Die Werkzeugleiste oben gruppiert Erstellen, Umordnen, Rückgängig/
+Wiederherstellen und Baumansicht. Ein-/Ausklappen steht rechts; ohne mögliche
+Aktion sind die betreffenden Knöpfe grau. Bearbeiten (F2), Entfernen (Delete),
+Richtung und Startpunkt liegen im Baumkontextmenü. Die unteren Buttonreihen
+sind entfernt. Der Baum hat drei Spalten: Bezeichnung, Export und Optimierung;
+Schrittzeilen nennen Name, Art und Werkzeug, Tooltips Herkunft und Diagnose.
+
+Bearbeitungswerkzeug und Konturparameter verwenden bündige Spalten für
+Bezeichnung, Einheit, Wert und ein einziges Herkunftsmenü. Kette/Stift zeigen
+Vererbung/eigenen Wert; das Menü bietet Bearbeiten und Schrittvorgabe.
+Die Anzeige verwendet zehn signifikante Stellen; ein unverändertes Feld
+behält den vollständigen gespeicherten Wert. Eine im neuen Checkbox-Test
+gefundene native Qt5-Zugriffsverletzung ist behoben: Der Baum wird erst nach
+Abschluss des Checkbox-Ereignisses erneuert.
+
+**Nachweis:** je **38 gezielte Tests unter PyQt5 und PyQt6** bestanden
+(Panel, GUI-/CLI-Projektweg, Befehle, MainWindow, Übersetzungen und
+Architekturgrenzen). Nach der abschließenden Werkzeugleistenanordnung die
+**2 Paneltests je Bindung** erneut geprüft. Abgedeckt sind ganze Layer,
+beide Rechtsklick-Ansichten, Popup-Position, bestehende Mehrfachverknüpfungen,
+Navigation, Verschieben/Kopieren/Leer/Abbruch, Gruppen-Einklappen,
+Export-/Optimierungscheckboxen, Undo/Redo und Erhalt voller Zahlengenauigkeit.
+Native Windows-Qt-Ansichten verdeckt gerendert und visuell kontrolliert.
+**14 neue Texte je DE/FR/RU-Katalog**, QM-Dateien regeneriert und alle drei
+GUI-Sprachkontexte gegen geladene Kataloge geprüft. Strikter Dokumentations-
+build und Diff-Prüfung ohne Fehler.
+
+Die [konkreten Aufgaben für P8](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check)
+bleiben offen: Nutzerablauf, Bildschirm-/Skalierungseindruck, Referenzprojekte
+und Wiederladen. Keine erneute Vollsuite-, Paket-, Debian-, GPU- oder reale
+Maschinenabnahme. Kein Commit, Push oder Release in diesem Auftrag.
+
+<a id="r3-parameter-form-correction"></a>
+
+## R3: vertraute Parameterfelder und Herkunftssymbole (07.11.2026)
+
+Auf Nutzerkorrektur D22 sind die vorhandenen Bereiche für Werkzeug und
+Konturparameter aus Layers in Bearbeitung verschoben und direkt mit dem
+Bearbeitungsmodell verbunden. Die zunächst eingeführte Parametertabelle ist
+entfernt. Die bisherigen Eingabefelder bleiben erhalten; zuvor reine
+Werkzeug-Wertanzeigen für Drehzahl und Lead-Abmessungen sind an gleicher
+Position editierbar, damit eigene Werte weiter bedienbar sind.
+
+Bei Schrittauswahl bearbeiten die Felder Schrittvorgaben, bei aktiver
+Bearbeitungskontur deren Werte. Werkzeugwahl sowie Rückzugs-/Sicherheitshöhe
+bleiben schrittbezogen. Alte Schreibsignale auf Original-Layer/Shapes sind
+abgeklemmt; Änderungen laufen über dieselben atomaren Modellbefehle und Undo.
+Entities/Layers enthalten diese Parameterbereiche nicht mehr.
+
+Kettenglied/Stift als skalierte monochrome Vektorpfade kennzeichnen geerbte
+und eigene Werte. Tooltips nennen Herkunft und wirksamen Wert. Ein separater
+Rücksetzpfeil entfernt einen eigenen Konturwert und aktiviert die Vererbung.
+Herkunft hängt nicht von Wertgleichheit oder Farbe ab. Symbole und Aktionen
+besitzen zugängliche Namen, Tooltips sind auch per Symbolaktivierung erreichbar.
+Ohne eindeutigen Bearbeitungskontext sind die Felder gezielt deaktiviert.
+
+**Nachweis:** jeweils **38 fokussierte Tests unter PyQt5 und PyQt6** bestanden
+(Panel, echter GUI-Workflow, Modellbefehle, MainWindow, Übersetzungs- und
+Architekturgrenzen). Nach abschließender Einheitenkorrektur die **3 betroffenen
+Panel-/Einheitentests je Bindung** erneut bestanden. Geprüft sind echte
+Tastatureingabe, eigener/geerbter Wert mit Rücksetzen, unverändertes Feld ohne
+neuen History-Eintrag, Undo/Redo, Schrittvorgaben ohne Überschreiben eigener
+Konturwerte, Werkzeugwahl ohne Original-Layer-Änderung, ungültige Zahlen ohne
+Mutation, korrekte mm/in-Anzeigen sowie Export-Roundtrip. Das Formular wurde
+zusätzlich mit nativer Windows-Qt-Darstellung verdeckt gerendert und visuell
+kontrolliert. Das ersetzt keine gemeinsame Nutzerabnahme P8.
+
+**13 zusätzliche Texte je DE/FR/RU-Katalog** übersetzt, QM-Dateien regeneriert
+und beide Sprachkontexte gegen geladene Qt-Kataloge geprüft. Strikter
+Dokumentationsbuild und Diff-Prüfung gehören zum Abschluss. Kein Commit/Push,
+keine Vollsuite-, Paket-, Debian- oder Maschinenabnahme in diesem Folgeauftrag.
+
+[Anleitung](../../docs/user-guide/machining-steps.md),
+[Modellnotizen](../documentation-notes/machining-project-format.md).
+
+<a id="r3-r1b-p4-p6"></a>
+
+## R3/R1b P4–P6: Bearbeitungstab, Befehle und Ausgabe (07.11.2026)
+
+Vor Beginn wurde der geprüfte P1–P3-Stand als **`5415018`** lokal committet.
+Der verpflichtende Fast-Hook bestand mit **277 Tests**. Für diesen Auftrag
+wurde kein Push oder Release ausgelöst.
+
+**P4:** Dritter Tab „Bearbeitung“ mit benannten Schritten, genau einer Art
+und Werkzeugdefinition je Schritt, Original-/Bearbeitungsauswahl und aktivem
+Editierkontext umgesetzt. Originalkonturen werden einmal gezeichnet; alle
+Verknüpfungen sind auffindbar. Parameter zeigen ihre Herkunft und können
+bewusst wieder geerbt werden. Richtung/Start ändern nur die Bearbeitung.
+Schritte anlegen, umbenennen, Art/Werkzeug ändern und ganze Layer über die
+Originalauswahl zuordnen ist möglich. Bekannte Planungsdiagnosen erscheinen
+bei der aktiven Bearbeitung. Neue/unzugeordnete Konturen haben keine
+willkürliche Bearbeitungsvorschau.
+
+**Zusätzliche Nutzerentscheidung D20:** Exportcheckboxen nur in Bearbeitung;
+Entities/Layers behalten Originalstruktur und Auswahl. Die Zeichnungs-
+Aktivdarstellung berücksichtigt, ob mindestens eine verknüpfte Bearbeitung
+aktiviert ist. Alte Parameterfelder sind dort nicht mehr editierbar.
+
+**P5:** Reine `MachiningCommands` mit Transaktionen und History implementiert.
+Drag-and-drop mit Einfügemarkierung, Ctrl-Kopieren, Menüwege, Auf-/Ab-Sortieren,
+Zuordnung, Entfernen sowie Werkzeug-/Schrittvorgabenübernahme benutzen dieselbe
+Befehlsschicht. Eigene Werte bleiben erhalten, Zielwerte werden geerbt.
+Ungültige Mehrfachaktionen melden die betroffenen Konturen und verändern
+weder Daten noch History. Verschieben erhält IDs, Kopieren erzeugt neue
+Bearbeitungs-IDs, Redo stellt dieselben IDs wieder her. Beim Entfernen eines
+gefüllten Schritts wird sein Inhalt ausdrücklich entfernt oder verschoben;
+Originalgeometrie bleibt erhalten. Undo/Redo erfasst die neuen Aktionen,
+nicht alle früheren CAD-Funktionen; Import/Reload beginnt eine neue History.
+
+**P6:** Sichtbare Schritt-/Eintragsreihenfolge ist der Exportvertrag und wird
+gespeichert. Beide relativen Optimierungsmodi bleiben erhalten, Optimierung
+überschreitet weder Schritt- noch Custom-G-Code-Grenzen. Vorschau und Route
+verwenden getrennte Projektionen desselben Plans; Routenenden enthalten
+Anfahrt, Abfahrt und Overcut. Eine Vorschauaktion aktiviert keine manuelle
+Routenanzeige. Aktive Richtungs-/Startpfeile und 3D-Planverbrauch sind an die
+Bearbeitung gekoppelt. Projektionsdaten werden nur innerhalb eines
+synchronen Neuzeichnens wiederverwendet, nicht über Änderungen hinweg.
+
+**Zusätzliche Nutzerentscheidung D21:** Werkzeugwechsel weiterhin nur bei
+anderer Ausgabenummer. Unterschiedliche Definitionen/Drehzahlen gleicher
+aufeinanderfolgender Nummer erzeugen weder einen weiteren Werkzeugwechsel-
+Profilblock noch eine zusätzliche Drehzahlausgabe. Dies ist ausdrücklich
+beibehaltenes Verhalten, geprüft für Legacy- und verwaltete Werkzeugwechsel.
+Bestehende Einschränkungen verwalteter Makros für opaken freien G-Code bleiben.
+
+Bewusste Maschinenart-/Kompensations-/Toleranzänderungen über vorhandene
+Bedienwege wirken weiterhin auf den Auftrag; externe Werkzeugprofiländerungen
+werden erst bewusst übernommen. Einheitenwechsel konvertiert Bearbeitungswerte
+einmal und speichert die ausdrückliche Interpretation der Zeichnungseinheit.
+Der dabei sichtbar gewordene `None`-Fall des optionalen Startradius ist behoben.
+
+**Nachweis:** gezielte Integrationsgruppe mit **134 Tests unter PyQt5 und
+134 unter PyQt6** bestanden. Anschließend **29 gezielte Befehls-/Panel-/
+Modusprüfungen je Bindung** einschließlich der letzten Änderungen bestanden.
+Enthalten sind reine Befehlsregressionen, echte Qt5-/Qt6-Drop-Events,
+Ablehnung veralteter Nutzdaten, Auswahl mehrfach referenzierter Konturen,
+ursprüngliche Geometrie bei Richtungswechsel, eigene/geerbte Werte,
+Exportaktivierung/Sichtbarkeit, stabile Undo-/Redo-IDs, Unit-Override,
+Fremdprojekt-Ablehnung, Routenendpunkt gegen ausgegebene Lead-out-Koordinate,
+Optimierungsgrenzen sowie sichtbare T2→T1-Folge gegen echten GUI-/CLI-Export.
+Die ganze Layerauswahl wurde zusätzlich über echte Auswahlsignale und den
+modalen Schritt-Dialog bis zur Übernahme und Undo geprüft. Umbenennen oder
+Ändern der Kompensation erhält widersprüchliche Altmodi; erst eine ausdrücklich
+gewählte Schrittart löst sie auf.
+Architektur-, bestehende MainWindow-, Werkzeugwechsel-, Plan-, Vorschau- und
+3D-Adapterregressionen sind einbezogen. Frühere Qt-Callbackabbrüche durch eine
+zu frühe Neuzeichnung bzw. Diagnoseformatierung wurden korrigiert und die
+betroffenen Abläufe anschließend erneut erfolgreich geprüft.
+
+Alle **102 neuen Texte je Katalog** in DE/FR/RU sind fertig übersetzt,
+QM-Dateien regeneriert und gegen die tatsächlich geladenen Qt-Übersetzungen
+geprüft. Der Austausch zweier QM-Dateien benötigte wegen abweichender
+Windows-Berechtigungen einen erlaubten Schreibzugriff außerhalb der Sandbox;
+ein Neustart oder Schließen eines Benutzerfensters war dafür nicht notwendig.
+Strikter Zensical-Build, relative Dokumentdateilinks und `git diff --check`
+bestanden.
+
+**Grenzen:** P8 bleibt die gemeinsame fachliche Nutzerabnahme an konkreten
+Projekten, einschließlich aktueller Screenshots und Prüfung verbliebener
+Legacy-Kompatibilitätsaufrufer vor Entfernung. P7 bleibt separat. 3D-Tests
+verwenden gemocktes OpenGL und sind kein GPU-Nachweis. Keine neue Vollsuite-,
+Debian-, Paket- oder physische Maschinenabnahme. P4–P6 wurden in diesem
+Auftrag nicht committet oder gepusht.
+
+[Anleitung](../../docs/user-guide/machining-steps.md),
+[Plan und Entscheidungen](../planning/r3-r1b-implementation-plan.md),
+[Modell-/Formatnotizen](../documentation-notes/machining-project-format.md).
+
+<a id="r3-r1b-p1-p3"></a>
+
+## R3/R1b P1–P3: Modell, Projektionen und Persistenz (07.11.2026)
+
+**P1:** Qt-freie Geometrie-, Werkzeugdefinitions-, Schritt- und
+Bearbeitungsidentitäten mit geordneten Einträgen, eigenständigen Starts und
+Richtungen sowie Resolver und Parameterherkunft implementiert. Gemäß D7 bleiben
+unklare alte Zahlenwerte eigene Werte. Gemäß der zusätzlichen Nutzerentscheidung
+D19 dürfen unterschiedliche Werkzeugdefinitionen dieselbe Ausgabenummer tragen.
+Die Definitions-ID bestimmt die gemeinsame Aktualisierung, nicht die Nummer.
+
+**P2:** Legacy-Shape/Layer-Zustand lässt sich in das Bearbeitungsmodell
+übernehmen. Getrennte Projektionen verwenden gemeinsame gespeicherte Werte für
+Planung, Vorschau und Export, ohne die Originalgeometrie bei ihrer Erzeugung zu
+ändern. Eigene Werkzeuge/Arten und freier G-Code begrenzen Migrationsschritte;
+die bisherige Reihenfolge sowie BREAKS-/Ignore-Semantik bleiben erhalten.
+Geladene Konflikte werden erhalten und durch bestehende Diagnosen blockiert.
+
+**P3:** UTF-8-JSON `.d2g` 2.0 mit validierten IDs, Konfiguration und Referenzen
+ergänzt; Leser 1.1–1.5 bleiben erhalten. GUI-Speichern, Projektladen, kleiner
+Transformationsreload, erneuter DXF-Import und CLI-Projektexport sind angebunden.
+Gespeicherte Werkzeug-/Bearbeitungsvorgaben bleiben von globalen Profiländerungen
+unabhängig. Neue Quellkonturen bleiben unzugeordnet; aktive fehlende oder
+mehrdeutige Verknüpfungen stoppen den gesamten Export vor der Ausgabe.
+Atomarer Dateiersatz schützt bestehende Dateien; migrierte Legacy-Dateien müssen
+zunächst unter neuem Namen gespeichert werden.
+
+**Lokaler Nachweis:** gezielte Integrationsgruppe mit **86 Tests unter PyQt5
+und 86 unter PyQt6** bestanden (Modell/Format, echter Qt-Workflow, Architektur,
+Importfilter, Bearbeitungsmodi, Legacy-Projekte, MainWindow, CLI und
+Exportreihenfolge). Die Migration 1.1–1.5 erhält im geprüften Konturfall die
+Programmausgabe. Der echte offscreen MainWindow-Workflow prüft zwei Bearbeitungen
+derselben Kontur mit unterschiedlichen Tiefen gegen den echten CLI-Export:
+Programmbefehle stimmen überein. Fehlreferenztest: CLI-Code 2, stdout leer,
+vorhandene Zieldatei unverändert. Weitere Fälle prüfen Mehrdeutigkeit,
+unabhängige Richtungen, Profilstabilität, doppelte Werkzeugnummern und atomaren
+fehlgeschlagenen Dateiersatz. Tests sind in der Fast-Auswahl registriert.
+`git diff --check` und strikter Zensical-Dokumentationsbuild bestanden.
+
+**Grenzen:** P4/P5/P6/P8 bleiben offen: dritter Tab, Zuordnungsbedienung,
+Verschieben/Kopieren mit Zielvalidierung/Undo, sichtbarer Reihenfolgevertrag,
+Profilübernahme mit Änderungsanzeige und integrierte Nutzerabnahme. Bis dahin
+synchronisiert eine begrenzte Brücke Eingaben des bestehenden Editors in den
+eindeutigen/ausdrücklich aktiven Arbeitsgang. Bei Mehrfachreferenzen ohne Kontext
+wird keine Bearbeitung willkürlich ausgewählt. Keine neue manuelle
+Stegregionenbedienung. Keine neuen GUI-Beschriftungen hinzugefügt. Keine neue
+Vollsuite-, Paket-, Debian-, GPU- oder Maschinenabnahme und kein Release.
+
+[Detailplan](../planning/r3-r1b-implementation-plan.md),
+[Zuordnungstabelle, Dateivertrag und Quellen](../documentation-notes/machining-project-format.md).
 
 <a id="develop-r3-checkpoint"></a>
 

@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben
 
-Stand: **06.11.2026**.
+Stand: **14.11.2026**.
 
 Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
 Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
@@ -15,16 +15,17 @@ Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
 Todo freigegeben. Der Develop-Release **2.0.0.dev12** vor Umsetzung von
 R3/R1b ist veröffentlicht und seine Downloads sind geprüft;
 [Nachweis](archive/toolpath-refactoring-completed.md#develop-r3-checkpoint).
-Eine gesonderte Paket-/Debian-Abnahme bleibt zurückgestellt.
+Die Paket-/Installationsabnahme ist für den aktuellen Featureabschluss eingeplant.
 
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
-| Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
+| Releaseabschluss | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Windows/Ubuntu/Debian gemäß bestätigtem Plan; stabile Veröffentlichung bleibt getrennt |
 | Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
-| Fachliche Rückmeldungen | [DOC1 – Dokumentationsabnahme](#doc1) | Konkrete Korrekturen zur veröffentlichten Anleitung |
-| Plan abgestimmt, Umsetzung offen | [R3 – Bedienmodell](#r3), [R1b – Gruppenwechsel](#r1b) | [Nach Develop-Release mit P1 beginnen](planning/r3-r1b-implementation-plan.md) |
+| Vor Develop-Release | [DOC1 – Dokumentationsabnahme](#doc1) | Anleitung einschließlich aktueller Bilder gemäß Abschlussplan |
+| Integration/Release | [Featureabschluss und Develop-Release](planning/maschining-project-release-plan.md) | Nutzerabnahme abgeschlossen; IGNORE, Anleitung/Bilder und Installationsumfang gem?? Plan |
 | Zurückgestellt | [Teilkonturen](#teilkonturen) | Mit dem neuen Bearbeitungsmodell abstimmen |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
+| Optional, später | [PP1 – Separater Drehzahlblock](#pp1) | Postprozessorvertrag für Drehzahländerungen bei gleicher Werkzeugnummer abstimmen |
 | Optional | [GUI1 – Ribbon-Menüband](#gui1) | Bedienentwurf, Bibliothekswahl und Windows-/Linux-Kompatibilität |
 
 Alle geplanten Dokumentationsthemen **WP1–WP13** sind ausgearbeitet und
@@ -45,9 +46,10 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 
 <a id="m1"></a>
 
-- [ ] **M1 – Paket-/Debian-Abnahme:** nach gesonderter Freigabe reale
-  Wheel-/Quell-/Windows-Artefakte einschließlich Herkunft und Start prüfen;
-  das freigegebene Wheel im isolierten Debian-Ablauf abnehmen.
+- [ ] **M1 – Paket-/Installationsabnahme:** bestätigten Umfang Windows-ZIP/MSI,
+  frische Ubuntu-Wheel-Umgebungen mit Qt5/Qt6 und konkretes Wheel auf Debian
+  einschließlich Herkunft und Start prüfen; macOS bleibt separat.
+  [Konkreter Abschlussplan](planning/maschining-project-release-plan.md#installation).
   [Prüfumfang und Freigabegrenze](planning/open-task-details.md#m1).
 
 <a id="lc1"></a>
@@ -60,33 +62,33 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 ## Bedienmodell und zurückgestellte Erweiterungen
 
 <a id="r3"></a>
-
-- [ ] **R3 – Geometrie und Bearbeitung trennen:** Bedienmodell mit
-  Bearbeitungsgruppen, referenzierten Konturen, Reihenfolge und Persistenz
-  gemeinsam entwerfen. Dritter Tab Bearbeitung; Originalkonturen in
-  Entities/Layers erhalten. Manuelle Stegregionen, Automatik und Fang
-  ausdrücklich erst als spätere Erweiterung planen.
-  [Gemeinsamer Detailplan und Nutzerentscheidungen](planning/r3-r1b-implementation-plan.md),
-  [Anforderungen](planning/open-task-details.md#r3). Plan bestätigt;
-  Commit, Push und Develop-Release sind abgeschlossen; Umsetzung mit P1
-  kann im nächsten Auftrag beginnen.
-
 <a id="r1b"></a>
 
-- [ ] **R1b – Gruppenwechsel:** gemeinsam mit R3 planen. Verschieben/Kopieren
-  mit eigenen Werten und Zielvererbung; je Schritt ein Werkzeug und eine
-  Bearbeitungsart. Atomare Zielvalidierung, bewusste Zuordnung neuer Konturen
-  und Rückgängig/Wiederholen sind festgelegt. Projektwerte bis bewusster
-  Aktualisierung erhalten; Aktionen direkt mit Änderungsanzeige und Undo.
-  Gemeinsamer Plan bestätigt; Implementierung und Abnahme bleiben offen.
-  [Gemeinsamer Detailplan](planning/r3-r1b-implementation-plan.md),
-  [Anforderungen](planning/open-task-details.md#r1b).
+- [ ] **Integration/Develop-Release:** IGNORE-Entscheidung, aktuelle Anleitung
+  einschlie?lich Bilder, festgelegte Installationsabnahme und gepr?fte Integration
+  von `maschining-project` nach `develop` durchf?hren; anschlie?end Develop-Prerelease.
+  [Abschluss- und Releaseplan](planning/maschining-project-release-plan.md).
+- [ ] **R3-IGNORE – vor Merge korrigieren, vom Nutzer bestätigt:**
+  „Ignoriert“ nicht als neue Bearbeitungsart anbieten; `IGNORE:`-Import und
+  gespeicherte Projekte erhalten und die wirkungslose Exportaktivierung klar
+  darstellen. [Umfang und Prüfungen](planning/maschining-project-release-plan.md#ignore).
+  [Untersuchung](planning/r3-r1b-implementation-plan.md#r3-ui-followups).
 
 <a id="teilkonturen"></a>
 
 - [ ] **Teilkonturen:** eigene Startpunkte, Leads und Überfahrten je
   resultierender Teilkontur sowie stabile Zuordnung bei Neuberechnung und
   Projekt-Roundtrip entwerfen. [Planungsumfang](planning/open-task-details.md#teilkonturen).
+
+<a id="pp1"></a>
+
+- [ ] **PP1 – Separater Drehzahlblock, später:** einen eigenen konfigurierbaren
+  Postprozessorblock für geänderte Drehzahlen bei gleicher Werkzeugnummer
+  vorsehen, ohne den Werkzeugwechselblock erneut aufzurufen. Vor Umsetzung
+  Auslösebedingungen, Profilkompatibilität und unterstützte Maschinenarten
+  abstimmen. Nutzeranregung vom 07.11.2026; noch kein Implementierungsauftrag.
+  Der aktuelle Werkzeugwechsel bleibt gemäß
+  [D21](planning/r3-r1b-implementation-plan.md) an eine andere Nummer gebunden.
 
 <a id="q1"></a>
 
@@ -108,20 +110,18 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 
 <a id="doc1"></a>
 
-- [ ] **DOC1 – Fachliche Rückmeldungen:** konkrete Kapitelkorrekturen zur
-  veröffentlichten vollständigen Anleitung einarbeiten.
+- [ ] **DOC1 – Anleitung und Bilder aktualisieren:** alle betroffenen Kapitel
+  mit integriertem Stand abgleichen, veraltete Screenshots durch echte aktuelle
+  Aufnahmen ersetzen und Releasebeschreibung/Seitenvorschau prüfen.
+  [Konkreter Vorschlag](planning/maschining-project-release-plan.md#doc1).
   [Abschluss und Veröffentlichung WP9–WP13](archive/toolpath-refactoring-completed.md#doc1-wp9-wp13),
   [Erstansicht WP1–WP8](archive/toolpath-refactoring-completed.md#doc1-wp3-wp8-publication).
 - [ ] **Optionale Maschinenabnahme:** die Grbl-1.1-Laser- und LinuxCNC-2.9-
   Heißdraht-/Drehdemonstrationen bei Bedarf für einen konkreten realen Aufbau
   anpassen und gesondert abnehmen. Geladene Demoprofile und synthetische
   Ausgabeprüfungen sind keine Controller-/Material-/Maschinenfreigabe.
-- [ ] **Optionale historische Wiederverwendung:** Rechte für Wiki-Texte,
-  Screenshots, fremde DXFs und Git-Flow-Grafik klären, falls sie übernommen
-  werden sollen; fehlendes `Spant.png` (404) nur mit geklärter Herkunft
-  wiederherstellen/ersetzen. Die neue Anleitung benötigt diese Originale nicht.
-- [ ] Frische Windows-/Ubuntu-/PyQt6-Installationen und macOS-Pakete sowie
-  CNC-/ATC-/manuelle Maschinenabnahmen separat planen und freigeben.
+  Weitere macOS-/CNC-/ATC-/manuelle Abnahmen bleiben bei konkretem Bedarf separat;
+  die aktuelle Installationsmatrix ist unter M1 zusammengeführt.
 
 Wiederaufnahme und technische Vorschau: [Übergabebericht](migration/zensical-prototype.md).
 Die fachlichen Notizen ersetzen keine Inhaltsabnahme oder Veröffentlichungsfreigabe.

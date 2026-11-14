@@ -75,3 +75,4 @@ class ToolpathAction:
     kind: str
     args: tuple = ()
     role: str = "cut"
+    modifier_id: str = ''

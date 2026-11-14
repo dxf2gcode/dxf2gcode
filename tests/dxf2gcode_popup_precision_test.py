@@ -26,12 +26,13 @@ class TestPopupPrecision(unittest.TestCase):
         with patch.object(PopUpDialog, 'exec', return_value=0):
             dialog = PopUpDialog('Zero', ['X', 'Y'], values, ['lineEdit']*2, True, decimals=digits, snap=snap)
         dialog.show()
+        dialog.okButton.setFocus()
         self.app.processEvents()
         self.addCleanup(dialog.close)
         return dialog, values
 
     def test_mm_and_inch_display_and_unchanged_enter_keep_exact_values(self):
-        for digits, expected in ((3, ['15.741', '-6.43']), (5, ['15.74145', '-6.42961'])):
+        for digits, expected in ((3, ['15.741', '-6.430']), (5, ['15.74145', '-6.42961'])):
             with self.subTest(digits=digits):
                 dialog, original = self.dialog(digits)
                 self.assertEqual([field.text() for field in dialog.lineElement], expected)
@@ -40,6 +41,7 @@ class TestPopupPrecision(unittest.TestCase):
                 self.assertTrue(dialog.okButton.isDefault())
                 self.assertFalse(dialog.autoButton.isDefault())
                 dialog.lineElement[0].setFocus()
+                self.assertEqual(dialog.lineElement[0].text(), str(original[0]))
                 QTest.keyClick(dialog.lineElement[0], QtCore.Qt.Key.Key_Tab)
                 QTest.keyClick(dialog.lineElement[1], QtCore.Qt.Key.Key_Return)
                 self.assertEqual(dialog.result, original)

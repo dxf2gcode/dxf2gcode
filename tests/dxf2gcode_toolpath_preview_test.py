@@ -37,6 +37,42 @@ class TestSharedPreview(GoldenTestBase):
         self.assertIn(-7, {s.end[2] for s in plan_preview_segments(second)})
         self.assertEqual(plan_preview_segments(first, 2), plan_preview_segments(second, 2))
 
+    def test_g40_entry_is_present_in_plan_preview_and_export(self):
+        import re
+        from dxf2gcode_leadmove_golden_test import export_gcode
+        from dxf2gcode.presentation.qt.canvas2d import StMoveGUI
+        for machine in (False, True):
+            for closed in (False, True):
+                for mode in ('off', 'straight', 'radius', 'startmove'):
+                    with self.subTest(machine=machine, closed=closed, mode=mode):
+                        shape, layer = build_shape(cut_cor=40, done_by_machine=machine,
+                            closed=closed, layer_settings=dict(lead_in_mode=mode, lead_out_mode='straight'))
+                        result = preview_result(shape)
+                        self.assertFalse(result.has_errors)
+                        plan = result.plan
+                        leads = [a for a in plan.actions if a.role == 'lead_in']
+                        self.assertEqual(bool(leads), mode != 'off')
+                        if mode != 'off':
+                            self.assertEqual(len(leads), len(shape.stmove.lead_in_geos))
+                            plunge = next(i for i, a in enumerate(plan.actions) if a.role == 'plunge')
+                            first_lead = next(i for i, a in enumerate(plan.actions) if a.role == 'lead_in')
+                            first_cut = next(i for i, a in enumerate(plan.actions)
+                                             if a.role == 'cut' and a.kind in ('linear_xy', 'arc'))
+                            self.assertLess(plunge, first_lead)
+                            self.assertLess(first_lead, first_cut)
+                        for dimensions in (2, 3):
+                            segments = plan_preview_segments(plan, dimensions)
+                            self.assertEqual(any(s.role == 'lead_in' for s in segments), mode != 'off')
+                            self.assertTrue(any(s.role == 'lead_out' for s in segments))
+                        self.assertEqual(StMoveGUI(shape)._lead_in_path.isEmpty(), mode == 'off')
+                        code = export_gcode(shape, layer)
+                        first_xy = re.search(r'^G[123] X\s*([-\d.]+) Y\s*([-\d.]+)', code, re.M)
+                        self.assertIsNotNone(first_xy)
+                        expected = (shape.stmove.lead_in_geos[0].Pe if mode != 'off' else shape.geos[0].Pe)
+                        self.assertAlmostEqual(float(first_xy[1]), expected.x, places=3)
+                        self.assertAlmostEqual(float(first_xy[2]), expected.y, places=3)
+                        self.assertEqual(bool(re.search(r'^G[23] ', code, re.M)), mode in ('radius', 'startmove'))
+
     def test_original_geometry_and_hit_area_remain_when_overlay_is_selected(self):
         from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene, ShapeGUI
         from dxf2gcode.presentation.qt.qt_compat.QtCore import QPointF

@@ -190,6 +190,9 @@ class TestConfigurationTranslations(unittest.TestCase):
                 try:
                     form.show()
                     self.app.processEvents()
+                    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QAbstractSpinBox
+                    for spinbox in form.findChildren(QAbstractSpinBox):
+                        self.assertEqual(spinbox.buttonSymbols(), QAbstractSpinBox.ButtonSymbols.NoButtons)
                     for width in (1000,780):
                         form.resize(width,600)
                         for section in ('Cutter_Compensation','Layer_Options'):
@@ -204,6 +207,17 @@ class TestConfigurationTranslations(unittest.TestCase):
                                     if section == 'Cutter_Compensation':
                                         editor = definitions['Drag_Knife_Options']['entry_mode'].combobox
                                         self.assertLessEqual(editor.mapTo(page.viewport(),editor.rect().topRight()).x(),page.viewport().width())
+                    selected_page = form.tab_window.currentWidget()
+                    form.resize(1000, 700)
+                    for index in range(form.tab_window.count()):
+                        page = form.tab_window.widget(index)
+                        form.tab_window.setCurrentIndex(index)
+                        self.app.processEvents()
+                        self.assertEqual(page.horizontalScrollBar().maximum(), 0, (language, index))
+                    tools = definitions['Tool_Parameters'].tablewidget
+                    self.assertEqual(tools.horizontalScrollBar().maximum(), 0, language)
+                    form.tab_window.setCurrentWidget(selected_page)
+                    self.app.processEvents()
                     cutter = definitions['Cutter_Compensation']['done_by_machine']
                     self.assertIn('G41',cutter.checkbox.toolTip())
                     overcut = definitions['Lead_In_Out']['overcut_enabled']

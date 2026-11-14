@@ -10,6 +10,9 @@ class DxfReaderAdapter:
     def __init__(self, config=None):
         self._config = config
 
+    def with_configuration(self, config):
+        return type(self)(config)
+
     def read(self, filename):
         # Preserve the legacy constructor call shape for callers that rely on
         # its process-global configuration fallback.

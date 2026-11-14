@@ -137,6 +137,8 @@ class MyGraphicsView(CanvasBase):
                 item.prepareGeometryChange()
             except Exception:
                 pass
+        if hasattr(self, 'machining_preview'):
+            self.machining_preview.overlay.update()
 
     def mousePressEvent(self, event):
         """
@@ -167,11 +169,27 @@ class MyGraphicsView(CanvasBase):
 
         # Selection only enabled for left Button
         elif event.button() == QtCore.Qt.MouseButton.LeftButton:
+            preview = getattr(self, 'machining_preview', None)
+            if (preview is not None and (preview.panel.modifiers.mode or self.rubberBand.isHidden()) and
+                    preview.try_select(event.pos(), bool(event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier))):
+                self.mppos = None
+                self.rubberBand.hide()
+                return
             self.currentItems = []
             scene = self.scene()
+            changed = []
+
+            def select_item(item, selected):
+                if item.isSelected() != selected:
+                    # Notify the tree only after the complete mouse selection.
+                    # Every callback rebuilds the machining preview, so sending
+                    # one per contour makes a rubber-band selection quadratic.
+                    item.setSelected(selected)
+                    changed.append(item)
+
             if scene and not self.isMultiSelect:
                 for item in scene.selectedItems():
-                    item.setSelected(False, False)
+                    select_item(item, False)
             # If the mouse button is pressed without movement of rubberband
             if self.rubberBand.isHidden():
                 rect = QtCore.QRect(event.pos().x()-delta,
@@ -188,9 +206,9 @@ class MyGraphicsView(CanvasBase):
                         self.currentItems = item
                 if self.currentItems:
                     if self.currentItems.isSelected():
-                        self.currentItems.setSelected(False, False)
+                        select_item(self.currentItems, False)
                     else:
-                        self.currentItems.setSelected(True, False)
+                        select_item(self.currentItems, True)
             else:
                 rect = self.rubberBand.geometry()
                 self.currentItems = self.items(rect)
@@ -204,10 +222,16 @@ class MyGraphicsView(CanvasBase):
 
                 for item in self.currentItems:
                     if item.isSelected():
-                        item.setSelected(False, False)
+                        select_item(item, False)
                     else:
                         # print (item.flags())
-                        item.setSelected(True, False)
+                        select_item(item, True)
+
+            if changed:
+                item = changed[-1]
+                callback = item.model.selectionChangedCallback
+                if callback:
+                    callback(item.model, item.isSelected())
 
         else:
             pass
@@ -245,6 +269,15 @@ class MyGraphicsView(CanvasBase):
         self.setToolTip('X: %3.1f; Y: %3.1f' %(scpoint.x(), -scpoint.y()))
 
         super(MyGraphicsView, self).mouseMoveEvent(event)
+
+    def scrollContentsBy(self, dx, dy):
+        super().scrollContentsBy(dx, dy)
+        preview = getattr(self, 'machining_preview', None)
+        if preview is not None:
+            # QGraphicsView also scrolls viewport children. This overlay already
+            # uses viewportTransform coordinates, so moving it applies pan twice.
+            preview.overlay.setGeometry(self.viewport().rect())
+            preview.overlay.update()
 
     def autoscale(self):
         """
@@ -355,7 +388,7 @@ class MyGraphicsScene(QGraphicsScene):
         """Paint entry/exit details above toolpaths of every contour."""
         super().drawForeground(painter, rect)
         for item in self.items(rect):
-            if isinstance(item, StMoveGUI) and item.isVisible():
+            if isinstance(item, StMoveGUI) and item.isVisible() and item.effectiveOpacity() > 0:
                 painter.save()
                 painter.setWorldTransform(item.sceneTransform(), True)
                 item.paint_details(painter)
@@ -521,6 +554,9 @@ class MyGraphicsScene(QGraphicsScene):
         shape.stmove_item.setParentItem(shape)
         shape.starrow.setParentItem(shape)
         shape.enarrow.setParentItem(shape)
+        if model.parentLayer.isBreakLayer():
+            for child in (shape.stmove_item, shape.starrow, shape.enarrow):
+                child.setOpacity(0)
         if not model.isSelected():
             shape.stmove_item.hide()
             shape.starrow.hide()
@@ -549,6 +585,8 @@ class MyGraphicsScene(QGraphicsScene):
 
         # The arrows are 1.5 times the default size, so that they are easier to
         # see, and their outline is one pixel thicker.
+        inactive = hasattr(shape, 'machining_binding') and getattr(shape, '_machining_view', None) is None
+        shape = getattr(shape, '_machining_view', None) or shape
         length = 30
         start, start_ang = shape.get_start_end_points_physical(True, True, PPocket=True)
         
@@ -563,6 +601,8 @@ class MyGraphicsScene(QGraphicsScene):
         arrow.arrowSize = 12.0
         arrow.pen.setWidth(2)
         arrow.pen.setStyle(QtCore.Qt.PenStyle.DashLine)
+        if inactive:
+            arrow.setOpacity(0)
         return arrow
 
     def createenarrow(self, shape):
@@ -573,6 +613,8 @@ class MyGraphicsScene(QGraphicsScene):
         """
         # The arrows are 1.5 times the default size, so that they are easier to
         # see, and their outline is one pixel thicker.
+        inactive = hasattr(shape, 'machining_binding') and getattr(shape, '_machining_view', None) is None
+        shape = getattr(shape, '_machining_view', None) or shape
         length = 30
         end, end_ang = shape.get_start_end_points_physical(False, True, PPocket=shape.Pocket)
             
@@ -589,6 +631,8 @@ class MyGraphicsScene(QGraphicsScene):
         arrow.arrowSize = 12.0
         arrow.pen.setWidth(2)
         arrow.pen.setStyle(QtCore.Qt.PenStyle.DashLine)
+        if inactive:
+            arrow.setOpacity(0)
         return arrow
 
     def createstmove(self, shape):
@@ -615,9 +659,10 @@ class MyGraphicsScene(QGraphicsScene):
             item.hide()
             del item
 
-    def addexproutest(self):
-        self.expprv = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
-                            g.config.vars.Plane_Coordinates['axis2_start_end'])
+    def addexproutest(self, config=None):
+        config = config or g.config
+        self.expprv = Point(config.vars.Plane_Coordinates['axis1_start_end'],
+                            config.vars.Plane_Coordinates['axis2_start_end'])
         self.expcol = QtCore.Qt.GlobalColor.darkRed
 
     def addexproute(self, exp_order, layer_nr):
@@ -627,7 +672,10 @@ class MyGraphicsScene(QGraphicsScene):
         for shape_nr in range(len(exp_order)):
             shape = self.shapes[exp_order[shape_nr]]
             st = self.expprv
-            if shape.Pocket == True:
+            if hasattr(shape, 'route_endpoints'):
+                start, end, _ = shape.route_endpoints
+                en, self.expprv = Point(*start), Point(*end)
+            elif shape.Pocket == True:
                 start_en_points = shape.get_start_end_points(PPocket=True)
                 en = start_en_points[0]
                 self.expprv = start_en_points[1]
@@ -648,10 +696,11 @@ class MyGraphicsScene(QGraphicsScene):
             self.addItem(self.routearrows[-1])
             self.addItem(self.routetext[-1])
 
-    def addexprouteen(self):
+    def addexprouteen(self, config=None):
+        config = config or g.config
         st = self.expprv
-        en = Point(g.config.vars.Plane_Coordinates['axis1_start_end'],
-                   g.config.vars.Plane_Coordinates['axis2_start_end'])
+        en = Point(config.vars.Plane_Coordinates['axis1_start_end'],
+                        config.vars.Plane_Coordinates['axis2_start_end'])
         self.expcol = QtCore.Qt.GlobalColor.darkRed
 
         self.routearrows.append(Arrow(startp=en,
@@ -718,7 +767,7 @@ class ShapeGUI(QGraphicsItem):
             self.model = Shape(model, closed, parentEntity, config=g.config,
                                translate=QtCore.QCoreApplication.translate)
 
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.model.parentLayer.isBreakLayer())
         self.setAcceptedMouseButtons(QtCore.Qt.MouseButton.NoButton)
 
         self.path = QPainterPath()
@@ -744,6 +793,8 @@ class ShapeGUI(QGraphicsItem):
         @param point: a QPointF
         @return: minimal distance
         """
+        if self.model.parentLayer.isBreakLayer():
+            return float('inf')
         min_distance = float(0x7fffffff)
         ref_point = Point(point.x(), point.y())
         t = 0.0
@@ -786,6 +837,8 @@ class ShapeGUI(QGraphicsItem):
         @param option: Possible options here
         @param widget: The widget which is painted on.
         """
+        if self.model.parentLayer.isBreakLayer():
+            return
         if self.model.isSelected() and not self.model.isDisabled():
             painter.setPen(ShapeGUI.PEN_SELECT)
         elif not self.model.isDisabled():
@@ -802,6 +855,11 @@ class ShapeGUI(QGraphicsItem):
         else:
             painter.setPen(ShapeGUI.PEN_NORMAL_DISABLED)
 
+        counts = getattr(self.scene(), 'machining_selection_counts', {}).get(getattr(self.model, 'geometry_id', None), (0, 0))
+        if 0 < counts[0] < counts[1]:
+            pen = QPen(painter.pen())
+            pen.setStyle(QtCore.Qt.PenStyle.DotLine)
+            painter.setPen(pen)
         painter.drawPath(self.path)
 
     def boundingRect(self):
@@ -830,6 +888,8 @@ class ShapeGUI(QGraphicsItem):
         """
 
 
+        if self.model.parentLayer.isBreakLayer():
+            flag = False
         if self.model.isDrill():
             self.starrow.setSelected(False)
             self.enarrow.setSelected(False)

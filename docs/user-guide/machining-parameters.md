@@ -1,6 +1,12 @@
 # Machining parameters
 
-Select the intended contour in **Layers** before editing machining values.
+In the current development UI, select the active operation in **Machining**
+before editing values. See [Machining steps](machining-steps.md) for the new
+relocated tool/contour fields and inheritance symbols. Selecting a step edits
+its defaults; activating an operation edits its own values. Screenshots below
+show the earlier location of these fields in Layers.
+
+Select the intended contour before editing machining values.
 The fields describe the current selection; an enabled shape can be exported
 without being selected. Start with [First DXF to G-code](../getting-started/first-dxf-to-gcode.md)
 for a complete numeric example.

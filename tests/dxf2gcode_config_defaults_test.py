@@ -23,6 +23,20 @@ DEFAULTS = dict(show_disabled_paths=True, live_update_export_route=False,
 
 
 class TestConfigDefaults(unittest.TestCase):
+    def test_tab_placement_defaults_and_persistence(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(g, 'folder', folder):
+            config = MyConfig()
+            self.assertEqual(config.var_dict['Tab_Regions']['creation_mode'], 'snap')
+            self.assertEqual(config.var_dict['Tab_Regions']['tab_length'], 2.)
+            config.var_dict['Tab_Regions'].update(dict(creation_mode='manual', tab_length=3.125))
+            config.save_varspace()
+            loaded = MyConfig()
+            self.assertEqual(loaded.var_dict['Tab_Regions']['creation_mode'], 'manual')
+            self.assertEqual(loaded.var_dict['Tab_Regions']['tab_length'], 3.125)
+            widgets = loaded.makeConfigWidgets()['Tab_Regions']
+            self.assertIn('creation_mode', widgets)
+            self.assertIn('tab_length', widgets)
+
     def test_legacy_knife_profile_migration_is_persisted_once(self):
         for version, planned, machine in ((9.16, False, 'drag_knife'),
                                            (9.17, False, 'drag_knife'),

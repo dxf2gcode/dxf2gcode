@@ -1,11 +1,20 @@
 # R3 und R1b: gemeinsamer Umsetzungsplan
 
-Stand: **06.11.2026**, untersucht auf `2acb289` mit vorhandenen lokalen
-Dokumentationsänderungen. **Plan vom Nutzer am 06.11.2026 bestätigt.**
-Vor der Umsetzung sind Commit, Push und ein Develop-Release beauftragt.
-Die Softwareimplementierung beginnt erst im anschließenden eigenen Auftrag.
+Stand: **14.11.2026**. **Plan vom Nutzer am 06.11.2026 bestätigt.**
+Commit, Push und Develop-Release vor der Umsetzung sind abgeschlossen.
+P1–P6 sind implementiert; [P1–P3-Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3)
+und [P4–P6-Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6).
+P8 ist vom Nutzer am 14.11.2026 fachlich abgenommen. Der aktuelle Stegumfang
+ist akzeptiert; zusätzliche selbsttätige Platzierung wird nicht weiter verfolgt.
+Nächster Schritt ist der [Integrations-/Releaseabschluss](maschining-project-release-plan.md).
 Bestätigte Fachregeln und technische Umsetzungsvorschläge sind unterschieden.
 [Planungsabschluss](../archive/toolpath-refactoring-completed.md#r3-r1b-plan).
+
+**Arbeitszweig seit 07.11.2026:** `maschining-project`.
+Der lokale P1–P3-Commit `5415018` und der fortgef?hrte R3/R1b-Stand
+liegen auf diesem Zweig. Weitere Arbeiten erfolgen dort. `develop` und
+GitHub-`develop` bleiben auf `4346709`; die spätere Integration ist ein
+separater Auftrag. Der neue Zweig ist bislang lokal, ohne Push oder Release.
 
 ## 1. Ziel und bereits getroffene Entscheidungen
 
@@ -18,14 +27,14 @@ Ein Gruppenwechsel verändert nicht den ursprünglichen DXF-Layer.
 
 | ID | Entscheidung | Status |
 | --- | --- | --- |
-| D1 | Entities und Layers bleiben bestehen; Bearbeitung wird ein dritter Tab. Keine Umbenennung oder Ersetzung der beiden vorhandenen Tabs. | Vom Nutzer bestätigt |
+| D1 | Ursprünglich drei Tabs mit getrennten Originalansichten. Die spätere gemeinsame Geometrieansicht nach D24 ersetzt nur diese Anordnung; Auswahlmodelle und Originalstruktur bleiben erhalten. | Durch D24 präzisiert |
 | D2 | Eine Originalkontur kann mit mehreren Bearbeitungsschritten verknüpft sein. Kopieren erzeugt eine weitere Bearbeitungszuordnung, keine zweite Originalkontur. | Bestätigt; Verschieben und Kopieren gehören bereits zur ersten nutzbaren Version |
 | D3 | Beim Verschieben bleiben eigene Tiefen, Vorschübe und Leads erhalten; geerbte Werte stammen aus dem Zielschritt. Werkzeug folgt verbindlich dem Ziel gemäß D8. | Vom Nutzer bestätigt |
 | D4 | Entities und Layers dienen der Geometrieauswahl. Layers zeigt dauerhaft die Originalkonturen und liefert die Ausgangsstruktur des Bearbeitungsbaums. Kein Verschieben zwischen DXF-Layern; Bearbeitungsänderungen brauchen einen aktiven Bearbeitungskontext. | Vom Nutzer präzisiert und bestätigt |
 | D5 | Neue versionierte `.d2g`-Struktur; bisherige Versionen 1.1–1.5 weiter lesen, migrierte Dateien zunächst unter neuem Namen speichern. | Vom Nutzer bestätigt |
 | D6 | Erste nutzbare Version umfasst Gruppen, Verschieben und Kopieren gemäß D2. Manuelle Stegregionen, Automatik und Fang folgen später; vorhandene BREAKS:-Funktion bleibt erhalten. | Vom Nutzer bestätigt |
 | D8 | Jeder Bearbeitungsschritt hat genau ein Werkzeug. Verschieben übernimmt das Zielwerkzeug; alte eigene Werkzeugzuweisungen benötigen getrennte Schritte. | Vom Nutzer bestätigt |
-| D14 | Geometrieauswahl zeigt alle Verknüpfungen; ein Schritt ist ausdrücklich aktiv für Vorschau und Parameterbearbeitung. | Vom Nutzer bestätigt |
+| D14 | Geometrieauswahl zeigt alle Verknüpfungen. Bei Mehrfachverknüpfungen erst Bearbeitungen ausdrücklich im Baum/Canvas auswählen; eindeutig zugeordnete Originalkonturen sind direkt gemeinsam editierbar. Aktiver Kontext steuert Hervorhebung, Mehrfachauswahl aggregiert Parameter gemäß D36. | Vom Nutzer bestätigt; am 08.11.2026 präzisiert |
 | D7 | Unklare alte Tiefen-/Vorschubwerte bei Migration als eigene Werte erhalten; bekannte Vererbungszustände bewahren. Später bewusst auf Schrittvorgaben umstellen. | Vom Nutzer bestätigt |
 | D15 | Beim Kopieren eigene Tiefen/Vorschübe/Leads kopieren; geerbte Werte und Werkzeug aus dem Ziel übernehmen. Beide Bearbeitungen sind unabhängig änderbar. | Vom Nutzer bestätigt |
 | D16 | Je Bearbeitungsschritt genau eine Bearbeitungsart und ein Werkzeug. Schruppen/Schlichten sind freie Namen; Art und Werkzeug werden ausdrücklich eingestellt. | Vom Nutzer bestätigt |
@@ -33,8 +42,36 @@ Ein Gruppenwechsel verändert nicht den ursprünglichen DXF-Layer.
 | D10 | Unpassende Geometrie beim Verschieben/Kopieren vorab erklären und die gesamte Aktion ohne Teiländerung ablehnen. | Vom Nutzer bestätigt |
 | D12 | Rückgängig/Wiederholen für die neuen Bearbeitungsaktionen gehört bereits zur ersten Version. | Vom Nutzer bestätigt |
 | D17 | Werkzeugdaten und Bearbeitungsvorgaben im Projekt erhalten; Änderungen externer Profile erst durch eine ausdrückliche Aktualisierung übernehmen. | Vom Nutzer bestätigt |
-| D18 | Gültige Verschiebe-/Kopieraktionen direkt ausführen, wirksame Änderungen anzeigen und Undo anbieten; keine zusätzliche Bestätigungsabfrage. | Vom Nutzer bestätigt |
+| D19 | Unterschiedliche Werkzeugdefinitionen derselben Ausgabenummer weiterhin erlauben; keine Exportsperre allein wegen unterschiedlicher Durchmesser. Definitionen erhalten eigene Projekt-IDs. | Vom Nutzer am 07.11.2026 bestätigt |
+| D20 | Exportcheckboxen ausschließlich in Bearbeitung; Entities/Layers behalten die Originalauswahl. Deaktivierte Zeichnungspfade berücksichtigen die verknüpften Bearbeitungen. | Vom Nutzer am 07.11.2026 bestätigt |
+| D21 | Werkzeugwechsel weiterhin nur bei anderer Ausgabenummer. Unterschiedliche Definitionen/Drehzahlen aufeinanderfolgender Schritte derselben Nummer erzeugen keinen erneuten Profilblock und keine zusätzliche Drehzahlausgabe. | Vom Nutzer am 07.11.2026 bestätigt |
+| D22 | Die vertrauten Werkzeug-/Konturfelder nach Bearbeitung verschieben und am neuen Modell weiterverwenden; keine Ersatz-Parametertabelle. Kette/Stift zeigen geerbte/eigene Werte, Tooltips erklären die Herkunft, ein Symbolmenü entfernt eigene Konturwerte gemäß D26. | Vom Nutzer am 07.11.2026 beauftragt |
+| D23 | Rechtsklick in Layers öffnet zuerst ein Kontextmenü an der Klickposition. Zugehörige bestehende Schritte darin anzeigen und auswählbar machen; den Erstellungsdialog erst über eine ausdrückliche Menüaktion öffnen. | Nach späterer Nutzerfreigabe implementiert; Nachweis R3-UI |
+| D24 | Zwei Tabs: Geometrie mit Entities oben und Layers unten, getrennt einklappbar und vertikal verstellbar; Bearbeitung als zweiter Tab. Originalbäume behalten Auswahl und Struktur. Sortierpfeile nur in Bearbeitung, Ein-/Ausklappen rechts an jedem Baum. | Vom Nutzer bestätigt und zur Umsetzung freigegeben |
+| D25 | Toolbar-Erstellen behält seinen Dialog: ohne Konturen leer; mit Auswahl Verschieben vorbelegt, alternativ Kopieren oder Auswahl nicht verwenden. Kontextmenüs verwenden stattdessen den gemeinsamen Zuordnungsdialog gemäß D37. | Vom Nutzer bestätigt; am 08.11.2026 präzisiert |
+| D26 | Bearbeitungswerkzeug und Konturparameter verwenden gleiche Gruppen-/Einheitsspalten und kompakte Wertebereiche. Jeder Wert behält sein Symbolmenü. Kette/Stift zeigen Herkunft; Rücksetzen ist eine Menüaktion. Gekürzte Zahlenanzeige erhält unveränderte Modellwerte vollständig. | Vom Nutzer bestätigt; kompakte Paare am 08.11.2026 ergänzt |
+| D27 | Werkzeugleiste oben: Erstellen, Sortieren, Verlauf, Baumansicht durch Trennlinien gruppiert. Rückgängig/Wiederherstellen ohne verfügbare Aktion deaktiviert. Entfernen/Richtung im Baumkontextmenü; Schritt bearbeiten per Doppelklick/F2, Vorgaben durch Auswahl. Nullpunkt nur im Canvas gemäß D31; keine untere Buttonleiste. | Vom Nutzer bestätigt; am 08.11.2026 präzisiert |
+| D28 | Anzeige standardmäßig mm mit 3, inch mit 5 Nachkommastellen; Längen folgen der Einheit; Vorschübe und Winkel jeweils mit eigener Konfiguration und Standard 1, ganze Zahlen bleiben ganzzahlig. Über Config-Menü einstellbar; Anzeige darf Eingabe, gespeicherte und berechnete Genauigkeit nicht reduzieren. | Vom Nutzer bestätigt und implementiert |
+| D29 | Zwei Werte je Zeile in vier Group Boxes: Z-Werte, Vorschübe, Lead in/out und Offset. Kurze Labels mit direkt angehängter Einheit; Zahlenfelder ungefähr acht Zeichen, Herkunftssymbol direkt am Feld. Werkzeugauswahl/Drehzahl in gemeinsamer Kopfzeile. Leads/Überfahrt ändern nur Bearbeitungswerte, keinen Werkzeugdatensatz. Maschinenfilter und Altwerterhalt bleiben. | Vom Nutzer beauftragt und implementiert; am 08.11.2026 präzisiert |
+| D30 | Kontextmenü für ausgewählte Bearbeitungskonturen bietet Kontur, Bohren, Taschenfräsen sowie G40/G41/G42 wieder an, im Bearbeitungsbaum und Canvas. Artwechsel nutzt zuerst passende bestehende Schritte gemäß D38, sonst neue mit Quellwerkzeug/-vorgaben. Keine Änderung anderer Zuordnungen oder Originalgeometrie; atomar mit Undo. | Implementiert; Wiederverwendung gemäß späterer Nutzerentscheidung D38 ergänzt |
+| D31 | Der beanstandete „Startpunkt“ meint den Werkstücknullpunkt. Kein Startpunkt-Eintrag im Kontur-/Bearbeitungsbaum-Menü; „Werkstücknullpunkt hierher …“ ausschließlich im Canvas, unabhängig von der Auswahl. Der Bearbeitungsstart einer Kontur ist ein anderer Wert. | Vom Nutzer klargestellt und umgesetzt |
+| D32 | Canvas-Kontextmenü möglichst wie bisher: Nullpunkt; Auswahl umkehren/aus-/einschalten; Richtung und Konturstart; passende Bearbeitungsarten/Kompensation. Gewohnte Reihenfolge und Trennlinien erhalten. „Bearbeitung zuordnen …“ gemäß D37 getrennt am Ende. Originalgeometrie unverändert; Aktionen auf aktive Zuordnungen mit Undo. | Nutzerauftrag anhand Vorher-/Nachher-Screenshots; implementiert und gemäß D37 präzisiert |
+| D33 | Nur der Trenner zwischen Baum und gesamtem Eingabebereich bleibt. Inneren Werkzeug-/Konturtrenner und deren Klappbereiche entfernen; ein gemeinsamer Scrollbereich für Kopfzeile und vier Group Boxes. Inhalte oben, Leerraum darunter. Keine Änderung an Modell oder History. | Vom Nutzer beauftragt und implementiert; am 08.11.2026 präzisiert |
+| D34 | Originalauswahl zeigt alle zugehörigen tatsächlichen Bearbeitungspläne mit Leads, Start/Ende und Tiefen. Bestehende Bewegungsfarben unverändert; aktive/überfahrene Bearbeitungen nur dicker. Direkte Canvas-Auswahl über Pfad/Label, Strg-Mehrfachauswahl und Trefferwahl bei Überlagerung; Teilauswahl punktiert das Original mit k/n. Kein künstlicher Geometrieversatz, manuelle Exportrouten unabhängig. | Vom Nutzer beauftragt und implementiert |
+| D35 | Beim Hauptfenster-Skalieren bleiben linke Breite und Meldungshöhe konstant; Canvas wächst, innerhalb Bearbeitung der Baum. Manuelle Trennergrößen und Geometrie-Klappzustände über Neustarts speichern; alte Parameter-Trennerzustände ignorieren. Mindestfenster schützt Canvas. | Vom Nutzer beauftragt und implementiert; am 08.11.2026 präzisiert |
+| D36 | Gemeinsame Parameterbearbeitung: gleich/geerbt grau, gleich mit eigenen Werten normal, verschieden als editierbares „Unterschiedlich“. Herkunft aus gespeichertem Vertrag, nicht Zahlenvergleich. Nur nicht gemeinsam anwendbare Felder sperren. Änderung/Rücksetzen für ganze Auswahl atomar, unveränderte Bestätigungen und Platzhalter schreiben nichts. Rückzug/Sicherheit bleiben Schrittwerte mit Wirkungshinweis. | Vom Nutzer beauftragt und implementiert |
+| D37 | Variante 2: Gemeinsamer Dialog „Bearbeitung zuordnen …“ aus Canvas und Bäumen. Aktion Kopieren/Verschieben, Ziel vorhandener/neuer Schritt; alle Felder sichtbar, nur passende Eingaben aktiv gemäß D39. Einzelne Kontextaktionen Kopieren/Verschieben/Erstellen ersetzen. Schritt bearbeiten und Vorgaben bearbeiten aus Menüs entfernen; Doppelklick/F2 und Auswahl bleiben. Profilaktualisierung/G-Code unter Erweitert. Atomar mit Undo, explizite Referenzauswahl und Zielvererbung erhalten. | Vom Nutzer gewählt und zur Umsetzung freigegeben; implementiert |
+| D38 | Vor automatischer Neuanlage bei Art-/Konturwerkzeugwechsel vorhandene Schritte prüfen: Zielart, komplette Werkzeugdefinition und gespeicherte Schrittvorgaben müssen übereinstimmen; Namen allein unterscheiden nicht. Ein Treffer wird verwendet, bei mehreren Ziel auswählen. Abbruch ohne Teiländerung, bestehende Zielwerte unverändert, Zuordnungen hinten anfügen. Explizit neuer Schritt bleibt neu. | Vom Nutzer beauftragt; bei mehreren Treffern ausdrücklich Zielauswahl gewählt; implementiert |
+| D39 | Zuordnungsdialog mit fester Größe und festen Feldpositionen. Alle Eingaben sichtbar lassen, nur nach vorhandenem/neuem Ziel aktivieren. Aktion einmal beim Öffnen vorbelegen; Zielwechsel ändert keine Werte, auch keine unberührte Vorbelegung. Name, Art, Werkzeug und vorhandenes Ziel beim Hin-/Herwechsel erhalten. | Vom Nutzer bestätigt und beauftragt; implementiert |
+| D40 | Variante 1: Importierte BREAKS-Regionen als besondere Haltesteg-Gruppe bei tatsächlich betroffenen Schritten anzeigen. Keine normale Kontur-/Werkzeug-/Exportreihenfolgeauswahl. Eigener Stegmodus für Regionseigenschaften, Aktivierung und Entfernen mit Undo. Globale Wirkung und bestehender Speichervertrag bleiben erhalten. Regionen und wirksame Stegabschnitte unterscheiden; manuelles Zeichnen und lokale Zuordnungen später in P7. | Vom Nutzer bestätigt und beauftragt; implementiert |
+| D41 | Einheitlicher Stegbezug bei interner und maschinenseitiger Radiuskorrektur: BREAKS gegen die Originalkontur schneiden. Bei interner Korrektur diese Konturstellen auf die korrespondierenden Stellen der Werkzeugmittelpunktbahn übertragen; bei Maschinenkorrektur dieselben Originalkonturstellen programmieren. Keine tangentiale Erweiterung um den Werkzeugradius. Nicht eindeutig übertragbare Stege dort vollständig auslassen und warnen, Export zulassen. Eckübergreifende Stege halten die gesamte Offsetverbindung auf Steghöhe. | Vom Nutzer beauftragt und Sonderfälle entschieden; implementiert und lokal geprüft, fachliche Abnahme P8 offen |
+| D42 | Eigene Projekt-Stegregionsobjekte, Verknüpfungen direkt unter betroffenen Bearbeitungskonturen und eigener Regionsbereich in Geometrie. BREAKS-Originale durch Name/Symbol abgrenzen. Zugehörige Rechtecke bei Konturauswahl anzeigen, normale Auswahl nicht abfangen. Manuelles Rechteckzeichnen mit Bestätigungsdialog, Verschieben/Eckgriffe, Esc-Abbruch, Aktivierung, Scope global/Schritt/Bearbeitungen, lokale Ausnahmen und globale Löschrückfrage mit Undo. Regionen folgen der Zeichnungstransformation; Bearbeiten in 2D, bei 3D eigener 2D-Editor. Erste Höhe Werkstückoberkante, danach letzter Wert, Vorschübe aus Auswahl. Projektformat 2.1 mit Einlesen von 2.0/Legacy. | Vorschlag und alle drei Detailentscheidungen vom Nutzer bestätigt; implementiert, P8-Abnahme offen |
+| D18 | Gültige Verschiebe-/Kopieraktionen direkt ausführen, wirksame Änderungen in der zentralen Meldungsausgabe anzeigen und Undo über den Buttonzustand anbieten; keine zusätzliche Bestätigungsabfrage oder Meldungsfläche im Bearbeitungstab. | Vom Nutzer bestätigt; Anzeigeort am 08.11.2026 präzisiert |
 | D13 | Bei der ersten Übernahme entspricht die Bearbeitungsstruktur dem Layerbaum; spätere Änderungen bleiben ausschließlich in Bearbeitung. | Bestätigt; Werkzeugtrennung nach D8 erfordert bei gemischten Alt-Layern getrennte Schritte |
+
+Ein eigener Drehzahlblock bei gleicher Werkzeugnummer ist als spätere,
+separate Erweiterung [PP1](../todo.md#pp1) vorgemerkt (Nutzeranregung vom
+07.11.2026). D21 bleibt für den aktuellen Umfang gültig.
 
 Die Bedienregeln einschließlich Abschnitt 7 sind abgestimmt. Technische
 Details werden innerhalb dieser Regeln umgesetzt; größere Scope-Änderungen
@@ -189,10 +226,10 @@ gespeichert; ein erneutes Öffnen liest sie nicht still aus veränderten globale
 Profilen nach. Globale Werte dienen beim Anlegen als Ausgangswerte.
 
 Technischer Entwurf zur konsistenten Werkzeughaltung: eine projektinterne
-Werkzeugtabelle, auf die die Schritte verweisen. Eine Werkzeugnummer hat
-innerhalb eines Projekts eine eindeutige Werkzeugdefinition; Schritte mit
-demselben Werkzeug bekommen nicht unabhängig verschiedene Durchmesser.
-Eine bewusste Aktualisierung zeigt daher alle betroffenen Schritte und
+Werkzeugtabelle, auf die die Schritte über Definitions-IDs verweisen.
+Gemäß D19 dürfen verschiedene Definitionen dieselbe Ausgabenummer tragen,
+auch mit unterschiedlichen Durchmessern. Nur Schritte mit derselben
+Definitions-ID teilen ihre Werkzeugdaten. Eine bewusste Aktualisierung zeigt alle betroffenen Schritte und
 übernimmt die Werkzeugdefinition gemeinsam. Eigene Bearbeitungswerte werden
 dabei nicht zu geerbten Werten umgedeutet oder still zurückgesetzt.
 
@@ -201,7 +238,8 @@ dabei nicht zu geerbten Werten umgedeutet oder still zurückgesetzt.
 globalen Tabelle, bleiben seine gespeicherten Projektdaten erhalten; kein
 automatischer Ersatz durch Werkzeug 1. Diese Regel betrifft Bearbeitungs-
 und Werkzeugvorgaben, nicht allgemeine UI-Einstellungen wie Farben/Layout.
-Die endgültigen Datenfeldnamen werden in P1 festgelegt.
+Die Datenfelder und Herkunftsregeln sind in der
+[P1–P3-Zuordnungstabelle](../documentation-notes/machining-project-format.md) festgehalten.
 
 **Wichtiger Migrationsfall:** Eine alte gespeicherte Tiefe von −3 mm verrät
 nicht zuverlässig, ob sie früher bewusst gesetzt oder nur aus einem Standard
@@ -278,16 +316,117 @@ Bearbeitung verändert weder Layers noch Entities.
 
 **Bestätigter Auswahlvertrag (D14):** Beim Auswählen einer Originalkontur
 werden alle zugehörigen Bearbeitungseinträge sichtbar markiert.
-Ein ausdrücklich aktiver Schritt bestimmt die editierbaren Werte
-und die hervorgehobene Vorschau. Bei mehreren Referenzen keine willkürliche
-Bearbeitung aktivieren und keine Parameteränderung automatisch auf alle
-übertragen. Ein Klick auf einen Bearbeitungseintrag aktiviert dagegen genau
-diesen Kontext und markiert seine Originalkontur in Layers/Entities/Canvas.
-Die konkrete Darstellung des Parameterbereichs wird in P0 skizziert.
+Eine aktive Bearbeitung bestimmt die hervorgehobene Vorschau. Parameter folgen
+der vollständigen ausdrücklich gewählten Bearbeitungsauswahl gemäß D36.
+Eindeutige Originalzuordnungen sind direkt gemeinsam editierbar. Besitzt eine
+ausgewählte Originalkontur mehrere Referenzen, bleibt der Editor einschließlich
+Werkzeugwahl gesperrt, bis die gewünschten Bearbeitungen im Baum/Canvas
+ausdrücklich gewählt sind. Keine willkürliche Aktivierung oder automatische
+Änderung aller verknüpften Zuordnungen durch die Originalauswahl.
 
 Zeichnungssichtbarkeit, Auswahl und Exportaktivierung sind getrennte Zustände.
 Die bisherigen Checkboxen müssen einzeln zugeordnet und erklärt werden;
 sie dürfen nicht im Zuge des Umbaus unbemerkt ihre Wirkung wechseln.
+
+<a id="r3-menu"></a>
+
+### R3-MENU – Kontextmenü der Originalbäume, implementiert
+
+**Stand 07.11.2026: umgesetzt nach späterer Nutzerfreigabe.**
+Die anfängliche Anweisung „nur planen“ wurde durch den Umsetzungsauftrag
+abgelöst. Der Vertrag gilt für Layers und Entities.
+[Abschluss und Prüfgrenzen](../archive/toolpath-refactoring-completed.md#r3-ui).
+
+Bedienvertrag gemäß D23 und D25:
+
+
+- Rechtsklick auf Layer oder Kontur öffnet ein normales Kontextmenü direkt
+  an der Klickposition. Die Position wird aus dem tatsächlichen Baum-
+  Viewport in Bildschirmkoordinaten umgerechnet.
+- Das angeklickte Objekt bestimmt den Kontext. Gehört es bereits zur
+  Mehrfachauswahl, bleibt diese erhalten; andernfalls wird die angeklickte
+  Kontur beziehungsweise der angeklickte Layer zur Auswahlbasis.
+- Ein Bereich „Zugehörige Bearbeitungsschritte“ zeigt die bereits mit diesen
+  Originalkonturen verknüpften Schritte in Bearbeitungsreihenfolge, mit Name,
+  Bearbeitungsart und Werkzeug. Schritte werden anhand ihrer Identität
+  zusammengefasst, nicht nur anhand gleicher Namen oder Werkzeugnummern.
+- Auswahl eines bestehenden Schritts springt im Bearbeitungstab zu dessen
+  passenden Einträgen. Eine eindeutige Bearbeitung kann aktiviert werden;
+  bei mehreren passenden Einträgen bleibt die Wahl der aktiven Kontur gemäß
+  D14 ausdrücklich. Die Navigation erzeugt oder verschiebt keine Zuordnung.
+- „Bearbeitungsschritt erstellen …“ öffnet den vorhandenen
+  Dialog erst nach ausdrücklicher Auswahl. Bei Aufruf aus diesem Menü soll
+  der Dialog nahe der Klickposition und innerhalb der verfügbaren
+  Bildschirmfläche erscheinen. Seine bisherigen Verschiebe-/Zusatzbearbeitungs-
+  Optionen bleiben erhalten.
+- Menü schließen oder abbrechen ändert weder Bearbeitungsdaten noch
+  Reihenfolge oder Undo-Verlauf. Bei fehlender Verknüpfung ist dies im Menü
+  erkennbar; ein leerer Baumbereich erzeugt keinen überraschenden Dialog.
+
+Automatisierte Qt5-/Qt6-Prüfungen decken Popup-Position, Navigation,
+Abbruch, alle Zuordnungsarten, ganze Layer und beide Originalbäume ab.
+Die tatsächliche Wahrnehmung von Größe und Position bei verschiedenen
+Monitoren bleibt Teil der [Nutzerabnahme](#r3-ui-user-check).
+
+<a id="r3-ui-user-check"></a>
+
+### R3-UI – konkrete Aufgaben für die Nutzerabnahme
+
+1. Eine eigene mehrlagige DXF öffnen. Im Tab Geometrie beide Gruppen einzeln
+   ein-/ausblenden, Trennlinie verschieben und beide Bäume ein-/ausklappen.
+   Erwartet: Auswahl bleibt gekoppelt; keine Layers-Sortierpfeile.
+2. Einen ganzen Layer rechts anklicken. Vorhandene Schritte im Menü anspringen;
+   dann „Bearbeitung zuordnen …“ öffnen. In vorhandenen Schritt kopieren und
+   verschieben; neuen Schritt mit Name/Art/Werkzeug erstellen. Bei vorhandenem
+   Ziel sind diese drei Felder sichtbar, aber gesperrt. Mehrfach umschalten:
+   Größe, Feldpositionen, Aktion und alle Eingaben bleiben erhalten.
+   Toolbar-Erstellen separat mit leerem
+   Schritt prüfen. Erwartet: Original-Layer bleiben unverändert, ein Undo pro
+   Aktion, Abbruch ändert nichts. Schritt-Doppelklick und Auswahl prüfen.
+3. Eine Konturbearbeitung wählen. Werkzeug-/Konturfelder, Einheiten und
+   Symbolmenüs bei üblicher Fensterbreite prüfen. Eine Tiefe ändern und über
+   das Symbolmenü auf Schrittvorgabe zurücksetzen. Erwartet: bündige Spalten,
+   verständliche Herkunft und kein ungewolltes Überschreiben eigener Werte.
+4. Zwei Bearbeitungen umsortieren, Rückgängig und Wiederherstellen benutzen;
+   Export-/Optimierungscheckboxen betätigen. Erwartet: Baum, Vorschau und
+   exportierte Reihenfolge passen zusammen. Nicht verfügbare Aktionen sind grau.
+5. Anzeige in mm/inch auf 3/5 Stellen prüfen; unter Konfiguration die
+   Zahlenanzeige ändern und übernehmen. Einen Wert mit mehr Stellen eingeben,
+   Feld verlassen und erneut aktivieren. Erwartet: gerundete Anzeige, volle
+   Eingabe beim Bearbeiten, unveränderte Werte durch bloßes Bestätigen.
+6. Linken Bereich vergrößern/verkleinern. Erwartet: beide Formulare skalieren
+   bündig, Einheiten gleich ausgerichtet, Symbolknöpfe bleiben sichtbar und
+   gleich breit; nötigenfalls mehrzeilige Beschriftungen.
+7. Eine Kreis-Bearbeitung rechts anklicken und Bohren wählen. Erwartet:
+   eigener neuer Schritt mit gleichem Werkzeug, G40 und gleicher Konturreferenz;
+   andere Zuordnungen bleiben erhalten. Mit Undo zurücknehmen. Für eine
+   geschlossene Fräskontur mit interner Kompensation Taschenfräsen sowie
+   G40/G41/G42 prüfen, auch im Canvas bei ausdrücklich aktivierter Zuordnung.
+8. Canvas-Menü mit dem bisherigen Ablauf vergleichen: Nullpunkt oben,
+   Auswahlaktionen und Richtung/Konturstart in getrennten Gruppen,
+   Bearbeitungsarten/Kompensation darunter, Zuordnen getrennt am Ende.
+   Erwartet: gewohnte Beschriftungen/Trennlinien; Richtungs-/Startänderungen
+   betreffen nur aktive Zuordnungen und schalten manuelle Exportrouten nicht ein.
+9. Den Trenner zwischen Baum und gesamtem Eingabebereich ziehen. Erwartet:
+   vier Group Boxes (Z-Werte, Vorschübe, Lead in/out, Offset), zwei Werte je
+   Zeile, kurze Beschriftung mit Einheit und Herkunftssymbol direkt am Feld.
+   Ein gemeinsamer Scrollbereich, kein innerer Trenner und keine separaten
+   Werkzeug-/Kontur-Klappbereiche. Keine Parameter-/History-Änderung durch Ziehen.
+10. Projekt unter neuem Namen speichern und öffnen. Erwartet: Zuordnungen,
+   Reihenfolge und Werte bleiben erhalten. Rückmeldung mit Bildschirmauflösung,
+   Skalierung und betroffener Ansicht, falls Beschriftungen abgeschnitten sind.
+11. Eine Originalkontur mit zwei Bearbeitungen wählen: beide Vorschauen mit
+    Leads/Start/Ende sehen, einen Pfad oder sein Label aktivieren und per Strg
+    erweitern. Überlagerte Treffer auswählen beziehungsweise abbrechen.
+    Erwartet: richtige aktive Parameter, Teilauswahl gepunktet mit k/n,
+    unveränderte Farben und keine unbestellte Exportroute. Zoomen und schieben:
+    G40 ohne Zusatz-Offset bleibt deckungsgleich, Kompensation bleibt fachlich.
+12. Fenster vergrößern und neu starten: linke Breite, Meldungshöhe, manuelle
+    Trenner und Klappzustände bleiben erhalten. Werte stehen auch breit nur
+    paarweise nebeneinander; Lead-/Überfahrtwerte im Konturbereich, Messerparameter
+    nur bei Dragknife. Ausgeblendete Zeilen hinterlassen keine Beschriftungen.
+
+Das ist P8-Nutzerabnahme; keine Paket-, Linux-/Debian- oder Maschinenabnahme.
 
 ### Neuer Tab Bearbeitung
 
@@ -328,35 +467,220 @@ Schritte, wenn der Nutzer eine getrennte Reihenfolge/Vorgabe möchte. Keine
 automatische Zusammenlegung oder Umsortierung aller Schritte desselben Tools.
 Der Exporter entscheidet Werkzeugwechsel aus tatsächlicher Folge und Profil.
 
-**Migrationsdetail vor P1 konkretisieren:** Ein alter Layer kann mehrere eigene
+**Umgesetzte Migrationsregel P1–P3:** Ein alter Layer kann mehrere eigene
 Shape-Werkzeuge und Bearbeitungsarten enthalten. Strikte Trennung nach Tool
 und Art und gleichzeitig exakt identischer Anfangsbaum sind dafür nicht
-ohne Ausnahme erfüllbar. Empfehlung
-zu den bestätigten Regeln D8/D16: im Bearbeitungsbaum getrennte, nach
+ohne Ausnahme erfüllbar. Umsetzung gemäß
+den bestätigten Regeln D8/D16: im Bearbeitungsbaum getrennte, nach
 Werkzeug und Bearbeitungsart benannte Schritte anlegen und die Ausnahme anzeigen; Original-Layers unverändert
 lassen. Dabei zusammenhängende Werkzeugabschnitte erhalten, damit etwa die
-Reihenfolge T2 → T4 → T2 nicht zu T2 → T2 → T4 umsortiert wird. Die genaue
-Migration wird vor Umsetzung mit einem solchen Altprojekt abgestimmt.
+Reihenfolge T2 → T4 → T2 nicht zu T2 → T2 → T4 umsortiert wird. Diese Übernahme
+ist in P1–P3 umgesetzt; Werkzeug/Art stehen in eigenen Spalten des neuen Baums.
 
 **Sonderlayer:** IGNORE:-, BREAKS:- und andere Importkonventionen werden beim
 Import ausgewertet; sie sind keine frei austauschbaren Bearbeitungsgruppen.
 Break-Regionen und G-Code-Einträge benötigen eigene zulässige Ziele und dürfen
 nicht als normale Kontur in einen Fräs-/Bohrvorgang verwandelt werden.
 
-**Manuelle Haltestege: gemäß D6 ausdrücklich späteres Folgepaket.**
-Bestehende BREAKS:-Layer, Z-Werte und Passauswahl werden schon in der
-Grundversion unverändert übernommen. Für das spätere Paket ist vorgesehen:
+**Manuelle Haltestege: D42 erweitert den ursprünglich zurückgestellten D6-Umfang.**
+Eigene Projektobjekte ersetzen die versteckten BREAKS-Bearbeitungen bei Übernahme.
+Ihre globalen Z-/Vorschubwerte und IDs bleiben erhalten. Im Bearbeitungsbaum
+stehen Regionsverknüpfungen nun direkt unter der tatsächlich betroffenen Kontur;
+ein eigener Regionsbereich in Geometrie zeigt auch manuelle, deaktivierte und
+unwirksame Regionen. Original-BREAKS-Shapes erhalten Regionsnamen/-symbole,
+normale Konturauswahl und Konturaktionen gelten dort nicht.
+
+Auswahl einer Bearbeitung zeigt deren wirksame Rechtecke; Originalauswahl zeigt
+die Vereinigung der verknüpften Bearbeitungen, ohne Rechtecke zu duplizieren.
+Regionauswahl hebt die betroffenen Konturen hervor, aktiviert den Stegmodus aber
+nicht automatisch. Nur im Stegmodus greifen Regionsauswahl und Eckgriffe im
+Canvas. Bestehende Bewegungsfarben bleiben erhalten; Umrisse gestrichelt magenta.
+
+**Einheitlicher Stegbezug gemäß D41, implementiert.** Die Steggrenzen werden
+unabhängig von der Zuständigkeit der Radiuskorrektur auf der Originalkontur
+bestimmt. Bei G40 sind dies direkt die programmierten Werkzeugmittelpunkte.
+Bei intern berechnetem G41/G42 müssen die Konturstellen auf die zugehörige
+Werkzeugmittelpunktbahn übertragen werden; der Schnitt der Region mit der
+Offsetbahn darf dafür nicht erneut die Steggrenzen bestimmen. Bei maschinellem
+G41/G42 werden die gleichen Originalkonturstellen ausgegeben, die Steuerung
+übernimmt den Versatz. Die Region muss dadurch nicht zusätzlich die Offsetbahn
+erreichen. Es gibt keine Vorverlegung des Anhebens oder Nachverlegung des
+Absenkens aufgrund tangentialer Werkzeugberührung: Bezug bleibt der Mittelpunkt
+an der korrespondierenden Bahnposition, keine garantierte Materialstegbreite.
+
+Globale Zuordnung, Steg-Z und Passauswahl bleiben erhalten. Polygonale Regionen
+werden auf Geraden/Bögen der Originalkontur ausgewertet; die Übertragung nutzt
+Geradennormalen und konzentrische Bogenradien. Reicht ein Steg über eine Ecke,
+bleibt die vollständige dazwischenliegende Offsetverbindung auf Steghöhe, ohne
+kurzen Zustich an Teilstückgrenzen. Bögen bleiben auch im Stegabschnitt Bögen.
+Bei verschwundenen, getrennten oder mehrdeutigen Gegenstücken wird der betroffene
+zusammenhängende Steg für diese Bearbeitung vollständig ausgelassen und eine
+Warnung ausgegeben. Das blockiert gemäß Nutzerentscheidung den Export nicht;
+andere gültige Stege derselben Region bleiben erhalten. Eine Grenze genau auf
+einem Eckpunkt mit mehreren möglichen Offsetpositionen ist ebenfalls mehrdeutig.
+Nicht geschlossene oder nicht polygonale Regionen können nicht eindeutig
+übertragen werden und werden mit Warnung ausgelassen.
+
+Taschen-Randkonturen verwenden denselben Bezug. Die Rasterfüllung einer Tasche
+besitzt keine 1:1-Entsprechung auf der Originalkontur und behält ihre bisherige
+räumliche Regionsauswertung; Schleppmesser verwenden weiterhin ihre bisherige
+Stegverarbeitung. Strg-Ausrichtung folgt D44; automatische Platzierung bleibt offen. Vorschau und Export
+verwenden denselben Plan. Abnahmefälle: Gerade/Bogen, G40/G41/G42, beide
+Richtungen, Radien/Aufmaß, schmale/schräge Regionen, Eckverbindungen und
+Warnungsfälle. [Lokaler Nachweis](../archive/toolpath-refactoring-completed.md#d41).
+Das reale Korrekturverhalten einer Steuerung benötigt eine gesonderte Abnahme.
+
+**Stegmodus-Symbol:** Nutzerwahl Variante 2, gestrichelte Region mit Stift.
+Direkt rechts neben „Erstellen“ bei den linken Bearbeitungsaktionen anordnen;
+Baumdarstellung/Ein- und Ausklappen bleiben rechts. Aktiver Modus bleibt am
+gedrückten Button erkennbar, Tooltip und Umschaltverhalten bleiben erhalten.
+
+**D43 – einheitliche Auswahl und Bezugshervorhebung, bestätigt und umgesetzt.**
+Ein BREAKS-Layer wählt die Menge seiner Regionen als Bezug; eine Regionsgruppe
+wählt ihre enthaltenen Regionen. Alle damit tatsächlich verknüpften Bearbeitungen
+werden als Werkzeugbahnen hervorgehoben, auch bei globalen Regionen in anderen
+Schritten. Einzelne Regionsverknüpfungen behalten beim Anklicken ihre Position
+im Baum und springen nicht zur ersten Referenz. Wiederholtes Klicken verändert
+die Auswahl nicht; Doppelklick auf Gruppen klappt nur auf/zu.
+
+Ein ausgewählter Schritt umfasst seine enthaltenen Bearbeitungen. Ihre Baumzeilen
+und Regionsnachfahren sind als abgeleitete Bezüge heller hinterlegt; der Schritt
+bleibt der tatsächliche Editier-/Drag-Kontext. Regionsbezüge machen Konturen
+nicht zu gemeinsamen Parameterzielen. Regiongruppen zeigen nur eine gesperrte
+Zusammenfassung. Rot bleibt Originalgeometrie, Blau Werkzeugbahn, Magenta Steg;
+die Bezugsauswahl erzeugt keine neue Bewegungsfarbe. Lokale Ausnahmen und andere
+Regionsänderungen aktualisieren die Bezugshervorhebung unmittelbar.
+
+**Zuordnungsdialog: geometrische Kandidaten, vom Nutzer bestätigt.** Nur
+Bearbeitungen anbieten, deren Originalkontur die Region mit einem positiven
+Abschnitt im Inneren durchläuft. Rand-/Eckberührung genügt nicht. Mehrfachnutzung
+derselben Kontur bleibt je Arbeitsgang getrennt wählbar; Schrittziele benötigen
+mindestens eine passende Bearbeitung. Ein einziger Treffer wird bei Neuanlage
+vorbelegt, ohne Treffer bleibt die Neuanlage gesperrt. Global umfasst die
+geometrisch passenden Bearbeitungen mit den bestehenden lokalen Ausnahmen.
+Die Abfrage hängt nicht von Werkzeugradius, Z-/Passwerten oder Aktivierung ab.
+
+**Manuelle Funktionen gemäß D42, implementiert:**
 
 - Rechteck im Canvas anlegen, auswählen, verschieben, Größe/Z-Höhe ändern und
-  löschen. Neue Regionen zunächst ausgewählten Arbeitsgängen zuordnen.
+  löschen. Neue Regionen zunächst ausgewählten Bearbeitungen bzw. ausgewähltem
+  Schritt zuordnen. Ohne eindeutige Auswahl muss die Zuordnung im Dialog gewählt
+  werden. Name, Höhe, Vorschübe und Scope werden beim Anlegen bestätigt.
 - Bestehende globale BREAKS:-Wirkung als ausdrückliche Kompatibilitätszuordnung
   übernehmen. Ein Gruppenwechsel verliert diese Zuordnung nicht.
 - Absolute Steg-Z-Höhe und „Process breaks from“ erhalten; Regionen wirken
-  auf die tatsächlich geplante, gegebenenfalls kompensierte Bahn.
+  auf die tatsächlich geplante Bahn mit Originalkonturbezug gemäß D41.
 - Projektspeicherung erhält Form, ID und Zuordnungen. Vorschau und Export
   verwenden dieselben Stegaktionen und dieselbe Tiefenpassauswahl.
-- Automatik und Fang als getrennte Folgepakete planen: Vorschläge müssen
-  korrigierbar sein; Fangtoleranz und unterstützte Geometriearten vorher festlegen.
+- Verschieben/Eckgriffe erzeugen erst beim Loslassen eine Undo-Aktion; Esc und
+  Dialogabbruch erzeugen keine Änderung. Regionkoordinaten gehören zum
+  Zeichnungswurzelraum und folgen Verschieben, Drehen, Spiegeln und Skalieren.
+- „Zuordnung entfernen“ erzeugt eine lokale Ausnahme für die betroffene
+  Bearbeitung. „Region löschen“ entfernt das globale Projektobjekt und alle
+  Verknüpfungen nach Rückfrage; Original-DXF-Geometrie bleibt erhalten.
+- Die 3D-Ansicht zeigt Regionen, Bearbeiten öffnet einen separaten 2D-Dialog.
+  Reale GPU-Abnahme bleibt getrennt. Projektformat 2.1 übernimmt 2.0 und Legacy;
+  ältere Programme können neue Dateien nicht laden.
+- Automatische Platzierung als Folgepaket planen; Vorschläge müssen korrigierbar sein.
+
+**D44 – Live-Maße und Strg-Ausrichtung, bestätigt am 13.11.2026 und umgesetzt.**
+
+- Breite/Höhe im Stegmodus am ausgewählten ruhenden Rechteck anzeigen (D47);
+  Projekteinheit und konfigurierte Anzeigepräzision verwenden. Hover hebt hervor,
+  Klick öffnet direkte Eingabe, Enter bestätigt, Esc verwirft. Volle Genauigkeit
+  erhalten; positive endliche Werte symmetrisch um die Mitte ändern, je ein Undo.
+- Strg beim Zeichnen/Verschieben/Größenändern aktiviert Ausrichtung: genau zwei
+  Schnittpunkte mit einer Originalkontur bestimmen Mittelpunkt und Breitenachse,
+  aktuelle Breite/Höhe bleiben erhalten. Geraden/Bögen verwenden den nominalen
+  Schnittdienst und die bestehende Import-Punkttoleranz. Reiner Randkontakt und
+  Konturen mit mehr/weniger als zwei Kontakten ergeben kein Fangziel.
+- Ein Original zählt auch bei mehreren Bearbeitungen nur einmal. Ein eindeutiges
+  Ziel wird live ausgerichtet; mehrere Ziele werden beim Loslassen zur Auswahl
+  angeboten. Abbruch erhält das ungeschnappte Ziehergebnis. Ohne Ziel bleibt die
+  Ziehbewegung erhalten und eine Meldung erklärt den ausgelassenen Fang.
+- Keine automatische Platzierung und keine Modelländerung während Vorschau;
+  Formänderungen nutzen die vorhandenen Vertices und denselben Undo-Vertrag.
+
+**Stegsitzung, Ergänzung vom 13.11.2026:** Nach Bestätigung bleibt Zeichnen aktiv;
+weitere Konturen sind im selben Stegmodus auswählbar. Ein Klick ins Leere löst
+Regionsauswahl und Bezugshervorhebung. Baumzahlen zählen verknüpfte Regionen,
+nicht einzelne angehobene Bahnabschnitte. Lokal unter beiden Qt-Bindings geprüft.
+Die zunächst offene konfigurierbare Fang-Voreinstellung konkretisiert D45.
+
+**D45 – werkzeugabhängiges Fangquadrat, bestätigt am 13.11.2026 und umgesetzt.**
+
+- Präzisierung des Nutzers: immer ein Rechteck aufziehen, kein Erstellungsdialog.
+  Beim Loslassen wird im Fangmodus ein ausgerichtetes Quadrat erzeugt. Seitenlänge ist
+  Werkzeugdurchmesser der gewählten Bearbeitung plus verbleibende Steglänge,
+  z. B. Ø4 mm + 2 mm = 6 mm für jede Kante. Nominale Kontur und deren Tangente
+  bestimmen die Position; zwei geeignete Schnittpunkte richten gemäß D44 aus.
+- Anwendungskonfiguration: Fang/Handeingabe als Startvorgabe, Fang als Default;
+  Steglänge initial 2 in Konfigurationseinheiten (Standardprofil mm). Beim Anlegen
+  in Zeichnungseinheiten umrechnen. Auswahl neben dem Stegschalter steuert neue Regionen.
+- Neue Regionen setzen die ausdrückliche Auswahl gemäß D48 voraus und werden
+  genau deren überschneidenden Bearbeitungen zugeordnet. Doppelklick auf die Region im
+  Canvas/Baum öffnet anschließend den Bearbeitungsdialog.
+- Maßfelder im Canvas ändern weiter die tatsächlichen Rechteckkanten. Kein neues
+  Persistenzformat; bloße Vorgabenänderungen skalieren vorhandene Regionen nicht.
+  Automatische Stege folgen Werkzeugdurchmesseränderungen gemäß D46.
+  Z-Oberkante bleibt separat. Das Quadrat ist eine Anlegevorgabe; die reale Stegform
+  an Ecken/engen Bögen ist fachlich zu kontrollieren. Keine automatische Platzierung.
+- `placement_mode` wird je Region gespeichert: Fang oder manuell, alte/importierte
+  Regionen bleiben manuell. Der Bearbeitungsdialog ändert nur diesen
+  Steg. Umschalten auf Fang und Eckgriff-Größenänderungen im Fangmodus wenden
+  das aktuelle Standardmaß an; direkte Maßeingabe schaltet auf manuell um.
+
+**D46 – automatische Werkzeugnachführung und Kantenmaße, bestätigt und umgesetzt.**
+
+- Werkzeugdurchmesseränderungen passen zugeordnete automatische Stege an:
+  neue Quadratseite = neuer Durchmesser + aktuell konfigurierte Steglänge.
+  Werkzeugwechsel, Tabellenersatz/-aktualisierung und Verschieben in einen anderen
+  Werkzeugschritt werden an derselben atomaren Befehlsgrenze behandelt.
+- Nutzerentscheidung bei gemeinsamen Regionen mit verschiedenen Werkzeugen:
+  bei Bedarf je Bearbeitung in eigenständige automatische Regionen aufteilen.
+  Unbetroffene Verwendungen behalten ihre Form; Werkzeugwechsel/Anpassung/
+  Aufteilung gemeinsam rückgängig machen. Manuelle Regionen bleiben unverändert.
+- Maßfelder mittig auf oberer und rechter Rechteckkante, nur Zahlenwert und Einheit,
+  ohne „Breite/Höhe“. Klick öffnet das Eingabefeld ebenfalls an dieser Position.
+
+**Stegmodus ohne vorgeschaltetes Kontextmenü:** Der Schalter in der Bearbeitungs-
+Werkzeugleiste startet direkt die fortlaufende Zeichensitzung. Ausschalten beendet
+sie. Doppelklick, Entf/Löschbutton, Aktivierungshäkchen und Modusschalter decken die
+vorhandenen direkten Aktionen ab. Nutzerentscheidung umgesetzt: Auswahl
+Fang/Manuell für neue Regionen neben dem Modusschalter, sichtbar im Stegmodus;
+„Zuordnung entfernen“ im Regionsparameterbereich, aktiv nur beim Bezug zu einer
+konkreten Bearbeitung. Die Auswahl ändert keinen bereits vorhandenen Steg.
+Das spezielle Steg-Kontextmenü aus Canvas, Bearbeitungsbaum und Regionsliste
+ist vollständig entfernt. Bearbeitung und Modus eines vorhandenen Stegs bleiben
+im Doppelklick-Dialog erreichbar. Normales Canvas-Menü außerhalb des Stegmodus
+bleibt erhalten.
+
+**D47 – Auswahl vor Geometrieänderung, bestätigt und umgesetzt.**
+
+- Erster Klick auf eine nicht ausgewählte Stegregion wählt ausschließlich aus;
+  auch Mausbewegung bei diesem ersten Druck verändert die Region nicht.
+- Erst eine bereits ausgewählte Region durch Klicken/Ziehen verschieben oder
+  über ihre Eckgriffe ändern. Ausgewählte Regionen haben bei Überlagerung
+  Vorrang. Doppelklick öffnet weiterhin den Stegdialog.
+- Maßfelder nur bei ruhender Auswahl: beim Zeichnen, Verschieben und
+  Größenändern ausblenden, nach Loslassen wieder anzeigen. Keine Live-Maße.
+- Direkte bestätigte Maßeingabe schaltet auf manuell, auch beim erneuten
+  Eingeben desselben Werts. Öffnen/Abbrechen allein ändert den Modus nicht.
+
+**D48 – verbindliche Zielauswahl vor dem Zeichnen, bestätigt am 14.11.2026.**
+
+- Zuerst Originalkontur, Bearbeitungsschritt oder einzelne/mehrere Bearbeitungen
+  auswählen. Originalkontur umfasst alle verknüpften Bearbeitungen; einzelne
+  Bearbeitungen beschränken auf diese Auswahl, Schritte auf deren enthaltene Konturen.
+- Ohne Zielauswahl keine Neuanlage. Die Zeichenbewegung ohne Ziele erzeugt nichts;
+  Konturklick kann zunächst die erforderliche Originalauswahl herstellen. Rechtecke
+  ohne Schnitt mit ausgewählten Konturen werden abgelehnt, ohne fremde Zuordnung.
+- Auswahl bleibt für fortlaufendes Zeichnen erhalten, auch beim anschließenden
+  Inspizieren einer angelegten Region. Neue Kontur-/Bearbeitungsauswahl ersetzt
+  sie; Klick ins Leere hebt sie auf. Regionsreferenzen erweitern die Auswahl nicht.
+- Nur überschneidende ausgewählte Bearbeitungen zuordnen. Unterschiedliche
+  automatische Quadratmaße nach Geometrie/Werkzeug ergeben bei Bedarf mehrere
+  Regionsobjekte gemäß D46, in einer gemeinsamen atomaren Anlage mit Undo/Redo.
 
 **Teilkonturen:** Startpunkt/Richtung gehören zum Arbeitsgang, nicht zur
 gemeinsam referenzierten Originalgeometrie. Das Modell soll spätere Angaben
@@ -376,7 +700,7 @@ Umbenennen verändert keine Werkzeugbahn. Beim Zuordnen zu einem vorhandenen
 Schritt werden dessen Werkzeug und Art übernommen.
 
 **Ganzen Layer zuordnen:** Layer im Tab Layers auswählen; damit seine Konturen
-auswählen. Über „Bearbeitungsschritt aus Auswahl erstellen …“ Name, Art und
+auswählen. Über „Bearbeitungsschritt erstellen …“ Name, Art und
 Werkzeug festlegen. „Verschieben“ übernimmt bestehende Zuordnungen;
 „Zusätzlich bearbeiten“ legt neue an. Auch bei ganzer Layerauswahl gilt D10:
 bei einer unpassenden Kontur gesamte Aktion ablehnen. Die Original-Layer-
@@ -397,7 +721,7 @@ Technische Entscheidungen wie die genaue Codec-Implementierung werden aus
 dem vereinbarten Verhalten abgeleitet und im Entwurf begründet; sie müssen
 nicht einzeln als Bedienentscheidung abgefragt werden.
 
-### Skizze des dritten Tabs
+### Skizze des Bearbeitungstabs
 
 ```text
 [ Entities ] [ Layers ] [ Bearbeitung ]
@@ -480,12 +804,9 @@ Arbeitsgänge, G-Code-Aktionen und Stegregionen speichern. Referenzen erfolgen
 über IDs; Reihenfolgen sind ausdrücklich geordnete Listen. Eigene Werte
 und Vererbungszustände werden verschieden gespeichert.
 
-**Codec-Entscheidung noch offen:** Empfehlung ist ein eigener validierter,
-versionierter Daten-Codec, etwa JSON-Inhalt mit expliziter Schemaversion unter
-der weiterverwendeten `.d2g`-Endung. Alternativ kann das bisherige eingeschränkte
-Zuweisungsformat erweitert werden. Die Wahl folgt erst nach dem fachlichen
-Schema; sie darf kein Ausführen von Projektinhalt erfordern. Eine neue
-Formatversionsnummer wird erst für das tatsächlich vereinbarte Schema vergeben.
+**Codec in P3 umgesetzt:** validiertes UTF-8-JSON mit expliziter Version 2.0
+unter der weiterverwendeten `.d2g`-Endung. Der sichere Legacy-Leser bleibt
+erhalten; Projektinhalt wird nicht ausgeführt.
 
 Übernahme bisheriger Projekte:
 
@@ -518,14 +839,14 @@ mit einer noch offenen fachlichen Entscheidung, von der ihr Verhalten abhängt.
 | Paket | Inhalt und hauptsächlich betroffene Bereiche | Abnahme / Voraussetzung |
 | --- | --- | --- |
 | P0 – Bedienvertrag, abgeschlossen | Regeln, Auswahl, Bearbeitungskonturen und Beispiele mit dem Nutzer abgestimmt. | [Planungsabschluss](../archive/toolpath-refactoring-completed.md#r3-r1b-plan); Implementierung und GUI-Abnahme folgen separat. |
-| P1 – Parameter und Identitäten | Herkunft aller Parameter erfassen; IDs, Referenzen, Gruppen und Resolver im reinen Domain-Modell ergänzen. | Eigene/geerbte Werte eindeutig, keine Qt-/Adapterimporte; keine Verhaltensänderung im bestehenden Einstieg. |
-| P2 – Gemeinsame Bearbeitungsgrundlage | Bestehende DrawingModel-/Shape-Daten über einen Adapter in Gruppen/Arbeitsgänge überführen. Pro Kontur zunächst ein Arbeitsgang; getrennte Start-/Richtungswerte. | Vorschau/Export benutzen denselben Resolver; bestehende positive Plan- und Golden-Verträge erhalten. |
-| P3 – Persistenz und Reload | Neuen Codec, Altprojektmigration, IDs und Wiederzuordnung implementieren; GUI- und CLI-Projektwege anbinden. | Roundtrip und alte Versionen 1.1–1.5; fehlende/mehrdeutige Referenzen blockieren zuverlässig. |
-| P4 – Dritter Tab | Bearbeitungsbaum hinzufügen, Auswahl/Canvas koppeln, Gruppenaktionen, Parameterdarstellung; bestehende Tabs gemäß D4 anbinden. | Datenmodell ist führend, kein zweiter UI-Zustand; DE/FR/RU und Qt5/Qt6. |
-| P5 – R1b | Atomare Mehrfachverschiebung, Sortieren, Einfügemarkierungen und alternative Menüaktionen; Kopieren mit eigenständiger Identität gemäß D2/D15; verpflichtendes Undo/Redo gemäß D12. | Verschieben erhält IDs/Anzahl; bewusstes Kopieren erzeugt neue Bearbeitungs-IDs bei gleicher Originalgeometrie; Zielvererbung und Roundtrip stimmen. |
-| P6 – Export und Optimierung | Bearbeitungsreihenfolge als verbindlichen Exportvertrag aktivieren; Gruppen-/G-Code-Grenzen, Werkzeuge und Routendarstellung anbinden. | Tatsächlicher G-Code folgt dem sichtbaren Baum; beide Optimierungsmodi bleiben erhalten; kompletter Exportabbruch bei Fehlern. |
-| P7 – Stegregionen, später | Manuelle Regionen, Fang und Automatik separat abstimmen; nicht Teil der ersten nutzbaren R3/R1b-Version. Bestehende BREAKS:-Wirkung bereits in P2/P3/P6 erhalten. | Eigener Folgeauftrag mit Region ändern/löschen, Zuordnung, Pass-/Z-Wirkung und Roundtrip. |
-| P8 – Integrierte Nutzerabnahme | Referenzprojekte gemeinsam durchgehen; Anleitung ergänzen und alte Übergangssynchronisierung entfernen. | Nachfolgende Matrix bestanden; Grenzen separat dokumentieren. |
+| P1 – Parameter und Identitäten, implementiert | Herkunft, IDs, Referenzen, Gruppen und Resolver im reinen Domain-Modell. | [Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3); [Zuordnungstabelle](../documentation-notes/machining-project-format.md). |
+| P2 – Gemeinsame Bearbeitungsgrundlage, implementiert | Legacy-Migration und getrennte Shape-/Layer-Projektionen mit eigenen Starts/Richtungen. | Gemeinsamer Resolver für Vorschau/Export; [Nachweis und Übergangsgrenzen](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3). |
+| P3 – Persistenz und Reload, implementiert | JSON 2.0, Altprojektmigration, IDs, Referenzbindung und GUI-/CLI-Projektwege. | Roundtrip, Versionen 1.1–1.5 und Exportabbruch bei ungelösten Referenzen [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3). |
+| P4 – Bearbeitungstab, implementiert | Bearbeitungsbaum, Auswahl/Canvas, Gruppenaktionen, Parameterherkunft und Originalauswahl gemäß D20. | DE/FR/RU und echte Qt5-/Qt6-Abläufe [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
+| P5 – R1b, implementiert | Atomare Mehrfachaktionen, Drop-Markierung, Menü/Sortierung, neue IDs beim Kopieren sowie Undo/Redo. | Eigene Werte/Zielvererbung, Rückgängig und stabile Redo-IDs [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
+| P6 – Export und Optimierung, implementiert | Sichtbare Bearbeitungsreihenfolge, Schritt-/G-Code-Grenzen, Werkzeugnummernvertrag D21 und geplante Routenendpunkte. | GUI/CLI-Ausgabe, beide Optimierungsmodi und Fehlerabbruch [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
+| P7 – Stegregionen, abgeschlossen | Manueller Stegumfang einschließlich D41–D48 implementiert und akzeptiert. | Zusätzliche selbsttätige Verteilung wird gemäß Nutzerentscheidung vom 14.11.2026 nicht weiter verfolgt. |
+| P8 – Integrierte Nutzerabnahme, abgeschlossen | Nutzer bestätigt fachliche Abnahme am 14.11.2026. | Anleitung/Bilder und Paket-/Installationsnachweise gehören zum separaten Integrations-/Releaseplan. |
 
 P2/P3 sind die Grundlage des neuen Tabs, P4/P5 die erste sichtbare Bedienung.
 P6 ist kein nachträglicher Versuch, die GUI zu spiegeln: Der gemeinsame Export-
@@ -559,7 +880,7 @@ eigene Folgepakete statt unbeabsichtigt in den Grundumfang zu wachsen.
 | Speichern, Schließen, Laden | Identitäten, Gruppen, Reihenfolge, Overrides, Stege und Herkunft unverändert. |
 | DXF-Transformation oder geänderte Quelle | Eindeutige Referenzen erhalten; Mehrdeutigkeit/Fehlen sichtbar, kein falscher automatischer Ersatz. |
 | Pocket-/Drill-/Maschinenkonflikt | A1/B1/B2-Werterhalt und Diagnose; vorhandene Zieldatei bleibt bei Exportfehler erhalten, stdout leer. |
-| Stegregion ändern (Folgepaket P7) | Tatsächliche kompensierte Bahn, Z-Höhe und Passauswahl stimmen in Plan, 2D/3D und G-Code; im Grundumfang vorhandene BREAKS:-Semantik unverändert. |
+| Stegregion importieren, zeichnen und ändern | Konturverknüpfungen, Rechteckanzeige, Scopes/Ausnahmen, Zeichnen/Verschieben/Eckgriffe, Live-Maße/Maßeingabe, Strg-Ausrichtung/Zielwahl, Abbruch/Löschrückfrage und Undo prüfen; Z-/Passwirkung und 2.1-Roundtrip stimmen. Automatische Platzierung sowie reale GPU-Abnahme bleiben getrennt. |
 | GUI/CLI dasselbe Projekt exportieren | Gleiche Arbeitsgänge, Parameterauflösung und Reihenfolge; keine zweite CLI-Planung. |
 
 Pro Etappe fokussierte lokale Prüfungen einmal ausführen; keine vollständige
@@ -568,13 +889,89 @@ laufen über den verpflichtenden Fast-Hook; volle CI auf Develop/PR gemäß
 Repositoryregeln. Übersetzungspflege ist Teil jeder GUI-Etappe. Manuelle
 GPU-, Paket-/Debian- und reale Maschinenabnahme bleiben eigene Aufträge.
 
-## 11. Nächster Schritt nach dem freigegebenen Plan
+## 11. Nächster Schritt nach P1–P6
 
-Zunächst den abgestimmten Plan committen, pushen und den aktuellen
-Softwarestand als Develop-Prerelease veröffentlichen. Dieser Release enthält
-noch keine R3-/R1b-Implementierung. Danach beginnt die Umsetzung mit P1:
-Parameterherkunft, Identitäten und reines Domain-Modell. Bestehende
-Arbeitsabläufe bleiben in dieser ersten Scheibe unverändert.
+**Aktueller Stand 14.11.2026:** Der Nutzer hat P8/R3/R1b fachlich abgenommen.
+Die nachfolgende ursprüngliche Abnahmeplanung ist durch diese Entscheidung
+abgeschlossen. Zusätzliche automatische Stegverteilung wird nicht weiter verfolgt.
+Für IGNORE, Anleitung/Bilder, Installationsnachweis und Develop-Veröffentlichung
+gilt nun der [Abschlussplan](maschining-project-release-plan.md).
+
+P1–P3 liefern das reine Modell, gemeinsame Bearbeitungsprojektionen und
+JSON-Projekte der Version 2.0 einschließlich Legacy-Migration und Reload.
+P4–P6 ergänzen den Bearbeitungstab, atomare Befehle mit Undo und die verbindliche
+Reihenfolge bis zur Ausgabe. Die anschließende R3-UI-Korrektur einschließlich
+[R3-MENU](#r3-menu) ist implementiert. P8 umfasst die gemeinsame Abnahme
+mit den [konkreten UI-Aufgaben](#r3-ui-user-check): echte
+Referenzprojekte bedienen, fachliche Rückmeldungen und aktuelle Screenshots
+einpflegen und verbliebene Legacy-Kompatibilitätsaufrufer vor deren Entfernung
+prüfen. Manuelle Stegregionen sind mit D42 implementiert; weitere P7-Aufträge
+betreffen die automatische Platzierung; D44 setzt die bewusste Strg-Ausrichtung um.
+
+<a id="r3-ui-followups"></a>
+
+## 12. Vorgemerkte UI-Nacharbeiten und Untersuchung
+
+Nutzerrückmeldungen vom 07.11.2026: Werkzeugmenü zunächst vorgemerkt und
+anschließend ausdrücklich beauftragt; Leerraum weiterhin für später:
+
+- **R3-TOOLS, umgesetzt und anschließend präzisiert:** Beide Werkzeugauswahlen
+  verwenden eine gemeinsame Liste ohne Quellgruppen. Vollständig gleiche
+  Definitionen erscheinen nur einmal; beim Projektladen werden entsprechende
+  Projektidentitäten vereinheitlicht. Werkzeugnummer und sämtliche Werkzeugwerte
+  nach Einheitenumrechnung müssen übereinstimmen; gerundete Anzeigegleichheit
+  genügt nicht. Abweichende gespeicherte Werte bleiben als „Projektabweichung“
+  neben der Tabellenvariante sichtbar. Beim bewussten Ersatz durch die passende
+  Tabellenvariante werden gemäß Nutzerentscheidung alle Schritte mit genau
+  dieser Projektdefinition gemeinsam geändert; andere Definitionen derselben
+  Nummer bleiben erhalten. Auswahl einer anderen Werkzeugnummer ändert weiter
+  nur den ausgewählten Schritt. Gemeinsamer Ersatz und Zusammenführung lassen
+  sich atomar rückgängig machen. Projektwerte bleiben gespeichert und folgen
+  späteren Tabellenänderungen nicht automatisch.
+  Präzisierung zur Mehrfachauswahl vom 08.11.2026: Werkzeugwechsel dort betreffen
+  ausschließlich die ausgewählten Bearbeitungszuordnungen. Vollständig
+  ausgewählte Schritte behalten ihre Identität; für Teilauswahlen entstehen
+  ohne kompatibles bestehendes Ziel neue Schritte gleicher Art/Vorgaben
+  unmittelbar hinter der jeweiligen Quelle (Wiederverwendung/Zielwahl gemäß D38).
+  Nicht ausgewählte Zuordnungen und andere Benutzer der Werkzeugdefinition
+  bleiben unverändert. Ein gemeinsamer Undo-Schritt für den gesamten Wechsel.
+  Ergänzende Korrektur: Auch eine einzeln ausgewählte Kontur verwendet diese
+  Auswahlregel. Nur die ausdrücklich gewählte Schrittzeile beziehungsweise
+  ein expliziter Profilaktualisierungsbefehl verwendet weiterhin den
+  vereinbarten schritt-/definitionsweiten Ersatz.
+  Ergänzende Nutzerentscheidung vom 08.11.2026: Vor dem Export müssen die
+  tatsächlich verwendeten Werkzeugdefinitionen mit der aktuellen Tabelle
+  übereinstimmen. Fehlende Nummern und abweichende Werte sperren den gesamten
+  GUI-/CLI-Export vor der Ausgabe. Leere/deaktivierte, ignorierte und reine
+  Steg-Schritte bleiben ausgenommen. Die Meldung nennt Nummer, Schritte und
+  Projekt-/Tabellenwerte und schlägt Anlegen/Korrigieren in der Tabelle oder
+  Zuweisen eines bestehenden Werkzeugs vor. Kein automatisches Anlegen und keine
+  automatische Wertänderung beim Laden. Vorhandene Zieldateien bleiben erhalten,
+  stdout bleibt bei Sperre leer. Historische Projektdateien haben dieselbe Sperre.
+  [Ergebnis und Prüfnachweis](../archive/toolpath-refactoring-completed.md#r3-tools).
+- **R3-ROWS:** Mit D29 erledigt: Kopfzeile enthält Werkzeugauswahl samt
+  Durchmesser und Drehzahl. Versteckte Felder blenden vollständige Zeilen aus; natürliche
+  Gruppenhöhe statt Auffüllen. [Nachweis](../archive/toolpath-refactoring-completed.md#r3-preview-layout).
+- **R3-IGNORE:** Fokussierte Untersuchung bestätigt: `ignored` übernimmt die
+  Ausschlusswirkung importierter `IGNORE:`-Layer. Die Materialisierung setzt
+  deren Konturen unabhängig von `entry.enabled` auf deaktiviert und nimmt sie
+  nicht in die Exportreihenfolge auf. Der Dialog bietet die Art jedoch auch
+  für neue Schritte an. Ein leerer solcher Schritt ist zulässig; normale
+  Konturen lassen sich wegen der Sonderlayer-Sperre nicht hineinverschieben.
+  Die Exportcheckbox zeigt nur `entry.enabled` und kann deshalb eine Aktivierung
+  suggerieren, die bei dieser Art keine Ausgabe bewirkt.
+  Empfehlung zur Abstimmung: Art beim Anlegen normaler Schritte ausblenden,
+  vorhandene Sonderzuordnungen und Dateikompatibilität erhalten und ihre
+  Exportdarstellung eindeutig machen. Für normales vorübergehendes Ausschließen
+  weiter die Exportcheckbox verwenden. Noch kein Umsetzungsauftrag für diese
+  Empfehlung; insbesondere keine Umdeutung gespeicherter ignorierter Schritte.
+  Aktualisierung 14.11.2026: Der Nutzer hat die begrenzte Korrektur vor Merge
+  bestätigt; [aktueller Umsetzungsumfang](maschining-project-release-plan.md#ignore).
+
+Untersuchungsnachweis R3-IGNORE: lokaler Modell-/Befehlsversuch mit bestehender
+Testfixture; leeres Anlegen erfolgreich, Verschieben einer normalen Kontur
+atomar abgelehnt, `IGNORE:`-Import als `ignored` mit deaktivierter Projektion
+und leerer Exportreihenfolge bestätigt. Dies ist keine neue GUI-/Paketabnahme.
 
 ## Quellen und Abgrenzung
 

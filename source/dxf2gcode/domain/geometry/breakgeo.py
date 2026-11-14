@@ -34,19 +34,28 @@ class BreakGeo(LineGeo):
     """
     BreakGeo interrupts another geometry item by changing the Z-Position.
     """
-    def __init__(self, Ps, Pe, height, xyfeed, zfeed):
+    def __init__(self, Ps, Pe, height, xyfeed, zfeed, modifier_id='', tab_geometry=None):
         LineGeo.__init__(self, Ps, Pe)
 
         self.height = height
         self.xyfeed = xyfeed
         self.zfeed = zfeed
+        self.modifier_id = modifier_id
+        self.tab_geometry = tab_geometry
+        if tab_geometry is not None:
+            self.length = tab_geometry.length
 
     def __deepcopy__(self, memo):
         return BreakGeo(deepcopy(self.Ps, memo),
                         deepcopy(self.Pe, memo),
                         deepcopy(self.height, memo),
                         deepcopy(self.xyfeed, memo),
-                        deepcopy(self.zfeed, memo))
+                        deepcopy(self.zfeed, memo), self.modifier_id, self.tab_geometry)
+
+    def reverse(self):
+        LineGeo.reverse(self)
+        if self.tab_geometry is not None:
+            self.tab_geometry = self.tab_geometry.reversed()
 
     def __repr__(self):
         """

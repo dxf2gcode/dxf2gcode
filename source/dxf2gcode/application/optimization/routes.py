@@ -1,5 +1,6 @@
 """Application workflow for optimizing per-layer export routes."""
 
+from copy import copy
 from dxf2gcode.domain.toolpath.customgcode import CustomGCode
 
 
@@ -36,6 +37,13 @@ class OptimizeRoutes:
         last_optimizer = None
         total_shapes = 0
         for layer in layers:
+            if hasattr(layer, 'machining_step_id'):
+                result = self._execute_step(layer, shapes)
+                total_shapes += result.shape_count
+                last_optimizer = result.optimizer
+                if after_layer is not None:
+                    after_layer(layer)
+                continue
             if not layer.exp_order:
                 layer.exp_order = []
                 continue
@@ -73,6 +81,37 @@ class OptimizeRoutes:
                 after_layer(layer)
 
         return RouteOptimizationResult(total_shapes, last_optimizer)
+
+    def _execute_step(self, layer, shapes):
+        """Retain literal-code barriers, including disabled literal rows."""
+        ordered, segment = [], []
+        count, optimizer = 0, None
+        def flush():
+            nonlocal count, optimizer
+            if not segment:
+                return
+            chunk = copy(layer)
+            del chunk.machining_step_id
+            chunk.shapes = list(segment)
+            chunk.exp_order_complete = [i for i, s in enumerate(segment) if not s.disabled]
+            chunk.exp_order = [segment[i].nr for i in chunk.exp_order_complete]
+            result = self.execute([chunk], shapes)
+            count += result.shape_count
+            optimizer = result.optimizer or optimizer
+            enabled = iter(chunk.shapes[i] for i in chunk.exp_order_complete)
+            ordered.extend(s if s.disabled else next(enabled) for s in segment)
+            segment.clear()
+        for shape in layer.shapes:
+            if isinstance(shape, CustomGCode):
+                flush()
+                ordered.append(shape)
+            else:
+                segment.append(shape)
+        flush()
+        layer.shapes[:] = ordered
+        layer.exp_order_complete = [i for i, s in enumerate(ordered) if not s.disabled]
+        layer.exp_order = [s.nr for s in ordered if not s.disabled and not isinstance(s, CustomGCode)]
+        return RouteOptimizationResult(count, optimizer)
 
 
 class RouteOptimizationResult:

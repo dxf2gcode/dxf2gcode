@@ -76,7 +76,7 @@ class TestShapeToolAssignment(unittest.TestCase):
         self.assertEqual(harness.th.ui.toolDiameterComboBox.currentText(), "1")
         harness.select([self.shapes[0]])
         self.assertEqual(harness.th.ui.toolDiameterComboBox.currentText(), "99")
-        self.assertEqual(harness.th.ui.toolDiameterLabel.text(), "4.0")
+        self.assertEqual(harness.th.ui.toolDiameterLabel.text(), "4.000")
 
     def test_multi_selection_changes_only_selected_shapes(self):
         harness = self.harness()
@@ -117,7 +117,7 @@ class TestShapeToolAssignment(unittest.TestCase):
                          [99, 99, 1])
         self.assertEqual(combo.currentText(), "99")
         self.assertEqual(combo.placeholderText(), "")
-        self.assertEqual(harness.th.ui.toolDiameterLabel.text(), "4.0")
+        self.assertEqual(harness.th.ui.toolDiameterLabel.text(), "4.000")
 
     def test_common_tool_selection_restores_number_and_values(self):
         AssignTool().execute([self.shapes[0]], [], 99, self.profile)

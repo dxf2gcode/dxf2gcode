@@ -9,3 +9,9 @@ CURRENT_D2G_VERSION = SUPPORTED_D2G_VERSIONS[-1]
 class LegacyProjectDocument:
     version: float
     values: dict
+
+
+@dataclass(frozen=True)
+class MachiningProjectDocument(LegacyProjectDocument):
+    """Version 2 separates source restoration from machining assignments."""
+    machining: object

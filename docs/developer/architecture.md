@@ -65,8 +65,23 @@ boundary does not imply removal of all shared application state.
 
 The old internal import namespaces were removed rather than kept as public
 aliases. File-format compatibility is a separate contract: the current readers
-support D2G 1.1–1.5, application configurations 9.11–9.19 and postprocessors
+support legacy D2G 1.1–1.5 and JSON D2G 2.0, application configurations 9.11–9.19 and postprocessors
 8–8.3. Do not infer arbitrary future-version support from those ranges.
+
+R3/R1b P1–P3 add `domain/project/machining_project.py` and the pure application
+bridge `application/machining.py`. Operations reference original geometry and
+resolve saved project/step/own values; tools use definition IDs independent of
+their output numbers. Detached shape/layer projections feed preview and export.
+The version 2.0 codec validates JSON and retains old readers.
+`application/machining_actions.py` provides transactional commands/history;
+`presentation/qt/machining_panel.py` implements the third tab and explicit
+selection context. The machining document owns order, activation and values.
+`machining_parameters.py` reparents the original tool/contour form and binds
+its signals to commands. It replaces the earlier table with per-field
+provenance icons, source tooltips and reset actions.
+Optimization respects step and custom-code boundaries. A compatibility input
+bridge still supports legacy adapter paths; integrated user acceptance and
+removal of its remaining consumers are the P8 follow-up.
 
 ## Review behaviour end to end
 

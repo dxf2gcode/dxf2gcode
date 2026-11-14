@@ -63,20 +63,20 @@ class TestNumericPrecision(unittest.TestCase):
             self.assertIn('invalid depth', text)
         dialog.close()
 
-    def test_four_decimal_values_are_real_widget_values(self):
+    def test_display_precision_does_not_limit_real_widget_values(self):
         widget = CfgDoubleSpinBox('Depth')
-        self.assertEqual(widget.spinbox.decimals(), 4)
+        self.assertGreaterEqual(widget.spinbox.decimals(), 17)
         for value in (.015, .005, .0005, -.015, -.005, -.0005, 25.4005):
             with self.subTest(value=value):
                 widget.setValue(value)
                 self.assertEqual(widget.getValue(), value)
-                self.assertEqual(float(widget.spinbox.cleanText().replace(',', '.')), value)
+                self.assertEqual(widget.spinbox.cleanText().replace(',', '.'), format(value, '.3f'))
 
     def test_display_rounding_preserves_original_until_edit_or_step(self):
         widget = CfgDoubleSpinBox('Depth')
         widget.spinbox.setLocale(QLocale('en_US'))
         widget.setValue(-.01234567)
-        self.assertEqual(widget.spinbox.cleanText(), '-0.0123')
+        self.assertEqual(widget.spinbox.cleanText(), '-0.012')
         self.assertEqual(widget.getValue(), -.01234567)
         widget.spinbox.lineEdit().selectAll()
         QTest.keyClicks(widget.spinbox.lineEdit(), '-0.0005')
@@ -84,7 +84,7 @@ class TestNumericPrecision(unittest.TestCase):
         self.assertEqual(widget.getValue(), -.0005)
         widget.setValue(-.01234567)
         widget.spinbox.stepBy(1)
-        self.assertAlmostEqual(widget.getValue(), .9877)
+        self.assertAlmostEqual(widget.getValue(), 1-.01234567, places=14)
 
     def test_comma_and_dot_work_in_both_locales(self):
         for locale_name in ('de_DE', 'en_US'):

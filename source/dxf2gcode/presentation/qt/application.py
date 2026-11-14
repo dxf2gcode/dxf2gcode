@@ -63,6 +63,7 @@ from dxf2gcode.bootstrap.logging import LoggerClass
 from dxf2gcode.presentation.qt.aboutdialog import AboutDialog
 from dxf2gcode.presentation.qt.versioninfo import version_details_html
 from dxf2gcode.presentation.qt.configwindow import ConfigWindow
+from dxf2gcode.presentation.qt.numeric_display import display_decimals
 from dxf2gcode.presentation.qt.popupdialog import PopUpDialog
 from dxf2gcode.presentation.qt.treehandling import TreeHandler
 from dxf2gcode.adapters.postprocessor.postprocessor import MyPostProcessor
@@ -288,6 +289,9 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
 
         self.ui.setupUi(self)
+        self.ui.messageSplitter.setStretchFactor(0, 1)
+        self.ui.messageSplitter.setStretchFactor(1, 0)
+        self.ui.messageSplitter.setSizes([600, 100])
         # pyuic turns the UI's ICO into a single QPixmap; retain all ICO sizes.
         self.setWindowIcon(QIcon(":images/dxf2gcode.ico"))
         self.showMaximized()
@@ -299,10 +303,19 @@ class MainWindow(QMainWindow):
             self.canvas_scene = None
 
         self.TreeHandler = TreeHandler(self.ui)
+        from dxf2gcode.presentation.qt.machining_panel import MachiningPanel
+        self.machining_panel = MachiningPanel(self)
+        from dxf2gcode.presentation.qt.geometry_panel import GeometryPanel
+        self.geometry_panel = GeometryPanel(self)
+        self.ui.mytabWidget.setCurrentWidget(self.machining_panel)
+        from dxf2gcode.presentation.qt.window_layout import WindowLayout
+        self.layout_state = WindowLayout(self)
         self.configuration_changed.connect(self.TreeHandler.updateConfiguration)
         # The canvas overlays (e.g. the scale bar) depend on the configuration
         # and on the measurement units.
         self.configuration_changed.connect(self.updateCanvasOverlay)
+        self.configuration_changed.connect(self.machining_panel.show_parameters)
+        self.configuration_changed.connect(self.TreeHandler.refresh_numeric_display)
 
         if sys.version_info[0] == 2:
             error_message = QMessageBox(QMessageBox.Icon.Critical, self.tr('ERROR'), self.tr("Python version 2 is not supported, please use it with python version 3."))
@@ -818,6 +831,10 @@ class MainWindow(QMainWindow):
         """
         Update the drawing of the export route
         """
+        panel = getattr(self, 'machining_panel', None)
+        if panel is not None and panel.binding is not None:
+            panel.draw_route()
+            return
         self.TreeHandler.updateExportOrder()
         self.canvas_scene.delete_opt_paths()
 
@@ -835,6 +852,11 @@ class MainWindow(QMainWindow):
         Method is called to optimize the order of the shapes. This is performed
         by solving the TSP Problem.
         """
+        panel = getattr(self, 'machining_panel', None)
+        if panel is not None and panel.binding is not None:
+            panel.execute(lambda: panel.commands.optimize(TspOptimization))
+            panel.draw_route()
+            return
         self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.app.processEvents()
 
@@ -947,6 +969,7 @@ class MainWindow(QMainWindow):
         """
         flag = self.ui.actionShowPathDirections.isChecked()
         self.canvas.setShowPathDirections(flag)
+        self.machining_panel.refresh_preview()
         self.canvas_scene.update()
 
     def setShowDisabledPaths(self):
@@ -956,6 +979,7 @@ class MainWindow(QMainWindow):
         """
         flag = self.ui.actionShowDisabledPaths.isChecked()
         self.canvas_scene.setShowDisabledPaths(flag)
+        self.machining_panel.refresh_preview()
         self.canvas_scene.update()
 
     def liveUpdateExportRoute(self):
@@ -983,6 +1007,9 @@ class MainWindow(QMainWindow):
 
         g.config.point_tolerance = float(SetTolDialog.result[0])
         g.config.fitting_tolerance = float(SetTolDialog.result[1])
+
+        self._apply_machining_settings({'Import_Parameters': {
+            'point_tolerance': g.config.point_tolerance, 'fitting_tolerance': g.config.fitting_tolerance}})
 
         self.d2g.reload()  # set tolerances requires a complete reload
 
@@ -1027,7 +1054,7 @@ class MainWindow(QMainWindow):
         label = [self.tr("Rotate Contour by deg:")]
         value = [degrees(self.cont_rotate)]
         wtype = ["lineEdit"]
-        RotEntDialog = PopUpDialog(title, label, value, wtype)
+        RotEntDialog = PopUpDialog(title, label, value, wtype, number_kind='angle')
 
         if RotEntDialog.result is None:
             return
@@ -1058,7 +1085,7 @@ class MainWindow(QMainWindow):
             return [self.cont_dx-nearest.x, self.cont_dy-nearest.y]
         wtype = ["lineEdit","lineEdit"]
         MoveWpzDialog = PopUpDialog(title, label, value, wtype, True,
-                                   decimals=3 if g.config.metric else 5,
+                                   decimals=display_decimals(),
                                    snap=snapped_offsets if candidates else None)
 
         if MoveWpzDialog.result is None:
@@ -1088,21 +1115,29 @@ class MainWindow(QMainWindow):
 
     def setMachineTypeToMilling(self):
         g.config.machine_type = 'milling'
+        self._apply_machining_settings({'General': {'machine_type': 'milling'}})
         self.updateMachineType()
         self.d2g.small_reload()
         MainWindow._show_machining_warnings(self)
 
     def setMachineTypeToDragKnife(self):
         g.config.machine_type = 'drag_knife'
+        self._apply_machining_settings({'General': {'machine_type': 'drag_knife'}})
         self.updateMachineType()
         self.d2g.small_reload()
         MainWindow._show_machining_warnings(self)
 
     def setMachineTypeToLathe(self):
         g.config.machine_type = 'lathe'
+        self._apply_machining_settings({'General': {'machine_type': 'lathe'}})
         self.updateMachineType()
         self.d2g.small_reload()
         MainWindow._show_machining_warnings(self)
+
+    def _apply_machining_settings(self, settings):
+        panel = getattr(self, 'machining_panel', None)
+        if panel is not None and panel.commands is not None:
+            panel.commands.update_settings(settings)
 
     def updateMachineType(self):
         if g.config.machine_type == 'milling':
@@ -1158,12 +1193,19 @@ class MainWindow(QMainWindow):
             self.ui.unitLabel_9.setText(speed)
 
         if g.config.metric != metric:
+            panel = getattr(self, 'machining_panel', None)
+            if panel is not None and panel.commands is not None:
+                panel.commands.change_units('mm' if metric else 'in')
             for layerContent in self.layerContents:
                 layerContent.changeMeasuringUnits(g.config.metric, metric)
             g.config.metric = metric
             g.config.update_tool_values()
             self.configuration_changed.emit()
             self.TreeHandler.updateToolParameters()
+            if panel is not None and panel.binding is not None:
+                panel.binding.bind_legacy_editor()
+                panel.refresh()
+                panel.refresh_preview()
 
     def open(self):
         """
@@ -1313,8 +1355,11 @@ class MainWindow(QMainWindow):
 
         logger.info(self.tr('Loading file: %s') % self.filename)
 
-        import_result = ImportDrawing(
-            DxfReaderAdapter(self.application_context.config)).execute(self.filename)
+        import_config = self.application_context.config
+        if getattr(self.d2g, 'loading_machining_project', None) is not None:
+            from dxf2gcode.application.machining import ProjectConfiguration
+            import_config = ProjectConfiguration(self.d2g.loading_machining_project)
+        import_result = ImportDrawing(DxfReaderAdapter(import_config)).execute(self.filename)
         self.valuesDXF = import_result.drawing
         if not self.application_context.quiet:
             for diagnostic in import_result.diagnostics:
@@ -1332,7 +1377,7 @@ class MainWindow(QMainWindow):
         logger.info(self.tr('Loaded %i entity geometries; reduced to %i contours; used layers: %s; number of inserts %i')
                     % (len(self.valuesDXF.entities.geo), len(self.valuesDXF.entities.cont), layers, insert_nr))
 
-        self.setMeasurementUnits(g.config.metric, True)
+        self.setMeasurementUnits(import_config.metric, True)
 
         self.makeShapes()
         if plot:
@@ -1362,7 +1407,12 @@ class MainWindow(QMainWindow):
         # After all is plotted enable the Menu entities
         self.enableToolbarButtons()
 
-        self.automaticCutterCompensation()
+        if self.d2g.machining_drawing is None:
+            self.automaticCutterCompensation()
+        panel = getattr(self, 'machining_panel', None)
+        if panel is not None:
+            panel.attach()
+            panel.refresh_preview()
 
         self.unsetCursor()
 
@@ -1373,10 +1423,17 @@ class MainWindow(QMainWindow):
         """
         if self.filename:
             logger.info(self.tr("Reloading file: %s") % self.filename)
-            self.load()
+            if self.d2g.machining_drawing is not None:
+                self.d2g.reload()
+            else:
+                self.load()
 
     def makeShapes(self):
         """Build the project's shape and layer model through the application service."""
+        panel = getattr(self, 'machining_panel', None)
+        if panel is not None:
+            panel.binding = None
+            panel.commands = None
         from dxf2gcode.domain.project.shape import Shape as DomainShape
 
         def connect_shape_callbacks(shape):
@@ -1386,9 +1443,13 @@ class MainWindow(QMainWindow):
                 shape.setEnableDisableCallback(
                     self.TreeHandler.updateShapeEnabling)
 
+        model_config = g.config
+        if getattr(self.d2g, 'loading_machining_project', None) is not None:
+            from dxf2gcode.application.machining import ProjectConfiguration
+            model_config = ProjectConfiguration(self.d2g.loading_machining_project)
         model = BuildDrawingModel(
             drawing=self.valuesDXF,
-            config=g.config,
+            config=model_config,
             shape_factory=DomainShape,
             translate=QtCore.QCoreApplication.translate,
             split_line_segments=g.config.vars.General['split_line_segments'],
@@ -1407,6 +1468,7 @@ class MainWindow(QMainWindow):
         self.layerContents = model.layers
         self.shapes = model.shapes
         self.newNumber = len(self.shapes)
+        self.d2g.machining_drawing = None
 
     def updateCanvasOverlay(self):
         """
@@ -1416,6 +1478,9 @@ class MainWindow(QMainWindow):
         canvas = getattr(self, 'canvas', None)
         if canvas is None:
             return
+        preview = getattr(canvas, 'machining_preview', None)
+        if preview is not None:
+            preview.overlay.update()
         update = getattr(canvas, 'updateScaleBar', None)
         if callable(update):
             update()
@@ -1449,6 +1514,15 @@ class MainWindow(QMainWindow):
                 g.config.point_tolerance = live['point_tolerance']
                 g.config.fitting_tolerance = live['fitting_tolerance']
             self._live_config_applied = live
+            settings = {}
+            if machine_changed:
+                settings['General'] = {'machine_type': live['machine_type']}
+            if compensation_changed:
+                settings['Cutter_Compensation'] = {'done_by_machine': live['machine_compensation']}
+            if tolerances_changed:
+                settings['Import_Parameters'] = {key: live[key] for key in ('point_tolerance', 'fitting_tolerance')}
+            if settings:
+                self._apply_machining_settings(settings)
             # Write the configuration into the config file (config.cfg)
             g.config.save_varspace()
 
@@ -1468,6 +1542,9 @@ class MainWindow(QMainWindow):
             if tolerances_changed or machine_changed or compensation_changed:
                 MainWindow._show_machining_warnings(self)
 
+            from dxf2gcode.presentation.qt.configwindow import CorrectedDoubleSpinBox
+            for field in self.config_window.findChildren(CorrectedDoubleSpinBox):
+                field.update_display()
             if g.config.tool_units != units_before:
                 # The config file's unit changed: refresh the still-open
                 # configuration window. Its widgets would otherwise keep
@@ -1586,6 +1663,7 @@ class MainWindow(QMainWindow):
         Load all variables from file
         """
         project_document = LoadProject(self.project_repository).execute(filename)
+        self.d2g.project_filename = filename
         conflicts = self.d2g.load(project_document)
         MainWindow._show_machining_warnings(self, conflicts)
 
@@ -1647,8 +1725,8 @@ class MainWindow(QMainWindow):
             if not QtCore.QFile.exists(save_prj_filename):
                 save_prj_filename += c.PROJECT_EXTENSION
 
-        pyCode = self.d2g.export()
         try:
+            pyCode = self.d2g.export_current()
             # File open and write
             SaveProject(self.project_repository).execute(
                 save_prj_filename, str_encode(pyCode))
@@ -1675,6 +1753,7 @@ class MainWindow(QMainWindow):
         self.settings.beginGroup("MainWindow")
         geometry = self.settings.value("geometry")
         state = self.settings.value("state")
+        self.layout_state.restore(self.settings)
         self.settings.endGroup()
         if (geometry is not None) and (state is not None):
             self.restoreGeometry(geometry)
@@ -1684,6 +1763,7 @@ class MainWindow(QMainWindow):
         self.settings.beginGroup("MainWindow")
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("state", self.saveState())
+        self.layout_state.save(self.settings)
         self.settings.endGroup()
 
 

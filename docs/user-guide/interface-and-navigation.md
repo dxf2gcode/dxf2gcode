@@ -4,6 +4,10 @@ This chapter explains the main window in the current development version.
 The screenshot uses English labels and the 2D view. Other interface languages
 provide the same controls; 3D navigation is not covered here.
 
+The screenshots below predate the combined **Geometry** tab and separate **Machining** tab. In the current
+development version, use [Machining steps](machining-steps.md) for tools,
+parameters, export activation, move/copy and undo.
+
 Start with [First DXF to G-code](../getting-started/first-dxf-to-gcode.md)
 if you want a complete example, or download its
 [20 × 10 mm rectangle](../assets/examples/first-dxf/rectangle-20x10-mm.dxf)
@@ -16,15 +20,19 @@ and open it through **File → Open...**.
 | Area | What it is for |
 | --- | --- |
 | Menu bar | Open drawings and projects, save projects, export programs, change the view and configure the application |
-| Entities / Layers tabs, upper left | Inspect the imported structure or the shapes grouped by machining layer |
-| Layer Tool, left | Choose the layer's tool and inspect its tool values |
-| Shape parameters, left | Edit depths, feeds and entry/exit settings for the selected contour; some fields apply to its layer |
+| Geometry tab, upper left | Select original geometry in the collapsible Entities and Layers sections |
+| Machining tab | Name and order steps, select tools/kinds, move/copy assignments and control export |
+| Tool and contour fields in Machining | Edit step defaults or the active operation; chain/pencil symbols show inheritance |
 | Drawing view, right | Inspect geometry, select contours and display toolpath aids |
 | Message pane, bottom | Read import information, warnings and operation results |
 
+Drag the horizontal divider immediately above the message pane up or down
+to change its height. The drawing and sidebar share the remaining space;
+resizing preserves the messages and project values.
+
 The **Entities** tab follows the imported entity/block structure. The
 **Layers** tab groups contours by layer and is the useful starting point for
-assigning tools and preparing an export. Both show the same drawing rather
+selecting an entire source layer. Both show the same drawing rather
 than separate copies. Expand a row to see its children.
 
 The rectangle example contains one layer, `Tutorial`, and one contour,
@@ -34,15 +42,15 @@ segments can be joined, and compound entities can produce several pieces.
 ## Select a contour or include it in export
 
 Click a shape row in the tree or click near a contour in the drawing view.
-The selected contour is highlighted and its editable parameters appear on
-the left. Empty or disabled fields can simply mean that no applicable shape
-is selected.
+The selected contour is highlighted along with its linked machining entries.
+Click the desired entry in **Machining** to edit it. With multiple references,
+selecting original geometry does not choose an editing context automatically.
 
 **Selection and enablement serve different purposes:**
 
 - A selected shape is the shape you are inspecting or editing.
-- An enabled shape is included in export. Use the checkboxes in the tree to
-  enable or disable shapes; a parent checkbox can affect its children.
+- An enabled operation is included in export. Use its **Export** checkbox in
+  **Machining**; Entities and Layers have no export checkboxes.
 - A disabled shape is excluded even if you select it. An enabled shape can
   be exported without being selected.
 
@@ -55,6 +63,9 @@ Do not infer export order from the order in which you click contours. See
 for the separate order, display and optimization controls.
 
 ## Move around the 2D view
+
+The application starts with the **Machining** tab selected. Switch to
+**Geometry** whenever you need the original entity or layer selection.
 
 | Action | Control |
 | --- | --- |
@@ -70,6 +81,13 @@ the workpiece origin are separate operations.
 The tree's expand/collapse buttons reveal or hide child rows without changing
 their enablement. With focus in either tree, **Ctrl + Shift + Right** expands
 that entire active tree; **Ctrl + Shift + Left** collapses it.
+
+Resizing the main window keeps the left pane width and message-pane height;
+the canvas receives the extra space. Within Machining, the tree receives extra
+height while the parameter pane retains its height. Drag the splitters manually
+to choose another distribution. Pane sizes and collapsed geometry
+sections are remembered across restarts. The minimum window size protects the
+canvas from being squeezed away.
 
 ## Read the preview and parameters together
 

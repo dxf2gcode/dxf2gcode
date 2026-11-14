@@ -79,6 +79,7 @@ class _Canvas(object):
 
 class _Shape(object):
     def __init__(self, selected=False, disabled=False, cut_cor=40):
+        self.parentLayer = _Layer()
         self.selected = selected
         self.disabled = disabled
         self.cut_cor = cut_cor
@@ -122,6 +123,46 @@ class TestGLWidgetGeometry(unittest.TestCase):
 
         for actual, expected in zip(restored, point):
             self.assertAlmostEqual(actual, expected)
+
+    def test_operation_overlay_projection_matches_the_opengl_model_matrix(self):
+        from types import SimpleNamespace
+        from dxf2gcode.presentation.qt.machining_preview import MachiningPreview
+        from dxf2gcode.presentation.qt.qt_compat.QtGui import QMatrix4x4, QVector3D
+        view = self.canvas
+        view.width, view.height = lambda: 800, lambda: 400
+        view.scale = .02
+        view.posX, view.posY, view.posZ = .1, -.2, .05
+        view.rotate = lambda x, y, z: GLWidget.rotate(view, x, y, z)
+        matrix = QMatrix4x4()
+        matrix.rotate(view.rotX, 1, 0, 0)
+        matrix.rotate(view.rotY, 0, 1, 0)
+        matrix.rotate(view.rotZ, 0, 0, 1)
+        matrix.translate(view.posX, view.posY, view.posZ)
+        matrix.scale(view.scale)
+        for point in ((0, 0, 0), (20, 10, -3), (20, 10, -7)):
+            actual = MachiningPreview.project(SimpleNamespace(view=view), point)
+            expected = matrix.map(QVector3D(point[0], -point[1], point[2]))
+            self.assertAlmostEqual(actual.x(), 400+400*expected.x(), places=4)
+            self.assertAlmostEqual(actual.y(), 200+400*expected.y(), places=4)
+
+    def test_partial_geometry_stipples_without_duplicate_operation_overlay(self):
+        view = self.canvas
+        shape = _Shape(selected=True)
+        shape.geometry_id = 'geometry'
+        view.shapes = Shapes([shape])
+        view.routearrows = []
+        view.showDisabledPaths = view.showPathDirections = False
+        view.wpZero = view.orientation = 0
+        view.setColor = lambda color: None
+        view.machining_selection_counts = {'geometry': (1, 2)}
+        view.machining_overlay_geometries = {'geometry'}
+        self.gl.GL_COLOR_BUFFER_BIT, self.gl.GL_DEPTH_BUFFER_BIT = 1, 2
+        GLWidget.paintGL(view)
+        calls = self.gl.calls
+        self.assertIn(('glLineStipple', (1, 0x3333)), calls)
+        self.assertIn(('glCallList', (shape.drawObject,)), calls)
+        self.assertNotIn(('glCallList', (shape.drawStMove,)), calls)
+        self.assertNotIn(('glCallList', (shape.drawArrowsDirection[0],)), calls)
 
     def test_rotation_vectors_are_identity_for_equal_directions(self):
         axes = GLWidget.getRotationVectors(

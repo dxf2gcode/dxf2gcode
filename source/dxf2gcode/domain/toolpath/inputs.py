@@ -40,16 +40,22 @@ class PathGeometry:
     retract_depth: float = 0.0
     absolute: Optional["PathGeometry"] = None
     role: str = "cut"
+    modifier_id: str = ''
+    tab_geometry: Optional["PathGeometry"] = None
 
     @property
     def resolved(self):
-        return replace(self.absolute, role=self.role) if self.absolute is not None else self
+        if self.absolute is not None and self.kind == 'break':
+            return replace(self, start=self.absolute.start, end=self.absolute.end, absolute=None)
+        return replace(self.absolute, role=self.role, modifier_id=self.modifier_id,
+                       tab_geometry=self.tab_geometry) if self.absolute is not None else self
 
     def reversed(self):
         return replace(
             self, start=self.end, end=self.start,
             start_angle=self.end_angle, end_angle=self.start_angle,
             sweep=-self.sweep,
+            tab_geometry=self.tab_geometry.reversed() if self.tab_geometry is not None else None,
             absolute=self.absolute.reversed() if self.absolute is not None else None)
 
     def arc_point(self, angle):
@@ -138,6 +144,7 @@ class ToolpathRequest:
     pocket: bool = False
     drill: bool = False
     has_break_layers: bool = False
+    skipped_tabs: int = 0
     start_error: str = ""
     literal: Optional[str] = None
     initial_state: PlanningState = PlanningState()

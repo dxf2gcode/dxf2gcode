@@ -26,7 +26,7 @@ class ToolSettings:
         return replace(self, **{
             key: getattr(self, key) * factor
             for key in ("tool_diameter", "start_radius", "lead_radius",
-                        "lead_length", "overcut_length")})
+                        "lead_length", "overcut_length") if getattr(self, key) is not None})
 
 
 def effective_tool(shape, default=None):

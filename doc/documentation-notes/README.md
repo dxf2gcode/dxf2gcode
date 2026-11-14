@@ -1,6 +1,6 @@
 # Material für die spätere Anwenderdokumentation
 
-Stand: **05.11.2026**.
+Stand: **07.11.2026**.
 
 Diese Notizen bündeln fachliche Hinweise aus abgeschlossenen Arbeiten. Sie sind
 Redaktionsmaterial für die GitHub-Dokumentation, keine zusätzliche Aufgabenliste.
@@ -9,6 +9,8 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 
 | Thema | Geplantes Inhaltspaket | Material |
 | --- | --- | --- |
+| [Bearbeitungsmodell und Projektformat 2.1](machining-project-format.md) | R3/R1b P1–P6, D42 | Bearbeitungstab, Regionsobjekte/Scopes, Zeichnen/Undo, Herkunft, Migration und Ausgabe |
+| [Zahlenanzeige und Formularbreiten](gui-numeric-display.md) | R3-UI D28/D29 | Konfigurierbare Anzeige, volle Eingabegenauigkeit, gemeinsame skalierbare Spalten |
 | [LinuxCNC-Dateifilter](linuxcnc-integration.md) | LC1 | Historischer und aktueller Integrationsweg, Befunde, Nutzen und noch freizugebender Prüfplan |
 | [Postprozessoren und Entwicklerdokumentation](postprocessors-and-development.md) | WP9–WP13 | Format-/Werkzeugwechselverträge, fünf Beispielgrenzen, Build-/Testquellen, Downloads und Rechte |
 | [Pflege der Dokumentationswebsite](documentation-site-maintenance.md) | Veröffentlichung und spätere Developer Guide | Zensical-Umgebung, lokale Vorschau, strikter Build und Pages-Workflow; aus öffentlichem Prototyp ausgelagert |
