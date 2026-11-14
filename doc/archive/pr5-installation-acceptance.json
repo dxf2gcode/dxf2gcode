@@ -1,0 +1,147 @@
+{
+  "date": "2026-11-14",
+  "pull_request": 5,
+  "run_url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43606276059",
+  "head_revision": "a4849c8229a4f4f04965dd34fd22e67efe45716f",
+  "tested_pr_merge_revision": "88aec3db41124c850154e86b0a81ab9a6b55e6b8",
+  "manifest": {
+    "schema": 1,
+    "revision": "88aec3db41124c850154e86b0a81ab9a6b55e6b8",
+    "source_date_epoch": 1794667359,
+    "date": "20261114",
+    "run_id": "43606276059",
+    "run_number": 22,
+    "build_number": 22,
+    "kind": "test",
+    "version": "2.0.0.dev22",
+    "msi_version": "2.0.22",
+    "windows_signing": "unsigned",
+    "tag": "develop-ci-43606276059",
+    "wheel_build": "20261114g88aec3d",
+    "artifact_stem": "dxf2gcode-2.0.0.dev22-20261114-g88aec3d"
+  },
+  "jobs": [
+    {
+      "name": "checks / Python 3.13 / PyQt5",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43606276059/job/132481482287"
+    },
+    {
+      "name": "checks / Python 3.12 / PyQt5",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43606276059/job/132481482442"
+    },
+    {
+      "name": "checks / Python 3.11 / PyQt6",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43606276059/job/132481482495"
+    },
+    {
+      "name": "checks / Python 3.11 / PyQt5",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43606276059/job/132481482526"
+    },
+    {
+      "name": "checks / Build and verify Python packages",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43606276059/job/132482187949"
+    },
+    {
+      "name": "checks / Build and verify Windows x64 ZIP and MSI",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43606276059/job/132482606692"
+    }
+  ],
+  "full_test_runs": [
+    {
+      "tests": 1040,
+      "seconds": 82.437
+    },
+    {
+      "tests": 1040,
+      "seconds": 67.476
+    },
+    {
+      "tests": 1040,
+      "seconds": 61.38
+    },
+    {
+      "tests": 1040,
+      "seconds": 102.874
+    }
+  ],
+  "sha256": {
+    "dxf2gcode-2.0.0.dev22-20261114g88aec3d-py3-none-any.whl": "1b1def5a50483a276b46e55fd700e708ca88f9bbf8a4c93830870b083c4c9602",
+    "dxf2gcode-2.0.0.dev22.tar.gz": "c168df0c7f064528b3700fe426b1ec7fc4a966a5de6fa8d28911307cb03ff526",
+    "release-manifest.json": "09d951cc159958752a2195cfa183c566fa6f482669a3367ef18c98fabb9d25d2",
+    "dxf2gcode-2.0.0.dev22-20261114-g88aec3d-windows-x64.msi": "cdef1a7d22f65e0a1af188a33936105e903af04cc791aa437cb1210b8d1b7fbd",
+    "dxf2gcode-2.0.0.dev22-20261114-g88aec3d-windows-x64.zip": "06c9e6e36d3bbd83360c8d76ff4875b7190f7105dbfc69caca9339d81289f685"
+  },
+  "artifacts": [
+    {
+      "id": 14118945140,
+      "node_id": "MDg6QXJ0aWZhY3QxNDExODk0NTE0MA==",
+      "name": "release-windows",
+      "size_in_bytes": 130899491,
+      "url": "https://api.github.com/repos/dxf2gcode/dxf2gcode/actions/artifacts/14118945140",
+      "archive_download_url": "https://api.github.com/repos/dxf2gcode/dxf2gcode/actions/artifacts/14118945140/zip",
+      "expired": false,
+      "digest": "sha256:cc936588ef8ef0c293e1bf0b714d6464e240953af519a6aab5abf90fc8b2fd27",
+      "created_at": "2026-11-14T14:49:37Z",
+      "updated_at": "2026-11-14T14:49:37Z",
+      "expires_at": "2026-11-21T14:49:34Z",
+      "workflow_run": {
+        "id": 43606276059,
+        "repository_id": 1440963053,
+        "head_repository_id": 1440963053,
+        "head_branch": "integration/maschining-project-release",
+        "head_sha": "a4849c8229a4f4f04965dd34fd22e67efe45716f"
+      }
+    },
+    {
+      "id": 14118596105,
+      "node_id": "MDg6QXJ0aWZhY3QxNDExODU5NjEwNQ==",
+      "name": "release-wheel",
+      "size_in_bytes": 5470027,
+      "url": "https://api.github.com/repos/dxf2gcode/dxf2gcode/actions/artifacts/14118596105",
+      "archive_download_url": "https://api.github.com/repos/dxf2gcode/dxf2gcode/actions/artifacts/14118596105/zip",
+      "expired": false,
+      "digest": "sha256:306b7c59736933689548d4710d866e024c7d02f28a31b8a73adabc2c02f894e9",
+      "created_at": "2026-11-14T14:46:51Z",
+      "updated_at": "2026-11-14T14:46:51Z",
+      "expires_at": "2026-11-21T14:46:49Z",
+      "workflow_run": {
+        "id": 43606276059,
+        "repository_id": 1440963053,
+        "head_repository_id": 1440963053,
+        "head_branch": "integration/maschining-project-release",
+        "head_sha": "a4849c8229a4f4f04965dd34fd22e67efe45716f"
+      }
+    }
+  ],
+  "debian": {
+    "python": "3.13.5",
+    "qt_binding": "PyQt5 5.15.11",
+    "qt": "5.15.19",
+    "wheel_sha256": "1b1def5a50483a276b46e55fd700e708ca88f9bbf8a4c93830870b083c4c9602",
+    "provenance": {
+      "version": "2.0.0.dev22",
+      "revision": "88aec3db41124c850154e86b0a81ab9a6b55e6b8",
+      "branch": null,
+      "commit_date": "2026-11-14T14:42:39Z",
+      "build_date": "2026-11-14T14:42:39+00:00",
+      "dirty": false,
+      "origin": "build"
+    },
+    "offscreen": "passed",
+    "x11_xvfb": "passed",
+    "workflow": "installed resources/translations, CLI export, machining copy/tool, tab edit, D2G roundtrip, export"
+  },
+  "limits": [
+    "Temporary PR candidate, no published release",
+    "Unsigned Windows packages",
+    "Debian X11 via Xvfb, no physical display/GPU acceptance",
+    "No macOS or physical CNC acceptance",
+    "Final documentation visual review deferred to user"
+  ]
+}

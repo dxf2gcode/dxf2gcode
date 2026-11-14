@@ -2,6 +2,47 @@
 
 Stand: **14.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+<a id="pr5-installation"></a>
+
+## Schritt 3 / CI1 / M1: Kandidaten-Paketabnahme (14.11.2026)
+
+[PR #5](https://github.com/dxf2gcode/dxf2gcode/pull/5) stellt den integrierten
+Stand bereit; develop bleibt auf `8aeef7f`. Geprüfter PR-Head `a4849c8`,
+virtueller PR-Merge `88aec3db41124c850154e86b0a81ab9a6b55e6b8`.
+[CI-Lauf 43606276059](https://github.com/dxf2gcode/dxf2gcode/actions/runs/43606276059)
+mit allen sechs Jobs erfolgreich; separater Dokumentationslauf ebenfalls grün.
+Die Paketversion `2.0.0.dev22` ist ein **Testkandidat**, kein veröffentlichter
+Develop-Release und keine Vorwegnahme der nächsten Veröffentlichungsnummer.
+
+| Ziel | Tatsächlicher Nachweis |
+| --- | --- |
+| Ubuntu 24.04 | Je 1040 Volltests unter Python 3.11/3.12/3.13 + Qt5 sowie Python 3.11 + Qt6; Quellarchiv und daraus Wheel ohne Git gebaut |
+| Frische Wheel-Umgebungen Qt5/Qt6 | Ressourcen, Übersetzungen, CLI/GUI-Aufbau, Export; zusätzliche installierte Bearbeitung mit zweitem Werkzeug/Schritt, geteilter Kontur, Stegänderung und D2G-Speichern/Wiederladen/Export |
+| Windows Server 2022 x64, wegwerfbarer Runner | Aus demselben Quellarchiv ZIP/MSI gebaut; ZIP-Herkunft, GUI-Start und DXF-Export; MSI tatsächlich installiert, Herkunft/GUI/Export geprüft und anschließend entfernt |
+| Debian 13, Python 3.13.5 | Exaktes CI-Wheel in neuer venv installiert: CLI, Qt-Ressourcen/DE-FR-RU, Bearbeitungs-/Steg-/Projektablauf und Export; zusätzlich X11-Start über Xvfb mit PyQt5 5.15.11 / Qt 5.15.19 |
+
+Der erste Kandidatenlauf fand 11 veraltete Anzeigeerwartungen und 17 Steg-
+Unterfallfehler durch einen aus anderen Tests geerbten Fensterzustand.
+`a4849c8` korrigiert die Testisolation, setzt echte Widget-Namen für die
+Feedformatierung und prüft die vereinbarte Anzeigepräzision. Keine Änderung
+der abgenommenen Werkzeugwegsemantik. Je 51 betroffene Tests unter Qt5/Qt6
+und der verpflichtende 315-Test-Fast-Hook bestanden; danach obiger CI-Gesamterfolg.
+
+Quelle, Wheel, Windows-ZIP und installierte Debian-Anwendung enthalten dieselbe
+Version/Revision und `dirty=false`, `origin=build`. Übertragene Wheel-Prüfsumme
+auf Debian bestätigt. Artefakte lokal heruntergeladen und SHA-256 erfasst;
+[maschinenlesbarer Nachweis samt Manifest, Jobs und Prüfsummen](pr5-installation-acceptance.json).
+CI1: realer PR-Paketablauf sowie Sieben-Tage-Aufbewahrung bestätigt; Artefakte
+`release-wheel` und `release-windows` verfallen am 21.11.2026. Kein PR-Releasejob
+ausgeführt. M1 ist für den vereinbarten Kandidatenumfang Windows/Ubuntu/Debian
+abgeschlossen, macOS bleibt separat.
+
+Grenzen: Windows unsigniert; Linux-GUI-Prüfung ohne reale GPU/Monitorabnahme;
+keine physische CNC-Abnahme. Dokumentations-Sichtprüfung bleibt beim Nutzer.
+Noch kein Merge nach develop oder Release. Etappe D muss die endgültigen
+veröffentlichten Artefakte gegen Herkunft/Hashes prüfen und deren Start bestätigen;
+der Kandidat allein nimmt einen anderen endgültigen Build nicht ab.
+
 <a id="doc1-machining"></a>
 
 ## Schritt 2 / DOC1: aktuelle Anleitung und Bilder (14.11.2026)

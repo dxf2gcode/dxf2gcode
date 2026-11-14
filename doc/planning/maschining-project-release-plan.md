@@ -1,7 +1,8 @@
 # Abschluss von maschining-project und nächster Develop-Release
 
-Stand: **14.11.2026**. Schritt 1 lokal umgesetzt: Integrationsbasis zusammengeführt
-und IGNORE korrigiert. Noch kein Push, Merge nach `develop`, Paketbuild oder Release.
+Stand: **14.11.2026**. Schritte 1–3 abgeschlossen: Integrationsbasis, IGNORE,
+Anleitung/Bilder und Kandidaten-Paketabnahme. PR #5 ist gepusht und geprüft;
+noch kein Merge nach `develop` oder Release. Nutzersichtprüfung folgt am Schluss.
 
 ## 1. Bestätigte Entscheidungen
 
@@ -145,6 +146,14 @@ ein anderer Build ist nicht allein durch Tests des Kandidaten abgenommen.
 M1 nur im tatsächlich nachgewiesenen Umfang abschließen. Ungeprüfte Plattformen
 als konkrete Restpunkte erhalten, statt die gesamte Installationsaufgabe offen
 oder unbelegt als erledigt zu lassen.
+
+**Schritt 3 abgeschlossen:** PR #5, Head `a4849c8`, getesteter PR-Merge
+`88aec3d`, CI `43606276059` vollständig erfolgreich. Vier Vollsuiten mit je
+1040 Tests, frische Ubuntu Qt5/Qt6-Wheels, Windows-ZIP/MSI auf wegwerfbarem
+Runner und exaktes Kandidaten-Wheel auf Debian einschließlich X11/Xvfb geprüft.
+Kandidatenversion `2.0.0.dev22`, keine Veröffentlichung. Herkunft/Prüfsummen und
+Abnahmegrenzen im [Nachweis](../archive/toolpath-refactoring-completed.md#pr5-installation).
+Endgültige Release-Artefakte bleiben Etappe D; macOS separat.
 
 ## 6. Etappe D – Merge und Develop-Veröffentlichung
 

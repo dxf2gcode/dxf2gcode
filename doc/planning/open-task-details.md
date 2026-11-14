@@ -1,6 +1,6 @@
 # Offene Aufgaben: Anforderungen und Abnahmekriterien
 
-Stand: **06.11.2026**.
+Stand: **14.11.2026** (Kandidaten-Paketabnahme aktualisiert).
 
 Diese Datei bewahrt die Detailanforderungen der [aktiven Todo](../todo.md).
 Priorität und Auswahl stehen dort; hieraus entsteht kein zusätzlicher
@@ -25,8 +25,9 @@ Die Implementierung und Aktivierung sind in
 Versionsregeln, Paketprüfungen, Aufbewahrung und Betrieb stehen in der
 [Release-Pipeline](../release-pipeline.md).
 
-- [ ] Bei einem echten Pull Request die temporären Pakete und die
-  Sieben-Tage-Aufbewahrung nachvollziehen; kein PR darf veröffentlichen.
+PR-Paketablauf und Sieben-Tage-Aufbewahrung sind mit
+[PR #5 abgenommen](../archive/toolpath-refactoring-completed.md#pr5-installation);
+der PR hat kein Release veröffentlicht.
 - [ ] Den ersten bewusst freigegebenen stabilen Tag `v2.0.0` einschließlich
   dauerhaftem Download und „Latest“ real abnehmen. Dies ist noch keine
   Freigabe, einen stabilen Tag nur für einen Test zu erzeugen.
@@ -40,51 +41,20 @@ veröffentlichten Develop-Ständen notwendig. M1 bleibt eine eigene Abnahme.
 
 <a id="m1"></a>
 
-### M1 – Noch offene Paket-/Debian-Abnahme
+### M1 – macOS separat und endgültige Release-Artefakte
 
-- [ ] Nach gesonderter Freigabe ein aktuelles Wheel/Quellarchiv und die
-  Windows-Artefakte bauen und ihre mitgelieferten Metadaten prüfen.
-- [ ] Wheel aus dem Quellarchiv ohne Git bauen; Herkunft und Zeitstempel
-  müssen aus dem Archiv stammen. Installierte Anwendung ohne Git starten.
-- [ ] Das freigegebene Wheel im isolierten Debian-Testworkflow prüfen:
-  Infofenster zeigt die Paketversion und Build-Herkunft des tatsächlich
-  installierten Artefakts, nicht einen vorherigen Quellstand oder den
-  lokalen Branch der VM. Ergebnisse einschließlich Paketidentität festhalten.
-- [ ] Paket-/Quellstart und G-Code-Kopf gegen dieselbe Herkunft abgleichen;
-  Bewegungsausgabe bleibt gegenüber den bestehenden Golden-Fällen erhalten.
+Windows-ZIP/MSI, frische Ubuntu-Wheels mit Qt5/Qt6 und das exakte Kandidaten-
+Wheel auf Debian sind im ausdrücklich beauftragten Schritt 3
+[abgenommen](../archive/toolpath-refactoring-completed.md#pr5-installation).
+Dies ersetzt den früheren Quellstand-Nachweis nicht rückwirkend, sondern prüft
+neu die tatsächlich installierten Kandidatenartefakte und deren Herkunft.
 
-**Freigabegrenze:** M1 ist vorgemerkt, nicht mit der Dokumentbereinigung
-beauftragt. Vollständige Release-/MSI-Builds, Debian-/SSH-Läufe und Änderungen
-an installierten Testumgebungen erfolgen erst auf ausdrücklichen Auftrag
-oder nach angenommenem konkretem Vorschlag.
+- macOS bleibt ohne konkrete Zielumgebung separat; vor Ausführung beauftragen.
+- Im anschließenden Release-Schritt endgültige Artefakte gegen Manifest/Hashes
+  abgleichen und ihren Start bestätigen. Ein neuer Build ist nicht allein durch
+  den geprüften Kandidaten abgenommen.
+- Keine physische Maschinen- oder reale GPU-Abnahme aus CLI/Xvfb ableiten.
 
-Der dokumentierte Debian-Lauf mit 775 Tests prüfte einen Quell-/Testsnapshot
-in einer isolierten Umgebung, kein neu gebautes und installiertes Release-
-Artefakt. Er schließt M1 deshalb nicht ab. Die spätere Darstellungskorrektur
-wurde gezielt mit je 21 Tests unter Qt5/Qt6 geprüft. Keine erneuten langen
-Läufe allein wegen dieser Dokumentbereinigung starten.
-
-<a id="lc1"></a>
-
-### LC1 – Optionaler automatischer LinuxCNC-CLI-Filter
-
-Aufgenommen am 04.11.2026 auf Nutzerwunsch. Die statische Bestandsaufnahme vom
-05.11.2026 ist [abgeschlossen](../archive/toolpath-refactoring-completed.md#lc1-bestandsaufnahme).
-[Befunde, Quellen und Einrichtungshinweise](../documentation-notes/linuxcnc-integration.md)
-stehen getrennt. Die gezielte GUI-Filterkorrektur und lokale Regressionen sind
-[abgeschlossen](../archive/toolpath-refactoring-completed.md#lc1-filter);
-die reale Debian-/AXIS-Simulation ist inzwischen ebenfalls
-[abgeschlossen](../archive/toolpath-refactoring-completed.md#lc1-axis).
-[Einrichtung und Abnahmegrenzen](../../docs/user-guide/linuxcnc-axis.md)
-sind in der Anwenderanleitung dokumentiert.
-
-- [ ] Optional entscheiden, ob zusätzlich zum interaktiven GUI-Dateifilter
-  ein ausdrücklicher automatischer CLI-Filter benötigt wird. Dieser war nicht
-  Teil der beauftragten GUI-Filterkorrektur.
-
-**Grenze:** Ein automatischer CLI-Filter ist nicht beauftragt. Die erfolgte
-AXIS-Abnahme gilt für die dokumentierte Simulation; Maschinenbetrieb,
-GMOCCAPY sowie weitere Paket-/Plattformabnahmen sind davon nicht abgedeckt.
 
 ## Bedienmodell: gemeinsame Planung von R3 und R1b
 
