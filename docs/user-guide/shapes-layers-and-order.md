@@ -27,7 +27,7 @@ Import changes can produce different numbers or contour structures.
 ## Change the manual order
 
 1. Open the example and expand `Tutorial` in **Machining**.
-2. Select the row for C and use **Up** below the tree to place
+2. Select the row for C and use **Up** in the toolbar above the tree to place
    it before A. Moving or copying assignments between steps is also supported;
    see [Machining steps](machining-steps.md).
 3. Read the rows from top to bottom. The intended order is now C, A, B.
@@ -49,7 +49,9 @@ travel. Original DXF-layer membership stays unchanged.
 
 ## Start points and directions
 
-Activate an operation in Machining and use **Reverse** or **Start point**.
+Activate an operation in Machining and use **Reverse** in its context menu.
+For a contour start, right-click the canvas and use **Start point here** or
+**Start point at sharpest corner**.
 Closed contours use eligible
 segment starts; an open contour offers its endpoints. These choices affect
 the approach and cutting direction without moving the contour's tree row.

@@ -375,6 +375,15 @@ entfernen“ im Regionsparameterbereich benötigt eine konkrete Bezugs-Bearbeitu
 Das spezielle Kontextmenü ist aus Canvas, Bearbeitungsbaum und Regionsliste
 entfernt. Doppelklick-/Tastatur-/Parameterbedienung bleiben; keine Modelländerung.
 
+IGNORE-Präzisierung vom 14.11.2026: `IGNORE:` ist eine DXF-Importkonvention,
+kein eigener Bearbeitungstyp. Beim Capture werden Original-Geometriereferenzen
+erhalten, aber keine Bearbeitungszuordnungen erzeugt. Die Konturen erscheinen
+wie sonstige unzugeordnete Geometrie und sind später normal zuweisbar. Materialisierte
+Projekt-Schritte bekommen keine Sperrwirkung allein durch ihren Namen. Der interne
+Typ `ignored` einschließlich Altprojekt-Sonderbehandlung wurde auf ausdrücklichen
+Nutzerwunsch entfernt; die allgemeine Legacy-Dateiunterstützung bleibt bestehen.
+[Vergleichszeichnung und Bedienhinweise](../../docs/assets/examples/ignored-layers/README.md).
+
 D46 wird an der atomaren Befehlsgrenze in `MachiningCommands.perform` ausgeführt:
 alte/neue Werkzeugdurchmesser je Bearbeitungs-ID vergleichen; automatische
 Zuordnungen anhand ihres vorherigen Scopes und tatsächlicher Originalkontur-
@@ -463,3 +472,13 @@ Treffer diesen vor und sperrt das Neuanlegen ohne Schnitt. Bereits gespeicherte
 unwirksame Regionen bleiben erhalten und können verändert/verschoben werden.
 Global ist weiterhin ein Scope für heutige und spätere passende Bearbeitungen;
 lokale Ausnahmen werden nicht stillschweigend aufgehoben.
+
+### Aktuelle Anleitung und Bilder (DOC1, 14.11.2026)
+
+Bedienwege sind in der [Anleitung](../../docs/user-guide/machining-steps.md)
+und im [illustrierten Stegkapitel](../../docs/user-guide/tabs-and-breaking-layers.md)
+aktualisiert. Originale Aufnahmen und reproduzierbare Parameter:
+[Bildherkunft](../../docs/assets/images/machining/README.txt). D2G 2.1 enthält
+Regionsobjekte und Scopes; 2.0 sowie 1.1–1.5 bleiben lesbar. IGNORE importiert
+unzugeordnete Geometrie. Die Nutzersichtprüfung erfolgt am Schluss; daraus keine
+Paket-, Plattform- oder Maschinenfreigabe ableiten.

@@ -21,7 +21,7 @@ aus dem alten Wiki. Der Entwurf liegt auf `docs/wiki-migration`.
 - Infeed −0,5 mm und Endtiefe −1 mm erzeugen zwei Tiefenumläufe. Die 2D-
   Darstellung legt deren XY-Bahnen übereinander; der Werkzeugkreis ist nur
   eine Eintrittsanzeige, keine zusätzliche Kreisbewegung.
-- Rückzug und Sicherheitsabstand gelten am Layer; Schnitttiefen und Vorschübe
+- Rückzug und Sicherheitsabstand gelten am Bearbeitungsschritt; Schnitttiefen und Vorschübe
   können je Kontur eingestellt werden. Im Beispiel stehen Rückzug und
   Sicherheitsabstand auf den Standardwerten 15 mm und 3 mm.
 - Normaler Export folgt den aktivierten Konturen in Baumreihenfolge. Die

@@ -971,6 +971,11 @@ anschließend ausdrücklich beauftragt; Leerraum weiterhin für später:
   anbietbare Sonderart, vorhandene Art beim Bearbeiten gesperrt, ausgeschlossene
   Exportdarstellung ohne Checkbox. Altimport und Roundtrip erhalten die Daten;
   kein Eingriff in die Werkzeugwegplanung. [Nachweis](../archive/toolpath-refactoring-completed.md#r3-ignore-complete).
+  Anschließende Nutzerpräzisierung vom 14.11.2026 ersetzt diese erste Fassung:
+  IGNORE-Layer liefern beim Import unzugeordnete Originalkonturen, die später
+  normal bearbeitet werden können. Für interne ignorierte Schritte gibt es
+  keine benötigten Altprojekte; Sonderart und Kompatibilitätspfad sind entfernt.
+  Eine Vergleichs-DXF zeigt normale, IGNORE- und manuell unzugeordnete Konturen.
 
 Untersuchungsnachweis R3-IGNORE: lokaler Modell-/Befehlsversuch mit bestehender
 Testfixture; leeres Anlegen erfolgreich, Verschieben einer normalen Kontur

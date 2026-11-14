@@ -38,7 +38,7 @@ again. Nonblocking warnings can still accompany a valid plan.
 | --- | --- |
 | Machine G41/G42 with no entry | Choose an entry with XY movement; None cannot build machine compensation |
 | Arc/radius warning | Compare workpiece radius with tool radius, compensation side and selected lead method |
-| No change after editing a dimension | Check that the selected method uses that dimension and that the effective tool/layer is the one you edited |
+| No change after editing a dimension | Check that the selected method uses that dimension and that the intended operation/default context is active |
 | Overcut absent | Check contour closure, enablement and a nonzero overcut length |
 | Entry or exit error | Read the specific geometry/parameter message; a blocking error rejects the entire export |
 
@@ -47,6 +47,11 @@ increasing a radius arbitrarily can move a lead into another part of the work.
 Review the [lead definitions](compensation-and-leads.md#choose-lead-in-and-lead-out-methods).
 
 ## Offset and pocket failures
+
+A missing tool number or project/tool-table deviation also blocks the whole
+export, even if the preview is valid. The diagnostic names the affected steps
+and compares the definitions. Correct/add the table tool or explicitly replace
+the saved definition; see [tool resolution](machining-steps.md#saved-values-and-changed-drawings).
 
 An inward offset can legitimately remove a region narrower than the tool.
 An empty result is not always that case: an incomplete calculation, unsupported

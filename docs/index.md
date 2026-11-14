@@ -12,6 +12,8 @@ development. Example acceptance limits are stated on the relevant pages.
   step-by-step example with a downloadable drawing.
 - Explore [Interface and navigation](user-guide/interface-and-navigation.md)
   and [Import drawings and save projects](user-guide/import-and-projects.md).
+- Organize shared contours, tools and independent operations with
+  [Machining steps](user-guide/machining-steps.md).
 - Prepare [tree order](user-guide/shapes-layers-and-order.md) and
   [route optimization](user-guide/route-optimization.md), set
   [machining parameters](user-guide/machining-parameters.md), and choose
@@ -26,7 +28,8 @@ development. Example acceptance limits are stated on the relevant pages.
   [troubleshooting](user-guide/troubleshooting.md), and configure
   [application settings](user-guide/application-settings.md) or
   [parameterized layer names](user-guide/layer-naming-rules.md).
-- Follow [Installation and startup](installation.md) to run a development checkout.
+- Follow [Installation and startup](installation.md) for the Windows MSI,
+  portable ZIP or development checkout.
 - Adapt output using the [postprocessor reference](reference/postprocessors.md),
   [tool-change contracts](reference/tool-changes.md) and
   [five example references](examples/index.md).

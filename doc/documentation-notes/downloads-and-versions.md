@@ -35,6 +35,12 @@ Die Anwenderanleitung soll vor allem diese Entscheidungen erklären:
   Zeichnungen oder Projekte ableiten.
 - Beim portablen Windows-Paket das gesamte ZIP entpacken. Der MSI installiert
   für den aktuellen Benutzer; Develop und Stable verwenden getrennte Ordner.
+- Die Installationsseite bietet MSI ausdrücklich als ersten Windows-Weg an:
+  GitHub-Releases → gewünschter Prerelease → Assets → `-windows-x64.msi`,
+  Installer starten, Startmenü und Infofenster prüfen. ZIP separat erklären,
+  Python-/Git-/Qt-Buildanforderungen ausschließlich dem Quellstart zuordnen.
+  Auf die Releaseübersicht verlinken, nicht auf `releases/latest`, das Develop-
+  Prereleases auslassen kann. Keine zeitgebundene einzelne MSI-Datei als Dauerlink.
 - Die ersten Windows-x64-Pakete verwenden Python 3.11 / PyQt5 und sind
   unsigniert. Eine Anleitung darf keine vorhandene Signatur behaupten.
 - Wheel-Datei und virtuelle Umgebung verwenden. Ältere Datumsversionen

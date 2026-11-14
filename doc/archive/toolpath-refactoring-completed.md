@@ -2,6 +2,98 @@
 
 Stand: **14.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+<a id="doc1-machining"></a>
+
+## Schritt 2 / DOC1: aktuelle Anleitung und Bilder (14.11.2026)
+
+Der Nutzer hat die revidierte IGNORE-Fassung nach eigener Prüfung ausdrücklich
+abgenommen. Die Anleitung ist auf Geometrie/Bearbeitung, Schritt-/Konturwerte,
+Werkzeugauflösung, Mehrfachauswahl, Undo/Redo, Stegmodus D41–D48 und D2G 2.1
+abgeglichen. Einstieg, Interface, Import/Projekte, Parameter, Kontur/Tasche/Bohren,
+Kompensation, Vorschau, Layerregeln, Einstellungen und Architektur sind korrigiert.
+MSI-/ZIP-Weg, Übersichtslinks und Release-Highlights sind ergänzt.
+
+Sechs veraltete Screenshots ersetzt und zehn aktuelle Aufnahmen ergänzt:
+echte Qt6-Widgets, isoliertes englisches Demoprofil, eigene Beispielzeichnungen,
+keine privaten Profile. Herkunft/Parameter und Nachweisgrenzen stehen in
+[Bildmetadaten](../../docs/assets/images/machining/README.txt). Tutorial-Export
+mit G21, Tiefen -0.5/-1 und ohne G41/G42 im Demoprofil tatsächlich ausgeführt.
+Strenger Zensical-Build erfolgreich. Keine neue Vollsuite oder Paketabnahme
+allein für Dokumentänderungen.
+
+Die Browser-Sichtprüfung wurde technisch beendet, weil Computer Use die aktuelle
+Browseradresse nicht sicher feststellen konnte. Der Nutzer übernimmt diese
+Prüfung ausdrücklich am Schluss; sie blockiert die beauftragte Etappe C nicht.
+DOC1 bleibt ausschließlich dafür offen. Noch keine Pages-Veröffentlichung,
+kein Merge nach develop und kein Release durch Schritt 2.
+
+Vorbereitung von Schritt 3: `f953d25` sichert die abgenommene IGNORE-Änderung
+und ergänzt die installierte Wheel-Prüfung um echten MainWindow-Aufbau,
+Werkzeug/Mehrfachbearbeitung, Stegänderung, D2G-Roundtrip und Dateiexport ohne
+Quellimporte. Der vorgeschriebene Pre-Commit-Hook bestand mit 315 Fast-Tests.
+Der zusätzliche Paketablauf wird erst am tatsächlichen Kandidaten-Wheel
+ausgeführt; daraus ist hier noch keine Installationsabnahme abgeleitet.
+
+## MSI-Installationsweg in der Anleitung ergänzt (14.11.2026)
+
+Auf Nutzerrückfrage die veröffentlichte Installationsseite schreibgeschützt
+geprüft: HTTP 200, keine MSI-Erwähnung. Der Text beschrieb nur Quellstart und
+behauptete keine bereits veröffentlichten Windows-Pakete. Parallel bestätigte
+die GitHub-Releases-API den Develop-Prerelease `develop-ci-42259036046` mit
+`dxf2gcode-2.0.0.dev12-20261106-g452ba97-windows-x64.msi` und zugehörigem ZIP.
+
+Die vorbereitete Anleitung zeigt nun GitHub Releases und den Windows-MSI-Weg
+vor den Quellstart-Anforderungen: gewünschte Vorschau wählen, Assets öffnen,
+Installer herunterladen und ausführen, Startmenü/Infofenster verwenden.
+Portable ZIP-Installation ist getrennt erklärt. Beide Windows-Pakete enthalten
+ihre Python-/Qt-Laufzeit; die Quellstart-Werkzeuge sind dafür nicht nötig.
+Benutzerbezogene Ordner, getrennte Develop-/Stable-Kanäle, Deinstallation,
+Signierungsstatus und Herkunftsdateien sind anhand des vorhandenen Buildcodes
+und Releasevertrags beschrieben. Dauerlinks führen auf die Releaseübersicht,
+statt einzelne versionsgebundene MSI-Dateien oder `releases/latest` festzuschreiben.
+
+Nachweis: öffentliche Seite und Release-Assets live gelesen, Anleitung gegen
+`source/tools/build/windows.py` und `doc/release-pipeline.md` abgeglichen;
+strenger Dokumentationsbuild und Diff-Prüfung bestanden. Reine Dokumentänderung,
+keine Installer-Ausführung oder neue Paketabnahme. Änderung liegt in der
+Integrationskopie und ist noch nicht veröffentlicht oder committed.
+
+## IGNORE als unzugeordnete Geometrie und Vergleichs-DXF (14.11.2026)
+
+Auf Nachfrage zur Gleichheit mit normal unzugeordneter Geometrie hat der Nutzer
+die Importänderung bestätigt und anschließend Altprojekt-Sonderbehandlung für
+diesen internen Typ ausdrücklich verworfen. Die vorherige IGNORE-Fassung mit
+gesperrten Sonder-Schritten ist damit abgelöst. Der interne Bearbeitungstyp
+`ignored` samt GUI-, Vorschau-, Tooltabellen- und Zuordnungssperren ist entfernt.
+Die DXF-Präfixerkennung und die optionale vollständige Importausblendung bleiben.
+Allgemeine alte Projektformate wurden nicht entfernt; es gibt keinen speziellen
+Migrationspfad für intern gespeicherte `ignored`-Schritte mehr.
+
+Beim Erfassen einer IGNORE-Kontur wird ihre Original-Geometriereferenz erhalten,
+aber keine Bearbeitung angelegt. Sie erscheint im normalen unzugeordneten Bereich,
+ohne Vorschau/Export. Explizite Zuordnung erzeugt eine aktivierte normale
+Bearbeitung; der DXF-Layername sperrt deren materialisierten Schritt nicht.
+Undo und Projekt-Roundtrip erhalten die jeweilige Zuordnung.
+
+Die eigene [Vergleichs-DXF](../../docs/assets/examples/ignored-layers/ignore-layers-mm.dxf)
+enthält vier gleich aufgebaute Spalten mit je Rechteck 20 × 12 mm und Kreis R4:
+Normal_Machining, IGNORE:Construction, IGNORE:Helpers und Compare_Unassigned.
+Die beiden IGNORE-Spalten sind beim ersten Import unzugeordnet; die rechte
+Spalte lässt sich durch Entfernen ihrer Bearbeitungszuordnungen direkt vergleichen.
+[Bedienhinweise](../../docs/assets/examples/ignored-layers/README.md).
+
+Nachweis: je 71 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden (Projektmodell,
+Bearbeitungsbefehle, Tooltabelle, echter Qt-Panelablauf und Architekturgrenzen).
+Die Beispielzeichnung wird über den echten DXF-Import geladen: acht Konturen,
+zwei normale Schritte, vier unzugeordnete IGNORE-Konturen. Nach Entfernen der
+rechten Vergleichszuordnungen haben alle sechs unzugeordneten Konturen dieselben
+deaktivierten Originalzustände und keine Vorschauzuordnung. Danach IGNORE-Kontur
+normal zuordnen, Exportreihenfolge/Aktivierung und Undo prüfen. Der reine Modellfall
+prüft auch Speichern/Lesen und einen frei benannten Schritt mit IGNORE-Präfix,
+der trotzdem normal exportiert wird. DE/FR/RU bereinigt, QM regeneriert und geladen
+geprüft; strenger Dokumentationsbuild und Diff-Prüfung bestanden. Kein Commit/Push,
+keine Vollsuite oder Paket-/Maschinenabnahme für diese nachträgliche Präzisierung.
+
 <a id="r3-ignore-complete"></a>
 
 ## Schritt 1: Integrationsbasis und IGNORE-Korrektur (14.11.2026)

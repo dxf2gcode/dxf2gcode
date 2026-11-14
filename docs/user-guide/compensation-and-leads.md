@@ -1,8 +1,8 @@
 # Cutter compensation and lead moves
 
-In the current development UI, edit compensation and leads in the active
-operation's [Machining form](machining-steps.md). Screenshots and
-control positions below predate the Geometry/Machining layout; the machining rules still apply.
+Edit compensation in **Offset** and entry/exit settings in **Lead in/out**
+within the active operation's [Machining form](machining-steps.md). The canvas
+and machining-tree menus also expose applicable compensation commands.
 
 First decide whether your DXF describes a tool-centre path or a nominal part
 boundary. Then choose the compensation side and who calculates the tool-radius
@@ -50,13 +50,13 @@ allowance cancels the tool radius, a valid compensated path may no longer exist.
 
 ## Choose lead-in and lead-out methods
 
-The contour's **Lead in** and **Lead out** selectors control the method.
-Dimensions come from the effective tool/layer values: **lead radius** at the
-workpiece and **lead length** for the straight portion.
+The **Entry** and **Exit** selectors in **Lead in/out** control the method.
+**Radius** is the workpiece lead radius and **Straight** the straight portion.
+These are operation values, inherited from the step or set as own values.
 
 | Method shown in the interface | Lead in | Lead out |
 | --- | --- | --- |
-| None | No optional entry geometry | No optional exit geometry |
+| Off | No optional entry geometry | No optional exit geometry |
 | Straight | Straight approach | Straight departure |
 | Straight with circle | Straight portion and a quarter-circle transition | Quarter-circle transition with a straight portion |
 | Circle | Merged into Straight with circle for entry | Quarter-circle departure without a straight portion |
@@ -68,9 +68,9 @@ review radius warnings rather than assuming any positive radius is usable.
 Unused radius/length fields are not requirements for a method that does not
 use them.
 
-Machine G41/G42 needs an XY movement to build compensation. **Lead in = None**
+Machine G41/G42 needs an XY movement to build compensation. **Entry = Off**
 is therefore rejected for that case. G40 and software compensation can use
-None. For G40's curved entry, historical centre-radius geometry is retained;
+Off. For G40's curved entry, historical centre-radius geometry is retained;
 do not assume its plunge/straight portion is identical to a compensated entry.
 
 For drag-knife alignment and swivel behaviour, see
@@ -83,8 +83,8 @@ by the configured **overcut length**. It is different from a lead-out departing
 from the contour. With an open-only selection the selector is disabled; in a
 mixed selection only closed contours receive the overcut change.
 
-Enabling Overcut with zero length adds no extension. The length is associated
-with the effective tool/layer settings, while enablement can be set per contour.
+Enabling Overcut with zero length adds no extension. Both the length and enablement belong to the machining operation, with step
+inheritance available through their provenance symbols.
 The configuration standard can be restored as described in
 [Machining parameters](machining-parameters.md#restore-a-standard-deliberately).
 

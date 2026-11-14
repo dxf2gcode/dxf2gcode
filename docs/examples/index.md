@@ -1,5 +1,11 @@
 # Postprocessor examples
 
+For drawing and interface workflows, start with the
+[first rectangle](../getting-started/first-dxf-to-gcode.md),
+[shared-contour machining steps](../user-guide/machining-steps.md),
+[holding-tab example](../user-guide/tabs-and-breaking-layers.md) or
+[IGNORE comparison drawing](../assets/examples/ignored-layers/README.md).
+
 These five references explain output adaptation. They are newly written from
 the current implementation, rather than copied historical machine profiles.
 Use a separate application profile and keep the existing postprocessors intact.

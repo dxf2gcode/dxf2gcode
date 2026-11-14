@@ -65,6 +65,15 @@ its preview emphasis while retaining a Ctrl-selected group; parameter edits
 still apply to the whole selected group. This selection-based change does not replace tool
 definitions for unselected steps.
 
+![Roughing and finishing share one original rectangle with independent operations](../assets/images/machining/operations.png)
+
+The shared [assignment dialog](#move-copy-reorder-and-undo) keeps its size
+and action when switching targets:
+
+![Assign to an existing step](../assets/images/machining/assign-existing.png)
+
+![The same dialog with a new-step target](../assets/images/machining/assign-new.png)
+
 ## Choose which operation to edit
 
 ### Holding tabs from DXF and manual regions
@@ -218,8 +227,8 @@ and height are retained. This uses original geometry, independently of cutter
 compensation. With several eligible original contours, choose one on release;
 cancelling that choice keeps the unsnapped drag result. Repeated machining uses
 of the same original contour count as one alignment target. With no unambiguous
-pair of contacts, alignment is skipped with a message. There is no automatic
-placement; region creation and subsequent editing remain separate.
+pair of contacts, alignment is skipped with a message. Alignment does not distribute tabs around the part; region creation and
+subsequent editing remain separate.
 
 Effective tab
 movements remain part of the shared plan and export; pass selection belongs to the
@@ -365,7 +374,7 @@ returns that assignment to a matching contour step, creating one if necessary. C
 checked Pocket/Drill action returns to Contour. Invalid selections are rejected
 as a whole: drilling needs a point/circle, and pockets need closed contours in
 milling mode with internal compensation. The original layer membership does
-not change. Special holding-tab/ignored assignments retain their kind.
+not change. Holding-tab regions remain separate modifiers rather than normal machining kinds.
 
 The drawing context menu keeps this order, with separators between groups:
 
@@ -419,12 +428,18 @@ does not cover every historical CAD or configuration action.
 
 The **Export** checkbox controls inclusion independently for each operation.
 It is available only in Machining. Selecting geometry is not an export filter.
-Imported or saved **Ignored** steps are a special exclusion: their rows show
-**Excluded** instead of an Export checkbox and offer no optimization checkbox.
-They remain selectable and retain their saved data, but cannot be enabled for
-export. Ignored is not offered when creating normal steps; existing ignored
-steps retain their kind when edited. Use a normal operation's Export checkbox
-for temporary exclusion.
+Contours from imported `IGNORE:` layers start as **Unassigned** geometry, just
+like contours whose machining assignments have been removed. They have no
+toolpath or export until explicitly assigned to a normal step. Afterwards they
+use the same tool, parameter and Export controls as other contours; the original
+DXF layer name does not permanently block machining. There is no separate
+Ignored machining kind or compatibility path for that former internal kind.
+The independent import option to omit IGNORE layers entirely still applies.
+Try the [IGNORE comparison drawing](../assets/examples/ignored-layers/ignore-layers-mm.dxf)
+and its [comparison instructions](../assets/examples/ignored-layers/README.md).
+
+![IGNORE originals listed under Unassigned alongside normal machining steps](../assets/images/machining/ignore-unassigned.png)
+
 The drawing's disabled style/visibility reflects whether any linked operation
 is enabled. Unassigned contours have no machining preview or export assignment.
 
@@ -451,7 +466,8 @@ Projects retain saved tool/default values when external profiles change.
 Before export, every tool used by an enabled machining step must match the
 current tool table. A missing tool number or different definition blocks the
 whole export, preserving an existing output file and leaving stdout empty.
-Empty, disabled, ignored and holding-tab-only steps do not block export.
+Empty or disabled steps and unassigned geometry do not block export.
+Holding-tab regions do not export as separate machining steps.
 
 The diagnostic identifies the tool number and affected steps. For missing
 numbers it lists the saved definition; for differing tools it compares the
@@ -468,11 +484,12 @@ own values. Existing explicit machine-type/tolerance commands still change
 the current project. An explicit drawing-unit change converts machining
 values once and records that interpretation.
 
-Save as JSON `.d2g` 2.0 to preserve operations and references. Historical
-1.1–1.5 files remain readable; first save their migrated state under a new
+Save as JSON `.d2g` **2.1** to preserve operations, references and native tab
+regions. Versions 2.0 and historical 1.1–1.5 remain readable; first save their migrated state under a new
 name. On drawing reload, new contours appear as Unassigned. Missing or
 ambiguous active references stop the whole export and preserve an existing
 output file. See [Projects](import-and-projects.md).
 
-Manual holding-tab regions and a shared user acceptance of the new workflow
-remain separate follow-up stages.
+Manual holding-tab editing and the shared-contour workflow are included in
+this version. See [Tabs and breaking layers](tabs-and-breaking-layers.md) for
+a shorter illustrated workflow and the compensation reference.

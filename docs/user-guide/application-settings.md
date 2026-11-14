@@ -10,7 +10,7 @@ application or postprocessor setting.
 | Configuration page | Main purpose |
 | --- | --- |
 | Software config | Default drawing/output/project folders, path updates, PDF/PS converters and logging |
-| General settings | View options, import splitting, automatic compensation, machine mode, units and stdout output |
+| General settings | View/import options, machine mode, units, number display and tab placement defaults |
 | Machine config | Axis letters, coordinate/depth defaults and feeds |
 | Output settings | Machine/software compensation, pockets, knife options, leads, route optimizer and import settings |
 | Parameter names | Recognized names in parameterized DXF layers |
@@ -76,11 +76,29 @@ profiles and loaded projects can have different values.
 | Point / fitting tolerance | `0.001 / 0.001` in the configuration's linear units |
 | Import-exclude IGNORE / layer 0 | Off / Off |
 | `Layer_Options.id_float_separator` | `:` |
+| Display decimals: mm / inches / feeds / angles | `3 / 5 / 1 / 1` |
+| Tab placement / remaining length | Snap to contour / `2` configuration units |
 
 Defaults are initialization values, not material or controller recommendations.
 Tool 1 supplies the initial tool values; imported layer identifiers and saved
 project/contour settings can override them. See
 [Machining parameters](machining-parameters.md) for selection scope and reset rules.
+
+## Tool table and project snapshots
+
+![Tool table with compact fields and tool-number entries](../assets/images/machining/tools-table.png)
+
+A new DXF uses the current tool table. A loaded project retains its saved
+definitions. Identical complete definitions are unified in the selector;
+differences are marked **Project deviation**. Replacing such a definition with
+its table counterpart updates every step using that project tool. An export
+diagnostic lists missing numbers/differences and affected steps; resolve those
+used by active operations before exporting. Tools are not added silently.
+
+The table's numeric identifier is the tool number, not a free-text tool name.
+Profile lead dimensions initialize machining defaults; the form edits these
+as contour/step values. Display decimal settings affect presentation without
+rounding saved values. See [Machining parameters](machining-parameters.md).
 
 ## When settings take effect
 

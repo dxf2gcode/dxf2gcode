@@ -17,7 +17,7 @@ With the default separator `:`, use uppercase prefixes:
 | `MILL:` | Parameterized machining layer |
 | `DRILL:` | Parameterized drilling layer; use compatible closed arc geometry |
 | `BREAKS:` | Tab/break instruction regions |
-| `IGNORE:` | Imported shapes initially disabled, unless excluded from import |
+| `IGNORE:` | Original contours without machining assignments, unless excluded from import |
 
 Prefix and alias matching are case-sensitive. A plain layer called `Tutorial`
 imports normally but does not parse embedded parameter instructions as a MILL,
@@ -96,16 +96,18 @@ values; later explicit pairs can replace them. Put `Tn` before dimensions and
 allowances when you want those explicit values to win. A nonexistent tool
 number is reported and falls back to tool 1.
 
-After import, contour tool/mode overrides and saved D2G preparation can replace
+After import, machining-step/operation values and saved D2G preparation can replace
 the starting values. Reopening a DXF reapplies its layer rules; it is not the
 same as reopening the saved project. Layer lead overrides can remain distinct
 from global defaults, so do not infer precedence only from a grey field.
 
 ## IGNORE is not always an import filter
 
-With default settings, `IGNORE:` shapes are imported and initially disabled.
-They can still be inspected when disabled paths are shown. Enabling **Do not
-import IGNORE layers** removes them during import instead. The independent
+With default settings, `IGNORE:` contours are imported as **Unassigned**,
+with no toolpath or export. Assign them to a normal machining step later through
+**Assign machining…**; the original layer name does not permanently exclude
+them. Try the [IGNORE comparison drawing](../assets/examples/ignored-layers/README.md).
+Enabling **Do not import IGNORE layers** removes them during import instead. The independent
 layer-0 exclusion can also remove drawing/block content. Recheck the import
 counts and geometry after changing either filter.
 

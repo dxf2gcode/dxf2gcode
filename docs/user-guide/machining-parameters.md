@@ -1,90 +1,89 @@
 # Machining parameters
 
-In the current development UI, select the active operation in **Machining**
-before editing values. See [Machining steps](machining-steps.md) for the new
-relocated tool/contour fields and inheritance symbols. Selecting a step edits
-its defaults; activating an operation edits its own values. Screenshots below
-show the earlier location of these fields in Layers.
+Select a step or contour assignment in **Machining** before editing values.
+Selecting a step edits its defaults; selecting operations edits their own
+values or their inheritance from the step. **Geometry** selects original
+contours and layers, whose drawing structure remains unchanged.
 
-Select the intended contour before editing machining values.
-The fields describe the current selection; an enabled shape can be exported
-without being selected. Start with [First DXF to G-code](../getting-started/first-dxf-to-gcode.md)
-for a complete numeric example.
+![Current machining form with tool, Z values, feeds, leads and offset](../assets/images/machining/parameter-groups.png)
 
 ## Units and depths
 
-Check the unit labels. Linear dimensions use the active mm/inch setting, feed
-uses length per minute, and spindle speed uses rpm. Changing the unit setting
-converts the current values; typing `1` still means one unit in the displayed
-system, not an automatic conversion from millimetres.
+Check the units beside each field. Lengths use mm or inches, feeds use length
+per minute, and spindle speed uses rpm. Changing drawing units converts the
+current values. Typing `1` means one unit in the displayed system.
 
-| Field | Meaning |
+| Group / field | Meaning and scope |
 | --- | --- |
-| Z Retraction area | Layer's retract Z coordinate |
-| Z Safety margin | Approach/retract distance above workpiece top; safe Z is top plus its magnitude |
-| Z Workpiece top | Z coordinate of the top surface |
-| Z Infeed depth | Step used to reach the final depth in successive cuts |
-| Z Final mill depth | Final Z coordinate, rather than a positive thickness value |
-| Feed rate XY / Z | Feed for planar cutting / axial movement |
+| Z values / Top | Workpiece surface Z; can have an operation override |
+| Z values / Safety | Approach distance above workpiece top; always a step value |
+| Z values / Retract | Retraction Z coordinate; always a step value |
+| Z values / Infeed | Depth increment for successive cuts |
+| Z values / Final | Final Z coordinate, not a positive stock thickness |
+| Feeds / XY and Z | Planar cutting and axial feeds |
+| Offset / Compensation and Allowance | G40/G41/G42 and additional software finishing allowance |
+| Lead in/out | Entry, exit, radius, straight length and overcut settings for the operation |
 
-For an illustrative millimetre setup, use top `0`, infeed `-0.5` and final
-depth `-1.2`. The cutting depths are **-0.5, -1.0 and -1.2 mm**. The last step
-is shortened to reach the final depth. With top `2 mm`, final depth `1 mm`
-still means cutting 1 mm below that top, not cutting down to Z = -1 mm.
-
-Use a nonzero infeed and a sensible depth interval. The planner reports zero
-infeed, final depth above the top and an initial step deeper than the final
-depth. Some depth diagnostics are warnings rather than hard export blocks;
-correct the values instead of treating a produced file as validation.
-
-Open contours can reverse direction on successive milling passes. Controller
-profile options influence compensation cancellation and drilling repetitions;
-the depth table alone does not specify every retract or drill cycle.
+For example, top `0`, infeed `-0.5` and final `-1.2 mm` produce cuts at
+**-0.5, -1.0 and -1.2 mm**. With top `2 mm`, final `1 mm` means cutting
+1 mm below that top, not down to Z = -1 mm. Use a nonzero infeed and read
+depth diagnostics before exporting. Open contours can reverse on successive
+milling passes; a depth table does not describe all controller actions.
 
 ## Tools, defaults and contour values
 
-Define tools through **Options → Configuration → Tools**. For milling, the
-diameter is the cutter diameter; software compensation uses half of it as the
-tool radius. The tool number selects an entry, while speed, lead radius,
-straight lead length and overcut length are associated tool values.
+Define tools under **Options → Configuration → Tools table**. Each machining
+step has exactly one tool definition. The selector combines the table and
+saved project tools, showing identical complete definitions only once.
+An unmatched saved definition is marked **Project deviation**.
 
-| Selection/action | Scope to expect |
+| Selection/action | Scope |
 | --- | --- |
-| Assign a tool to selected contour rows | Give those contours an explicit tool override |
-| Assign a tool to an explicitly selected whole layer | Update its layer tool and clear the contours' tool overrides |
-| Edit workpiece top, infeed, final depth or feeds on selected contours | Change those contours' values |
-| Edit retraction or safety margin | Change the applicable layer values |
-| Edit lead/overcut mode on selected contours | Change their applicable mode overrides |
+| Change the tool with a step selected | Change that step's tool |
+| Change the tool with contour assignments selected | Change only those assignments; reuse a compatible step or create one, retaining the source defaults and own values |
+| Several compatible destination steps exist | Choose the destination; cancellation changes nothing |
+| Edit Top, Infeed, Final, feeds or leads on operations | Apply to the selected compatible operations |
+| Edit Retract or Safety while operations are selected | Change their steps, affecting all operations in those steps |
 
-Selecting a different tool can also set the additional milling offset from
-that tool entry. Recheck the offset when changing tools. A deliberately stored
-layer value from a parameterized DXF layer can take precedence over a tool
-default; advanced layer naming belongs to the configuration chapter.
+Lead dimensions and overcut are machining values, not editable tool-definition
+fields in this form. Only machine-relevant parameters appear: knife swivel
+settings belong to drag-knife mode, for example.
+
+Project values remain saved when external configuration changes. Updating a
+tool/default snapshot is an explicit action under **Advanced** in the tree
+menu. Before export, used tool definitions must match the current table.
+See [Machining steps](machining-steps.md#saved-values-and-changed-drawings)
+for resolving deviations and missing tools.
 
 ## Read shared and mixed values
 
-An equal numeric value is displayed normally; a value matching its standard
-can be shown in grey while remaining editable. Grey text alone is not proof
-that a numeric value will track all future configuration changes.
+The **chain** symbol means an inherited value; the **pencil** means an own
+value. Hover over the symbol to see the parameter, source and precise value.
+The symbol's menu changes provenance. A grey inherited value does not by
+itself mean the operation is disabled.
 
-**Different** means that the selection has mixed values or mixed applicability.
-It is a display state, not a number. If the field remains enabled, entering a
-value deliberately applies it across the supported selection. If it is disabled,
-select a compatible subset first. Unchanged, rounded display text does not
-request replacement of the stored exact value.
+Equal values are shown together. **Different** or an empty mixed numeric field
+means the selected operations do not share a value. An enabled field accepts
+one deliberate change for the compatible selection. Disabled controls require
+a suitable subset. Multiple references to one original contour must first be
+selected explicitly in the machining tree or canvas; original selection alone
+does not guess which operation to edit.
+
+Lengths display **3 decimal places for mm** and **5 for inches** by default;
+feeds and angles each use **1**, while whole-number fields stay integral.
+Set these independently under **Configuration → General settings → Number
+display**. Focusing an input exposes its full value. Merely displaying or
+leaving an unchanged rounded value never replaces stored precision. Planning
+and export use the entered/calculated value, including extra decimal places.
 
 ## Restore a standard deliberately
 
-- For numeric depths and feeds, enter the intended standard value explicitly;
-  there is no universal “reset every contour parameter” button in this panel.
-- For tool inheritance, select the whole layer and assign its tool. This
-  clears the individual tool overrides and can replace other tool-sourced values.
-- Lead/overcut selectors show the effective method rather than a separate
-  “Default” option. Selecting the current global standard clears the respective
-  contour override, so the inherited setting applies again.
+Use the provenance symbol's menu to select the step default or set an own
+operation value. Retract and Safety remain step-scoped. Equality with a
+default does not prove inheritance: uncertain values from older projects are
+retained as own values. Explicit profile updates and operation changes can be
+undone with the machining history.
 
-Save a D2G project after preparing the values. Opening the original DXF alone
-does not reopen that saved preparation.
-
-Continue with [Contours, pockets and drilling](contours-pockets-and-drilling.md)
+Save a D2G project to preserve the preparation; reopening the DXF alone does
+not restore it. Continue with [Contours, pockets and drilling](contours-pockets-and-drilling.md)
 and [Cutter compensation and lead moves](compensation-and-leads.md).

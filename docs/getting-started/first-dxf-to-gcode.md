@@ -1,8 +1,9 @@
 # First DXF to G-code
 
-The current development version uses a third **Machining** tab for operation
-parameters, export checkboxes and order. Use the [Machining steps guide](../user-guide/machining-steps.md)
-alongside this walkthrough; the screenshots below show the earlier interface.
+The current interface has **Geometry** and **Machining** tabs. Machining opens
+by default and contains operation parameters, export checkboxes and order.
+Geometry retains the original entity/layer structure. The screenshots below
+show this interface with an isolated English demonstration profile.
 
 This walkthrough takes one small drawing from import to an exported `.ngc`
 file. You will select a contour, set its machining parameters, inspect the
@@ -41,6 +42,9 @@ size after accounting for the cutter radius.
 3. Close and restart DXF2GCODE after the profile-selection message.
 4. Confirm that **Options → Configuration profile** marks `wp1-demo` as active.
 5. Choose **Options → Machine Type → Milling**.
+6. Before importing, open **Options → Configuration → Tools table** and set
+   tool 1 to **2 mm** diameter and **6000 rpm**. Apply the changes. This
+   prepares the table from which the new project takes its tool.
 
 If `wp1-demo` already exists, select it rather than creating it again, then
 restart if prompted. For a source checkout, the equivalent explicit startup is:
@@ -58,11 +62,12 @@ second controls the generated output dialect.
 1. Choose **File → Open...** and open `rectangle-20x10-mm.dxf`.
 2. Confirm that the dimension fields use **mm**, not inches. If necessary,
    select millimetres through **Options → Measurement units → Millimeters**.
-3. Select the **Layers** tab and expand `Tutorial` with its triangle or the
-   expand button. You should see one child, `Shape 0`.
-4. Check that both the layer and shape checkboxes are enabled.
+3. In **Geometry**, expand `Tutorial` in the **Layers** section to see the
+   original `Shape 0`. This tree selects geometry; it has no export checkboxes.
+4. Return to **Machining**, expand `Tutorial · Contour · T1`, and check the
+   **Export** checkbox of `Contour 0`.
 
-![One imported rectangle, with the layer and shape enabled and no contour selected](../assets/images/first-dxf/01-import.png)
+![Imported rectangle in the Machining tab with its Export checkbox enabled](../assets/images/first-dxf/01-import.png)
 
 **Expected result:** one rectangle is visible, with the workpiece-origin marker
 at its lower-left corner. Before selecting a contour, its parameter fields may
@@ -75,12 +80,11 @@ reference; opening the drawing does not set a physical machine work offset.
 
 ## 3. Select the contour and set G40
 
-1. Click **Shape 0** in the Layers tree. Its row becomes highlighted and its
-   machining fields become available.
-2. Right-click the selected rectangle and choose
-   **Cutter Compensation → G40 No Compensation**.
-3. In that context menu, leave **Pocket Mill** and **Drill Bore** off.
-4. Leave **Optimal path** unchecked for this example.
+1. Click **Contour 0** in the Machining tree. Its row becomes highlighted and
+   its machining fields become available.
+2. In **Offset**, set **Compensation** to **G40**.
+3. Keep the step kind **Contour**, rather than Pocket Mill or Drill Bore.
+4. Leave **Optimize** unchecked for this example.
 
 **Selection and enablement are separate:** a highlighted row identifies what
 you are editing. The checkbox determines whether that shape is exported.
@@ -88,31 +92,31 @@ An enabled shape can be exported even when it is not selected.
 
 ## 4. Enter the demonstration values
 
-In the **Layer Tool** area, choose tool **1**. Tool diameter and spindle speed
-come from its tool-table entry. If needed, open **Options → Configuration**,
-select **Tools**, set tool 1 to **2 mm** diameter and **6000 rpm**, and apply the
-changes. Return to the drawing and select `Shape 0` again.
+Check that the tool row shows **T1 · Ø2.000 mm** and speed **6000 rpm**, from
+ the table prepared before import. If the table is changed after import,
+ explicitly update the saved tool definition; see [tool deviations](../user-guide/machining-steps.md#saved-values-and-changed-drawings).
 
-Enter the following in **Shape parameters**, confirming each edited field
-with **Enter** or by leaving the field:
+Enter the following in the grouped Machining form, confirming each field
+with **Enter** or by leaving it:
 
 | Field | Value | Meaning in this example |
 | --- | --- | --- |
-| Z Retraction area | `15` mm | Retraction level used between operations |
-| Z Safety margin | `3` mm | Approach/retract distance above the workpiece top |
-| Z Workpiece top | `0` mm | Top surface is the Z reference |
-| Z Infeed depth | `-0.5` mm | Depth increment for each pass |
-| Z Final mill depth | `-1` mm | Final depth below the top surface |
-| Feed rate XY | `200` mm/min | Cutting feed in the drawing plane |
-| Feed rate Z | `100` mm/min | Vertical feed |
-| Milling offset | `0` mm | No extra finishing allowance |
-| Lead in | `None` | No additional entry geometry |
-| Lead out | `None` | No additional exit geometry |
-| Overcut | `None` | No extension past the contour closure |
+| Z values / Retract | `15` mm | Retraction level used between operations |
+| Z values / Safety | `3` mm | Approach/retract distance above the workpiece top |
+| Z values / Top | `0` mm | Top surface is the Z reference |
+| Z values / Infeed | `-0.5` mm | Depth increment for each pass |
+| Z values / Final | `-1` mm | Final depth below the top surface |
+| Feeds / XY | `200` mm/min | Cutting feed in the drawing plane |
+| Feeds / Z | `100` mm/min | Vertical feed |
+| Offset / Allowance | `0` mm | No extra finishing allowance |
+| Lead in/out / Entry | `Off` | No additional entry geometry |
+| Lead in/out / Exit | `Off` | No additional exit geometry |
+| Lead in/out / Overcut | `Off` | No extension past the contour closure |
 
 For this single contour, the depth settings produce **two passes**: first at
 Z = -0.5 mm, then at Z = -1 mm. Retraction and safety-margin fields apply to
-the layer; the cutting depth and feeds can be set for the selected contour.
+the machining step, including when edited with a contour selected; the cutting
+depth and feeds can be set for the selected operation.
 
 ![Selected rectangle with the demonstration tool and cutting parameters](../assets/images/first-dxf/02-parameters.png)
 
@@ -127,7 +131,7 @@ entry point. It does not add a circular cutting movement. A 2D view also
 overlays repeated XY passes: seeing a single rectangle does **not** mean there
 is only one depth pass.
 
-For this one-shape drawing, ordinary tree order is sufficient. **Optimal path**
+For this one-shape drawing, ordinary tree order is sufficient. **Optimize**
 is an optimization setting, not a second enable checkbox. Route-display arrows
 are an aid to inspection, not a replacement for checking the exported program.
 
@@ -183,7 +187,7 @@ compatibility.
   is different from exported G-code; keep the referenced DXF with it.
 - The exported **NGC file** is the postprocessor output.
 
-If the result differs, first check units, shape enablement, G40, depth values
+If the result differs, first check units, operation Export checkboxes, G40, depth values
 and the selected postprocessor. For help, use the
 [existing forum](https://www.ltspiceusers.ch/forums/english-section.67/).
 For a reproducible defect, use the

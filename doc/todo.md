@@ -21,7 +21,7 @@ Die Paket-/Installationsabnahme ist für den aktuellen Featureabschluss eingepla
 | --- | --- | --- |
 | Releaseabschluss | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Windows/Ubuntu/Debian gemäß bestätigtem Plan; stabile Veröffentlichung bleibt getrennt |
 | Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
-| Vor Develop-Release | [DOC1 – Dokumentationsabnahme](#doc1) | Anleitung einschließlich aktueller Bilder gemäß Abschlussplan |
+| Vor Abschluss durch Nutzer | [DOC1 – abschließende Sichtprüfung](#doc1) | Aktuelle Anleitung/Bilder fertig; Nutzer prüft die Darstellung am Schluss |
 | Integration/Release | [Featureabschluss und Develop-Release](planning/maschining-project-release-plan.md) | Nutzerabnahme und IGNORE abgeschlossen; Anleitung/Bilder und Installationsumfang gemäß Plan |
 | Zurückgestellt | [Teilkonturen](#teilkonturen) | Mit dem neuen Bearbeitungsmodell abstimmen |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
@@ -64,8 +64,8 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 <a id="r3"></a>
 <a id="r1b"></a>
 
-- [ ] **Integration/Develop-Release:** aktuelle Anleitung einschließlich Bilder,
-  festgelegte Installationsabnahme und geprüfte Übernahme des vorbereiteten
+- [ ] **Integration/Develop-Release:** festgelegte Installationsabnahme,
+  abschließende Nutzersichtprüfung und geprüfte Übernahme des vorbereiteten
   Integrationszweigs nach `develop` durchführen; anschließend Develop-Prerelease.
   [Abschluss- und Releaseplan](planning/maschining-project-release-plan.md).
 
@@ -105,12 +105,10 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 
 <a id="doc1"></a>
 
-- [ ] **DOC1 – Anleitung und Bilder aktualisieren:** alle betroffenen Kapitel
-  mit integriertem Stand abgleichen, veraltete Screenshots durch echte aktuelle
-  Aufnahmen ersetzen und Releasebeschreibung/Seitenvorschau prüfen.
-  [Konkreter Vorschlag](planning/maschining-project-release-plan.md#doc1).
-  [Abschluss und Veröffentlichung WP9–WP13](archive/toolpath-refactoring-completed.md#doc1-wp9-wp13),
-  [Erstansicht WP1–WP8](archive/toolpath-refactoring-completed.md#doc1-wp3-wp8-publication).
+- [ ] **DOC1 – Sichtprüfung durch den Nutzer:** Anleitung und aktuelle Bilder
+  sind erstellt und streng gebaut. Auf Nutzerwunsch erfolgt die abschließende
+  Sichtprüfung erst am Schluss; sie blockiert Schritt 3 nicht.
+  [Redaktioneller Abschluss](archive/toolpath-refactoring-completed.md#doc1-machining).
 - [ ] **Optionale Maschinenabnahme:** die Grbl-1.1-Laser- und LinuxCNC-2.9-
   Heißdraht-/Drehdemonstrationen bei Bedarf für einen konkreten realen Aufbau
   anpassen und gesondert abnehmen. Geladene Demoprofile und synthetische

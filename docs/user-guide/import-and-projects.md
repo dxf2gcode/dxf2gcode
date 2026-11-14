@@ -66,18 +66,22 @@ block geometry to the insertion layer. These options can explain differences
 between a CAD layer list and the imported tree. Excluding a layer during import
 is different from disabling a visible contour for export.
 
+Initial `IGNORE:` contours appear as **Unassigned**, unless the separate import
+filter omits them entirely. They can later receive normal machining assignments.
+See the [comparison example](../assets/examples/ignored-layers/README.md).
+
 ## Save and reopen the rectangle example
 
 Use the same [rectangle](../assets/examples/first-dxf/rectangle-20x10-mm.dxf)
 and preparation from [First DXF to G-code](../getting-started/first-dxf-to-gcode.md).
 
 1. Save the DXF in a permanent working folder and open it from there.
-2. Select `Shape 0` and enter the tutorial's tool, depth and feed settings.
+2. Select `Contour 0` in **Machining** and enter the tutorial's tool, depth and feed settings.
 3. Choose **File → Save Project As...** (**Ctrl + S**).
 4. Save as `rectangle-20x10-mm.d2g`, preferably beside the DXF. This command
    opens a destination chooser; choose the same project file to update it later.
 5. Choose **File → Open...** and select the `.d2g` project, rather than the DXF.
-6. Select `Shape 0` again and compare its settings: G40, infeed `-0.5 mm`,
+6. Select `Contour 0` again and compare its settings: G40, infeed `-0.5 mm`,
    final depth `-1 mm`, XY feed `200 mm/min` and Z feed `100 mm/min`.
 
 The expected result is one closed rectangle with the saved preparation
@@ -86,17 +90,17 @@ after making changes and review it before use.
 
 ### What is restored
 
-The project stores drawing transformations and import tolerances, the machine
-type, layer tools and values, contour depths and feeds, compensation and
-machining modes, start points and directions, enablement, ordering, lead/overcut
-settings and stored tool overrides. New JSON 2.0 projects also store machining
-steps, independent operation identities and their references to original
-geometry, plus snapshots of machining defaults and tool definitions. The
+The project stores drawing transformations, import tolerances and machine
+type, machining steps, independent operation identities and references to
+original geometry. It retains default/tool snapshots, own operation values,
+depths, feeds, compensation, start points, directions, activation, order and
+leads/overcut. JSON **2.1** also stores native holding-tab regions, their
+automatic/manual placement mode and assignments/local exclusions. The
 [Machining tab](machining-steps.md) provides the step and move/copy commands.
 
 This does not make the project a complete machine setup archive. Application
 defaults, the tool catalogue and output postprocessor remain separate files.
-JSON 2.0 projects retain their saved machining/tool values when those profiles
+JSON projects retain their saved machining/tool values when those profiles
 change. Output postprocessor selection remains external. A loaded project can also change
 the active machine type and relevant import or knife settings. Check these
 before continuing with another drawing.
@@ -124,7 +128,7 @@ your preparation first. To restore a saved preparation, explicitly open the
 When a project is opened, saved contour settings are matched to the newly
 imported geometry within matching layer names. Changing the CAD geometry,
 layer names, units or import result can prevent that match. New or unrecognized
-contours in JSON 2.0 projects remain without a machining assignment. Missing or
+contours in JSON projects remain without a machining assignment. Missing or
 ambiguous references used by enabled operations block the entire export;
 existing output files remain intact. Assign new contours through **Unassigned**
 in the Machining tab. Historical projects can still append
@@ -137,7 +141,7 @@ If the application reports contradictory machining settings, resolve them
 through the contour context menu; affected shapes cannot be exported meanwhile.
 
 Projects are versioned. The current reader supports historical D2G versions
-1.1 through 1.5 and JSON 2.0. New saves use 2.0, which older applications cannot
+1.1 through 1.5 and JSON 2.0/2.1. New saves use **2.1**, which older applications cannot
 read. Save a migrated project under a new name first; overwriting the old
 format file with JSON is rejected. Keep the original project and drawing.
 

@@ -1,8 +1,9 @@
 # Contours, pockets and drilling
 
-In the current development UI, choose the machining kind through **Edit step**
-in the [Machining tab](machining-steps.md). The earlier contour context-menu
-instructions and screenshots below describe the previous interface.
+Choose **Contour**, **Pocket Mill** or **Drill Bore** in the selected
+operation's Machining-tree context menu; applicable pocket/drilling commands
+also appear in the canvas menu. Double-click a step to edit its kind/tool
+for that whole step. See [Machining steps](machining-steps.md).
 
 This chapter describes milling operations using the
 [three-shape drawing](../assets/examples/machining-basics/three-shapes-mm.dxf).
@@ -20,7 +21,7 @@ illustrate the controls; they are not material-specific cutting recommendations.
 3. In its drawing context menu choose **Cutter Compensation → G40 No Compensation**.
 4. Use top `0 mm`, infeed `-0.5 mm`, final depth `-1 mm`, XY feed
    `200 mm/min` and Z feed `100 mm/min` for a file/preview demonstration.
-5. Set **Lead in**, **Lead out** and **Overcut** to **None** where available.
+5. Set **Entry**, **Exit** and **Overcut** to **Off** where available.
 
 The centre path follows C's two segments. Multiple passes on an open contour
 can alternate direction. There is no closing segment to the first point.
@@ -83,7 +84,10 @@ the resulting program.
 | Enable Pocket Mill | Disable drilling; retain the chosen compensation |
 | Choose G40, G41 or G42 | Disable drilling; retain the pocket choice |
 
-Turning an option off does not restore a previous operation automatically.
+Clicking an already checked Pocket/Drill action returns to Contour. Changing
+kind reuses a step with matching kind, complete tool and stored defaults;
+multiple matches require a target choice. Otherwise a new step is created.
+Own values and original geometry references remain; the action is one undo entry.
 For a mixed selection, enabling an operation applies that target consistently;
 it is not a request to invert every shape's different old value independently.
 

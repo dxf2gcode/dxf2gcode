@@ -14,7 +14,9 @@ shows how these layers relate.
 | Display element in the current 2D view | Meaning |
 | --- | --- |
 | Original contour | Input geometry; selection/mode can change its colour |
-| Blue solid path | Prepared contour/tool path |
+| Blue solid path | Selected machining/tool-centre path, emphasized by line weight |
+| Thin dashed blue path | Unselected machining path when displayed |
+| Dotted original / fraction such as 1/2 | Partial selection: one of two linked machining operations selected |
 | Light-blue internal paths | Pocket clearing |
 | Orange dashed path | Lead-in geometry |
 | Orange dashed circle | Tool radius at entry, when enabled |
@@ -46,13 +48,14 @@ in the save dialog. Changing that selection can affect drilling repetitions,
 compensation handling, arcs and other emitted actions. Compare like-for-like
 profiles before diagnosing a mismatch.
 
-A layer or contour edit requests a fresh preview. It does not automatically
+A machining-step or operation edit requests a fresh preview. It does not automatically
 mean “optimize the route”. [Route arrows](route-optimization.md) are a separate
 display of inter-operation order.
 
 ## Export the intended order
 
-1. Confirm the enable checkboxes, tree order and applicable machining settings.
+1. Confirm the **Export** checkboxes and order in **Machining**, and the
+   applicable settings. Geometry selection is not an export filter.
 2. Read warnings and resolve blocking conflicts.
 3. Choose **Export → Export Shapes without Optimization**, or deliberately use
    **Optimize and Export Shapes** when you want reordering.

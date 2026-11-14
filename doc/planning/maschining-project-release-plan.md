@@ -40,16 +40,17 @@ Den Featurezweig bis zur erfolgreichen Veröffentlichung erhalten.
 
 ## 3. Etappe A – IGNORE begrenzt korrigieren
 
-**Vom Nutzer für den Abschluss vor dem Merge bestätigt:**
+**Aktuelle Nutzerpräzisierung vom 14.11.2026; ersetzt die erste Sonderfall-Korrektur:**
 
 - `Ignoriert` nicht mehr als frei anlegbare Art normaler Bearbeitungsschritte
   anbieten. Normales vorübergehendes Ausschließen bleibt die Exportcheckbox.
-- Vorhandene `IGNORE:`-Layer und gespeicherte ignorierte Zuordnungen unverändert
-  einlesen und erhalten; keine Umdeutung zu normalen Fräsoperationen.
-- Ihre unwirksame Exportaktivierung nicht mehr bedienbar darstellen und den
-  Ausschluss eindeutig erklären, statt eine mögliche Aktivierung zu suggerieren.
-- DE/FR/RU samt QM aktualisieren. Fokussiert Import, Altprojekt-Roundtrip,
-  Exportausschluss und GUI-Zustand prüfen; beim Quellcodecommit Fast-Hook.
+- `IGNORE:`-Konturen beim Import als nicht zugeordnete Originalgeometrie laden.
+  Spätere normale Zuordnung muss möglich sein und Export/Parameter aktivieren.
+- Keine Altprojekt-Sonderbehandlung für interne `ignored`-Schritte: Der Nutzer
+  bestätigt, dass solche Altprojekte nicht benötigt werden. Den internen Typ
+  samt Sperren/Ausnahmen entfernen; allgemeine alte Projektformate bleiben erhalten.
+- DE/FR/RU samt QM aktualisieren. Import, Zuordnung/Undo, Projekt-Roundtrip und
+  Exportfreigabe fokussiert prüfen; beim nächsten Quellcodecommit Fast-Hook.
 
 **Ergebnis:** kleiner Funktionscommit, ohne Änderung der eigentlichen
 Werkzeugwegplanung. Kein größeres Refactoring als Teil dieses Zwischenreleases.
@@ -59,11 +60,14 @@ Werkzeugwegplanung. Kein größeres Refactoring als Teil dieses Zwischenreleases
 `3e05281` mit Mergecommit `f696631` integriert. Konflikt im Abschlussarchiv unter
 Erhalt beider Nachweise gelöst; Programmcode automatisch zusammengeführt.
 Neue Schritt-/Zuordnungsdialoge bieten nur normale Bearbeitungsarten an.
-Bestehende ignorierte Schritte behalten ihre Art, zeigen „Ausgeschlossen“ ohne
-Export-/Optimierungscheckbox und können nicht über die GUI aktiviert werden.
-Gespeicherte Aktivierungswerte und Altprojekte werden nicht umgeschrieben.
-Je 31 fokussierte Qt5-/Qt6-Prüfungen bestanden; Details im Abschlussarchiv.
-Nächste Umsetzungsetappe ist DOC1 samt aktuellen Bildern.
+Die erste IGNORE-Fassung in `2ccebe5` ist durch die anschließende Nutzerpräzisierung
+ersetzt: IGNORE-Geometrie wird unzugeordnet importiert und ist normal zuweisbar;
+interne Sonderart/Kompatibilitätscode sind entfernt. Die Vergleichs-DXF unter
+`docs/assets/examples/ignored-layers/` dient der eigenen Nutzerprüfung.
+Je 71 fokussierte Qt5-/Qt6-Prüfungen bestanden; Details im Abschlussarchiv.
+Diese nachträgliche Präzisierung ist noch nicht committed oder gepusht.
+IGNORE ist vom Nutzer nach eigener Prüfung ausdrücklich abgenommen. DOC1
+ist redaktionell umgesetzt; die Sichtprüfung übernimmt der Nutzer am Schluss.
 
 <a id="doc1"></a>
 
@@ -105,6 +109,13 @@ Konkrete redaktionelle Restfragen einzeln vorlegen. DOC1 nach diesen Ergebnissen
 abschließen; keine dauerhafte Sammelaufgabe für hypothetische Rückmeldungen.
 
 <a id="installation"></a>
+
+**Stand Schritt 2:** betroffene Kapitel, Releasebeschreibung und Bilder sind
+aktualisiert; 16 echte Qt6-Aufnahmen aus isoliertem englischem Demoprofil.
+Strenger Zensical-Build bestanden, Tutorial-Dateiexport geprüft. Die Browser-
+Sichtprüfung konnte nicht durchgeführt werden; der Nutzer übernimmt sie auf
+eigenen Wunsch am Schluss und beauftragt ausdrücklich Schritt 3. Keine
+behauptete Sichtabnahme oder Veröffentlichung.
 
 ## 5. Etappe C – Installationsnachweis am Releasekandidaten
 
@@ -169,4 +180,7 @@ vorgeschlagen. Die Etappen nacheinander ausführen, statt einen großen Quellcod
 Dokumentations- und Releaseblock zu vermischen. Der Planungsauftrag hat noch
 keine Paket-/Installationsprüfung, SSH-Abnahme oder Veröffentlichung gestartet.
 Nach dem anschließenden Auftrag für Schritt 1 ist die begrenzte IGNORE-Korrektur
-auf der isolierten Integrationsbasis umgesetzt. Als Nächstes folgt die Dokumentation.
+auf der isolierten Integrationsbasis umgesetzt und vom Nutzer abgenommen.
+Schritt 2 ist redaktionell abgeschlossen; die Sichtprüfung bleibt beim Nutzer.
+Schritt 3 ist nun ausdrücklich beauftragt: Kandidaten-PR, Windows-/Ubuntu-CI und
+Debian-Wheel-Abnahme. Merge nach develop und Veröffentlichung bleiben Etappe D.

@@ -4,16 +4,16 @@ This chapter explains the main window in the current development version.
 The screenshot uses English labels and the 2D view. Other interface languages
 provide the same controls; 3D navigation is not covered here.
 
-The screenshots below predate the combined **Geometry** tab and separate **Machining** tab. In the current
-development version, use [Machining steps](machining-steps.md) for tools,
-parameters, export activation, move/copy and undo.
+The **Geometry** tab contains collapsible Entities and Layers sections.
+The **Machining** tab owns tools, parameters, export activation and order.
+See [Machining steps](machining-steps.md) for assignment, copying and undo.
 
 Start with [First DXF to G-code](../getting-started/first-dxf-to-gcode.md)
 if you want a complete example, or download its
 [20 × 10 mm rectangle](../assets/examples/first-dxf/rectangle-20x10-mm.dxf)
 and open it through **File → Open...**.
 
-![Main window with the rectangle selected, layer tree, tool settings and contour parameters](../assets/images/first-dxf/02-parameters.png)
+![Main window with the rectangle selected, machining tree and grouped operation parameters](../assets/images/first-dxf/02-parameters.png)
 
 ## Find your way around
 
@@ -30,8 +30,8 @@ Drag the horizontal divider immediately above the message pane up or down
 to change its height. The drawing and sidebar share the remaining space;
 resizing preserves the messages and project values.
 
-The **Entities** tab follows the imported entity/block structure. The
-**Layers** tab groups contours by layer and is the useful starting point for
+The **Entities** section follows the imported entity/block structure. The
+**Layers** section groups contours by layer and is the useful starting point for
 selecting an entire source layer. Both show the same drawing rather
 than separate copies. Expand a row to see its children.
 
@@ -51,8 +51,9 @@ selecting original geometry does not choose an editing context automatically.
 - A selected shape is the shape you are inspecting or editing.
 - An enabled operation is included in export. Use its **Export** checkbox in
   **Machining**; Entities and Layers have no export checkboxes.
-- A disabled shape is excluded even if you select it. An enabled shape can
-  be exported without being selected.
+- A disabled operation is excluded even if selected. Original geometry without
+  any machining assignment has no export; enabled operations can export without
+  being selected.
 
 In the 2D drawing view, **Ctrl + click** lets you toggle additional contours
 in the selection. Dragging a selection rectangle also selects contours.
@@ -102,9 +103,9 @@ fields to understand the number of passes. The example's `-0.5 mm` infeed
 and `-1 mm` final depth produce two passes even though one rectangle is visible.
 
 Check the units displayed beside the fields before editing values. Retraction
-and safety margin belong to the layer, whereas cutting depths and feeds can
-be stored per contour. Tool-table defaults, layer settings and contour
-overrides are not interchangeable.
+and safety margin belong to the machining step, whereas cutting depths and
+feeds can be stored per operation. Tool-table definitions, saved step defaults
+and own operation values have separate scopes.
 
 ## Use the message pane when something looks wrong
 

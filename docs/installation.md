@@ -1,18 +1,72 @@
 # Installation and startup
 
-## Choose a release or the development checkout
+## Choose a download or the development checkout
 
-Previously published packages are in the
+Download published Windows installers and portable packages from
+**[DXF2GCODE releases on GitHub](https://github.com/dxf2gcode/dxf2gcode/releases)**.
+Open the release you want and expand **Assets** if the file list is collapsed.
+Develop versions are marked **Pre-release**: they are development previews,
+not stable releases. The Releases page includes these previews; GitHub's
+`releases/latest` shortcut can omit them.
+
+| Windows option | Download | Setup |
+| --- | --- | --- |
+| **MSI installer** | File ending in `-windows-x64.msi` | Installs for the current user and creates a Start-menu entry |
+| Portable ZIP | File ending in `-windows-x64.zip` | Extract the complete archive and run `dxf2gcode.exe` |
+
+Both Windows packages include Python, PyQt and the application dependencies.
+You do **not** need to install Python, Git or Qt build tools separately for
+either package. The source-checkout requirements farther down this page are
+for a different installation route.
+
+## Windows: install the MSI
+
+1. Open **[GitHub Releases — Windows MSI and ZIP downloads](https://github.com/dxf2gcode/dxf2gcode/releases)**
+   and select the desired release or Develop preview.
+2. In **Assets**, download the file ending in **`-windows-x64.msi`** for 64-bit
+   Windows. Do not select a source archive or Python wheel for this route.
+3. Close any running DXF2GCODE window, open the downloaded MSI and follow the
+   installation wizard. The default installation is for your Windows user.
+4. Start **DXF2GCODE Develop** from the Start menu for a Develop package, or
+   **DXF2GCODE** for a stable package. Use **Help → About** to check the installed
+   version and build provenance.
+5. Open an example DXF and continue with
+   [First DXF to G-code](getting-started/first-dxf-to-gcode.md).
+
+Develop and stable packages use separate installation directories. The default
+Develop location is `%LOCALAPPDATA%\Programs\DXF2GCODE-Develop`; the stable
+channel uses `%LOCALAPPDATA%\Programs\DXF2GCODE`.
+To uninstall, use **Windows Settings → Apps → Installed apps** and select the
+DXF2GCODE package.
+
+Current Windows packages are unsigned. Read any Windows publisher warning
+and confirm the download's origin. The release also provides `SHA256SUMS`
+and `release-manifest.json` for checking file integrity and build provenance;
+see [Builds, downloads and signing](https://github.com/dxf2gcode/dxf2gcode/blob/develop/doc/release-pipeline.md).
+
+## Windows: portable ZIP alternative
+
+From the same [GitHub Releases page](https://github.com/dxf2gcode/dxf2gcode/releases),
+download the file ending in **`-windows-x64.zip`**. Extract **all** files into
+a writable folder and start `dxf2gcode.exe` there. Keep its accompanying folders
+and runtime files together; copying only the EXE is not sufficient. This route
+does not run an MSI installer or create its Start-menu entry.
+
+## Run the development source checkout
+
+Use the following route when developing DXF2GCODE or testing source changes
+that are not yet included in a published package. The GitHub `develop` branch
+is actively being modernized; a checkout is not a stable release.
+
+Historical packages remain in the
 [SourceForge download archive](https://sourceforge.net/projects/dxf2gcode/files/).
-Read the selected package's description and supplied instructions: that archive
-also contains development builds and release candidates. Older releases can
-require different Python/Qt versions and installation steps.
-
-The GitHub `develop` branch is actively being modernized. The instructions below
-describe running that source checkout, **not installing a stable release**.
-They do not imply that a new Windows installer or wheel has been published.
+Read their supplied instructions: older versions can require different
+Python/Qt versions and installation steps.
 
 ## Requirements
+
+These requirements apply to running the source checkout. They are not extra
+installation steps for the bundled Windows MSI or ZIP packages above.
 
 | Component | Declared requirement / purpose |
 | --- | --- |
