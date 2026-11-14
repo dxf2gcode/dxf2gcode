@@ -190,6 +190,16 @@ from dxf2gcode_leadmove_golden_test import GoldenTestBase
 
 
 class TestNominalTabIntegration(GoldenTestBase):
+    def setUp(self):
+        super().setUp()
+        # These tests supply their own layers/dialect, never another GUI test's
+        # global window and its (possibly plain-list) layer projection.
+        import dxf2gcode.bootstrap.runtime_state as g
+        from unittest.mock import patch
+        window = patch.object(g, 'window', None)
+        window.start()
+        self.addCleanup(window.stop)
+
     def case(self, machine=False, compensation=41, radius=2, extra=0, curved=False):
         import dxf2gcode.bootstrap.runtime_state as g
         from dxf2gcode_stmove_gcode_test import make_shape, build_stmove, make_postpro

@@ -187,6 +187,7 @@ class _Harness(object):
                      "g1FeedZLineEdit", "zInitialMillDepthLineEdit",
                      "zFinalMillDepthLineEdit", "millingOffsetLineEdit"):
             widget = QLineEdit(self.th)
+            widget.setObjectName(name)  # Real UI names distinguish feeds/lengths.
             setattr(self.th.ui, name, widget)
             self.line_edits[name] = widget
         self.th.palette = self.th.ui.millingOffsetLineEdit.palette()
@@ -302,7 +303,7 @@ class TestParameterDisplay(unittest.TestCase):
             self.assertIsNone(self.a._drag_swivel_depth)
             self.assertEqual(self.a.drag_swivel_depth, -.03)
             self.assertEqual(self.b.drag_swivel_depth, -.06)
-            self.assertEqual(widget.text(), '-0.03')
+            self.assertEqual(widget.text(), '-0.030')
             g.config.machine_type = 'milling'
             self.harness.th.updateToolParameters()
             self.assertTrue(widget.isHidden())
@@ -393,7 +394,7 @@ class TestParameterDisplay(unittest.TestCase):
         widget = self.harness.line_edits["zFinalMillDepthLineEdit"]
         self.assertTrue(widget.isEnabled())
         self.assertEqual(self.harness.text("zFinalMillDepthLineEdit"),
-                         str(round(default, 4)))
+                         format(default, ".3f"))
         self.assertEqual(self._text_color(widget), self._gray_name())
 
     def test_individual_value_is_not_de_emphasized(self):
@@ -401,7 +402,7 @@ class TestParameterDisplay(unittest.TestCase):
             shape.axis3_mill_depth = -7.5
         self.harness.select([self.a, self.b, self.c])
         widget = self.harness.line_edits["zFinalMillDepthLineEdit"]
-        self.assertEqual(self.harness.text("zFinalMillDepthLineEdit"), "-7.5")
+        self.assertEqual(self.harness.text("zFinalMillDepthLineEdit"), "-7.500")
         self.assertNotEqual(self._text_color(widget), self._gray_name())
 
     def test_nothing_selected_shows_no_values(self):
@@ -453,23 +454,23 @@ class TestParameterDisplay(unittest.TestCase):
 
     def test_switching_the_selection_updates_the_display(self):
         self.harness.select([self.a])
-        self.assertEqual(self.harness.text("millingOffsetLineEdit"), "0.0")
+        self.assertEqual(self.harness.text("millingOffsetLineEdit"), "0.000")
         self.harness.select([self.a, self.b])
         self.assertEqual(self.harness.text("millingOffsetLineEdit"),
                          self.harness.th.tr("Different"))
         self.harness.select([self.b])
-        self.assertEqual(self.harness.text("millingOffsetLineEdit"), "0.2")
+        self.assertEqual(self.harness.text("millingOffsetLineEdit"), "0.200")
 
     def test_canvas_selection_shows_the_placeholder(self):
         # selecting two shapes with different values on the canvas must
         # also show "Different" (the canvas path uses updateShapeSelection)
         self.harness.canvasSelect(self.a)
-        self.assertEqual(self.harness.text("millingOffsetLineEdit"), "0.0")
+        self.assertEqual(self.harness.text("millingOffsetLineEdit"), "0.000")
         self.harness.canvasSelect(self.b)
         self.assertEqual(self.harness.text("millingOffsetLineEdit"),
                          self.harness.th.tr("Different"))
         self.harness.canvasSelect(self.a)      # deselect a again
-        self.assertEqual(self.harness.text("millingOffsetLineEdit"), "0.2")
+        self.assertEqual(self.harness.text("millingOffsetLineEdit"), "0.200")
     def test_no_shapes_disables_the_shape_parameters(self):
         self.harness.display(self.layers, [])
         self.assertEqual(self.harness.text("millingOffsetLineEdit"), "")
@@ -516,7 +517,7 @@ class TestParameterEditing(unittest.TestCase):
         self.harness.th.updateToolParameters()
         self.assertEqual(self.a.milling_offset, 0.35)
         self.assertEqual(self.b.milling_offset, 0.35)
-        self.assertEqual(widget.text(), "0.35")
+        self.assertEqual(widget.text(), "0.350")
 
     def test_value_is_applied_to_the_canvas_selection(self):
         # shapes selected on the canvas: an entered value must be applied
@@ -532,7 +533,7 @@ class TestParameterEditing(unittest.TestCase):
         self.assertEqual(self.a.milling_offset, 0.45)
         self.assertEqual(self.b.milling_offset, 0.45)
         h.th.updateToolParameters()
-        self.assertEqual(widget.text(), "0.45")
+        self.assertEqual(widget.text(), "0.450")
     def test_other_parameters_keep_their_values(self):
         self.a.axis3_mill_depth = -2.0
         self.b.axis3_mill_depth = -5.0
@@ -546,7 +547,7 @@ class TestParameterEditing(unittest.TestCase):
     def test_single_selection_value_still_works(self):
         self.harness.select([self.a])
         widget = self._widget()
-        self.assertEqual(widget.text(), "0.0")
+        self.assertEqual(widget.text(), "0.000")
         widget.setText("-0.15")
         self.harness.th.toolParameterMillingOffsetUpdate()
         self.harness.th.updateToolParameters()
@@ -557,13 +558,13 @@ class TestParameterEditing(unittest.TestCase):
         self.a.milling_offset = -.01234567
         self.harness.select([self.a])
         widget = self._widget()
-        self.assertEqual(widget.text(), '-0.0123')
+        self.assertEqual(widget.text(), '-0.012')
         self.harness.th.toolParameterMillingOffsetUpdate()
         self.assertEqual(self.a.milling_offset, -.01234567)
         # Retyping the displayed value deliberately accepts its rounding.
         widget.setModified(True)
         self.harness.th.toolParameterMillingOffsetUpdate()
-        self.assertEqual(self.a.milling_offset, -.0123)
+        self.assertEqual(self.a.milling_offset, -.012)
         widget.setText('-0,0005')
         self.harness.th.toolParameterMillingOffsetUpdate()
         self.assertEqual(self.a.milling_offset, -.0005)
