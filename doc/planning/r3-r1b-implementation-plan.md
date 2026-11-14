@@ -4,8 +4,9 @@ Stand: **14.11.2026**. **Plan vom Nutzer am 06.11.2026 bestätigt.**
 Commit, Push und Develop-Release vor der Umsetzung sind abgeschlossen.
 P1–P6 sind implementiert; [P1–P3-Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3)
 und [P4–P6-Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6).
-P8 bleibt die gemeinsame Nutzerabnahme; D42 setzt den manuellen P7-Teil um.
-D44 ergänzt Maßeingabe und Strg-Ausrichtung; automatische Platzierung bleibt offen.
+P8 ist vom Nutzer am 14.11.2026 fachlich abgenommen. Der aktuelle Stegumfang
+ist akzeptiert; zusätzliche selbsttätige Platzierung wird nicht weiter verfolgt.
+Nächster Schritt ist der [Integrations-/Releaseabschluss](maschining-project-release-plan.md).
 Bestätigte Fachregeln und technische Umsetzungsvorschläge sind unterschieden.
 [Planungsabschluss](../archive/toolpath-refactoring-completed.md#r3-r1b-plan).
 
@@ -844,8 +845,8 @@ mit einer noch offenen fachlichen Entscheidung, von der ihr Verhalten abhängt.
 | P4 – Bearbeitungstab, implementiert | Bearbeitungsbaum, Auswahl/Canvas, Gruppenaktionen, Parameterherkunft und Originalauswahl gemäß D20. | DE/FR/RU und echte Qt5-/Qt6-Abläufe [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
 | P5 – R1b, implementiert | Atomare Mehrfachaktionen, Drop-Markierung, Menü/Sortierung, neue IDs beim Kopieren sowie Undo/Redo. | Eigene Werte/Zielvererbung, Rückgängig und stabile Redo-IDs [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
 | P6 – Export und Optimierung, implementiert | Sichtbare Bearbeitungsreihenfolge, Schritt-/G-Code-Grenzen, Werkzeugnummernvertrag D21 und geplante Routenendpunkte. | GUI/CLI-Ausgabe, beide Optimierungsmodi und Fehlerabbruch [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
-| P7 – Stegregionen | D42/D44: manuelles Zeichnen, Bearbeiten, lokale Zuordnung, Roundtrip, Maßeingabe und Strg-Ausrichtung implementiert. | Fachliche D42/D44-Abnahme in P8; automatische Platzierung offen. |
-| P8 – Integrierte Nutzerabnahme | Referenzprojekte gemeinsam durchgehen; Anleitung ergänzen und alte Übergangssynchronisierung entfernen. | Nachfolgende Matrix bestanden; Grenzen separat dokumentieren. |
+| P7 – Stegregionen, abgeschlossen | Manueller Stegumfang einschließlich D41–D48 implementiert und akzeptiert. | Zusätzliche selbsttätige Verteilung wird gemäß Nutzerentscheidung vom 14.11.2026 nicht weiter verfolgt. |
+| P8 – Integrierte Nutzerabnahme, abgeschlossen | Nutzer bestätigt fachliche Abnahme am 14.11.2026. | Anleitung/Bilder und Paket-/Installationsnachweise gehören zum separaten Integrations-/Releaseplan. |
 
 P2/P3 sind die Grundlage des neuen Tabs, P4/P5 die erste sichtbare Bedienung.
 P6 ist kein nachträglicher Versuch, die GUI zu spiegeln: Der gemeinsame Export-
@@ -889,6 +890,12 @@ Repositoryregeln. Übersetzungspflege ist Teil jeder GUI-Etappe. Manuelle
 GPU-, Paket-/Debian- und reale Maschinenabnahme bleiben eigene Aufträge.
 
 ## 11. Nächster Schritt nach P1–P6
+
+**Aktueller Stand 14.11.2026:** Der Nutzer hat P8/R3/R1b fachlich abgenommen.
+Die nachfolgende ursprüngliche Abnahmeplanung ist durch diese Entscheidung
+abgeschlossen. Zusätzliche automatische Stegverteilung wird nicht weiter verfolgt.
+Für IGNORE, Anleitung/Bilder, Installationsnachweis und Develop-Veröffentlichung
+gilt nun der [Abschlussplan](maschining-project-release-plan.md).
 
 P1–P3 liefern das reine Modell, gemeinsame Bearbeitungsprojektionen und
 JSON-Projekte der Version 2.0 einschließlich Legacy-Migration und Reload.
@@ -958,6 +965,8 @@ anschließend ausdrücklich beauftragt; Leerraum weiterhin für später:
   Exportdarstellung eindeutig machen. Für normales vorübergehendes Ausschließen
   weiter die Exportcheckbox verwenden. Noch kein Umsetzungsauftrag für diese
   Empfehlung; insbesondere keine Umdeutung gespeicherter ignorierter Schritte.
+  Aktualisierung 14.11.2026: Der Nutzer hat die begrenzte Korrektur vor Merge
+  bestätigt; [aktueller Umsetzungsumfang](maschining-project-release-plan.md#ignore).
 
 Untersuchungsnachweis R3-IGNORE: lokaler Modell-/Befehlsversuch mit bestehender
 Testfixture; leeres Anlegen erfolgreich, Verschieben einer normalen Kontur

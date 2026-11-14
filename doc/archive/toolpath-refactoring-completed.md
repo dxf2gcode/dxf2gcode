@@ -2,6 +2,33 @@
 
 Stand: **14.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## R3/R1b fachlich abgenommen und Abschlussumfang festgelegt (14.11.2026)
+
+Der Nutzer erklärt das Feature `maschining-project` für fertig und die
+Nutzerabnahme R3/R1b/P8 für durchgeführt und akzeptiert. Dieser Abnahmeblock
+ist aus der aktiven Todo entfernt. Der aktuelle Stegumfang ist ausreichend;
+eine zusätzliche selbsttätige Stegverteilung wird nicht weiter verfolgt.
+Dies schließt die alte offene P7-Erweiterungsplanung durch Umfangsentscheidung,
+ohne einen nicht implementierten Verteilungsalgorithmus als fertig auszugeben.
+
+Die optionale Wiederverwendung historischer Fremdinhalte einschließlich ihrer
+Rechteklärung wird verworfen. Keine ungeklärten Originale werden damit zur
+Übernahme freigegeben. Teilkonturen bleiben ausdrücklich offen.
+
+Der [Abschluss-/Releaseplan](../planning/maschining-project-release-plan.md)
+trennt IGNORE, Anleitung/Bilder, Installationsnachweis und Merge/Develop-Prerelease.
+Bestätigt sind die begrenzte IGNORE-Korrektur vor dem Merge und die Matrix
+Windows-ZIP/MSI, Ubuntu Qt5/Qt6 sowie Debian-Wheel. macOS bleibt separat.
+DOC1 erhält einen konkreten Vorschlag zum Abgleich der gesamten betroffenen
+Anleitung mit echten aktuellen Screenshots. Die eigenständige Develop-Korrektur
+`8aeef7f` muss bei der Integration zusätzlich zum Featurestand `69f9767` erhalten
+bleiben; diese Commitangaben beschreiben den lokalen Planungsstand.
+
+Die Nutzerabnahme ersetzt keinen Paket-/Installations- oder physischen
+Maschinennachweis. Im Planungsauftrag nur Aufgaben-/Planungsdokumente geändert;
+Dokumentationsbuild und lokale Link-/Diff-Prüfung bestanden. Keine Quellcode-
+Tests, Installation, SSH-Abnahme, Merge, Push oder Veröffentlichung gestartet.
+
 ## R3/D48: verbindliche Zielauswahl vor Steganlage (14.11.2026)
 
 Nutzerregel umgesetzt: Ohne vorherige Originalkontur-/Bearbeitungsauswahl wird

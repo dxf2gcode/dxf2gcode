@@ -15,14 +15,14 @@ Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
 Todo freigegeben. Der Develop-Release **2.0.0.dev12** vor Umsetzung von
 R3/R1b ist veröffentlicht und seine Downloads sind geprüft;
 [Nachweis](archive/toolpath-refactoring-completed.md#develop-r3-checkpoint).
-Eine gesonderte Paket-/Debian-Abnahme bleibt zurückgestellt.
+Die Paket-/Installationsabnahme ist für den aktuellen Featureabschluss eingeplant.
 
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
-| Vorläufig zurückgestellt | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Neuer ausdrücklicher Prüfauftrag; stabile Veröffentlichung erst nach der gesamten Todo |
+| Releaseabschluss | [CI1 – Betriebsabnahme](#ci1), [M1 – Paketabnahme](#m1) | Windows/Ubuntu/Debian gemäß bestätigtem Plan; stabile Veröffentlichung bleibt getrennt |
 | Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
-| Fachliche Rückmeldungen | [DOC1 – Dokumentationsabnahme](#doc1) | Konkrete Korrekturen zur veröffentlichten Anleitung |
-| Nutzerabnahme P8 | [R3/R1b – Bearbeitungsmodell](#r3) | Referenzprojekte gemeinsam bedienen; [P1–P6-Nachweis](archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6) |
+| Vor Develop-Release | [DOC1 – Dokumentationsabnahme](#doc1) | Anleitung einschließlich aktueller Bilder gemäß Abschlussplan |
+| Integration/Release | [Featureabschluss und Develop-Release](planning/maschining-project-release-plan.md) | Nutzerabnahme abgeschlossen; IGNORE, Anleitung/Bilder und Installationsumfang gem?? Plan |
 | Zurückgestellt | [Teilkonturen](#teilkonturen) | Mit dem neuen Bearbeitungsmodell abstimmen |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 | Optional, später | [PP1 – Separater Drehzahlblock](#pp1) | Postprozessorvertrag für Drehzahländerungen bei gleicher Werkzeugnummer abstimmen |
@@ -46,9 +46,10 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 
 <a id="m1"></a>
 
-- [ ] **M1 – Paket-/Debian-Abnahme:** nach gesonderter Freigabe reale
-  Wheel-/Quell-/Windows-Artefakte einschließlich Herkunft und Start prüfen;
-  das freigegebene Wheel im isolierten Debian-Ablauf abnehmen.
+- [ ] **M1 – Paket-/Installationsabnahme:** bestätigten Umfang Windows-ZIP/MSI,
+  frische Ubuntu-Wheel-Umgebungen mit Qt5/Qt6 und konkretes Wheel auf Debian
+  einschließlich Herkunft und Start prüfen; macOS bleibt separat.
+  [Konkreter Abschlussplan](planning/maschining-project-release-plan.md#installation).
   [Prüfumfang und Freigabegrenze](planning/open-task-details.md#m1).
 
 <a id="lc1"></a>
@@ -63,65 +64,14 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 <a id="r3"></a>
 <a id="r1b"></a>
 
-- [ ] **R3/R1b – Integrierte Nutzerabnahme P8:** Referenzprojekte gemeinsam
-  bedienen; Mehrfachbearbeitung, Zielvererbung, Undo, Reihenfolge und
-  Wiederladen fachlich abnehmen. Die verschobenen Werkzeug-/Konturfelder mit
-  Herkunftssymbolen, Kontext-Moduswechseln, Zahlenanzeige, skalierenden
-  Formularbreiten und die
-  gemeinsame Geometrieansicht im realen Ablauf prüfen
-  ([konkrete Aufgaben](planning/r3-r1b-implementation-plan.md#r3-ui-user-check),
-  [R3-UI-Nachweis](archive/toolpath-refactoring-completed.md#r3-ui)). Aktuelle Screenshots
-  ergänzen und verbliebene
-  Legacy-Kompatibilitätsaufrufer vor Entfernung prüfen.
-  Die Werkzeugkonfliktmeldung und die bewusste Auflösung fehlender/abweichender
-  Tabellenwerkzeuge im realen Projektablauf ebenfalls abnehmen.
-  Mehrfachvorschau und direkte Canvas-Auswahl, unveränderte Bewegungsfarben,
-  Deckungsgleichheit nach Zoom/Pan, zweispaltige Parametergruppen und Maschinenfilter
-  sowie feste Seiten-/Meldungsgrößen beim Skalieren und nach Neustart prüfen.
-  G40-Einfahrt mit Gerade/Bogen einschließlich neu exportiertem G-Code prüfen.
-  Konturlabels mit dem Baum vergleichen und Rahmenauswahl größerer Zeichnungen
-  im praktischen Ablauf auf Reaktionszeit prüfen.
-  Gemeinsame Parameteränderungen/Rücksetzen bei gleichen und gemischten Werten,
-  Schrittwert-Wirkung sowie die Sperre mehrdeutiger Originalauswahl abnehmen.
-  „Bearbeitung zuordnen …“ aus Canvas und Baum mit vorhandenen/neuen Zielen,
-  Kopieren/Verschieben und Abbruch im eigenen Projektablauf prüfen.
-  Ziel mehrfach wechseln: unveränderte Dialoggröße, Feldpositionen und Eingaben prüfen.
-  Wiederholte Taschen-/Werkzeugwechsel mit vorhandenen passenden Schritten,
-  mehreren Treffern und Abbruch der Zielauswahl praktisch abnehmen.
-  `BreakExample.dxf` nach der Steg-Eckpunktkorrektur mit dem eigenen Profil
-  öffnen und exportieren; Haltestege fachlich kontrollieren.
-  Haltesteg-Gruppen und Stegmodus bedienen: globale Region ändern, deaktivieren,
-  entfernen und rückgängig machen; Wirkung auf mehrere Schritte prüfen.
-  D41 mit schmalen Regionen nur auf der Originalkontur, G41/G42, Bögen und
-  eckübergreifenden Stegen fachlich prüfen; Warnungen ausgelassener Stege beachten.
-  D42 mit `BreakExample_Circle.dxf` bedienen: konturbezogene Regionsverknüpfungen,
-  automatische Rechteckanzeige, Zeichnen/Verschieben/Eckgriffe, Zuordnung,
-  globale Löschrückfrage und Undo sowie .d2g-2.1-Wiederladen fachlich abnehmen.
-  D44: Live-Maße, direkte Maßeingabe und Strg-Ausrichtung an zwei Originalkontur-
-  Schnittpunkten einschließlich mehrdeutiger Zielwahl praktisch abnehmen.
-  D45: Fang-Voreinstellung, Werkzeug-/Zielwahl, Quadratseite aus Durchmesser plus
-  Steglänge beim Aufziehen, Einheitenumrechnung, Modus je Steg und dessen
-  Doppelklick-Bearbeitung fachlich abnehmen.
-  D46: automatische Stegnachführung bei Werkzeugwechsel, gemeinsame Regionen mit
-  unterschiedlichen Werkzeugen sowie Maßfelder auf den Kantenmitten praktisch prüfen.
-  D47: Erstklick-Auswahl, anschließendes Verschieben/Größenändern, Doppelklick und
-  nur bei ruhender Auswahl sichtbare Maßfelder praktisch prüfen.
-  D48: erforderliche Zielauswahl, alle Verknüpfungen einer Originalkontur gegenüber
-  expliziten Bearbeitungen/Schritten und mehrere automatische Steggrößen abnehmen.
-  D43: BREAKS-Layer, einzelne Regionen, Regionsgruppen und ganze Schritte
-  wiederholt anklicken/doppelklicken; abgeleitete Baummarkierung, stabile
-  Parameterkontexte und unveränderte Original-/Werkzeugbahnfarben prüfen.
-  P1–P6 sind [implementiert und lokal geprüft](archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6).
-  [Gemeinsamer Detailplan](planning/r3-r1b-implementation-plan.md),
-  [R3-Anforderungen](planning/open-task-details.md#r3) und [R1b](planning/open-task-details.md#r1b).
-- [ ] **R3 – Weitere Steghilfen P7:** automatische Platzierung separat abstimmen.
-  Manuelle Regionsbearbeitung und Strg-Ausrichtung an Originalkonturen sind
-  [implementiert](archive/toolpath-refactoring-completed.md#r3-manual-regions);
-  [verbleibender Umfang](planning/r3-r1b-implementation-plan.md).
-- [ ] **R3-IGNORE – Bedienung ignorierter Geometrie abstimmen:** Empfehlung:
+- [ ] **Integration/Develop-Release:** IGNORE-Entscheidung, aktuelle Anleitung
+  einschlie?lich Bilder, festgelegte Installationsabnahme und gepr?fte Integration
+  von `maschining-project` nach `develop` durchf?hren; anschlie?end Develop-Prerelease.
+  [Abschluss- und Releaseplan](planning/maschining-project-release-plan.md).
+- [ ] **R3-IGNORE – vor Merge korrigieren, vom Nutzer bestätigt:**
   „Ignoriert“ nicht als neue Bearbeitungsart anbieten; `IGNORE:`-Import und
   gespeicherte Projekte erhalten und die wirkungslose Exportaktivierung klar
-  darstellen. Noch keine Änderung der Bedienung beauftragt.
+  darstellen. [Umfang und Prüfungen](planning/maschining-project-release-plan.md#ignore).
   [Untersuchung](planning/r3-r1b-implementation-plan.md#r3-ui-followups).
 
 <a id="teilkonturen"></a>
@@ -160,20 +110,18 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 
 <a id="doc1"></a>
 
-- [ ] **DOC1 – Fachliche Rückmeldungen:** konkrete Kapitelkorrekturen zur
-  veröffentlichten vollständigen Anleitung einarbeiten.
+- [ ] **DOC1 – Anleitung und Bilder aktualisieren:** alle betroffenen Kapitel
+  mit integriertem Stand abgleichen, veraltete Screenshots durch echte aktuelle
+  Aufnahmen ersetzen und Releasebeschreibung/Seitenvorschau prüfen.
+  [Konkreter Vorschlag](planning/maschining-project-release-plan.md#doc1).
   [Abschluss und Veröffentlichung WP9–WP13](archive/toolpath-refactoring-completed.md#doc1-wp9-wp13),
   [Erstansicht WP1–WP8](archive/toolpath-refactoring-completed.md#doc1-wp3-wp8-publication).
 - [ ] **Optionale Maschinenabnahme:** die Grbl-1.1-Laser- und LinuxCNC-2.9-
   Heißdraht-/Drehdemonstrationen bei Bedarf für einen konkreten realen Aufbau
   anpassen und gesondert abnehmen. Geladene Demoprofile und synthetische
   Ausgabeprüfungen sind keine Controller-/Material-/Maschinenfreigabe.
-- [ ] **Optionale historische Wiederverwendung:** Rechte für Wiki-Texte,
-  Screenshots, fremde DXFs und Git-Flow-Grafik klären, falls sie übernommen
-  werden sollen; fehlendes `Spant.png` (404) nur mit geklärter Herkunft
-  wiederherstellen/ersetzen. Die neue Anleitung benötigt diese Originale nicht.
-- [ ] Frische Windows-/Ubuntu-/PyQt6-Installationen und macOS-Pakete sowie
-  CNC-/ATC-/manuelle Maschinenabnahmen separat planen und freigeben.
+  Weitere macOS-/CNC-/ATC-/manuelle Abnahmen bleiben bei konkretem Bedarf separat;
+  die aktuelle Installationsmatrix ist unter M1 zusammengeführt.
 
 Wiederaufnahme und technische Vorschau: [Übergabebericht](migration/zensical-prototype.md).
 Die fachlichen Notizen ersetzen keine Inhaltsabnahme oder Veröffentlichungsfreigabe.
