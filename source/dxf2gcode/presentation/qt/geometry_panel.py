@@ -53,5 +53,6 @@ class GeometryPanel(QWidget):
             toggle.toggled.connect(toggle_section)
             self.sections.append((toggle, page))
         self.splitter.setSizes([250, 250])
+        window.machining_panel.modifiers.install_catalog(self)
         ui.mytabWidget.insertTab(0, self, self.tr('Geometry'))
         ui.mytabWidget.setCurrentWidget(self)

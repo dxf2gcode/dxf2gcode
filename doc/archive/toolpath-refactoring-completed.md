@@ -1,6 +1,359 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **08.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **14.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+
+## R3/D48: verbindliche Zielauswahl vor Steganlage (14.11.2026)
+
+Nutzerregel umgesetzt: Ohne vorherige Originalkontur-/Bearbeitungsauswahl wird
+kein neuer Steg erzeugt. Originalkontur umfasst alle verknüpften Bearbeitungen,
+einzelne oder mehrere Bearbeitungen nur sich selbst, ein Schritt seine enthaltenen
+Konturen. Die Zeichen-Zielauswahl bleibt bei fortlaufender Anlage und beim
+Inspizieren der entstandenen Region erhalten. Normale neue Auswahl ersetzt sie;
+Leerraumklick löscht sie. Eine Ziehbewegung ohne Ziele legt keine Region an.
+
+Anlage verwendet ausschließlich überschneidende ausgewählte Originalkonturen;
+keine automatische Fremdzuordnung oder nachträgliche Auswahl eines beliebigen
+Ziels. Unterschiedliche automatische Quadratmaße ergeben getrennte Regionen
+für die betreffenden Bearbeitungen. Gleiche Quadrate können ihre Zuordnung teilen.
+Alle resultierenden Regionen werden in einem atomaren, validierten Befehl mit
+gemeinsamem Undo/Redo erzeugt. Bestehende Stegbearbeitung bleibt unabhängig davon
+möglich; kein weiteres persistentes Feld oder Format.
+
+Nachweis: je 30 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden (Panel,
+Regionsmodell, Canvas-Interaktion, Architektur). Reale Ereignisse decken Auswahl
+einer Bearbeitung, Mehrfachauswahl, Originalkontur mit zwei Verknüpfungen,
+Schrittauswahl, fehlende Auswahl, fremde ausgewählte Kontur und zwei Werkzeuge
+mit getrennten automatischen Größen ab. Batch-Anlage hat einen Undo-Schritt,
+Redo erhält den ganzen Satz; ein Fehler im Batch übernimmt keine Teilmenge.
+Eine zunächst veraltete Baum-ID wird bei transienter Zielaufnahme ignoriert,
+statt eine Qt-Slot-Ausnahme auszulösen. DE/FR/RU-Hinweise ergänzt, QM regeneriert
+und geladen geprüft. Strenger Dokumentationsbuild und Diff-Prüfung bestanden.
+P8-Fachabnahme bleibt offen; kein Commit/Push und keine Vollsuite oder
+Paket-/GPU-/Maschinenabnahme.
+
+## R3/D47: Auswahl vor Ziehen und Maßfelder nur bei ruhender Auswahl (13.11.2026)
+
+Bestätigten Ablauf umgesetzt: Erstklick auf eine Stegregion wählt sie aus.
+Auch Ziehen während dieses ersten Drucks verändert keine Vertices und erzeugt
+keinen Undo-Eintrag. Bereits ausgewählte Regionen lassen sich anschließend
+verschieben oder über Eckgriffe ändern. Bei Überlagerungen wird die aktuelle
+Auswahl bevorzugt. Nicht ausgewählte Regionen verwenden eine kleinere Rand-
+Treffertoleranz und zeigen noch keine aktiven Eckgriffe. Doppelklick öffnet
+weiterhin den Regionsdialog; direktes fortlaufendes Anlegen bleibt erhalten.
+
+Maßfelder erscheinen ausschließlich an ruhender Auswahl. Jede Zeichnungs-,
+Verschiebe- oder Größenänderungsgeste blendet sie aus; nach Loslassen erscheinen
+sie wieder. Explizite Maßeingabe schaltet automatisch auf manuell, auch wenn
+derselbe Zahlenwert erneut eingetippt wird. Unverändertes Bestätigen ohne
+Eingabe, ungültige Werte und Abbruch verändern weder Modus noch Geometrie.
+
+Nachweis: je sieben fokussierte Panel-/Canvas-Prüfungen unter PyQt5/PyQt6
+bestanden. Echte Mausereignisse prüfen Erstklick samt Bewegung ohne Mutation,
+Auswahl ohne Undo, anschließende Bearbeitung, Doppelklick und verborgene Maße
+während Zeichnen/Größenändern/Strg-Ziehen. Eingabe desselben Werts, Wechsel auf
+manuell und Undo sind ebenfalls abgedeckt. Bestehende DE/FR/RU-Texte unverändert
+wiederverwendet und geladen geprüft. Strenger Dokumentationsbuild und Diff-Prüfung
+bestanden. Fachliche P8-Abnahme bleibt offen; kein Commit/Push, keine Vollsuite
+oder Paket-/GPU-/Maschinenabnahme.
+
+## R3: direkte Stegzugänge und spezielles Kontextmenü entfernt (13.11.2026)
+
+Bestätigte Ergänzungen umgesetzt: Neben dem Stegmodus-Schalter erscheint im
+aktiven Modus eine Auswahl Fang/Manuell für neue Regionen. Sie aktualisiert die
+vorbereitete nächste Region, ohne den Modus eines vorhandenen ausgewählten Stegs
+zu ändern. Dessen individuelle Einstellung bleibt im Doppelklick-Dialog.
+„Zuordnung entfernen“ ist direkt im Regionsparameterbereich verfügbar und nur
+beim Bezug zu einer konkreten betroffenen Bearbeitung aktiv; globale Regions-
+Auswahl aktiviert den Button nicht. Das Entfernen bleibt lokal und Undo-fähig.
+
+Das spezielle Steg-Kontextmenü ist aus Canvas, Bearbeitungsbaum und Regionsliste
+entfernt. Im Stegmodus wird kein Ersatzmenü geöffnet. Doppelklick, Löschbutton/
+Entf, Aktivierungshäkchen und Modusschalter übernehmen die übrigen Aktionen.
+Das normale Canvas-Menü außerhalb des Stegmodus bleibt erhalten. Keine Änderung
+von Projektformat oder Werkzeugwegplanung.
+
+Nachweis: je 21 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden (Panel,
+Canvas-Interaktion, 3D-Adapter mit Fake-GL). Reale Tests wechseln den nächsten
+Anlegemodus, prüfen unveränderte vorhandene Regionen, deaktivierten Zuordnungs-
+Button ohne Bezug, lokale Entfernung per Button/Undo und das Ausbleiben von
+Kontextmenüs im Canvas und an Regionsknoten. Regionsliste verhindert Kontextmenüs,
+die Modusauswahl wird beim Verlassen ausgeblendet. DE/FR/RU-Kataloge bereinigt,
+QM regeneriert und geladen geprüft. Strenger Dokumentationsbuild und Diff-Prüfung
+bestanden. Reale GPU-/P8-/Paket-/Maschinenabnahme bleibt getrennt; kein Commit/Push.
+
+## R3: Stegmodus startet unmittelbar das Zeichnen (13.11.2026)
+
+Einschalten über den Schalter in der Bearbeitungs-Werkzeugleiste startet eine
+vorbereitete Zeichensitzung, ohne vorherige Kontextmenüaktion. Ausschalten
+beendet sie weiterhin. Der gewählte Startmodus und die bestehende fortlaufende
+Regionserstellung bleiben erhalten. Programmatische Auswahl/Bearbeitung alter
+Regionen benötigt dadurch keinen erzwungenen Neustart einer Zeichensitzung.
+
+Nachweis: je sieben fokussierte Panel-/Canvas-Prüfungen unter PyQt5/PyQt6 bestanden.
+Der reale Ablauf aktiviert den Modus über die Toolbar-Aktion und zeichnet die
+erste sowie eine weitere Region ohne Kontextmenü. Bestehende Katalogtexte werden
+unverändert verwendet und geladen geprüft. Strenger Dokumentationsbuild und
+Diff-Prüfung bestanden. Kein Commit/Push und keine Vollsuite oder Maschinenabnahme.
+
+Menüprüfung: Bearbeiten per Doppelklick, Löschen per Entf/Button, Aktivierung per
+Häkchen und Beenden über den Schalter sind direkt erreichbar. Eine Auswahl
+Fang/Manuell für neue Regionen und „Zuordnung entfernen“ im Parameterbereich
+wurden als noch fehlende direkte Zugänge vorgeschlagen. Diese Ergänzungen und
+vollständiges Entfernen gegenüber optionalem Beibehalten des speziellen Menüs
+sind ausdrücklich zur Nutzerentscheidung offen; das Menü bleibt vorerst erhalten.
+
+## R3/D46: Werkzeugnachführung automatischer Stege und Kantenmaße (13.11.2026)
+
+Automatische Regionen folgen dem geänderten Werkzeugdurchmesser. Der gemeinsame
+Befehlsabschluss erfasst Werkzeugwechsel, Projektwerkzeug-Aktualisierung und
+Werkzeugzuweisung über andere Schritte; die aktuelle konfigurierte Steglänge wird
+in Projekteinheiten addiert. Manuelle Regionen bleiben unverändert. Nach bestätigter
+Nutzerentscheidung werden gemeinsam verwendete automatische Regionen bei Bedarf
+je Bearbeitung aufgeteilt. Unbetroffene Verwendungen behalten ihre Form; Änderung
+und neue Regions-IDs sind Bestandteil desselben Undo-/Redo-Eintrags.
+Scopes vor dem Werkzeugwechsel erhalten die Zuordnung auch beim Verschieben
+einer Kontur in einen neuen Werkzeugschritt. Einheitenwechsel lösen diese
+Nachführung nicht zusätzlich aus. Kein weiteres Speicherfeld erforderlich.
+
+Maßfelder sitzen mittig auf oberer und rechter Kante, ohne Breite-/Höhe-Präfix;
+Zahl und Einheit sowie volle Eingabegenauigkeit bleiben erhalten. Eckgriff- und
+Maßklick unterscheiden sich anhand der nächstliegenden Griff-/Textmitte.
+
+Nachweis: je 55 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden
+(Regions-/Projektmodell, Panel, Canvas, Architektur). Neue Fälle: Werkzeugwechsel
+und Werkzeugaktualisierung mit 4+2=6, unveränderte manuelle Region, bedarfsgerechte
+Aufteilung einer gemeinsamen Region, atomare Undo-/Redo-Snapshots sowie echter
+GUI-Werkzeugwechsel und exakte Kantenpositionen. Paneltests zoomen für die
+Griff-/Maßbedienung gezielt auf die Region; die Werkzeugwechsel-Fixture hält
+ihren vorhandenen Lead-Radius gültig. DE/FR/RU-Kataloge bereinigt, QM regeneriert
+und geladen geprüft. Native Windows-Aufnahme der neuen Maßpositionen visuell
+geprüft. Strenger Dokumentationsbuild und Diff-Prüfung bestanden. P8-Fachabnahme
+bleibt offen; keine Vollsuite, Paket-/GPU-/Maschinenabnahme und kein Commit/Push.
+
+## R3/D45 präzisiert: Aufziehen, Modus je Steg und Doppelklick (13.11.2026)
+
+Die nachträgliche Nutzerpräzisierung ersetzt den bisherigen Klick-/Dialogablauf:
+Beide Modi beginnen durch Aufziehen eines Rechtecks. Beim Loslassen wird die
+Region direkt erzeugt; Fang stellt sie auf das konfigurierte Quadratmaß samt
+nominaler Ausrichtung, manuell behält die aufgezogene Form. Nur eine mehrdeutige
+Bearbeitungs-/Werkzeugwahl fragt nach dem Ziel. Zeichnen bleibt anschließend aktiv.
+Der Regionsdialog öffnet per Doppelklick im Canvas, im Bearbeitungsbaum und in der
+Regionsliste; Original-Regionsknoten öffnen ihn ebenfalls. Bearbeitungsaktionen
+im Kontextmenü/Parameterbereich öffnen denselben Dialog.
+
+Jede Region speichert `placement_mode` als `snap` oder `manual`. Vorhandene/importierte
+Regionen ohne Feld bleiben manuell. Moduswechsel über Regionsmenü oder Dialog gilt
+nur für diesen Steg. Fang beim Umschalten/Größenändern übernimmt das aktuelle Maß;
+direkte Maßeingabe setzt manuell, damit eigene Maße erhalten bleiben. Normales
+Verschieben oder bloße Konfigurationsänderung skaliert Regionen nicht. Das optionale
+Feld ergänzt das noch unveröffentlichte Format 2.1 und ist validiert/Undo-fähig.
+
+Nachweis: je 53 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden (Panel,
+Regions-/Projektmodell, Canvas, Architektur). Neue/angepasste reale Abläufe:
+direkte Anlage ohne Dialog, Fang/Handeingabe durch Aufziehen, Quadrat beim
+Größenändern, Moduswechsel je Steg, direkte Maßeingabe, Doppelklick-Dialog,
+Zielwahl/Abbruch, Undo sowie Rundlauf und Altdatei-Default des neuen Felds.
+Ein Qt6-Test berechnet seine Mausposition nach Ansichtsänderungen erneut;
+der anschließende Panelablauf bestand unter beiden Bindings. Bestehende
+DE/FR/RU-Texte wiederverwendet und mit geladenen QM-Katalogen geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. P8-Fachabnahme bleibt
+offen; keine Vollsuite, Paket-/GPU-/Maschinenabnahme, kein Commit/Push.
+
+## R3/D45: werkzeugabhängiges Fangquadrat und Konfigurationsvorgaben (13.11.2026)
+
+Nutzerentscheidung umgesetzt: Fang per Konturklick erzeugt ein Quadrat mit
+Seitenlänge Werkzeugdurchmesser plus verbleibender Steglänge. Ø4 mm und 2 mm
+Steglänge ergeben 6 × 6 mm. Die gewählte Originalkontur liefert Position und
+Ausrichtung; mehrere mögliche Bearbeitungen erfordern eine Werkzeug-/Zielwahl,
+wenn keine davon ausdrücklich aktiv ist. Der Regionsdialog bestätigt anschließend
+Werte und Zuordnung. Fortlaufendes Anlegen und vorhandene Maßeingabe bleiben erhalten.
+
+Neue Anwendungskonfiguration `Tab_Regions`: `creation_mode` mit Default `snap`
+und Alternative `manual`, `tab_length` mit Default 2 in Konfigurationseinheiten.
+Kontextmenü bietet beide Modi für die laufende Sitzung an. Die Länge wird vor
+Addition des Projekt-Werkzeugdurchmessers in Zeichnungseinheiten umgerechnet.
+Gespeicherte Regionen behalten ihre tatsächlichen Vertices bei Werkzeug- oder
+Vorgabenänderung; kein neues Projektformat. Z-Oberkante bleibt separat.
+
+Nachweis: je 36 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden, einschließlich
+Regionsmodell, echtem Panel-/Klickablauf, Konfigurationspersistenz/-übersetzungen,
+Canvas und Architekturgrenzen. Neue Fälle prüfen das 4+2=6-Beispiel, Klick statt
+Aufziehen, zwei Konfigurationseinheiten, Zielwahl/Abbruch bei Mehrfachbearbeitungen,
+Sitzungsumschaltung, fortlaufende Anlage und Undo. Ein anfänglicher Testfehler
+(`ConfigObj.Section.update` erwartet ein Dictionary) wurde korrigiert; der betroffene
+Test und Panelablauf bestanden anschließend erneut unter beiden Bindings.
+Neue Texte/Hilfen in DE/FR/RU ergänzt, QM regeneriert und geladen geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Fachliche Abnahme bleibt
+P8, insbesondere reale Reststege an Ecken/engen Bögen. Keine Vollsuite,
+Paket-/GPU-/Maschinenabnahme und kein Commit/Push.
+
+## R3: fortlaufende Stegsitzung, Konturwechsel und Regionszählung (13.11.2026)
+
+Zeichnen bleibt nach bestätigter Neuanlage aktiv. Weitere Regionen können an
+anderen Originalkonturen angelegt werden, ohne den Modus neu zu starten.
+Konturklick wählt die entsprechende Originalgeometrie, Leerraumklick löst
+Regionsauswahl und abgeleitete Markierungen; der Stegmodus bleibt offen.
+Maßfelder und Eckgriffe der ausgewählten Region bleiben bedienbar.
+Die Zahl am Konturknoten zählt nun die darunter aufgeführten Regionsobjekte.
+Ursache der Abweichung war das Zählen einzelner geplanter Stegabschnitte;
+eine einzelne Region kann mehrere davon erzeugen.
+
+Nachweis: je sieben fokussierte Panel-/Canvas-Prüfungen unter PyQt5/PyQt6
+bestanden. Echte Mausereignisse prüfen Konturwechsel im Zeichnen, Leerraum-
+Abwahl, direkte zweite Neuanlage an anderer Kontur und Undo. Ein zusätzlicher
+Planabschnitt derselben Region erhöht die Baumzahl nicht mehr. Bestehende
+Maßeingabe/Strg-Ausrichtung sowie Katalogübersetzungen bleiben geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Keine Vollsuite,
+Paket-/GPU-/Maschinenabnahme, kein Commit/Push. Die zusätzliche Konfiguration
+für Fang/Handeingabe und Standardmaß war hier noch offen; anschließend durch
+D45 entschieden und umgesetzt (siehe obigen Nachweis).
+
+## R3/D44: Live-Maße, direkte Maßeingabe und Strg-Ausrichtung (13.11.2026)
+
+Bestätigte Bedienung umgesetzt: Breite und Höhe rechteckiger Stegregionen werden
+beim Zeichnen/Größenändern und an der Auswahl angezeigt. Maße folgen der
+Projekteinheit und Anzeigepräzision. Hover hebt die Zahl hervor, Klick öffnet
+eine Eingabe mit voller Genauigkeit. Positive endliche Maße werden mit Enter
+symmetrisch um die Mitte übernommen; die andere Kantenlänge bleibt erhalten.
+Escape oder Fokuswechsel verwerfen die Eingabe. Maßfelder verdecken keine
+Eckgriffe und werden beim Editieren über der Vorschau dargestellt.
+
+Strg beim Ziehen richtet die Breitenachse an der Verbindung genau zweier
+Originalkontur-Schnittpunkte aus und setzt die Mitte zwischen die Kontakte.
+Die aktuellen Kantenlängen bleiben erhalten. Ein eindeutiges Ziel wirkt live;
+mehrere Originalkonturen erfordern beim Loslassen eine Auswahl. Abbruch erhält
+das normale Ziehergebnis. Wiederholte Bearbeitungen derselben Originalkontur
+werden als Fangziel zusammengefasst; ohne geeignetes Kontaktpaar bleibt die
+Ziehbewegung erhalten und eine Meldung erklärt den ausgelassenen Fang.
+Geraden und Bögen verwenden dieselbe nominale Schnittgrundlage wie D41.
+Jede bestätigte Änderung bleibt ein vorhandener Regions-/Undo-Befehl;
+keine zusätzlichen persistenten Felder oder Formatänderungen.
+
+Nachweis: jeweils 44 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden
+(Regionsmodell, nominale Stege, Architektur, Panel und Canvas-Interaktion).
+Neue Fälle prüfen exakte Maßübernahme, Mittelpunkt/andere Kante, ungültige Werte,
+Hover/Klick/Enter/Escape, reale Strg-Ziehereignisse und Undo, Geraden-/Kreiskontakte,
+Mehrfachverwendungs-Deduplizierung sowie Auswahl/Abbruch bei mehreren Fangzielen.
+DE/FR/RU ergänzt, QM regeneriert und geladen geprüft; native Windows-Aufnahmen
+für Maßanzeige und Eingabefeld visuell geprüft. Strenger Dokumentationsbuild und
+Diff-Prüfung bestanden. Fachliche Bedienabnahme bleibt P8; automatische Platzierung,
+reale GPU-/Paket-/Maschinenabnahme bleiben getrennt. Kein Commit oder Push.
+
+## R3: Regionszuordnung auf überschneidende Konturen begrenzt (12.11.2026)
+
+Der bestätigte Vorschlag ist umgesetzt: Nur Bearbeitungen mit einem positiven
+Originalkonturabschnitt im Regionsinneren stehen zur Zuordnung bereit. Der
+nominale D41-Schnittdienst liefert dieselbe geometrische Grundlage; reine
+Rand-/Eckkontakte erzeugen dort keinen Steg. Mehrfachbearbeitungen bleiben
+getrennte Ziele. Schrittlisten enthalten nur Schritte mit passenden Konturen.
+Genau ein Kandidat wird beim Neuanlegen vorbelegt. Ohne Schnitt zeigt der Dialog
+den Hinweis und sperrt „OK“ beim Neuanlegen; Abbruch ändert nichts.
+
+Global zeigt die passenden Bearbeitungen als mitumfasst an und erhält lokale
+Ausnahmen. Geometrische Kandidaten hängen nicht von Fräserradius, Z-/Passwahl,
+Aktivierung oder momentanem Scope ab. Bereits gespeicherte unwirksame Regionen
+werden nicht gelöscht. Vorhandene Kandidatenwahl bleibt beim Wechsel zwischen
+Global/Schritt/Bearbeitungen erhalten.
+
+Nachweis: je 63 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden, einschließlich
+Regionsmodell, D41, Passregeln, Architektur und echtem Panelablauf. Neue Fälle:
+Durchlauf statt Rand-/Eckkontakt, zwei Bearbeitungen derselben Kontur als getrennte
+Ziele, Ausschluss einer fremden Kontur im Dialog, ein vorausgewählter Treffer,
+leere Liste mit gesperrter Neuanlage selbst bei Global sowie unveränderte Daten
+bei Abbruch. Bestehende Eckpunkt-Abnahmeregion wurde auf echten Durchlauf bis
+zur Ecke präzisiert; der zuvor nur auf dem Rand liegende Fall gilt nun als Kontakt.
+Hinweis in DE/FR/RU ergänzt, QM-Dateien regeneriert und geladen geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Kein Commit/Push;
+keine Vollsuite oder Maschinenabnahme.
+
+## R3: sprachabhängiger Namensvorschlag für neue Stegregionen (12.11.2026)
+
+Neue Regionen erhalten den ersten freien Namen nach übersetztem Schema:
+„Steg 1“, „Steg 2“ usw.; Englisch „Tab“, Französisch „Attache“, Russisch
+„Перемычка“. Die Prüfung berücksichtigt bereits gespeicherte Regionsnamen.
+Der vorgeschlagene Name bleibt frei änderbar; bestehende Namen werden durch
+Sprachwechsel nicht verändert. DE/FR/RU-Kataloge und QM-Dateien aktualisiert.
+Je zwei fokussierte Paneltests unter PyQt5/PyQt6 bestanden, einschließlich
+geladenen Übersetzungen, konkreten Vorschlägen in allen drei Sprachen und
+vorbelegtem, weiterhin überschreibbarem Namensfeld im echten Anlegedialog.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Kein Commit/Push.
+
+## R3/D43: einheitliche Regions- und Schrittauswahl (12.11.2026)
+
+Die bestätigte Auswahlregel ist umgesetzt: BREAKS-Layer und Regionsgruppen
+verwenden die Vereinigung ihrer Regionsbezüge und heben alle wirksam verknüpften
+Bearbeitungen hervor. Globale Regionen zeigen Bezüge auch in anderen Schritten.
+Wiederholte Klicks bleiben stabil, Doppelklicks auf Gruppen klappen auf/zu.
+Einzelne Regionsreferenzen springen nicht mehr zum ersten Vorkommen im Baum.
+
+Schrittnachfahren und Regionsbezüge erscheinen als hellere abgeleitete
+Baummarkierungen. Die tatsächliche Auswahl bleibt unverändert als Vertrag für
+Parameter und Drag-and-drop: Schrittvorgaben bei Schrittwahl, Regionswerte bei
+Regionswahl, gesperrte Zusammenfassung bei Regionsgruppen. Die Vorschau hebt
+deren referenzierte Werkzeugbahnen mit den bestehenden Farben hervor. Rot für
+Originalauswahl, Blau für Werkzeugbahn und Magenta für Stege bleiben erhalten.
+Zuordnungsänderungen aktualisieren den Bezug sofort, einschließlich Auslassen
+einer zuvor hervorgehobenen Bearbeitung. Kein gespeicherter Projektzustand wird
+durch reine Bezugsauswahl geändert.
+
+Nachweis: je 21 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden: Panelablauf,
+Canvasinteraktion und 3D-Befehle/Projektion. Erweiterte echte Mausereignisse an
+`BreakExample_Circle.dxf` prüfen wiederholte Layerklicks/Doppelklicks, einzelne
+Originalregionen, Regionsgruppen, Schritte sowie eine globale Region mit
+Referenz in einem zweiten Schritt. Geprüft sind Vorschauauswahl, Baumrollen,
+Erhalt des geklickten Knotens, Kontext, Drag-Payload, unveränderte Projektdaten
+und History. Windows-Bilder für Schritt-/Gruppenmarkierung visuell kontrolliert.
+Gruppenhinweis in DE/FR/RU ergänzt, QM-Dateien regeneriert und geladen geprüft.
+Strenger Dokumentationsbuild und Diff-Prüfung bestanden. Kein Commit/Push;
+keine Vollsuite, reale GPU- oder Maschinenabnahme.
+
+<a id="r3-manual-regions"></a>
+
+## R3/D42: Konturverknüpfung und manuelle Stegregionen (12.11.2026)
+
+Der bestätigte Vorschlag und die drei Nutzerentscheidungen sind umgesetzt:
+Regionen folgen der gesamten Zeichnungstransformation, Bearbeiten erfolgt in
+2D und jede neue Region endet mit einem Bestätigungsdialog für Name, Höhe,
+Vorschübe und Zuordnung. In der 3D-Hauptansicht öffnet ein separater 2D-Editor.
+Die erste neue Höhe ist Werkstückoberkante, danach der zuletzt verwendete bzw.
+zuletzt gespeicherte manuelle Wert. Vorschübe stammen aus der Auswahl.
+
+Stegregionsobjekte besitzen eigene IDs, Quelldaten oder eigene Polygonpunkte,
+Scope global/Schritt/Bearbeitungen und lokale Ausnahmen. Format 2.1 liest
+weiterhin 2.0 und Legacy; alte BREAKS-Bearbeitungen werden mit ID-/Werterhalt
+übernommen. Die Materialisierung filtert Regionen vor der gemeinsamen Planung
+nach Scope/Ausnahmen. Undo/Redo stellt Form, Werte und Zuordnungen gemeinsam her.
+
+Bearbeitungsbäume referenzieren Regionen direkt unter der betroffenen Kontur;
+die Kontur zeigt die Anzahl wirksamer Stegabschnitte. Der Geometrie-Tab besitzt
+einen eigenen einklappbaren Regionsbereich mit Herkunft/Wirkung. BREAKS-Originale
+haben Regionsnamen/-symbole, entfernte Regionszuordnungen sind durchgestrichen.
+Normale Konturauswahl blendet die wirksamen Rechtecke automatisch gestrichelt
+magenta ein. Regionauswahl hebt zugehörige Konturen hervor, ohne selbst den
+Editiermodus einzuschalten. Die bisherigen Bewegungsfarben bleiben erhalten.
+
+Im Stegmodus: Rechteck aufziehen, Vorschau mit demselben Planer, Werte bestätigen,
+Umriss verschieben und Eckgriffe ziehen. Erst Loslassen erzeugt eine Undo-Aktion.
+Esc/Dialogabbruch ändern nichts. „Zuordnung entfernen“ schließt nur diese
+Bearbeitung aus; globales Löschen benötigt die Rückfrage mit Betroffenenzahl.
+Original-DXF-Geometrie bleibt erhalten. Während der Sichtprüfung wurde außerdem
+die D41-Teilung absolut transformierter Geometrie korrigiert: Original und
+Werkzeugbahn werden vor der Teilung in denselben absoluten Raum aufgelöst.
+
+Nachweis: je 116 fokussierte Prüfungen unter PyQt5/PyQt6 bestanden, inklusive
+sechs neuer Regionsmodellprüfungen und erweitertem echten Panelablauf mit
+`BreakExample_Circle.dxf`: automatischer Regionsanzeige, Originalbaumauswahl,
+Zeichnen mit Modalbestätigung, Vorschau, Verschieben, Eckgriffen, Esc,
+Zuordnungsausnahme, Löschabbruch/Löschen, Undo, .d2g-2.1-Wiederladen und
+G-Code mit gespeicherter Stegoberkante. Die 2D-Editoransicht wurde ohne realen
+GL-Kontext geöffnet/geprüft. Tests sichern außerdem Transformation/Inverse,
+Migrationswerte/IDs, Scopes, Undo/Redo und D41-Absolutkoordinaten.
+DE/FR/RU ergänzt, QM-Dateien regeneriert und geladen verifiziert. Deutsche
+Windows-Baumansichten und Regionsdialog visuell kontrolliert. Strenger
+Dokumentationsbuild und Diff-Prüfung bestanden.
+
+Offen bleiben Nutzer-/reale GPU-/Maschinenabnahme, Fang und automatische
+Platzierung. Keine Vollsuite, Debian- oder Paketabnahme. Kein Commit/Push.
 
 Commit-Vorprüfung: Der erste Fast-Hook-Lauf mit 313 Prüfungen meldete eine
 fehlgeschlagene Panelprüfung: Überlauf wurde bei zufällig verfügbarer

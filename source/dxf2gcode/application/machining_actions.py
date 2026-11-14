@@ -76,6 +76,7 @@ class MachiningCommands:
         self.undo_stack = []
         self.redo_stack = []
         self.target_choices = {}
+        self.tab_length = None
 
     def _state(self):
         return deepcopy(self.binding.project), dict(self.binding.active_operations), self.selection
@@ -93,6 +94,8 @@ class MachiningCommands:
         before = self._state()
         staged = deepcopy(self.binding.project)
         result = change(staged) or MachiningChange(label)
+        from dxf2gcode.application.tab_regions import resize_automatic_regions
+        resize_automatic_regions(self.binding, before[0], staged, self.tab_length)
         staged.validate()
         if staged.to_dict() == before[0].to_dict():
             return result
@@ -120,6 +123,34 @@ class MachiningCommands:
         self._restore(item[1])
         self.undo_stack.append(item)
         return item[2]
+
+    def create_region(self, region):
+        return self.create_regions([region])
+
+    def create_regions(self, regions):
+        def change(project):
+            for region in regions:
+                if region.id in project.regions:
+                    raise ValueError('Duplicate tab region')
+                project.regions[region.id] = deepcopy(region)
+            return MachiningChange('create region', selection=())
+        return self.perform('create region', change)
+
+    def update_region(self, identity, **values):
+        def change(project):
+            region = project.regions[identity]
+            for key, value in values.items():
+                if key == 'id' or key not in region.__dataclass_fields__:
+                    raise ValueError('Unknown tab region value')
+                setattr(region, key, deepcopy(value))
+            return MachiningChange('update region', selection=())
+        return self.perform('update region', change)
+
+    def remove_region(self, identity):
+        def change(project):
+            del project.regions[identity]
+            return MachiningChange('remove region', selection=())
+        return self.perform('remove region', change)
 
     @staticmethod
     def step(project, identity):
@@ -565,6 +596,10 @@ class MachiningCommands:
                     if isinstance(entry, MachiningOperation):
                         scale(entry.overrides, lengths)
             project.tools = {identity: tool.scaled(factor) for identity, tool in project.tools.items()}
+            for region in project.regions.values():
+                region.height *= factor
+                region.xy_feed *= factor
+                region.z_feed *= factor
             config = project.configuration
             for section in ('Depth_Coordinates', 'Feed_Rates'):
                 scale(config[section], set(config[section]))

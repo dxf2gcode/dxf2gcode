@@ -49,7 +49,7 @@ def _arc_fraction(geo, xy):
     return advance/abs(geo.sweep)
 
 
-def _inside(xy, vertices, tolerance):
+def _inside(xy, vertices, tolerance, include_boundary=True):
     inside = False
     for a, b in zip(vertices, vertices[1:]+vertices[:1]):
         delta, rel = _sub(b, a), _sub(xy, a)
@@ -58,7 +58,7 @@ def _inside(xy, vertices, tolerance):
             continue
         along = sum(x*y for x, y in zip(delta, rel))/length
         if abs(_cross(delta, rel))/length <= tolerance and -tolerance <= along <= length+tolerance:
-            return True
+            return include_boundary
         if (a[1] > xy[1]) != (b[1] > xy[1]):
             if xy[0] < a[0]+(xy[1]-a[1])*(b[0]-a[0])/(b[1]-a[1]):
                 inside = not inside
@@ -105,13 +105,32 @@ def _unique(values):
     return result
 
 
+def region_crossings(contour, vertices, tolerance=1e-7):
+    """Distinct boundary contacts of contours passing through the interior."""
+    if not contour_crosses_region(contour, vertices, tolerance):
+        return ()
+    result = []
+    for geo in contour:
+        for t in _crossings(geo, vertices):
+            xy = point(geo, t)
+            # _crossings also returns segment endpoints; retain boundary points only.
+            boundary = any(
+                abs(_cross(_sub(b, a), _sub(xy, a))) <= tolerance*_distance(a, b)
+                and min(a[0], b[0])-tolerance <= xy[0] <= max(a[0], b[0])+tolerance
+                and min(a[1], b[1])-tolerance <= xy[1] <= max(a[1], b[1])+tolerance
+                for a, b in zip(vertices, vertices[1:]+vertices[:1]) if _distance(a, b) > tolerance)
+            if boundary and all(_distance(xy, p) > tolerance for p in result):
+                result.append(xy)
+    return tuple(result)
+
+
 def _nominal_spans(contour, regions, tolerance, closed):
     spans, group = [], -1
     previous = None
     for index, geo in enumerate(contour):
         cuts = _unique([t for region in regions for t in _crossings(geo, region.vertices)])
         for a, b in zip(cuts, cuts[1:]):
-            region = next((r for r in regions if _inside(point(geo, (a+b)/2), r.vertices, tolerance)), None)
+            region = next((r for r in regions if _inside(point(geo, (a+b)/2), r.vertices, tolerance, False)), None)
             if region is None:
                 previous = None
                 continue
@@ -127,6 +146,20 @@ def _nominal_spans(contour, regions, tolerance, closed):
                 and first[3] is last[3] and _distance(contour[-1].end, contour[0].start) <= tolerance):
             spans = [(*span[:4], first[4] if span[4] == last[4] else span[4]) for span in spans]
     return spans
+
+
+def contour_crosses_region(contour, vertices, tolerance=1e-7):
+    """A positive-length nominal contour interval must lie inside the region.
+
+    This shares the planner's nominal intersection rule, independently of
+    cutter radius, selected depth passes, activation and assignment scope.
+    """
+    if len(vertices) < 3:
+        return False
+    contour = tuple(g.resolved for g in contour if g.kind in ('line', 'arc'))
+    region = TabRegion(tuple(vertices), 0., 1., 1.)
+    return any(contour[index].length*(b-a) > tolerance
+               for index, a, b, _, _ in _nominal_spans(contour, (region,), tolerance, False))
 
 
 def _sections(geo, contour, offset, tolerance):
@@ -180,6 +213,7 @@ def map_tabs(contour, path, regions, offset=0., closed=True, tolerance=1e-7):
     if not regions:
         return path, ()
     contour = tuple(geo.resolved for geo in contour)
+    path = tuple(geo.resolved for geo in path)
     spans = _nominal_spans(contour, regions, tolerance, closed)
     if not spans:
         return path, ()

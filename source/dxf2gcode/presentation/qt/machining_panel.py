@@ -3,6 +3,7 @@
 import json
 import logging
 from dxf2gcode.presentation.qt.numeric_display import format_number
+from dxf2gcode.presentation.qt.selection_marks import REFERENCE_ROLE, ReferenceDelegate
 from dataclasses import replace
 from uuid import uuid4
 
@@ -60,6 +61,7 @@ class MachiningTree(QTreeWidget):
     def __init__(self, panel):
         super().__init__(panel)
         self.panel = panel
+        self.setItemDelegate(ReferenceDelegate(self))
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -229,7 +231,19 @@ class MachiningPanel(QWidget):
         bar.insertAction(after_create, self.buttons['tabs'])
         self.buttons['tabs'].setObjectName('machining_tabs')
         self.buttons['tabs'].setCheckable(True)
-        self.buttons['tabs'].triggered.connect(self.modifiers.set_mode)
+        self.buttons['tabs'].triggered.connect(lambda enabled: self.modifiers.start_draw()
+                                              if enabled else self.modifiers.set_mode(False))
+        self.tab_placement = QComboBox(bar)
+        self.tab_placement.setObjectName('tabCreationMode')
+        self.tab_placement.setToolTip(self.modifiers.tr('Tab placement'))
+        self.tab_placement.addItem(self.modifiers.tr('Snap to contour'), 'snap')
+        self.tab_placement.addItem(self.modifiers.tr('Draw manually'), 'manual')
+        self.tab_placement.setCurrentIndex(self.tab_placement.findData(self.modifiers.drawing_mode()))
+        self.tab_placement.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.tab_placement_action = bar.insertWidget(after_create, self.tab_placement)
+        self.tab_placement_action.setVisible(False)
+        self.tab_placement.currentIndexChanged.connect(
+            lambda: self.modifiers.set_creation_mode(self.tab_placement.currentData()))
         self.splitter.setSizes([250, 350])
         for text, shortcut, callback in ((self.tr('Undo machining action'), 'Ctrl+Z', self.undo),
                                           (self.tr('Redo machining action'), 'Ctrl+Shift+Z', self.redo),
@@ -319,9 +333,26 @@ class MachiningPanel(QWidget):
                             if modifier:
                                 item.setSelectable(False)
                                 item.setToolTip(self.modifiers.scope.text())
+                    if modifier:
+                        from dxf2gcode.presentation.qt.tab_modifiers import tab_mode_icon
+                        first.setIcon(tab_mode_icon(self.palette()))
+                        if shape is not None:
+                            label = self.modifiers.tr('Tab region')
+                            # Original trees use a separate name column.
+                            name_item = parent.child(row, 1) or first
+                            name_item.setText(label)
+                            removed = not any(r.geometry_id == getattr(shape, 'geometry_id', None)
+                                              for r in self.binding.project.regions.values())
+                            font = name_item.font()
+                            font.setStrikeOut(removed)
+                            name_item.setFont(font)
+                        elif layer is not None:
+                            first.setToolTip(self.modifiers.tr('Imported tab regions'))
+                            (parent.child(row, 1) or first).setText(self.modifiers.tr('Tab regions')+' · '+layer.name)
                     walk(parent.child(row, 0))
             walk(model.invisibleRootItem())
             model.blockSignals(blocked)
+            view.resizeColumnToContents(1)
         self.window.ui.layersGoUpPushButton.setEnabled(False)
         self.window.ui.layersGoDownPushButton.setEnabled(False)
 
@@ -405,6 +436,7 @@ class MachiningPanel(QWidget):
         self.busy = False
         self.update_tree_actions()
         self.show_parameters()
+        self.update_reference_marks()
 
     def update_tree_actions(self, *unused):
         if self.busy:
@@ -434,6 +466,36 @@ class MachiningPanel(QWidget):
                 ids.update(e.id for e in self.commands.step(self.binding.project, identity).entries)
         return [e.id for s in self.binding.project.steps for e in s.entries if e.id in ids]
 
+    def update_reference_marks(self):
+        """Descendants/references are visible, but never become edit targets."""
+        if self.binding is None:
+            return
+        ids = set(self.selected_entries()) | self.modifiers.related_operations
+        regions = self.modifiers.selected_regions
+        was_busy = self.busy
+        self.busy = True
+        def walk(parent):
+            for row in range(parent.childCount()):
+                item = parent.child(row)
+                kind, identity = item.data(0, ROLE)
+                linked = kind == 'entry' and identity in ids
+                if kind == 'modifier':
+                    operation = item.parent().data(0, ROLE)[1]
+                    linked = identity in regions or operation in ids
+                elif kind == 'modifier_group':
+                    linked = identity in ids or any(item.child(i).data(0, ROLE)[1] in regions for i in range(item.childCount()))
+                for col in range(self.tree.columnCount()):
+                    value = 1 if linked and not item.isSelected() else 0
+                    if item.data(col, REFERENCE_ROLE) != value:
+                        item.setData(col, REFERENCE_ROLE, value)
+                walk(item)
+        try:
+            walk(self.tree.invisibleRootItem())
+        finally:
+            self.busy = was_busy
+        self.modifiers.mark_original_references()
+        self.tree.viewport().update()
+
     def current_step(self):
         item = self.tree.currentItem()
         if item is None:
@@ -446,6 +508,8 @@ class MachiningPanel(QWidget):
         return None
 
     def execute(self, callback):
+        from dxf2gcode.application.tab_regions import configured_tab_length
+        self.commands.tab_length = configured_tab_length(g.config.var_dict, self.binding.project.units)
         self.commands.target_choices = {}
         try:
             while True:
@@ -546,12 +610,18 @@ class MachiningPanel(QWidget):
         self.selection_from_geometry = False
         current = self.tree.currentItem()
         if current is not None and current.data(0, ROLE)[0] == 'modifier':
-            self.modifiers.select(current.data(0, ROLE)[1])
+            group = current.parent()
+            operation = group.data(0, ROLE)[1] if group else None
+            self.modifiers.select(current.data(0, ROLE)[1], operation=operation, anchor=current)
             return
-        self.modifiers.context = None
+        if current is not None and current.data(0, ROLE)[0] == 'modifier_group':
+            self.modifiers.select_regions([current.child(i).data(0, ROLE)[1] for i in range(current.childCount())], anchor=current)
+            return
+        self.modifiers.clear_reference()
         ids = self.selected_entries()
         self.commands.selection = tuple(item.data(0, ROLE)[1] for item in self.tree.selectedItems()
                                         if item.data(0, ROLE)[0] in ('step', 'entry'))
+        self.modifiers.update_draw_selection()
         item = self.tree.currentItem()
         self.context = None
         if item is not None and item.data(0, ROLE)[0] == 'entry':
@@ -592,13 +662,14 @@ class MachiningPanel(QWidget):
         self.update_tree_actions()
         self.show_parameters()
         self.refresh_preview()
+        self.update_reference_marks()
 
     def geometry_selected(self):
         if self.busy or self.binding is None:
             return
         self.canvas_edit_context = False
         self.selection_from_geometry = True
-        self.modifiers.context = None
+        self.modifiers.clear_reference()
         geometries = {getattr(s, 'geometry_id', None) for s in self.window.shapes
                       if s.isSelected() and not s.parentLayer.isBreakLayer()}
         by_geometry = self.binding.operations_by_geometry()
@@ -612,10 +683,12 @@ class MachiningPanel(QWidget):
                if isinstance(e, MachiningOperation) and e.geometry_id in geometries]
         self.context = ids[0] if len(ids) == 1 else None
         self.commands.selection = tuple(ids)
+        self.modifiers.update_draw_selection()
         self.refresh(ids)
         self.refresh_preview()
 
     def select_canvas_operation(self, identity, toggle=False):
+        self.modifiers.clear_reference()
         ids = set(self.selected_entries()) if toggle else set()
         if toggle and identity in ids:
             ids.remove(identity)
@@ -923,6 +996,9 @@ class MachiningPanel(QWidget):
         kind, identity = item.data(0, ROLE)
         if kind == 'step':
             self.edit_step()
+        elif kind == 'modifier':
+            self.modifiers.select(identity, anchor=item)
+            self.modifiers.edit_assignment()
         elif kind == 'entry':
             entry = self.commands.entries(self.binding.project, [identity])[0][1]
             if isinstance(entry, LiteralAction):
@@ -1104,9 +1180,6 @@ class MachiningPanel(QWidget):
             clicked.setSelected(True)
         menu = QMenu(self)
         if clicked is not None and clicked.data(0, ROLE)[0] in ('modifier', 'modifier_group'):
-            if clicked.data(0, ROLE)[0] == 'modifier':
-                menu.addAction(self.modifiers.tr('Remove region'), self.modifiers.remove)
-            menu.exec(self.tree.viewport().mapToGlobal(position))
             return
         identities = [item.data(0, ROLE)[1] for item in self.tree.selectedItems()
                       if item.data(0, ROLE)[0] == 'entry']

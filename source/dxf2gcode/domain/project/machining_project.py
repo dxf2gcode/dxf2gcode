@@ -62,6 +62,28 @@ class MachiningStep:
 
 
 @dataclass
+class StegRegion:
+    id: str
+    name: str = ''
+    geometry_id: str = ''
+    # Overrides/manual vertices are in drawing-root coordinates.
+    vertices: tuple = ()
+    height: float = 0.
+    xy_feed: float = 400.
+    z_feed: float = 150.
+    enabled: bool = True
+    scope: str = 'global'
+    targets: list = field(default_factory=list)
+    excluded: list = field(default_factory=list)
+    placement_mode: str = 'manual'
+
+    def applies(self, step, operation):
+        assigned = (self.scope == 'global' or self.scope == 'steps' and step in self.targets
+                    or self.scope == 'operations' and operation in self.targets)
+        return self.enabled and operation not in self.excluded and assigned
+
+
+@dataclass
 class MachiningProject:
     geometries: dict = field(default_factory=dict)
     tools: dict = field(default_factory=dict)
@@ -70,6 +92,20 @@ class MachiningProject:
     configuration: dict = field(default_factory=dict)
     units: str = 'mm'
     unresolved: dict = field(default_factory=dict)
+    regions: dict = field(default_factory=dict)
+
+    def migrate_regions(self):
+        """Promote 2.0 hidden BREAKS operations to project-owned modifiers."""
+        for step in self.steps:
+            if step.kind != 'break':
+                continue
+            for entry in step.entries:
+                if isinstance(entry, MachiningOperation):
+                    values = self.resolve(step, entry)[0]
+                    self.regions.setdefault(entry.id, StegRegion(entry.id, geometry_id=entry.geometry_id,
+                        height=values['axis3_mill_depth'], xy_feed=values['f_g1_plane'],
+                        z_feed=values['f_g1_depth'], enabled=entry.enabled))
+        self.steps[:] = [step for step in self.steps if step.kind != 'break']
 
     def resolve(self, step, operation):
         """Resolve values and their provenance without reading a live profile."""
@@ -167,6 +203,25 @@ class MachiningProject:
                         type(entry.legacy_conflict[1]) is not bool or
                         entry.legacy_conflict[2] not in (40, 41, 42)):
                     raise ValueError('Invalid legacy machining conflict')
+        for key, region in self.regions.items():
+            identity(key)
+            if region.placement_mode not in ('manual', 'snap'):
+                raise ValueError('Invalid tab placement mode')
+            if (key != region.id or not isinstance(region.name, str) or
+                    region.geometry_id and region.geometry_id not in self.geometries):
+                raise ValueError('Invalid tab region reference')
+            if region.scope not in ('global', 'steps', 'operations') or type(region.enabled) is not bool:
+                raise ValueError('Invalid tab region scope')
+            if any(type(v) not in (int, float) or not isfinite(v) for v in
+                   (region.height, region.xy_feed, region.z_feed)) or min(region.xy_feed, region.z_feed) <= 0:
+                raise ValueError('Invalid tab region values')
+            if (not region.geometry_id and len(region.vertices) < 3 or
+                    region.vertices and len(region.vertices) < 3 or
+                    any(len(p) != 2 or any(type(v) not in (int, float) or not isfinite(v) for v in p)
+                        for p in region.vertices)):
+                raise ValueError('Invalid tab region polygon')
+            if any(not isinstance(v, str) for v in region.targets+region.excluded):
+                raise ValueError('Invalid tab region assignment')
 
     def assert_exportable(self):
         self.validate()
@@ -193,14 +248,14 @@ class MachiningProject:
         return dict(geometries=[asdict(g) for g in self.geometries.values()],
                     tools={key: asdict(tool) for key, tool in self.tools.items()},
                     defaults=deepcopy(self.defaults), configuration=deepcopy(self.configuration),
-                    units=self.units, steps=[dict(id=step.id, name=step.name,
+                    units=self.units, regions=[asdict(r) for r in self.regions.values()], steps=[dict(id=step.id, name=step.name,
                         kind=step.kind, tool_id=step.tool_id, defaults=deepcopy(step.defaults),
                         entries=[dict(type='literal' if isinstance(e, LiteralAction) else 'operation',
                                       **asdict(e)) for e in step.entries]) for step in self.steps])
 
     @classmethod
     def from_dict(cls, data):
-        if not isinstance(data, dict) or set(data) != {
+        if not isinstance(data, dict) or set(data) - {'regions'} != {
                 'geometries', 'tools', 'defaults', 'configuration', 'units', 'steps'}:
             raise ValueError('Invalid machining project fields')
         geometries = [GeometryReference(**value) for value in data['geometries']]
@@ -210,6 +265,12 @@ class MachiningProject:
                      {key: ToolSettings(**value) for key, value in data['tools'].items()},
                      defaults=deepcopy(data['defaults']), configuration=deepcopy(data['configuration']),
                      units=data['units'])
+        for value in data.get('regions', []):
+            region = StegRegion(**value)
+            region.vertices = tuple(tuple(p) for p in region.vertices)
+            if region.id in result.regions:
+                raise ValueError('Duplicate tab region')
+            result.regions[region.id] = region
         for value in data['steps']:
             fields = dict(value)
             fields['entries'] = []
@@ -225,6 +286,7 @@ class MachiningProject:
                 else:
                     raise ValueError('Unknown machining entry type')
             result.steps.append(MachiningStep(**fields))
+        result.migrate_regions()
         result.validate()
         # Equal complete definitions share one project identity after loading.
         canonical = {}

@@ -2743,6 +2743,30 @@ Vous devez détruire(ou éditer soigneusement) le fichier de configuration "{2}"
         <source>Decimal places for feed rates:</source>
         <translation>Décimales pour les avances :</translation>
     </message>
+    <message>
+        <source>Tab regions</source>
+        <translation>Régions d’attache</translation>
+    </message>
+    <message>
+        <source>Snap to contour</source>
+        <translation>Accrochage au contour</translation>
+    </message>
+    <message>
+        <source>Draw manually</source>
+        <translation>Dessiner manuellement</translation>
+    </message>
+    <message>
+        <source>Default tab placement:</source>
+        <translation>Placement des attaches par défaut :</translation>
+    </message>
+    <message>
+        <source>Remaining tab length:</source>
+        <translation>Longueur d’attache restante :</translation>
+    </message>
+    <message>
+        <source>Square side = tool diameter + tab length. Tab top in Z is set separately.</source>
+        <translation>Côté du carré = diamètre d’outil + longueur d’attache. Le dessus en Z se règle séparément.</translation>
+    </message>
 </context>
 <context>
     <name>MyDropDownMenu</name>
@@ -4540,6 +4564,10 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
         <source>Decimal places used only for GUI display; stored values retain full precision.</source>
         <translation>Décimales utilisées uniquement pour l’affichage ; les valeurs enregistrées conservent toute leur précision.</translation>
     </message>
+    <message>
+        <source>Default placement mode and remaining tab length in configuration units.</source>
+        <translation>Mode de placement par défaut et longueur d’attache restante dans les unités de configuration.</translation>
+    </message>
 </context>
 <context>
     <name>CfgListEdit</name>
@@ -5473,12 +5501,176 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
       <translation>Modifier les régions d’attaches importées</translation>
     </message>
     <message>
-      <source>Finish tab editing</source>
-      <translation>Terminer l’édition des attaches</translation>
-    </message>
-    <message>
       <source>Tab edit mode</source>
       <translation>Mode d’édition des attaches</translation>
     </message>
-  </context>
+      <message>
+      <source>Assignment</source>
+      <translation>Affectation</translation>
+    </message>
+    <message>
+      <source>Change assignment…</source>
+      <translation>Modifier l’affectation…</translation>
+    </message>
+    <message>
+      <source>Changes affect every linked operation. Remove assignment to exclude only one operation.</source>
+      <translation>Les modifications affectent toutes les opérations liées. Supprimer l’affectation pour exclure une seule opération.</translation>
+    </message>
+    <message>
+      <source>Choose assignment…</source>
+      <translation>Choisir une affectation…</translation>
+    </message>
+    <message>
+      <source>Clear local exclusions ({0})</source>
+      <translation>Réinitialiser les exclusions locales ({0})</translation>
+    </message>
+    <message>
+      <source>DXF</source>
+      <translation>DXF</translation>
+    </message>
+    <message>
+      <source>Delete region…</source>
+      <translation>Supprimer la région…</translation>
+    </message>
+    <message>
+      <source>Delete this region globally? {0} effective operations are affected. This can be undone.</source>
+      <translation>Supprimer cette région globalement ? {0} opérations effectives sont concernées. Cette action peut être annulée.</translation>
+    </message>
+    <message>
+      <source>Draw a rectangle. Escape cancels.</source>
+      <translation>Tracer un rectangle. Échap annule.</translation>
+    </message>
+    <message>
+      <source>Draw new tab region…</source>
+      <translation>Tracer une nouvelle région d’attache…</translation>
+    </message>
+    <message>
+      <source>Edit tab region</source>
+      <translation>Modifier la région d’attache</translation>
+    </message>
+    <message>
+      <source>Enter valid tab height and positive feeds.</source>
+      <translation>Saisir une hauteur d’attache valide et des avances positives.</translation>
+    </message>
+    <message>
+      <source>Global</source>
+      <translation>globale</translation>
+    </message>
+    <message>
+      <source>Manual</source>
+      <translation>manuelle</translation>
+    </message>
+    <message>
+      <source>Name</source>
+      <translation>Nom</translation>
+    </message>
+    <message>
+      <source>No effective tabs</source>
+      <translation>sans attache effective</translation>
+    </message>
+    <message>
+      <source>Remove assignment</source>
+      <translation>Supprimer l’affectation</translation>
+    </message>
+    <message>
+      <source>Selected operations</source>
+      <translation>opérations sélectionnées</translation>
+    </message>
+    <message>
+      <source>Source / effect</source>
+      <translation>Source / effet</translation>
+    </message>
+    <message>
+      <source>Step</source>
+      <translation>étape d’usinage</translation>
+    </message>
+    <message>
+      <source>Tab region</source>
+      <translation>Région d’attache</translation>
+    </message>
+    <message>
+      <source>Tab region {0}</source>
+      <translation>Région d’attache {0}</translation>
+    </message>
+    <message>
+      <source>Tab regions</source>
+      <translation>Régions d’attaches</translation>
+    </message>
+    <message>
+      <source>Tab regions · 2D editor</source>
+      <translation>Régions d’attaches · Éditeur 2D</translation>
+    </message>
+    <message>
+      <source>{0} operations</source>
+      <translation>{0} opérations</translation>
+    </message>
+    <message>
+      <source>{0} tabs</source>
+      <translation>{0} attaches</translation>
+    </message>
+    <message>
+      <source>Imported tab regions</source>
+      <translation>Régions d’attaches importées</translation>
+    </message>
+    <message>
+      <source>Linked contours are highlighted; their machining parameters are not selected for editing.</source>
+      <translation>Les contours liés sont mis en évidence ; leurs paramètres d’usinage ne sont pas sélectionnés pour modification.</translation>
+    </message>
+    <message>
+      <source>Tab {0}</source>
+      <translation>Attache {0}</translation>
+    </message>
+    <message>
+      <source>No intersecting contour. Change the region.</source>
+      <translation>Aucun contour traversant. Modifier la région.</translation>
+    </message>
+    <message>
+        <source>Enter a positive size. Enter confirms; Escape cancels.</source>
+        <translation>Saisir une dimension positive. Entrée confirme ; Échap annule.</translation>
+    </message>
+    <message>
+        <source>Contour {0} · {1}</source>
+        <translation>Contour {0} · {1}</translation>
+    </message>
+    <message>
+        <source>Align tab region</source>
+        <translation>Aligner la région d’attache</translation>
+    </message>
+    <message>
+        <source>Choose original contour</source>
+        <translation>Choisir le contour d’origine</translation>
+    </message>
+    <message>
+        <source>Alignment needs exactly two crossings with an original contour.</source>
+        <translation>L’alignement nécessite exactement deux intersections avec un contour d’origine.</translation>
+    </message>
+    <message>
+        <source>Snap to contour</source>
+        <translation>Accrochage au contour</translation>
+    </message>
+    <message>
+        <source>Draw manually</source>
+        <translation>Dessiner manuellement</translation>
+    </message>
+    <message>
+        <source>Click an original contour to place a tab. Escape cancels.</source>
+        <translation>Cliquer sur un contour d’origine pour placer une attache. Échap annule.</translation>
+    </message>
+    <message>
+        <source>Tab placement</source>
+        <translation>Placement des attaches</translation>
+    </message>
+    <message>
+        <source>{0} · Contour {1} · T{2} · Ø{3} {4}</source>
+        <translation>{0} · Contour {1} · T{2} · Ø{3} {4}</translation>
+    </message>
+    <message>
+        <source>No selected machining contour intersects this region.</source>
+        <translation>Aucun contour d’usinage sélectionné ne traverse cette région.</translation>
+    </message>
+    <message>
+        <source>Select a contour or machining operation before drawing a tab.</source>
+        <translation>Sélectionner un contour ou une opération avant de dessiner une attache.</translation>
+    </message>
+</context>
 </TS>

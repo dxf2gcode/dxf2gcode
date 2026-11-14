@@ -87,6 +87,16 @@ def build_application_config_widgets(config):
             ("decimals_angle", CfgSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Decimal places for angles:")))),
             ("decimals_feed", CfgSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Decimal places for feed rates:")))),
         ])),
+        ("Tab_Regions", OrderedDict([
+            ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "General settings"))),
+            ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Tab regions")))),
+            ("creation_mode", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Default tab placement:")), item_labels={
+                "snap": tr(QT_TRANSLATE_NOOP('MyConfig', "Snap to contour")),
+                "manual": tr(QT_TRANSLATE_NOOP('MyConfig', "Draw manually")),
+            })),
+            ("tab_length", CfgDoubleSpinBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Remaining tab length:")), coordinate_unit)),
+            ("__intro__", CfgNote(tr(QT_TRANSLATE_NOOP('MyConfig', "Square side = tool diameter + tab length. Tab top in Z is set separately.")))),
+        ])),
         ("Axis_letters", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "Machine config"))),
             ("__subtitle__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Axes' identifiers")))),

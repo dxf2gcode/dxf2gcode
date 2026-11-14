@@ -34,6 +34,28 @@ def planned(contour, path, split, skipped=0, closed=False, **settings):
 
 
 class TestNominalTabs(unittest.TestCase):
+    def test_candidate_intersection_requires_interior_not_edge_or_corner_contact(self):
+        from dxf2gcode.domain.toolpath.tabs import contour_crosses_region
+        contour = (line((0, 0), (10, 0)),)
+        for polygon, expected in ((region(4, 6, -.1, .1), True),
+                                  (region(4, 6, 0, 2), False),
+                                  (region(10, 12, 0, 2), False),
+                                  (region(4, 6, 1, 2), False)):
+            self.assertEqual(contour_crosses_region(contour, polygon.vertices), expected)
+            split, _ = map_tabs(contour, contour, (polygon,), 0, False)
+            self.assertEqual(any(g.kind == 'break' for g in split), expected)
+
+    def test_transformed_contour_and_path_split_in_the_same_absolute_frame(self):
+        original = replace(line((0, 0), (10, 0)), absolute=line((7, 4), (17, 4)))
+        split, skipped = map_tabs((original,), (original,), (region(11, 13, 3.9, 4.1),), 0, False)
+        self.assertFalse(skipped)
+        self.assertEqual(split[0].start, (7, 4))
+        self.assertEqual(split[-1].end, (17, 4))
+        tab = next(g for g in split if g.kind == 'break')
+        self.assertAlmostEqual(tab.start[0], 11)
+        self.assertAlmostEqual(tab.end[0], 13)
+        self.assertEqual(tab.start[1], 4)
+
     def test_region_only_reaches_nominal_line_for_both_offset_sides_and_radii(self):
         contour = (line((0, 0), (10, 0)),)
         for offset in (-3, -1, 0, 1, 3):
@@ -93,7 +115,8 @@ class TestNominalTabs(unittest.TestCase):
     def test_boundary_exactly_at_round_join_is_ambiguous_and_skipped(self):
         contour = (line((0, 0), (10, 0)), line((10, 0), (10, 10)))
         path = (line((0, -2), (10, -2)), arc((10, 0), 2, -pi/2, pi/2), line((12, 0), (12, 10)))
-        split, skipped = map_tabs(contour, path, (region(8, 11, -1, 0),), 2, False)
+        polygon = TabRegion(((8, -1), (11, -1), (10, 0), (8, 1)), -1, 200, 100)
+        split, skipped = map_tabs(contour, path, (polygon,), 2, False)
         self.assertEqual(len(skipped), 1)
         self.assertFalse(any(g.kind == 'break' for g in split))
 

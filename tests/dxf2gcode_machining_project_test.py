@@ -172,15 +172,15 @@ class TestMachiningProject(GoldenTestBase):
         parent = _ParentStub(layers)
         text = Project(parent).export_current()
         restored = decode_project(text)
-        self.assertEqual(restored.version, 2.0)
+        self.assertEqual(restored.version, 2.1)
         malformed = json.loads(text)
         malformed['machining']['steps'][0]['entries'][0]['geometry_id'] = 'unknown'
         with self.assertRaises(ValueError):
             decode_project(json.dumps(malformed))
         with self.assertRaises(ValueError):
-            decode_project(text.replace('"version": 2.0', '"version": 2.0, "version": 2.0'))
+            decode_project(text.replace('"version": 2.1', '"version": 2.1, "version": 2.1'))
         with self.assertRaises(ValueError):
-            decode_project(text.replace('"version": 2.0', '"version": NaN'))
+            decode_project(text.replace('"version": 2.1', '"version": NaN'))
         with self.assertRaises(Exception):
             decode_project('__import__("os").system("echo unsafe")')
 
@@ -213,7 +213,7 @@ class TestMachiningProject(GoldenTestBase):
                 session.load(text, compleet=False)
                 expected = serialize_gcode(parent.layerContents[0].shapes[0], make_postpro())
                 document = decode_project(session.export_current())
-                self.assertEqual(document.version, 2.0)
+                self.assertEqual(document.version, 2.1)
                 view = session.machining_drawing.materialize()[0].shapes[0]
                 prepare_shape(view, build_preview=False)
                 self.assertEqual(serialize_gcode(view, make_postpro()), expected)

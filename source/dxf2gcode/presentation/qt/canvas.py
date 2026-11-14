@@ -171,10 +171,6 @@ class MyDropDownMenu(QMenu):
         if panel is not None and panel.binding is not None:
             if panel.modifiers.mode:
                 self.clear()
-                self.addAction(panel.modifiers.tr('Finish tab editing'), lambda: panel.modifiers.set_mode(False))
-                if panel.modifiers.context is not None:
-                    self.addAction(panel.modifiers.tr('Remove region'), panel.modifiers.remove)
-                self.exec(position)
                 return
             if self.selectedItems:
                 identities = panel.canvas_operation_ids(self.selectedItems)
@@ -198,6 +194,8 @@ class MyDropDownMenu(QMenu):
                 self.addSeparator()
                 self.addAction(panel.tr('Assign machining…'), lambda checked=False:
                                panel.assign_machining(shapes=self.selectedItems, global_position=position))
+            self.addSeparator()
+            self.addAction(panel.modifiers.tr('Draw new tab region…'), panel.modifiers.start_draw)
             self.exec(position)
             return
 

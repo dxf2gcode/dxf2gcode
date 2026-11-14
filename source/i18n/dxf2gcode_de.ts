@@ -2773,6 +2773,30 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
         <source>Decimal places for feed rates:</source>
         <translation>Nachkommastellen für Vorschübe:</translation>
     </message>
+    <message>
+        <source>Tab regions</source>
+        <translation>Stegregionen</translation>
+    </message>
+    <message>
+        <source>Snap to contour</source>
+        <translation>Fang an Kontur</translation>
+    </message>
+    <message>
+        <source>Draw manually</source>
+        <translation>Manuell zeichnen</translation>
+    </message>
+    <message>
+        <source>Default tab placement:</source>
+        <translation>Standard-Steganlage:</translation>
+    </message>
+    <message>
+        <source>Remaining tab length:</source>
+        <translation>Verbleibende Steglänge:</translation>
+    </message>
+    <message>
+        <source>Square side = tool diameter + tab length. Tab top in Z is set separately.</source>
+        <translation>Quadratseite = Werkzeugdurchmesser + Steglänge. Die Stegoberkante in Z wird separat eingestellt.</translation>
+    </message>
 </context>
 <context>
     <name>MyDropDownMenu</name>
@@ -4577,6 +4601,10 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
         <source>Decimal places used only for GUI display; stored values retain full precision.</source>
         <translation>Nachkommastellen nur für die GUI-Anzeige; gespeicherte Werte behalten die volle Genauigkeit.</translation>
     </message>
+    <message>
+        <source>Default placement mode and remaining tab length in configuration units.</source>
+        <translation>Standard-Anlagemodus und verbleibende Steglänge in Konfigurationseinheiten.</translation>
+    </message>
 </context>
 <context>
     <name>CfgListEdit</name>
@@ -5510,12 +5538,176 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
       <translation>Importierte Stegregionen bearbeiten</translation>
     </message>
     <message>
-      <source>Finish tab editing</source>
-      <translation>Stegbearbeitung beenden</translation>
-    </message>
-    <message>
       <source>Tab edit mode</source>
       <translation>Steg-Bearbeitungsmodus</translation>
     </message>
-  </context>
+      <message>
+      <source>Assignment</source>
+      <translation>Zuordnung</translation>
+    </message>
+    <message>
+      <source>Change assignment…</source>
+      <translation>Zuordnung ändern …</translation>
+    </message>
+    <message>
+      <source>Changes affect every linked operation. Remove assignment to exclude only one operation.</source>
+      <translation>Änderungen wirken auf alle verknüpften Bearbeitungen. Mit „Zuordnung entfernen“ nur eine Bearbeitung ausschließen.</translation>
+    </message>
+    <message>
+      <source>Choose assignment…</source>
+      <translation>Zuordnung wählen …</translation>
+    </message>
+    <message>
+      <source>Clear local exclusions ({0})</source>
+      <translation>Lokale Ausnahmen zurücksetzen ({0})</translation>
+    </message>
+    <message>
+      <source>DXF</source>
+      <translation>DXF</translation>
+    </message>
+    <message>
+      <source>Delete region…</source>
+      <translation>Region löschen …</translation>
+    </message>
+    <message>
+      <source>Delete this region globally? {0} effective operations are affected. This can be undone.</source>
+      <translation>Diese Region global löschen? Betroffen sind {0} wirksame Bearbeitungen. Dies lässt sich rückgängig machen.</translation>
+    </message>
+    <message>
+      <source>Draw a rectangle. Escape cancels.</source>
+      <translation>Rechteck aufziehen. Escape bricht ab.</translation>
+    </message>
+    <message>
+      <source>Draw new tab region…</source>
+      <translation>Neue Stegregion zeichnen …</translation>
+    </message>
+    <message>
+      <source>Edit tab region</source>
+      <translation>Stegregion bearbeiten</translation>
+    </message>
+    <message>
+      <source>Enter valid tab height and positive feeds.</source>
+      <translation>Gültige Stegoberkante und positive Vorschübe eingeben.</translation>
+    </message>
+    <message>
+      <source>Global</source>
+      <translation>global</translation>
+    </message>
+    <message>
+      <source>Manual</source>
+      <translation>manuell</translation>
+    </message>
+    <message>
+      <source>Name</source>
+      <translation>Name</translation>
+    </message>
+    <message>
+      <source>No effective tabs</source>
+      <translation>ohne wirksame Stege</translation>
+    </message>
+    <message>
+      <source>Remove assignment</source>
+      <translation>Zuordnung entfernen</translation>
+    </message>
+    <message>
+      <source>Selected operations</source>
+      <translation>ausgewählte Bearbeitungen</translation>
+    </message>
+    <message>
+      <source>Source / effect</source>
+      <translation>Herkunft / Wirkung</translation>
+    </message>
+    <message>
+      <source>Step</source>
+      <translation>Bearbeitungsschritt</translation>
+    </message>
+    <message>
+      <source>Tab region</source>
+      <translation>Stegregion</translation>
+    </message>
+    <message>
+      <source>Tab region {0}</source>
+      <translation>Stegregion {0}</translation>
+    </message>
+    <message>
+      <source>Tab regions</source>
+      <translation>Stegregionen</translation>
+    </message>
+    <message>
+      <source>Tab regions · 2D editor</source>
+      <translation>Stegregionen · 2D-Bearbeitung</translation>
+    </message>
+    <message>
+      <source>{0} operations</source>
+      <translation>{0} Bearbeitungen</translation>
+    </message>
+    <message>
+      <source>{0} tabs</source>
+      <translation>{0} Haltestege</translation>
+    </message>
+    <message>
+      <source>Imported tab regions</source>
+      <translation>Importierte Stegregionen</translation>
+    </message>
+    <message>
+      <source>Linked contours are highlighted; their machining parameters are not selected for editing.</source>
+      <translation>Verknüpfte Konturen sind hervorgehoben; ihre Bearbeitungsparameter sind nicht zum Ändern ausgewählt.</translation>
+    </message>
+    <message>
+      <source>Tab {0}</source>
+      <translation>Steg {0}</translation>
+    </message>
+    <message>
+      <source>No intersecting contour. Change the region.</source>
+      <translation>Keine überschneidende Kontur. Region ändern.</translation>
+    </message>
+    <message>
+        <source>Enter a positive size. Enter confirms; Escape cancels.</source>
+        <translation>Positive Größe eingeben. Eingabe bestätigt; Escape bricht ab.</translation>
+    </message>
+    <message>
+        <source>Contour {0} · {1}</source>
+        <translation>Kontur {0} · {1}</translation>
+    </message>
+    <message>
+        <source>Align tab region</source>
+        <translation>Stegregion ausrichten</translation>
+    </message>
+    <message>
+        <source>Choose original contour</source>
+        <translation>Originalkontur auswählen</translation>
+    </message>
+    <message>
+        <source>Alignment needs exactly two crossings with an original contour.</source>
+        <translation>Zum Ausrichten sind genau zwei Schnittpunkte mit einer Originalkontur nötig.</translation>
+    </message>
+    <message>
+        <source>Snap to contour</source>
+        <translation>Fang an Kontur</translation>
+    </message>
+    <message>
+        <source>Draw manually</source>
+        <translation>Manuell zeichnen</translation>
+    </message>
+    <message>
+        <source>Click an original contour to place a tab. Escape cancels.</source>
+        <translation>Originalkontur anklicken, um einen Steg anzulegen. Escape bricht ab.</translation>
+    </message>
+    <message>
+        <source>Tab placement</source>
+        <translation>Steganlage</translation>
+    </message>
+    <message>
+        <source>{0} · Contour {1} · T{2} · Ø{3} {4}</source>
+        <translation>{0} · Kontur {1} · T{2} · Ø{3} {4}</translation>
+    </message>
+    <message>
+        <source>No selected machining contour intersects this region.</source>
+        <translation>Keine ausgewählte Bearbeitungskontur schneidet diese Region.</translation>
+    </message>
+    <message>
+        <source>Select a contour or machining operation before drawing a tab.</source>
+        <translation>Vor dem Zeichnen eines Stegs eine Kontur oder Bearbeitung auswählen.</translation>
+    </message>
+</context>
 </TS>

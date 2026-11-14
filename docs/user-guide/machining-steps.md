@@ -67,32 +67,164 @@ definitions for unselected steps.
 
 ## Choose which operation to edit
 
-### Imported holding tabs
+### Holding tabs from DXF and manual regions
 
 Imported **BREAKS:** regions appear in a special **Holding tabs** group under
-each machining step whose planned path they actually affect. These are references
+each machining contour whose planned path they actually affect. These are references
 to the same global regions, not additional contours or operations. They have no
 tool, export checkbox or position in the machining sequence. The group distinguishes
 the number of source regions from the resulting tab segments; repeated depth passes
-do not multiply the segment count. Regions without an effective tab appear under
-**Imported tab regions — currently ineffective**.
+do not multiply the segment count. The separate **Tab regions** section in Geometry
+lists all project regions, including disabled regions and those without effective
+tabs. Original BREAKS shapes remain in Entities/Layers with region names and icons;
+they do not participate in normal contour selection. Removed project regions leave
+their original DXF geometry visible with a struck-through region name.
 
 Normal canvas clicks, rectangle selection and original-layer selection skip these
-regions. Select a region in its holding-tab group, or enable **Tab edit mode** in
-the machining toolbar, to display region outlines in the existing magenta colour.
+regions. Selecting a machining contour automatically displays the associated
+regions as thin dashed magenta outlines. Selecting original geometry shows the
+union of regions for its linked operations, drawing shared regions only once.
+Selecting a region in either tree highlights its affected contours; this alone
+does not enable editing. Enable **Tab edit mode** to select outlines, move regions
+and use the four corner handles of rectangular regions.
+
+Clicking a BREAKS layer highlights all regions belonging to that layer and all
+machining operations they actually affect. Clicking **Tab regions** below a
+machining contour does the same for that group's regions. A global region also
+highlights its affected operations in other steps. Repeated clicks retain the
+selection; double-clicking a group expands/collapses it without deselecting paths.
+
+Selecting an entire machining step highlights its operations and region descendants
+in the tree as well as their paths in the canvas. Lighter tree highlighting marks
+**derived references**. It does not add those rows to the editable selection:
+step selection still edits step defaults; region selection edits region properties.
+A selected region group shows a read-only summary. Export checkboxes and drag
+targets do not change merely because descendants are highlighted.
+
+Red denotes selected original geometry; blue denotes the machining/tool-centre
+path, which can be offset from that original. Magenta denotes tab movements and
+the dashed region outlines. Region references now highlight the associated
+machining paths consistently instead of highlighting only the original contour.
+The established movement colours remain unchanged.
 Its icon shows a dashed region with a pencil and sits directly beside **Create**
 on the left, with the machining actions. Tree expand/collapse controls remain
 on the right. The button stays highlighted while tab editing is active.
 In this mode, clicking an outline selects a region. Its editor offers tab-top Z,
-XY/Z feeds, activation and removal. Changes affect **every machining operation**
-using that global region. Undo/Redo restores the complete change. Removing a region
-removes its machining assignment while retaining the original DXF geometry.
-The original BREAKS layer also offers **Edit imported tab regions** in its context
-menu. Exit using the toolbar toggle or **Finish tab editing** in the canvas menu.
+XY/Z feeds and activation. Changes affect every operation using that region.
+**Change assignment…** offers Global, Step or Selected operations. A step assignment
+also applies to future operations added to that step. Operation assignments follow
+their stable IDs when moved. Select the region below a machining contour and use
+**Remove assignment** in the tab parameter area to exclude only that operation,
+retaining the region elsewhere. The button is disabled without an operation-specific
+selection. The assignment
+dialog can explicitly clear local exclusions.
 
-The effective tab movements remain part of the normal planned toolpath and export;
-pass selection belongs to the machining contour. Drawing new regions, changing
-their outlines and assigning new local regions are reserved for a later step.
+**Delete region…** removes the project region and all its links after a confirmation
+showing the number of currently affected operations. Original DXF geometry remains.
+Undo/Redo restores the complete change, including region identity and assignments.
+The original BREAKS layer also offers **Edit imported tab regions** in its context
+menu. Exit using the toolbar toggle. There is no special tab context menu in the
+canvas, machining tree or region list; use the direct controls and double-click editing.
+
+First select the intended original contours, machining steps or individual
+operations. Original-contour selection covers **all linked operations**. Selecting
+one or more operations covers **only those operations**; a step covers its
+contained operations. No prior selection means no new region can be created.
+Switch on **Tab edit mode** in the Machining toolbar to start drawing immediately.
+You can also use **Draw new tab region…** from the normal canvas context menu or
+the **+** in the Geometry region section. Always drag out a rectangle.
+The default is **Snap to contour**: on release, the rectangle becomes an aligned square.
+Its side length is the
+selected machining tool's diameter plus the configured remaining tab length:
+for example, Ø4 mm + 2 mm produces a 6 × 6 mm square. Only selected operations
+whose original contours intersect the drawn region receive it. Other contours are
+not assigned automatically. Different selected tools/contours can require separate
+automatic squares; those are created together in one undo action.
+The regions are assigned to the eligible selection and created immediately, without an
+editing dialog. Double-click a region in the canvas, machining tree or geometry
+region list to edit its name, placement mode, height, feeds and assignment.
+The current machining selection supplies
+the proposed assignment and feeds. The name defaults to the first unused localized
+**Tab 1**, **Tab 2**, etc. (German: **Steg 1**). It remains freely editable;
+existing saved names are not renamed when the interface language changes.
+The first height defaults to workpiece top; later regions use the last
+confirmed height. This is an initial value to review, not a guaranteed tab thickness.
+The assignment list contains only operations whose **original contours pass through
+the region interior**. Mere edge/corner contact is insufficient. Repeated machining
+uses of the same intersecting contour remain separate choices. Steps are offered
+only when they contain an eligible operation. One eligible operation is preselected
+in the assignment editor when applicable. With no selected intersection, a message is shown and no region is created;
+redraw the region. Global scope covers all eligible operations, subject
+to any retained local exclusions. Eligibility does not depend on cutter radius,
+tab height, export activation or the currently selected tab pass.
+Dragging provides a temporary preview from the same planner. Changes are committed
+only on release; Escape leaves the project unchanged.
+After creating a new region, placement remains active so you can add the next
+region on another contour immediately. An empty click clears the region and associated highlighting
+without leaving tab mode. The selected region's handles and measurement labels
+remain usable while the drawing session is active. Escape ends drawing.
+The explicit target selection is retained for successive regions, including while
+you inspect a created region. Selecting different contours/operations replaces
+these targets; clicking empty canvas clears them. Select the next intended contour
+or operation before drawing again. Dragging without targets only selects geometry
+and cannot create a region in that same gesture.
+In **Configuration → General settings → Tab regions**, choose the default
+placement mode and remaining tab length (initially 2 in configuration units;
+the standard profile uses mm). The configured length is converted to the drawing
+unit before adding the project tool diameter. The **Tab placement** selection
+beside the tab edit switch chooses **Snap to contour** or
+**Draw manually** for new regions during the session. It does not change an
+existing selected region. Use that region's double-click dialog for its own mode.
+The selection is visible while tab mode is active. Each region stores its
+own **Snap to contour** or **Draw manually** setting in the project. Switching a
+region to snap, or resizing one already in snap mode, applies the configured square
+size. Manual mode retains the dragged rectangle. A click without dragging
+selects another original contour. Changing a machining tool's diameter resizes its
+automatic regions to the new diameter plus the configured tab length. Manual
+regions keep their dimensions. If a shared automatic region needs different sizes
+for different machining uses, it is split into separate operation assignments;
+unaffected uses retain their previous shape. Tool change, resizing and splitting
+are one undo action. A configuration change alone does not resize existing regions.
+Their canvas measurement fields remain
+editable; a direct size edit switches that region to manual so its entered size
+is retained. Existing imported/older regions default to manual. The square-size
+rule is a placement preset; inspect the actual holding
+tab at corners or on tight curves. The Z top is set separately as before.
+The tree's tab count is the number of linked regions shown below the contour;
+one region can produce several raised toolpath sections without increasing it.
+
+Click a region once to select it. The first press/drag only selects; it cannot
+change an unselected region's geometry. Once selected, drag its outline/interior
+to move it, or a corner handle to resize it. Double-click opens the region dialog.
+Measurement fields appear only while a selected region is at rest. They are hidden
+during drawing, moving and resizing and reappear on release. Each
+completed gesture is one undo action. Regions follow whole-drawing transforms.
+Editing uses 2D; starting from the 3D canvas opens a separate 2D editing window.
+In tab-editing mode, measurement fields sit at the midpoints of the upper and right
+edges. They show only the number and project unit, without width/height captions,
+and are shown only for the resting selection. Hover highlights a measurement; click it to
+enter a positive size. **Enter** confirms, **Escape** cancels. A typed change keeps
+the centre and the other edge length fixed and creates one undo entry. Entering
+a value switches that region from automatic to manual, including explicitly
+typing its existing value again; simply opening/cancelling the field does not.
+Display
+precision follows the configured mm/in settings; input and stored values keep
+their full precision.
+
+Hold **Ctrl** while dragging (including drawing or resizing) to align the rectangle
+with two intersections of an original contour. The rectangle is centred between
+those contacts, with its width axis along their connecting line; its current width
+and height are retained. This uses original geometry, independently of cutter
+compensation. With several eligible original contours, choose one on release;
+cancelling that choice keeps the unsnapped drag result. Repeated machining uses
+of the same original contour count as one alignment target. With no unambiguous
+pair of contacts, alignment is skipped with a message. There is no automatic
+placement; region creation and subsequent editing remain separate.
+
+Effective tab
+movements remain part of the shared plan and export; pass selection belongs to the
+machining contour. Projects now save as **.d2g 2.1**. Versions 2.0 and legacy projects
+remain readable, but older program versions cannot open the new files.
 
 Use a **closed polygon**, for example a rectangle, for a tab region. Tab boundaries
 are determined on the **original contour**. With software cutter compensation,

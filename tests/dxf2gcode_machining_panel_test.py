@@ -499,6 +499,8 @@ def exercise_panel(window, app, folder):
         qm = Path(os.environ.get('D2G_TRANSLATION_DIR', str(ROOT / 'source/i18n'))) / ('dxf2gcode_' + language + '.qm')
         assert translator.load(str(qm))
         app.installTranslator(translator)
+        assert panel.modifiers.assignment_defaults().name == {
+            'de': 'Steg 1', 'fr': 'Attache 1', 'ru': 'Перемычка 1'}[language]
         for owner, name in ((panel, 'MachiningPanel'), (panel.parameter_editor, 'MachiningParameters'), (window.geometry_panel, 'GeometryPanel'), (panel.canvas_preview, 'MachiningPreview'), (panel.modifiers, 'TabModifiers')):
             context = next(c for c in ET.parse(ROOT / ('source/i18n/dxf2gcode_' + language + '.ts')).findall('context')
                            if c.findtext('name') == name)
@@ -535,7 +537,8 @@ def exercise_tab_modifiers(window, app, folder):
         root = panel.tree.topLevelItem(i)
         assert root.data(0, ROLE)[0] == 'step'
         assert panel.current_step() is None or panel.current_step().kind != 'break'
-    for identity, (_, entry, source) in records.items():
+    for identity, region in records.items():
+        source = panel.binding.sources[region.geometry_id]
         assert identity not in panel.entry_items
         window.TreeHandler.setShapeSelected(source, True)
         assert not source.isSelected()
@@ -543,10 +546,23 @@ def exercise_tab_modifiers(window, app, folder):
         assert not node.flags() & Qt.ItemFlag.ItemIsUserCheckable
         assert not node.flags() & Qt.ItemFlag.ItemIsDragEnabled
     identity = next(iter(records))
+    # Badges count the listed region objects, not planner fragments/passes.
+    from copy import deepcopy
+    usage_before = deepcopy(tabs.usage)
+    step_id = next(iter(tabs.usage))
+    region_id = next(iter(tabs.usage[step_id]))
+    piece = next(iter(tabs.usage[step_id][region_id]))
+    tabs.usage[step_id][region_id].add((piece[0], piece[1], ('extra-piece',)))
+    tabs.populate_tree()
+    for group in tabs.groups:
+        assert group.parent().text(0).endswith(tabs.tr('{0} tabs').format(group.childCount()))
+    tabs.usage = usage_before
+    tabs.populate_tree()
     panel.tree.setCurrentItem(tabs.nodes[identity])
     app.processEvents()
-    assert tabs.mode and tabs.context == identity
+    assert not tabs.mode and tabs.context == identity
     assert tabs.editor.isVisible() and panel.parameter_editor.frame.isHidden()
+    tabs.set_mode(True)
     assert len(tabs.paths()) == 4
     assert tabs.hit(tabs.paths()[identity].pointAtPercent(0))
     # Real mouse events supply QPoint, whereas path APIs require QPointF.
@@ -562,14 +578,13 @@ def exercise_tab_modifiers(window, app, folder):
         assert tabs.context == selected
         assert panel.tree.currentItem().data(0, ROLE) == ('modifier', selected)
     original = panel.binding.project.to_dict()
-    field = tabs.fields['axis3_mill_depth']
+    field = tabs.fields['height']
     field.setFocus()
     field.selectAll()
     QTest.keyClicks(field, '-0.5')
     QTest.keyClick(field, Qt.Key.Key_Return)
     app.processEvents()
-    step, entry, _ = tabs.records()[identity]
-    assert panel.binding.project.resolve(step, entry)[0]['axis3_mill_depth'] == -0.5
+    assert tabs.records()[identity].height == -0.5
     from dxf2gcode.domain.project.machining_project import MachiningProject
     data = panel.binding.project.to_dict()
     assert MachiningProject.from_dict(json.loads(json.dumps(data))).to_dict() == data
@@ -580,11 +595,15 @@ def exercise_tab_modifiers(window, app, folder):
     tabs.select(identity)
     tabs.enabled.click()
     assert sum(len(regions) for regions in tabs.usage.values()) < count
-    assert tabs.nodes[identity].parent().data(0, ROLE) == ('modifier_group', 'unused')
+    assert identity not in tabs.nodes
+    assert tabs.catalog.topLevelItemCount() == 4
     assert panel.execute(panel.commands.undo)
     assert panel.binding.project.to_dict() == original
     tabs.select(identity)
-    tabs.remove_button.click()
+    from unittest.mock import patch
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMessageBox
+    with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.Yes):
+        tabs.remove_button.click()
     assert identity not in tabs.records() and len(window.shapes) == 5
     assert panel.execute(panel.commands.undo)
     assert panel.binding.project.to_dict() == original
@@ -600,6 +619,14 @@ def exercise_tab_modifiers(window, app, folder):
     assert panel.execute(panel.commands.undo)
     assert panel.binding.project.to_dict() == original
     tabs.set_mode(False)
+    tabs.context = None
+    for source in panel.binding.sources.values():
+        source.setSelected(False)
+    panel.commands.selection = ()
+    panel.busy = True
+    panel.tree.clearSelection()
+    panel.busy = False
+    panel.show_parameters()
     assert not tabs.paths() and tabs.editor.isHidden()
     output = folder / 'break-modifiers-unchanged.ngc'
     assert window.exportShapes(saveas=str(output))
@@ -608,6 +635,666 @@ def exercise_tab_modifiers(window, app, folder):
         return '\n'.join(line for line in path.read_text().splitlines()
                          if not line.startswith('('))
     assert program(output) == program(folder / 'break-example.ngc')
+    exercise_manual_regions(window, app, folder)
+
+
+def exercise_manual_regions(window, app, folder):
+    from importlib import import_module
+    from unittest.mock import patch
+    from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
+    from dxf2gcode.presentation.qt.qt_compat.QtGui import QMouseEvent
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QLineEdit, QComboBox, QDialogButtonBox, QMessageBox, QTreeWidget, QLabel, QMenu
+    from dxf2gcode.presentation.qt.machining_panel import ROLE
+    from dxf2gcode.adapters.toolpath.planning import snapshot_geometry
+    from dxf2gcode.domain.toolpath.tabs import point
+    from dxf2gcode.application.tab_regions import world_vertices
+    Qt = QtCore.Qt
+    QTest = import_module('PyQt%d.QtTest' % PYQT_VERSION).QTest
+    window.filename = str(ROOT / 'dxf/BreakExample_Circle.dxf')
+    assert window.load()
+    panel, canvas = window.machining_panel, window.canvas
+    tabs = panel.modifiers
+    panel.refresh_preview()
+    exercise_region_selection(window, app)
+    assert panel.binding.project.regions and tabs.groups
+    assert all(group.parent().data(0, ROLE)[0] == 'entry' for group in tabs.groups)
+    assert tabs.catalog.topLevelItemCount() == len(tabs.records())
+    identity = next(iter(panel.entry_items))
+    panel.tree.setCurrentItem(panel.entry_items[identity])
+    panel.entry_items[identity].setSelected(True)
+    app.processEvents()
+    expected = {r.id for r in tabs.records().values() if identity in tabs.affected(r.id)}
+    assert expected and set(tabs.paths()) == expected and not tabs.mode
+    # A global scope does not permit confirming a new, non-intersecting region.
+    from dxf2gcode.application.tab_regions import to_drawing
+    outside = tabs.assignment_defaults()
+    outside.scope = 'global'
+    outside.vertices = to_drawing(panel.binding, ((10000, 10000), (10001, 10000), (10001, 10001), (10000, 10001)))
+    unchanged = panel.binding.project.to_dict()
+    def reject_outside():
+        dialog = app.activeModalWidget()
+        assert dialog.findChild(QTreeWidget, 'regionTargets').topLevelItemCount() == 0
+        assert dialog.findChild(QLabel, 'regionNoIntersection').isVisible()
+        assert not dialog.findChild(QDialogButtonBox).button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+        dialog.reject()
+    QtCore.QTimer.singleShot(0, reject_outside)
+    assert tabs.region_dialog(outside) is None
+    assert panel.binding.project.to_dict() == unchanged
+    imported = next(iter(tabs.records().values()))
+    source = panel.binding.sources[imported.geometry_id]
+    original_view = window.ui.layersShapesTreeView
+    window.ui.mytabWidget.setCurrentWidget(window.geometry_panel)
+    original_index = window.TreeHandler.findLayerItemIndexFromShape(source)
+    original_view.scrollTo(original_index)
+    app.processEvents()
+    QTest.mouseClick(original_view.viewport(), Qt.MouseButton.LeftButton,
+                     pos=original_view.visualRect(original_index).center())
+    assert tabs.context == imported.id and not tabs.mode
+    assert not source.isSelected()
+    window.ui.mytabWidget.setCurrentWidget(panel)
+    panel.tree.clearSelection()
+    panel.tree.setCurrentItem(panel.entry_items[identity])
+    panel.entry_items[identity].setSelected(True)
+    canvas.autoscale()
+    app.processEvents()
+    operation = panel.commands.entries(panel.binding.project, [identity])[0][1]
+    nominal = panel.binding.sources[operation.geometry_id]
+    x, y = point(snapshot_geometry(nominal.geos.abs_el(0)).resolved, .5)
+    radius = max(.5, (nominal.BB.Pe.x-nominal.BB.Ps.x)/30)
+    first = tabs.projection((x-radius, y-radius)).toPoint()
+    last = tabs.projection((x+radius, y+radius)).toPoint()
+    assert canvas.viewport().rect().contains(first) and canvas.viewport().rect().contains(last)
+    count = len(tabs.records())
+    history = len(panel.commands.undo_stack)
+    tabs.creation_mode = 'manual'
+    tabs.set_mode(False)
+    panel.buttons['tabs'].trigger()
+    assert tabs.mode and tabs.drawing and tabs.pending is not None and tabs.context is None
+    assert panel.tab_placement_action.isVisible()
+    untouched = panel.binding.project.to_dict()
+    panel.tab_placement.setCurrentIndex(panel.tab_placement.findData('snap'))
+    assert tabs.pending.placement_mode == 'snap' and tabs.drawing_mode() == 'snap'
+    panel.tab_placement.setCurrentIndex(panel.tab_placement.findData('manual'))
+    assert tabs.pending.placement_mode == 'manual' and panel.binding.project.to_dict() == untouched
+    def mouse_move(position):
+        event = QMouseEvent(QtCore.QEvent.Type.MouseMove, QtCore.QPointF(position),
+            QtCore.QPointF(canvas.viewport().mapToGlobal(position)), Qt.MouseButton.NoButton,
+            Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        app.sendEvent(canvas.viewport(), event)
+    tabs.pending.name = 'Manual tab'
+    tabs.pending.height = -.75
+    QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=first)
+    mouse_move(last)
+    assert not tabs.dimension_labels()
+    tabs.compute_preview()
+    assert tabs.preview_segments
+    QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=last)
+    app.processEvents()
+    assert len(tabs.records()) == count+1 and len(panel.commands.undo_stack) == history+1
+    manual = next(r for r in tabs.records().values() if r.name == 'Manual tab')
+    assert manual.geometry_id == '' and manual.targets == [identity] and manual.height == -.75
+    assert identity in tabs.affected(manual.id)
+    assert tabs.mode and tabs.drawing and tabs.pending is not None
+    panel.tab_placement.setCurrentIndex(panel.tab_placement.findData('snap'))
+    assert tabs.records()[manual.id].placement_mode == 'manual' and tabs.pending.placement_mode == 'snap'
+    panel.tab_placement.setCurrentIndex(panel.tab_placement.findData('manual'))
+    from dxf2gcode.presentation.qt.qt_compat.QtGui import QContextMenuEvent
+    pos = tabs.paths()[manual.id].boundingRect().center().toPoint()
+    with patch.object(QMenu, 'exec') as context_menu:
+        event = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, pos, canvas.viewport().mapToGlobal(pos))
+        app.sendEvent(canvas.viewport(), event)
+        item = tabs.nodes[manual.id]
+        panel.tree.scrollToItem(item)
+        panel.menu(panel.tree.visualItemRect(item).center())
+        context_menu.assert_not_called()
+    assert tabs.catalog.contextMenuPolicy() == Qt.ContextMenuPolicy.PreventContextMenu
+    # The continuing session can select a different original, and an empty
+    # click clears region/derived selection without turning tab mode off.
+    other = next(s for s in panel.binding.sources.values()
+                 if s is not nominal and not s.parentLayer.isBreakLayer())
+    other_point = point(snapshot_geometry(other.geos.abs_el(0)).resolved, .4)
+    QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton,
+                     pos=tabs.projection(other_point).toPoint())
+    app.processEvents()
+    assert tabs.mode and tabs.drawing and other.isSelected() and not nominal.isSelected()
+    assert tabs.context is None and not tabs.selected_regions
+    tabs.select(manual.id)
+    QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton, pos=QtCore.QPoint(8, 8))
+    app.processEvents()
+    assert tabs.mode and tabs.drawing and tabs.context is None and not tabs.selected_regions
+    assert not tabs.related_operations and not panel.tree.selectedItems()
+    assert not any(s.isSelected() for s in panel.binding.sources.values())
+    assert not tabs.draw_operations
+    second_first = tabs.projection((other_point[0]-radius, other_point[1]-radius)).toPoint()
+    second_last = tabs.projection((other_point[0]+radius, other_point[1]+radius)).toPoint()
+    QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=second_first)
+    mouse_move(second_last)
+    QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=second_last)
+    app.processEvents()
+    assert len(tabs.records()) == count+1
+    QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton,
+                     pos=tabs.projection(other_point).toPoint())
+    assert tabs.draw_operations
+    QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=second_first)
+    mouse_move(second_last)
+    QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=second_last)
+    app.processEvents()
+    assert len(tabs.records()) == count+2 and tabs.drawing and tabs.mode
+    second_id = next(r.id for r in tabs.records().values() if r.id != manual.id and not r.geometry_id)
+    other_operations = {e.id for s in panel.binding.project.steps for e in s.entries
+                        if getattr(e, 'geometry_id', None) == other.geometry_id}
+    assert tabs.affected(second_id) == other_operations
+    panel.undo()
+    assert len(tabs.records()) == count+1 and tabs.mode
+    tabs.select(manual.id)
+    previous_transform = canvas.transform()
+    previous_scroll = canvas.horizontalScrollBar().value(), canvas.verticalScrollBar().value()
+    canvas.fitInView(QtCore.QRectF(x-1.1*radius, -y-1.1*radius, 2.2*radius, 2.2*radius), Qt.AspectRatioMode.KeepAspectRatio)
+    app.processEvents()
+    exercise_region_dimensions(window, app, manual.id)
+    canvas.fitInView(QtCore.QRectF(x-1.1*radius, -y-1.1*radius, 2.2*radius, 2.2*radius), Qt.AspectRatioMode.KeepAspectRatio)
+    app.processEvents()
+    def drag(start, end):
+        QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=start)
+        assert tabs.gesture is not None
+        mouse_move(end)
+        QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=end)
+        app.processEvents()
+    before = panel.binding.project.to_dict()
+    center = tabs.paths()[manual.id].boundingRect().center().toPoint()
+    drag(center, center+QtCore.QPoint(15, 8))
+    assert panel.binding.project.to_dict() != before
+    assert len(panel.commands.undo_stack) == history+2
+    moved = panel.binding.project.to_dict()
+    corner = tabs.projection(world_vertices(panel.binding, tabs.records()[manual.id])[0]).toPoint()
+    drag(corner, corner+QtCore.QPoint(-8, 5))
+    assert panel.binding.project.to_dict() != moved
+    assert len(panel.commands.undo_stack) == history+3
+    stable = panel.binding.project.to_dict()
+    center = tabs.paths()[manual.id].boundingRect().center().toPoint()
+    QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=center)
+    mouse_move(center+QtCore.QPoint(12, 0))
+    QTest.keyClick(canvas.viewport(), Qt.Key.Key_Escape)
+    QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=center)
+    assert panel.binding.project.to_dict() == stable and tabs.gesture is None
+    panel.undo()
+    assert panel.binding.project.to_dict() == moved
+    panel.undo()
+    assert panel.binding.project.to_dict() == before
+    tabs.select(manual.id, operation=identity)
+    assert tabs.unlink_button.isEnabled()
+    tabs.unlink_button.click()
+    assert manual.id in tabs.records() and identity not in tabs.affected(manual.id)
+    assert panel.canvas_preview.selected == tabs.affected(manual.id)
+    panel.undo()
+    tabs.select(manual.id)
+    assert not tabs.unlink_button.isEnabled()
+    with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.No):
+        tabs.remove()
+    assert manual.id in tabs.records()
+    with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.Yes):
+        tabs.remove()
+    assert manual.id not in tabs.records()
+    panel.undo()
+    assert manual.id in tabs.records()
+    canvas.setTransform(previous_transform)
+    canvas.horizontalScrollBar().setValue(previous_scroll[0])
+    canvas.verticalScrollBar().setValue(previous_scroll[1])
+    saved = folder / 'manual-regions.d2g'
+    saved.write_text(window.d2g.export_current(), encoding='utf-8')
+    window.filename = str(saved)
+    assert window.load()
+    tabs = panel.modifiers
+    assert tabs.records()[manual.id].vertices == manual.vertices
+    assert tabs.assignment_defaults().height == -.75
+    output = folder / 'manual-regions.ngc'
+    assert window.exportShapes(saveas=str(output))
+    import re
+    assert re.search(r'G1 Z\s+-0\.750', output.read_text())
+    exercise_snap_regions(window, app)
+    tabs.set_mode(True)
+    tabs.open_2d_editor()
+    app.processEvents()
+    assert tabs.dialog_view is not None and tabs.dialog_view.scene().items()
+    tabs.editor_dialog.close()
+    app.processEvents()
+    assert not tabs.mode and tabs.editor_dialog is None
+    assert not panel.tab_placement_action.isVisible()
+
+
+def exercise_snap_regions(window, app):
+    from importlib import import_module
+    from copy import deepcopy
+    from dataclasses import replace
+    from unittest.mock import patch
+    import dxf2gcode.bootstrap.runtime_state as g
+    from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
+    from dxf2gcode.presentation.qt.qt_compat.QtGui import QMouseEvent
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QDialogButtonBox, QMenu, QComboBox
+    from dxf2gcode.application.tab_regions import nominal_contour, world_vertices, rectangle_size
+    from dxf2gcode.domain.toolpath.tabs import point
+    Qt = QtCore.Qt
+    QTest = import_module('PyQt%d.QtTest' % PYQT_VERSION).QTest
+    panel, canvas = window.machining_panel, window.canvas
+    tabs = panel.modifiers
+    settings = deepcopy(g.config.var_dict['Tab_Regions'].dict())
+    old_units = g.config.var_dict['General']['tool_units']
+    original = panel.binding.project.to_dict()
+    history = len(panel.commands.undo_stack)
+    tabs.creation_mode = None
+    assert tabs.drawing_mode() == 'snap'
+    step = next(s for s in panel.binding.project.steps if s.kind == 'contour')
+    entry = step.entries[0]
+    contour = nominal_contour(panel.binding.sources[entry.geometry_id])
+    location = point(contour[0], .31)
+    first = tabs.projection((location[0]-1, location[1]-1)).toPoint()
+    last = tabs.projection((location[0]+1, location[1]+1)).toPoint()
+    def draw():
+        first = tabs.projection((location[0]-1, location[1]-1)).toPoint()
+        last = tabs.projection((location[0]+1, location[1]+1)).toPoint()
+        QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=first)
+        event = QMouseEvent(QtCore.QEvent.Type.MouseMove, QtCore.QPointF(last),
+            QtCore.QPointF(canvas.viewport().mapToGlobal(last)), Qt.MouseButton.NoButton,
+            Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        app.sendEvent(canvas.viewport(), event)
+        QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=last)
+        app.processEvents()
+        assert app.activeModalWidget() is None
+    try:
+        for config_units, length in (('mm', 2.), ('in', 2/25.4)):
+            g.config.var_dict['General']['tool_units'] = config_units
+            g.config.var_dict['Tab_Regions']['tab_length'] = length
+            panel.select_canvas_operation(entry.id)
+            tabs.start_draw()
+            draw()
+            assert tabs.mode and tabs.drawing and len(panel.commands.undo_stack) == history+1
+            region = tabs.records()[tabs.context]
+            assert region.placement_mode == 'snap'
+            diameter = panel.binding.project.tools[step.tool_id].tool_diameter
+            assert all(abs(size-(diameter+2)) < 1e-10 for size in rectangle_size(world_vertices(panel.binding, region)))
+            assert region.scope == 'operations' and region.targets == [entry.id]
+            old_tool = panel.binding.project.tools[step.tool_id]
+            changed_tool = replace(old_tool, tool_nr=99, tool_diameter=old_tool.tool_diameter+.2)
+            tool_before = panel.binding.project.to_dict()
+            panel.execute(lambda: panel.commands.set_operation_tool([entry.id], changed_tool))
+            assert all(abs(size-(changed_tool.tool_diameter+2)) < 1e-10 for size in
+                       rectangle_size(world_vertices(panel.binding, tabs.records()[region.id])))
+            panel.undo()
+            assert panel.binding.project.to_dict() == tool_before
+            # Auto sizing is retained when an existing region is resized.
+            corner = tabs.projection(world_vertices(panel.binding, region)[0]).toPoint()
+            end = corner+QtCore.QPoint(-5, 3)
+            QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=corner)
+            event = QMouseEvent(QtCore.QEvent.Type.MouseMove, QtCore.QPointF(end),
+                QtCore.QPointF(canvas.viewport().mapToGlobal(end)), Qt.MouseButton.NoButton,
+                Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+            app.sendEvent(canvas.viewport(), event)
+            assert not tabs.dimension_labels()
+            QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=end)
+            assert tabs.records()[region.id].placement_mode == 'snap'
+            assert len(tabs.dimension_labels()) == 2
+            assert all(abs(size-(diameter+2)) < 1e-10 for size in rectangle_size(world_vertices(panel.binding, tabs.records()[region.id])))
+            panel.undo()
+            # One region changes to manual, independently of the creation default.
+            label = tabs.dimension_labels()[0]
+            tabs.edit_dimension(label[0], label[1], label[3], canvas)
+            editor = tabs.dimension_editor
+            editor.setText(str(diameter+3))
+            QTest.keyClick(editor, Qt.Key.Key_Return)
+            assert tabs.records()[region.id].placement_mode == 'manual'
+            panel.undo()
+            label = tabs.dimension_labels()[0]
+            tabs.edit_dimension(label[0], label[1], label[3], canvas)
+            editor = tabs.dimension_editor
+            editor.selectAll()
+            QTest.keyClicks(editor, repr(label[3]))
+            QTest.keyClick(editor, Qt.Key.Key_Return)
+            assert tabs.records()[region.id].placement_mode == 'manual'
+            panel.undo()
+            tabs.change_drawing_mode('manual')
+            assert tabs.records()[region.id].placement_mode == 'manual' and tabs.drawing_mode() == 'snap'
+            tabs.change_drawing_mode('snap')
+            assert tabs.records()[region.id].placement_mode == 'snap'
+            panel.undo(); panel.undo()
+            # Double click opens the editor rather than creating another region.
+            def accept():
+                dialog = app.activeModalWidget()
+                assert dialog.objectName() == 'tabRegionDialog'
+                combo = dialog.findChild(QComboBox, 'regionPlacement')
+                combo.setCurrentIndex(combo.findData('manual'))
+                dialog.findChild(QDialogButtonBox).button(QDialogButtonBox.StandardButton.Ok).click()
+            pos = tabs.projection(world_vertices(panel.binding, tabs.records()[region.id])[0]).toPoint()
+            QtCore.QTimer.singleShot(0, accept)
+            QTest.mouseDClick(canvas.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+            QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+            app.processEvents()
+            assert tabs.records()[region.id].placement_mode == 'manual'
+            assert len(tabs.records()) == len(original['regions'])+1
+            panel.undo(); panel.undo()
+            assert panel.binding.project.to_dict() == original
+        panel.execute(lambda: panel.commands.create_step('Other', 'contour', step.tool_id))
+        target = panel.binding.project.steps[-1]
+        panel.execute(lambda: panel.commands.transfer([entry.id], target.id, copy=True))
+        expected = panel.binding.project.steps[-1].entries[0].id
+        # Explicit operation selection never expands to other uses of its geometry.
+        panel.select_canvas_operation(entry.id)
+        tabs.start_draw()
+        with patch.object(QMenu, 'exec') as chooser:
+            draw()
+            chooser.assert_not_called()
+        assert tabs.records()[tabs.context].targets == [entry.id]
+        panel.undo()
+        # Multiple selected operations all receive the region, in one command.
+        panel.tree.clearSelection()
+        panel.tree.setCurrentItem(panel.entry_items[entry.id])
+        panel.entry_items[entry.id].setSelected(True)
+        panel.entry_items[expected].setSelected(True)
+        assert set(tabs.draw_operations) == {entry.id, expected}
+        tabs.start_draw()
+        draw()
+        assert set(tabs.records()[tabs.context].targets) == {entry.id, expected}
+        panel.undo()
+        # Original contour selection includes every linked machining operation.
+        source = panel.binding.sources[entry.geometry_id]
+        for shape in panel.binding.sources.values():
+            window.TreeHandler.setShapeSelected(shape, shape is source)
+        panel.geometry_selected()
+        tabs.start_draw()
+        draw()
+        assert set(tabs.records()[tabs.context].targets) == {entry.id, expected}
+        panel.undo()
+        # Selecting a whole step scopes the new region to its operations.
+        panel.tree.clearSelection()
+        root = next(panel.tree.topLevelItem(i) for i in range(panel.tree.topLevelItemCount())
+                    if panel.tree.topLevelItem(i).data(0, 256) == ('step', step.id))
+        panel.tree.setCurrentItem(root)
+        root.setSelected(True)
+        tabs.start_draw()
+        draw()
+        assert tabs.records()[tabs.context].targets == [entry.id]
+        panel.undo()
+        # Different tools on the original contour get independent automatic sizes.
+        tool = replace(panel.binding.project.tools[step.tool_id], tool_nr=98, tool_diameter=diameter+.2)
+        panel.execute(lambda: panel.commands.edit_step(target.id, 'Other', 'contour', tool))
+        for shape in panel.binding.sources.values():
+            window.TreeHandler.setShapeSelected(shape, shape is source)
+        panel.geometry_selected()
+        tabs.start_draw()
+        batch_history = len(panel.commands.undo_stack)
+        draw()
+        created = [r for r in tabs.records().values() if r.id not in {v['id'] for v in original['regions']}]
+        assert len(created) == 2 and len(panel.commands.undo_stack) == batch_history+1
+        by_target = {r.targets[0]: r for r in created}
+        assert abs(rectangle_size(world_vertices(panel.binding, by_target[entry.id]))[0]-(diameter+2)) < 1e-10
+        assert abs(rectangle_size(world_vertices(panel.binding, by_target[expected]))[0]-(diameter+.2+2)) < 1e-10
+        panel.undo(); panel.undo(); panel.undo(); panel.undo()
+        assert panel.binding.project.to_dict() == original
+        # A selected foreign contour does not authorize assigning the drawn area.
+        other = next(e for s in panel.binding.project.steps for e in s.entries
+                     if getattr(e, 'geometry_id', entry.geometry_id) != entry.geometry_id)
+        panel.select_canvas_operation(other.id)
+        tabs.start_draw()
+        draw()
+        assert panel.binding.project.to_dict() == original
+        # Without an explicit contour/operation, drawing creates no region.
+        for shape in panel.binding.sources.values():
+            window.TreeHandler.setShapeSelected(shape, False)
+        panel.geometry_selected()
+        tabs.start_draw()
+        assert not tabs.draw_operations
+        draw()
+        assert panel.binding.project.to_dict() == original
+        panel.select_canvas_operation(entry.id)
+        tabs.clear_reference()
+        tabs.creation_mode = 'manual'
+        tabs.start_draw()
+        draw()
+        region = tabs.records()[tabs.context]
+        assert region.placement_mode == 'manual'
+        assert any(abs(size-(diameter+2)) > .1 for size in rectangle_size(world_vertices(panel.binding, region)))
+        panel.undo()
+        assert panel.binding.project.to_dict() == original
+    finally:
+        tabs.cancel()
+        g.config.var_dict['Tab_Regions'].update(settings)
+        g.config.var_dict['General']['tool_units'] = old_units
+        tabs.creation_mode = None
+
+
+def exercise_region_dimensions(window, app, identity):
+    from importlib import import_module
+    from unittest.mock import patch
+    from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
+    from dxf2gcode.presentation.qt.qt_compat.QtGui import QMouseEvent
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QInputDialog
+    from dxf2gcode.application.tab_regions import world_vertices, rectangle_size, alignment_candidates
+    Qt = QtCore.Qt
+    QTest = import_module('PyQt%d.QtTest' % PYQT_VERSION).QTest
+    panel, canvas = window.machining_panel, window.canvas
+    tabs = panel.modifiers
+    tabs.select(identity)
+    before = panel.binding.project.to_dict()
+    history = len(panel.commands.undo_stack)
+    tabs.select_regions([])
+    assert not tabs.dimension_labels()
+    pos = tabs.paths()[identity].boundingRect().center().toPoint()
+    QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+    assert tabs.gesture['kind'] == 'select' and tabs.context == identity
+    end = pos+QtCore.QPoint(10, 10)
+    event = QMouseEvent(QtCore.QEvent.Type.MouseMove, QtCore.QPointF(end),
+        QtCore.QPointF(canvas.viewport().mapToGlobal(end)), Qt.MouseButton.NoButton,
+        Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    app.sendEvent(canvas.viewport(), event)
+    assert not tabs.dimension_labels() and panel.binding.project.to_dict() == before
+    QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=end)
+    assert tabs.context == identity and panel.binding.project.to_dict() == before
+    assert len(panel.commands.undo_stack) == history and len(tabs.dimension_labels()) == 2
+    labels = tabs.dimension_labels()
+    assert len(labels) == 2
+    vertices = world_vertices(panel.binding, tabs.records()[identity])
+    points = [tabs.projection(v) for v in vertices]
+    centres = [(points[i]+points[(i+1) % 4])/2 for i in range(4)]
+    for axis, rect, text, value in labels:
+        assert any((rect.center()-centres[i]).manhattanLength() < 1e-9 for i in range(4) if i % 2 == axis)
+        assert text == __import__('dxf2gcode.presentation.qt.numeric_display', fromlist=['format_number']).format_number(value, panel.binding.project.units)+' '+panel.binding.project.units
+    assert min(abs(label[1].center().y()-min(p.y() for p in centres)) for label in labels) < 1e-9
+    assert min(abs(label[1].center().x()-max(p.x() for p in centres)) for label in labels) < 1e-9
+    pos = labels[0][1].center().toPoint()
+    hover = QMouseEvent(QtCore.QEvent.Type.MouseMove, QtCore.QPointF(pos),
+        QtCore.QPointF(canvas.viewport().mapToGlobal(pos)), Qt.MouseButton.NoButton,
+        Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier)
+    app.sendEvent(canvas.viewport(), hover)
+    app.processEvents()
+    assert tabs.dimension_hover == 0
+    QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+    editor = tabs.dimension_editor
+    assert editor is not None and float(editor.text()) == labels[0][3]
+    editor.setText('nan')
+    QTest.keyClick(editor, Qt.Key.Key_Return)
+    assert panel.binding.project.to_dict() == before and tabs.dimension_editor is editor
+    editor.setText('3.123456789')
+    QTest.keyClick(editor, Qt.Key.Key_Return)
+    app.processEvents()
+    assert tabs.dimension_editor is None and len(panel.commands.undo_stack) == history+1
+    vertices = world_vertices(panel.binding, tabs.records()[identity])
+    assert abs(rectangle_size(vertices)[0]-3.123456789) < 1e-12
+    panel.undo()
+    assert panel.binding.project.to_dict() == before
+    tabs.select(identity)
+    label = tabs.dimension_labels()[1]
+    QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton, pos=label[1].center().toPoint())
+    editor = tabs.dimension_editor
+    editor.setText('9')
+    QTest.keyClick(editor, Qt.Key.Key_Escape)
+    assert tabs.dimension_editor is None and panel.binding.project.to_dict() == before
+    # Real Ctrl-drag, followed by a single undo, uses the nominal circle.
+    vertices = world_vertices(panel.binding, tabs.records()[identity])
+    assert len(alignment_candidates(panel.binding, vertices)) == 1
+    corner = tabs.projection(vertices[0]).toPoint()
+    end = corner+QtCore.QPoint(-2, 1)
+    QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=corner)
+    event = QMouseEvent(QtCore.QEvent.Type.MouseMove, QtCore.QPointF(end),
+        QtCore.QPointF(canvas.viewport().mapToGlobal(end)), Qt.MouseButton.NoButton,
+        Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier)
+    app.sendEvent(canvas.viewport(), event)
+    assert tabs.gesture is not None and not tabs.dimension_labels()
+    unsnapped_size = rectangle_size(tabs.gesture['unsnapped'])
+    actual_size = rectangle_size(tabs.gesture['vertices'])
+    assert all(abs(a-b) < 1e-10 for a, b in zip(unsnapped_size, actual_size))
+    QTest.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton,
+                     Qt.KeyboardModifier.ControlModifier, pos=end)
+    app.processEvents()
+    assert len(panel.commands.undo_stack) == history+1
+    panel.undo()
+    assert panel.binding.project.to_dict() == before
+    tabs.select(identity)
+    # Ambiguous snapping asks for a target; cancellation keeps the dragged shape.
+    candidates = alignment_candidates(panel.binding, vertices)
+    geo = next(iter(candidates))
+    gesture = dict(vertices=vertices)
+    with patch('dxf2gcode.application.tab_regions.alignment_candidates',
+               return_value={geo: candidates[geo], 'other': candidates[geo]}), \
+         patch.dict(panel.binding.sources, other=panel.binding.sources[geo]), \
+         patch.object(QInputDialog, 'getItem', return_value=('', False)) as choose:
+        tabs.snap_gesture(gesture, choose=True)
+        assert choose.called and gesture['vertices'] == vertices
+    from dxf2gcode.application.tab_regions import align_rectangle
+    other_contacts = tuple((p[0]+1, p[1]+2) for p in candidates[geo])
+    with patch('dxf2gcode.application.tab_regions.alignment_candidates',
+               return_value={geo: candidates[geo], 'other': other_contacts}), \
+         patch.dict(panel.binding.sources, other=panel.binding.sources[geo]), \
+         patch.object(QInputDialog, 'getItem', side_effect=lambda parent, title, prompt, labels, *args: (labels[1], True)):
+        tabs.snap_gesture(gesture, choose=True)
+        assert gesture['vertices'] == align_rectangle(vertices, other_contacts)
+    assert panel.binding.project.to_dict() == before
+
+
+def exercise_region_selection(window, app):
+    from importlib import import_module
+    from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
+    from dxf2gcode.presentation.qt.selection_marks import REFERENCE_ROLE
+    from dxf2gcode.presentation.qt.machining_panel import ROLE
+    Qt = QtCore.Qt
+    QTest = import_module('PyQt%d.QtTest' % PYQT_VERSION).QTest
+    panel, tabs = window.machining_panel, window.machining_panel.modifiers
+    original = panel.binding.project.to_dict()
+    step = panel.binding.project.steps[0]
+    first_id = step.entries[0].id
+    # A global region must highlight references in another step, without
+    # turning either contour into an editable multi-selection.
+    panel.execute(lambda: panel.commands.create_step('Selection references', step.kind, step.tool_id))
+    target = panel.binding.project.steps[-1]
+    panel.execute(lambda: panel.commands.transfer([first_id], target.id, copy=True))
+    copied_id = panel.binding.project.steps[-1].entries[0].id
+    unchanged = panel.binding.project.to_dict()
+    history = len(panel.commands.undo_stack)
+    region = next(r for r in tabs.records().values() if first_id in tabs.affected(r.id))
+    assert copied_id in tabs.affected(region.id)
+    view = window.ui.layersShapesTreeView
+    window.ui.mytabWidget.setCurrentWidget(window.geometry_panel)
+    source = panel.binding.sources[region.geometry_id]
+    leaf = window.TreeHandler.findLayerItemIndexFromShape(source)
+    layer = leaf.parent()
+    layer_label = layer.sibling(layer.row(), 1)
+    view.scrollTo(layer_label)
+    app.processEvents()
+    point = view.visualRect(layer_label).center()
+    expected_regions = {r.id for r in tabs.records().values()
+                        if panel.binding.sources.get(r.geometry_id) is not None
+                        and panel.binding.sources[r.geometry_id].parentLayer is source.parentLayer}
+    expected_ops = set().union(*(tabs.affected(i) for i in expected_regions))
+    for double in (False, False, True, True):
+        if double:
+            QTest.mouseDClick(view.viewport(), Qt.MouseButton.LeftButton, pos=point)
+        else:
+            QTest.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=point)
+        app.processEvents()
+        assert tabs.selected_regions == expected_regions
+        assert tabs.related_operations == expected_ops
+        assert panel.canvas_preview.selected == expected_ops
+        assert not panel.selected_entries() and panel.context is None
+        assert panel.parameter_editor.frame.isHidden()
+        assert all(f.isReadOnly() for f in tabs.fields.values())
+        assert layer.data(REFERENCE_ROLE) == 2
+    view.setExpanded(layer, True)
+    view.scrollTo(leaf)
+    app.processEvents()
+    QTest.mouseClick(view.viewport(), Qt.MouseButton.LeftButton,
+                     pos=view.visualRect(leaf.sibling(leaf.row(), 1)).center())
+    assert tabs.context == region.id and not tabs.mode
+    assert panel.canvas_preview.selected == tabs.affected(region.id)
+    assert first_id in panel.canvas_preview.selected and copied_id in panel.canvas_preview.selected
+    # Step selection covers all descendants visually while keeping the step
+    # as the sole editable/drag target.
+    window.ui.mytabWidget.setCurrentWidget(panel)
+    root = next(panel.tree.topLevelItem(i) for i in range(panel.tree.topLevelItemCount())
+                if panel.tree.topLevelItem(i).data(0, ROLE) == ('step', step.id))
+    root.setExpanded(True)
+    app.processEvents()
+    QTest.mouseClick(panel.tree.viewport(), Qt.MouseButton.LeftButton,
+                     pos=panel.tree.visualItemRect(root).center())
+    expected_step = {e.id for e in panel.binding.project.steps[0].entries}
+    assert set(panel.selected_entries()) == expected_step
+    assert panel.canvas_preview.selected == expected_step
+    assert not tabs.selected_regions and not tabs.related_operations
+    assert panel.parameter_editor.target()[0].id == step.id
+    assert panel.parameter_editor.target()[1] is None
+    assert panel.tree.payload()['kind'] == 'step' and panel.tree.payload()['ids'] == [step.id]
+    assert all(panel.entry_items[i].data(0, REFERENCE_ROLE) == 1 for i in expected_step)
+    entry = panel.entry_items[first_id]
+    entry.setExpanded(True)
+    group = entry.child(0)
+    group.setExpanded(True)
+    panel.tree.scrollToItem(group)
+    app.processEvents()
+    point = panel.tree.visualItemRect(group).center()
+    group_regions = {group.child(i).data(0, ROLE)[1] for i in range(group.childCount())}
+    for double in (False, True, True):
+        QTest.mouseDClick(panel.tree.viewport(), Qt.MouseButton.LeftButton, pos=point) if double else QTest.mouseClick(
+            panel.tree.viewport(), Qt.MouseButton.LeftButton, pos=point)
+        app.processEvents()
+        assert tabs.selected_regions == group_regions
+        assert panel.canvas_preview.selected == set().union(*(tabs.affected(i) for i in group_regions))
+        assert not panel.selected_entries() and panel.context is None
+    other_entry = panel.entry_items[copied_id]
+    other_entry.parent().setExpanded(True)
+    other_entry.setExpanded(True)
+    other_group = other_entry.child(0)
+    other_group.setExpanded(True)
+    node = next(other_group.child(i) for i in range(other_group.childCount())
+                if other_group.child(i).data(0, ROLE) == ('modifier', region.id))
+    panel.tree.scrollToItem(node)
+    app.processEvents()
+    QTest.mouseClick(panel.tree.viewport(), Qt.MouseButton.LeftButton, pos=panel.tree.visualItemRect(node).center())
+    assert panel.tree.currentItem() is node  # Never jump to the first reference.
+    assert tabs.link_operation == copied_id
+    assert panel.canvas_preview.selected == tabs.affected(region.id)
+    assert not panel.selected_entries() and tabs.context == region.id
+    # A repeated machining use remains a separate eligible target. The
+    # unrelated contour in the original step must not appear in the dialog.
+    from dataclasses import replace
+    from dxf2gcode.domain.project.machining_project import new_id
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QComboBox, QTreeWidget
+    candidate = replace(region, id=new_id(), scope='', targets=[], excluded=[])
+    def check_multiple_targets():
+        dialog = app.activeModalWidget()
+        choices = dialog.findChild(QTreeWidget, 'regionTargets')
+        offered = {choices.topLevelItem(i).data(0, ROLE) for i in range(choices.topLevelItemCount())}
+        assert offered == {first_id, copied_id}
+        scope = dialog.findChild(QComboBox, 'regionScope')
+        assert scope.currentData() == ''
+        scope.setCurrentIndex(scope.findData('steps'))
+        assert {choices.topLevelItem(i).data(0, ROLE) for i in range(choices.topLevelItemCount())} == {step.id, target.id}
+        dialog.reject()
+    QtCore.QTimer.singleShot(0, check_multiple_targets)
+    assert tabs.region_dialog(candidate) is None
+    assert panel.binding.project.to_dict() == unchanged
+    assert len(panel.commands.undo_stack) == history
+    panel.undo()
+    panel.undo()
+    assert panel.binding.project.to_dict() == original
+    tabs.clear_reference()
+    panel.tree.clearSelection()
 
 
 def exercise_operation_canvas(window, app, first_id, second_id):
@@ -848,6 +1535,7 @@ def exercise_machining_modes(window, app, shape, identity, other_identity):
                 canvas.tr('Invert Selection'), canvas.tr('Disable Selection'), canvas.tr('Enable Selection'), None,
                 canvas.tr('Switch Direction'), canvas.tr('Set Nearest StartPoint'), canvas.tr('Set Sharpest StartPoint'), None,
                 canvas.tr('Cutter Compensation'), None, panel.tr('Assign machining…')]
+    expected += [None, panel.modifiers.tr('Draw new tab region…')]
     assert layout == expected, (layout, expected)
     with patch.object(panel, 'assign_machining') as assign:
         next(action for action in canvas.actions() if action.text() == panel.tr('Assign machining…')).trigger()

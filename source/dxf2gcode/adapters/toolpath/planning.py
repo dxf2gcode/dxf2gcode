@@ -167,6 +167,19 @@ class ShapePlanningInputs:
                          not settings.machine_compensation and not shape.Drill)
         cut_geos = prepared[1 + len(leads):] if software_comp else contour
         breaks = getattr(postprocessor, "breaks", None)
+        if breaks is not None:
+            # Project regions are scoped; raw legacy regions remain global.
+            from copy import copy
+            from dxf2gcode.domain.project.layercontent import Shapes
+            selected = copy(breaks)
+            selected.breakLayers = []
+            for source_layer in breaks.breakLayers:
+                layer = copy(source_layer)
+                layer.shapes = Shapes(region for region in source_layer.shapes
+                    if not hasattr(region, 'region_definition') or region.region_definition.applies(
+                        getattr(shape.parentLayer, 'machining_step_id', ''), getattr(shape, 'operation_id', '')))
+                selected.breakLayers.append(layer)
+            breaks = selected
         # Break intersection is an existing geometry adapter, not a postprocessor
         # movement call. Freeze its result before any strategy traverses passes.
         pocket_ids = {id(geo) for geo in prepared[

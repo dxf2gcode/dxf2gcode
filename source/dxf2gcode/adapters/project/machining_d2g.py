@@ -1,4 +1,4 @@
-"""Validated JSON .d2g 2.0 codec and dispatch to legacy 1.1--1.5 readers."""
+"""Validated .d2g 2.1 codec, 2.0 migration and legacy 1.1--1.5 dispatch."""
 
 import json
 from math import isfinite
@@ -9,7 +9,7 @@ from dxf2gcode.domain.project.document import MachiningProjectDocument
 from dxf2gcode.domain.project.machining_project import MachiningProject
 
 FORMAT = 'DXF2GCODE'
-VERSION = 2.0
+VERSION = 2.1
 SOURCE_FIELDS = frozenset((
     'file', 'point_tol', 'fitting_tol', 'scale', 'rot', 'wpzero_x', 'wpzero_y',
     'mirrorx', 'mirrory', 'split_lines', 'aut_cut_com', 'machine_type', 'layers', 'drag_knife'))
@@ -143,7 +143,7 @@ def decode_project(content):
         raise ValueError('Invalid .d2g document fields')
     if data['format'] != FORMAT:
         raise ValueError('Incorrect project format')
-    if type(data['version']) not in (float, int) or data['version'] != VERSION:
+    if type(data['version']) not in (float, int) or data['version'] not in (2.0, VERSION):
         raise VersionMismatchError(data['version'], VERSION)
     validate_source(data['source'])
     try:

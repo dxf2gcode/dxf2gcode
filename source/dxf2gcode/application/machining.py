@@ -146,6 +146,7 @@ class MachiningDrawing:
     """Bind a machining document to one actual imported drawing revision."""
     def __init__(self, project, layers):
         self.project = project
+        self.project.migrate_regions()
         self.source_layers = layers
         self.sources = {}
         self._baseline = {}
@@ -320,6 +321,9 @@ class MachiningDrawing:
                     if not isinstance(shape, CustomGCode):
                         layer.exp_order.append(shape.nr)
             layers.append(layer)
+        if self.project.regions:
+            from dxf2gcode.application.tab_regions import materialize_regions
+            layers.append(materialize_regions(self, configuration))
         return layers
 
     def bind_legacy_editor(self):

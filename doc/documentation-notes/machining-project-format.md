@@ -1,6 +1,7 @@
-# R3/R1b: Bearbeitungsmodell und Projektformat 2.0
+# R3/R1b: Bearbeitungsmodell und Projektformat 2.1
 
-Stand: **07.11.2026**, P1–P6 implementiert. P8 ist die gemeinsame Nutzerabnahme.
+Stand: **14.11.2026**, P1–P6 und manuelle Stegregionen D42 implementiert.
+P8 ist die gemeinsame Nutzerabnahme.
 [Anwenderanleitung](../../docs/user-guide/machining-steps.md),
 [Plan und Entscheidungen D1–D22](../planning/r3-r1b-implementation-plan.md),
 [P1–P3](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3) und
@@ -58,7 +59,8 @@ Die bisherigen Formate 1.1–1.5 bleiben lesbar. Die Übernahme erfolgt beim
 ersten neuen Speichern; unklare Zahlenwerte werden nicht durch Vergleich mit
 heutigen Standards als geerbt umgedeutet. Werkzeug-/Artwechsel und freier
 G-Code begrenzen die Anfangsschritte, damit die bisherige Ausgabereihenfolge
-erhalten bleibt. BREAKS-/Ignore-Layer bleiben entsprechende Schrittarten.
+erhalten bleibt. Ignore-Layer bleiben entsprechende Schrittarten. Ab 2.1
+werden BREAKS-Einträge in eigene Stegregionsobjekte übernommen.
 Alte Dateien müssen zunächst unter einem neuen Namen gespeichert werden;
 der Dateispeicher verhindert das Überschreiben einer Legacy-Datei mit JSON.
 Schreibvorgänge ersetzen das Ziel erst nach erfolgreicher temporärer Ausgabe.
@@ -117,7 +119,8 @@ Dies ist bewusst beibehaltenes Exportverhalten, keine Exportsperre.
 
 Die alte Eingabesynchronisierung besteht für Legacy-Adapteraufrufe weiter;
 der normale neue Parametereditor benutzt Modellbefehle. Vor Entfernen der
-verbliebenen Aufrufer folgt P8. Manuelle Stegregionen/Fang/Automatik bleiben P7.
+verbliebenen Aufrufer folgt P8. Manuelle Stegregionen sind gemäß D42 implementiert;
+Strg-Ausrichtung ist gemäß D44 umgesetzt; automatische Platzierung bleibt offen.
 
 Die früheren Bearbeitungs-Kontextaktionen sind gemäß D30 im Bearbeitungsbaum
 und Canvas wieder verfügbar: Kontur, Taschenfräsen, Bohren, G40/G41/G42.
@@ -297,10 +300,27 @@ geschriebene Dateien nicht: neu exportieren und den neuen Werkzeugweg prüfen.
 ## Importierte Haltestege als Modifikatoren
 
 Die Oberfläche zeigt importierte BREAKS-Regionen nicht mehr als gewöhnliche
-Bearbeitungsschritte. Ihre bisherigen `kind='break'`-Einträge bleiben intern
-der Speicher- und Exportvertrag; die Projektformatversion ändert sich nicht.
-Globale Wirkung über Layer-/Schrittgrenzen sowie Z-Höhe und Vorschübe bleiben
-erhalten. Dieselbe Regions-ID kann unter mehreren Schritten erscheinen.
+Bearbeitungsschritte. Seit D42 werden bisherige `kind='break'`-Einträge bei der
+Übernahme in eigene `StegRegion`-Objekte im Projekt umgewandelt. Version 2.1
+speichert Regions-ID, Herkunfts-Geometriereferenz, optionale eigene Polygonpunkte,
+Name, Z-Höhe, Vorschübe, Aktivierung, Scope, Ziel-IDs und lokale Ausnahmen.
+Version 2.0 und Legacy-Dateien bleiben lesbar. Globale Wirkung, Parameter und
+Regions-IDs bleiben bei der Migration erhalten. Eine Region wird unter den
+tatsächlich betroffenen Bearbeitungskonturen mehrfach referenziert, nicht kopiert.
+
+Manuelle oder geänderte Regionspunkte liegen im Zeichnungswurzelraum; die
+affine Abbildung und ihre Inverse stehen in
+[tab_regions.py](../../source/dxf2gcode/application/tab_regions.py). Die Region
+folgt Verschieben, Drehen, Spiegeln und Skalieren der Zeichnung. Ohne eigene
+Punkte bleibt die importierte Geometrie die Quelle. Die Materialisierung erzeugt
+eine getrennte BREAKS-Projektion für die bestehende Planung; diese ist weder
+ein Werkzeugschritt noch ein zusätzlicher exportierter Fräsweg.
+
+Scope `global`, `steps` und `operations` wird vor der Stegplanung anhand von
+Schritt-/Bearbeitungs-IDs gefiltert. `excluded` erlaubt lokale Ausnahmen einer
+globalen Region. Schrittzuordnungen gelten auch für später hinzugefügte
+Bearbeitungen; Bearbeitungszuordnungen folgen der ID beim Verschieben.
+Löschen entfernt das Regionsobjekt; Original-Geometriereferenzen bleiben erhalten.
 
 Die Verknüpfungen werden aus tatsächlich wirksamen geplanten Stegbewegungen
 abgeleitet: `BreakGeo`, Geometriesnapshot und `ToolpathAction` transportieren
@@ -311,8 +331,78 @@ Der Qt-Controller [TabModifiers](../../source/dxf2gcode/presentation/qt/tab_modi
 verwaltet Referenzen, Stegmodus und bestehende atomare Befehle. Höhe/Vorschübe,
 Aktivierung und Entfernen sind rückgängig machbar; das Entfernen löst die
 Bearbeitungszuordnung, die Original-DXF-Geometrie bleibt erhalten.
-Neue manuell gezeichnete Formen und lokale Schritt-/Konturzuordnungen sind
-weiterhin P7 und werden nicht durch diese reine Darstellungszuordnung vorweggenommen.
+Rechteckzeichnen, Verschieben, Eckgriffe und lokale Zuordnungen sind umgesetzt.
+Abschluss einer Geste ist genau ein Modellbefehl; Vorschau, Esc und Dialogabbruch
+ändern das Projekt nicht. Ein separater 2D-Editor erlaubt dies auch bei einer
+3D-Hauptansicht. D44 ergänzt Live-Breite/Höhe, direkte Maßeingabe und bewusste
+Strg-Ausrichtung an genau zwei Originalkontur-Schnittpunkten. Die Breitenachse
+folgt deren Verbindung; der Mittelpunkt liegt zwischen den Kontakten, beide
+Kantenlängen bleiben erhalten. Mehrfachbearbeitungen derselben Originalkontur
+erzeugen kein zweites Fangziel; mehrere Originalkonturen erfordern Zielwahl beim
+Loslassen. Ohne Kontaktpaar wird nur die normale Ziehbewegung übernommen.
+Maßeingaben skalieren symmetrisch um die Mitte, behalten volle Eingabegenauigkeit
+und sind je Bestätigung ein Undo-Befehl. Es entstehen keine zusätzlichen
+persistenten Maß-/Fangfelder; die bestehenden Wurzelraum-Vertices reichen aus.
+Automatische Platzierung bleibt offen.
+Die Zeichensitzung bleibt nach Bestätigung offen und erlaubt weitere Konturen.
+Leerraumklick löst Regions-/Bezugsauswahl, ohne den Modus zu verlassen. Der Baum
+zählt Regionsobjekte, auch wenn eine Region mehrere geplante Stegabschnitte hat.
+D45 definiert eine Fang-Voreinstellung beim Aufziehen: Quadratseite = vollständiger
+Projekt-Werkzeugdurchmesser der gewählten Bearbeitung + konfigurierte Steglänge.
+Die Konfiguration `Tab_Regions` enthält `creation_mode` (`snap`/`manual`, Default
+`snap`) und `tab_length` (Default 2 in `General.tool_units`). Umrechnung erfolgt
+vor Addition des in Projekteinheiten gespeicherten Durchmessers. Mehrdeutige
+Bearbeitungen erfordern Zielwahl, sofern keine davon ausdrücklich aktiv ist.
+Anlegevorgaben bleiben Anwendungskonfiguration; die Region speichert tatsächliche
+Vertices und `placement_mode` (`snap`/`manual`). Fehlendes Feld bei alten 2.1-Daten
+und importierten Regionen bedeutet `manual`. Der Modus bleibt bei Undo/Redo und
+Roundtrip erhalten. Eine bloße Vorgabenänderung skaliert bestehende Regionen nicht.
+Werkzeugdurchmesseränderungen skalieren automatische Regionen gemäß D46;
+manuelle bleiben unverändert. Beim Wechsel auf Fang oder Größenändern eines Fang-Stegs
+wird das aktuelle konfigurierte Quadratmaß angewendet. Direkte Maßeingabe setzt
+den Steg auf manuell. Z-Oberkante bleibt unabhängig. Format bleibt 2.1; das optionale
+Feld ergänzt den noch nicht veröffentlichten Regionsvertrag.
+Anlegen erfolgt direkt beim Loslassen ohne Regionsdialog; Doppelklick öffnet
+den Dialog zur nachträglichen Bearbeitung. Moduswahl je Steg ist auch dort verfügbar.
+Der Stegmodus-Schalter in der Bearbeitungs-Werkzeugleiste startet unmittelbar
+das fortlaufende Zeichnen. Die daneben im Stegmodus sichtbare Auswahl setzt
+Fang/Manuell für neue Regionen und aktualisiert die vorbereitete nächste Region.
+Sie ändert nicht den gespeicherten Modus einer vorhandenen Auswahl. „Zuordnung
+entfernen“ im Regionsparameterbereich benötigt eine konkrete Bezugs-Bearbeitung.
+Das spezielle Kontextmenü ist aus Canvas, Bearbeitungsbaum und Regionsliste
+entfernt. Doppelklick-/Tastatur-/Parameterbedienung bleiben; keine Modelländerung.
+
+D46 wird an der atomaren Befehlsgrenze in `MachiningCommands.perform` ausgeführt:
+alte/neue Werkzeugdurchmesser je Bearbeitungs-ID vergleichen; automatische
+Zuordnungen anhand ihres vorherigen Scopes und tatsächlicher Originalkontur-
+Überschneidung ermitteln. Die GUI liefert die aktuelle konfigurierte Steglänge
+in Projekteinheiten, ohne Qt-Abhängigkeit im Anwendungsdienst. Bei verschiedenen
+Durchmessern werden gemeinsame Regionen in Bearbeitungszuordnungen aufgeteilt;
+unbetroffene Vertices bleiben erhalten, neue Regionen übernehmen Werte und Namen
+mit Schrittzusatz. Umfang und neue IDs gehören zum selben Undo-/Redo-Snapshot.
+Einheitenwechsel werden separat behandelt und nicht als Werkzeugwechsel gedeutet.
+Kein zusätzlicher persistenter Vertrag. Maßfelder liegen auf den oberen/rechten
+Kantenmitten und zeigen ausschließlich Zahlenwert und Einheit.
+
+D47 trennt im Qt-Controller Erstklick-Auswahl und Geometriegesten. Eine nicht
+ausgewählte Region erzeugt zunächst nur eine Auswahlgeste ohne Modellbefehl;
+Verschieben/Größenändern setzt vorhandene Auswahl voraus. Maßfelder werden bei
+jeder aktiven Geste unterdrückt und nach deren Ende wieder dargestellt. Die
+Auswahl bleibt bei Überlagerung das bevorzugte Interaktionsziel. Explizite
+Maßeingabe setzt `placement_mode=manual`, auch ohne Änderung des Zahlenwerts;
+Bestätigung ohne Eingabe oder Abbruch erzeugt keinen solchen Wechsel.
+
+D48 hält im Qt-Controller die explizite Zeichen-Zielauswahl als Bearbeitungs-IDs
+fest. Normale Baum- und Originalauswahl aktualisieren diese Menge; Auswahl von
+Regionsreferenzen ist davon getrennt. Originalauswahl expandiert alle Verknüpfungen,
+Schrittauswahl alle enthaltenen Bearbeitungen. Beim Anlegen wird die gespeicherte
+Auswahl mit geometrisch überschneidenden Originalkonturen geschnitten; ohne Ziele
+oder passenden Schnitt entsteht nichts. Fortlaufende Anlage behält die Ziele,
+bis neue Original-/Bearbeitungsauswahl oder Leerraumklick sie ändert.
+Automatisch berechnete, gleiche Quadrate teilen ein Regionsobjekt; unterschiedliche
+Maße erzeugen getrennte Bearbeitungszuordnungen. `MachiningCommands.create_regions`
+legt den ganzen Satz in einem validierten, atomaren Undo-/Redo-Schritt an.
+Die Zeichen-Zielauswahl ist transient; kein neues persistentes Feld oder Format.
 
 D41 ist implementiert: Polygonale Stegregionen werden an der Originalkontur
 ausgewertet. Interne Radiuskorrektur überträgt die Stellen entlang der
@@ -332,6 +422,41 @@ polygonale Regionen werden ebenfalls mit Warnung ausgelassen. Die Warnung
 `tabs.unmapped` läuft über die gemeinsamen Plan-/Exportdiagnosen und DE/FR/RU.
 Taschen-Randkonturen verwenden D41, Rasterfüllbahnen ohne eindeutigen
 Originalkonturpartner behalten ihre räumliche Regionsauswertung; Schleppmesser
-bleiben unverändert. Projektformat/IDs ändern sich nicht. Bereits geschriebener
+bleiben unverändert. D41 selbst änderte keine IDs; D42 ergänzt Format 2.1.
+Bereits geschriebener
 G-Code bleibt bestehen; nach der Verhaltensänderung neu exportieren und prüfen.
 Siehe [Entscheidung und Abnahmefälle](../planning/r3-r1b-implementation-plan.md#6-reihenfolge-sonderfälle-und-haltestege).
+
+### Auswahl und abgeleitete Bezüge D43
+
+Die tatsächliche Auswahl im Bearbeitungsbaum bleibt der Eingabevertrag für
+Parameter, Drag-and-drop und Modellbefehle. Schrittwahl umfasst intern bereits
+die enthaltenen Bearbeitungen. `ReferenceDelegate` stellt Nachfahren und andere
+Regionsverknüpfungen über `REFERENCE_ROLE` heller hinterlegt dar, ohne sie zu
+zusätzlichen Eingabezielen zu machen. Diese Daten sind reine Qt-Projektionen
+und werden nicht im Projektformat gespeichert.
+
+Regionsauswahl besitzt getrennte Mengen für Regions-IDs und die tatsächlich
+betroffenen Bearbeitungs-IDs. Die Vorschau verwendet deren Vereinigung mit
+der normalen Auswahl für Linienbetonung und Auswahlzähler. Die Parameteransicht
+behält dagegen den Regions-/Schrittkontext. Original-Layer- und Regionsgruppen-
+klicks führen durch denselben Bezugspfad; Doppelklicks schalten die Markierung
+nicht aus. Nach Scope-/Aktivierungsänderungen werden Bezug und Vorschau aus
+der aktuellen Wirkung erneuert. Das benötigt keine neue G-Code-Planungsregel.
+
+### Geometrische Zuordnungskandidaten
+
+`overlapping_operations` im Regions-Anwendungsadapter liefert nur kontur- oder
+taschenbezogene Bearbeitungen mit einem positiven Konturabschnitt im Inneren
+der Region. Die Abfrage verwendet den nominalen Schnittdienst des D41-Planers;
+Geometriereferenzen werden pro Abfrage nur einmal untersucht, Mehrfachbearbeitungen
+bleiben als eigene Ziele erhalten. Fräserradius, Tiefe, Aktivierung, Scope und
+Passwahl beeinflussen die geometrische Kandidatenmenge nicht. Bohrungen, ignorierte
+Bearbeitungen und ungelöste Geometriereferenzen sind keine Kandidaten.
+
+Reiner Randkontakt erzeugt im nominalen D41-Dienst keinen Steg mehr. Der Dialog
+filtert Bearbeitungs-/Schrittziele, wählt bei einer neuen Region mit nur einem
+Treffer diesen vor und sperrt das Neuanlegen ohne Schnitt. Bereits gespeicherte
+unwirksame Regionen bleiben erhalten und können verändert/verschoben werden.
+Global ist weiterhin ein Scope für heutige und spätere passende Bearbeitungen;
+lokale Ausnahmen werden nicht stillschweigend aufgehoben.

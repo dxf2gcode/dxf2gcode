@@ -2974,6 +2974,30 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <source>Decimal places for feed rates:</source>
         <translation>Знаков после запятой для подач:</translation>
     </message>
+    <message>
+        <source>Tab regions</source>
+        <translation>Области перемычек</translation>
+    </message>
+    <message>
+        <source>Snap to contour</source>
+        <translation>Привязка к контуру</translation>
+    </message>
+    <message>
+        <source>Draw manually</source>
+        <translation>Рисовать вручную</translation>
+    </message>
+    <message>
+        <source>Default tab placement:</source>
+        <translation>Размещение перемычек по умолчанию:</translation>
+    </message>
+    <message>
+        <source>Remaining tab length:</source>
+        <translation>Оставшаяся длина перемычки:</translation>
+    </message>
+    <message>
+        <source>Square side = tool diameter + tab length. Tab top in Z is set separately.</source>
+        <translation>Сторона квадрата = диаметр инструмента + длина перемычки. Верх по Z задаётся отдельно.</translation>
+    </message>
 </context>
 <context>
     <name>MyDropDownMenu</name>
@@ -4796,6 +4820,10 @@ Skipped Geometries</source>
         <source>Decimal places used only for GUI display; stored values retain full precision.</source>
         <translation>Знаки после запятой только для отображения; сохранённые значения сохраняют полную точность.</translation>
     </message>
+    <message>
+        <source>Default placement mode and remaining tab length in configuration units.</source>
+        <translation>Режим размещения по умолчанию и оставшаяся длина перемычки в единицах конфигурации.</translation>
+    </message>
 </context>
 <context>
     <name>CfgListEdit</name>
@@ -5729,12 +5757,176 @@ Skipped Geometries</source>
       <translation>Изменить импортированные области перемычек</translation>
     </message>
     <message>
-      <source>Finish tab editing</source>
-      <translation>Завершить редактирование перемычек</translation>
-    </message>
-    <message>
       <source>Tab edit mode</source>
       <translation>Режим редактирования перемычек</translation>
     </message>
-  </context>
+      <message>
+      <source>Assignment</source>
+      <translation>Назначение</translation>
+    </message>
+    <message>
+      <source>Change assignment…</source>
+      <translation>Изменить назначение…</translation>
+    </message>
+    <message>
+      <source>Changes affect every linked operation. Remove assignment to exclude only one operation.</source>
+      <translation>Изменения влияют на все связанные операции. Удалите назначение, чтобы исключить только одну операцию.</translation>
+    </message>
+    <message>
+      <source>Choose assignment…</source>
+      <translation>Выбрать назначение…</translation>
+    </message>
+    <message>
+      <source>Clear local exclusions ({0})</source>
+      <translation>Сбросить локальные исключения ({0})</translation>
+    </message>
+    <message>
+      <source>DXF</source>
+      <translation>DXF</translation>
+    </message>
+    <message>
+      <source>Delete region…</source>
+      <translation>Удалить область…</translation>
+    </message>
+    <message>
+      <source>Delete this region globally? {0} effective operations are affected. This can be undone.</source>
+      <translation>Удалить эту область глобально? Затронуто действующих операций: {0}. Действие можно отменить.</translation>
+    </message>
+    <message>
+      <source>Draw a rectangle. Escape cancels.</source>
+      <translation>Нарисуйте прямоугольник. Escape отменяет действие.</translation>
+    </message>
+    <message>
+      <source>Draw new tab region…</source>
+      <translation>Нарисовать новую область перемычки…</translation>
+    </message>
+    <message>
+      <source>Edit tab region</source>
+      <translation>Изменить область перемычки</translation>
+    </message>
+    <message>
+      <source>Enter valid tab height and positive feeds.</source>
+      <translation>Введите допустимую высоту перемычки и положительные подачи.</translation>
+    </message>
+    <message>
+      <source>Global</source>
+      <translation>глобальная</translation>
+    </message>
+    <message>
+      <source>Manual</source>
+      <translation>вручную</translation>
+    </message>
+    <message>
+      <source>Name</source>
+      <translation>Имя</translation>
+    </message>
+    <message>
+      <source>No effective tabs</source>
+      <translation>без действующих перемычек</translation>
+    </message>
+    <message>
+      <source>Remove assignment</source>
+      <translation>Удалить назначение</translation>
+    </message>
+    <message>
+      <source>Selected operations</source>
+      <translation>выбранные операции</translation>
+    </message>
+    <message>
+      <source>Source / effect</source>
+      <translation>Источник / действие</translation>
+    </message>
+    <message>
+      <source>Step</source>
+      <translation>этап обработки</translation>
+    </message>
+    <message>
+      <source>Tab region</source>
+      <translation>Область перемычки</translation>
+    </message>
+    <message>
+      <source>Tab region {0}</source>
+      <translation>Область перемычки {0}</translation>
+    </message>
+    <message>
+      <source>Tab regions</source>
+      <translation>Области перемычек</translation>
+    </message>
+    <message>
+      <source>Tab regions · 2D editor</source>
+      <translation>Области перемычек · 2D-редактор</translation>
+    </message>
+    <message>
+      <source>{0} operations</source>
+      <translation>Операций: {0}</translation>
+    </message>
+    <message>
+      <source>{0} tabs</source>
+      <translation>Перемычек: {0}</translation>
+    </message>
+    <message>
+      <source>Imported tab regions</source>
+      <translation>Импортированные области перемычек</translation>
+    </message>
+    <message>
+      <source>Linked contours are highlighted; their machining parameters are not selected for editing.</source>
+      <translation>Связанные контуры выделены; их параметры обработки не выбраны для редактирования.</translation>
+    </message>
+    <message>
+      <source>Tab {0}</source>
+      <translation>Перемычка {0}</translation>
+    </message>
+    <message>
+      <source>No intersecting contour. Change the region.</source>
+      <translation>Нет пересекающего контура. Измените область.</translation>
+    </message>
+    <message>
+        <source>Enter a positive size. Enter confirms; Escape cancels.</source>
+        <translation>Введите положительный размер. Enter подтверждает; Escape отменяет.</translation>
+    </message>
+    <message>
+        <source>Contour {0} · {1}</source>
+        <translation>Контур {0} · {1}</translation>
+    </message>
+    <message>
+        <source>Align tab region</source>
+        <translation>Выровнять область перемычки</translation>
+    </message>
+    <message>
+        <source>Choose original contour</source>
+        <translation>Выберите исходный контур</translation>
+    </message>
+    <message>
+        <source>Alignment needs exactly two crossings with an original contour.</source>
+        <translation>Для выравнивания нужны ровно две точки пересечения с исходным контуром.</translation>
+    </message>
+    <message>
+        <source>Snap to contour</source>
+        <translation>Привязка к контуру</translation>
+    </message>
+    <message>
+        <source>Draw manually</source>
+        <translation>Рисовать вручную</translation>
+    </message>
+    <message>
+        <source>Click an original contour to place a tab. Escape cancels.</source>
+        <translation>Щёлкните исходный контур для размещения перемычки. Escape отменяет.</translation>
+    </message>
+    <message>
+        <source>Tab placement</source>
+        <translation>Размещение перемычек</translation>
+    </message>
+    <message>
+        <source>{0} · Contour {1} · T{2} · Ø{3} {4}</source>
+        <translation>{0} · Контур {1} · T{2} · Ø{3} {4}</translation>
+    </message>
+    <message>
+        <source>No selected machining contour intersects this region.</source>
+        <translation>Ни один выбранный контур обработки не пересекает эту область.</translation>
+    </message>
+    <message>
+        <source>Select a contour or machining operation before drawing a tab.</source>
+        <translation>Перед рисованием перемычки выберите контур или операцию обработки.</translation>
+    </message>
+</context>
 </TS>

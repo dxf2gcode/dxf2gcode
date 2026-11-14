@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben
 
-Stand: **08.11.2026**.
+Stand: **14.11.2026**.
 
 Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
 Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
@@ -94,13 +94,30 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
   entfernen und rückgängig machen; Wirkung auf mehrere Schritte prüfen.
   D41 mit schmalen Regionen nur auf der Originalkontur, G41/G42, Bögen und
   eckübergreifenden Stegen fachlich prüfen; Warnungen ausgelassener Stege beachten.
+  D42 mit `BreakExample_Circle.dxf` bedienen: konturbezogene Regionsverknüpfungen,
+  automatische Rechteckanzeige, Zeichnen/Verschieben/Eckgriffe, Zuordnung,
+  globale Löschrückfrage und Undo sowie .d2g-2.1-Wiederladen fachlich abnehmen.
+  D44: Live-Maße, direkte Maßeingabe und Strg-Ausrichtung an zwei Originalkontur-
+  Schnittpunkten einschließlich mehrdeutiger Zielwahl praktisch abnehmen.
+  D45: Fang-Voreinstellung, Werkzeug-/Zielwahl, Quadratseite aus Durchmesser plus
+  Steglänge beim Aufziehen, Einheitenumrechnung, Modus je Steg und dessen
+  Doppelklick-Bearbeitung fachlich abnehmen.
+  D46: automatische Stegnachführung bei Werkzeugwechsel, gemeinsame Regionen mit
+  unterschiedlichen Werkzeugen sowie Maßfelder auf den Kantenmitten praktisch prüfen.
+  D47: Erstklick-Auswahl, anschließendes Verschieben/Größenändern, Doppelklick und
+  nur bei ruhender Auswahl sichtbare Maßfelder praktisch prüfen.
+  D48: erforderliche Zielauswahl, alle Verknüpfungen einer Originalkontur gegenüber
+  expliziten Bearbeitungen/Schritten und mehrere automatische Steggrößen abnehmen.
+  D43: BREAKS-Layer, einzelne Regionen, Regionsgruppen und ganze Schritte
+  wiederholt anklicken/doppelklicken; abgeleitete Baummarkierung, stabile
+  Parameterkontexte und unveränderte Original-/Werkzeugbahnfarben prüfen.
   P1–P6 sind [implementiert und lokal geprüft](archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6).
   [Gemeinsamer Detailplan](planning/r3-r1b-implementation-plan.md),
   [R3-Anforderungen](planning/open-task-details.md#r3) und [R1b](planning/open-task-details.md#r1b).
-- [ ] **R3 – Stegregionen P7, später:** manuelle Regionen, Geometriefang und
-  automatische Platzierung separat abstimmen; bestehende BREAKS:-Funktion
-  ist als globale Modifikatorverwaltung vorhanden. Neue Regionen zeichnen,
-  verschieben und lokal zuordnen bleibt das [Folgepaket](planning/r3-r1b-implementation-plan.md).
+- [ ] **R3 – Weitere Steghilfen P7:** automatische Platzierung separat abstimmen.
+  Manuelle Regionsbearbeitung und Strg-Ausrichtung an Originalkonturen sind
+  [implementiert](archive/toolpath-refactoring-completed.md#r3-manual-regions);
+  [verbleibender Umfang](planning/r3-r1b-implementation-plan.md).
 - [ ] **R3-IGNORE – Bedienung ignorierter Geometrie abstimmen:** Empfehlung:
   „Ignoriert“ nicht als neue Bearbeitungsart anbieten; `IGNORE:`-Import und
   gespeicherte Projekte erhalten und die wirkungslose Exportaktivierung klar

@@ -192,6 +192,11 @@ CONFIG_SPEC = str('''
     decimals_angle = integer(min = 0, max = 12, default = 1)
     decimals_feed = integer(min = 0, max = 12, default = 1)
 
+    [Tab_Regions]
+    # Default placement mode and remaining tab length in configuration units.
+    creation_mode = option('snap', 'manual', default = 'snap')
+    tab_length = float(min = 0.000001, default = 2.0)
+
     [Cutter_Compensation]
     # If not checked, DXF2GCODE will create a virtual path for G41 and G42 command. And output will be set to G40; i.e. it will create the path that normally your machine would create with it's cutter compensation.
     done_by_machine = boolean(default = True)

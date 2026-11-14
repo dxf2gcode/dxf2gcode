@@ -71,6 +71,7 @@ class MachiningPreview(QtCore.QObject):
         panel, binding = self.panel, self.panel.binding
         self.records = []
         self.selected = set(panel.selected_entries())
+        self.selected.update(panel.modifiers.related_operations)
         self.counts, self.anchors = {}, {}
         by_geometry = binding.operations_by_geometry()
         scene = panel.window.canvas_scene
