@@ -4733,10 +4733,6 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Haltestege</translation>
     </message>
     <message>
-        <source>Ignored</source>
-        <translation>Ignoriert</translation>
-    </message>
-    <message>
         <source>Custom G-code</source>
         <translation>Freier G-Code</translation>
     </message>
@@ -4997,10 +4993,6 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Die Originalkontur fehlt oder ist mehrdeutig.</translation>
     </message>
     <message>
-        <source>Holding-tab and ignored assignments must retain their kind.</source>
-        <translation>Haltesteg- und Ignore-Zuordnungen müssen ihre Art behalten.</translation>
-    </message>
-    <message>
         <source>Drilling requires a point or circle and G40.</source>
         <translation>Bohren benötigt einen Punkt oder Kreis und G40.</translation>
     </message>
@@ -5127,12 +5119,8 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Mehrere passende Schritte vorhanden. Ziel für „{0}“ auswählen.</translation>
     </message>
     <message>
-        <source>Excluded</source>
-        <translation>Ausgeschlossen</translation>
-    </message>
-    <message>
-        <source>Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.</source>
-        <translation>Ignorierte Geometrie ist immer vom Export ausgeschlossen. Zum vorübergehenden Ausschließen normaler Bearbeitungen deren Exportcheckbox verwenden.</translation>
+        <source>Holding-tab assignments must retain their kind.</source>
+        <translation>Haltestegzuordnungen müssen ihre Bearbeitungsart behalten.</translation>
     </message>
 </context>
 <context>

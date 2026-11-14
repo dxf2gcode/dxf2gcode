@@ -18,7 +18,7 @@ PARAMETERS = frozenset((
     'milling_offset', 'lead_in_mode', 'lead_out_mode', 'overcut_enabled',
     'lead_radius', 'lead_length', 'overcut_length', 'drag_swivel_depth',
     'drag_angle', 'cut_cor', 'break_pass', 'speed', 'start_radius'))
-KINDS = frozenset(('contour', 'pocket', 'drill', 'break', 'ignored'))
+KINDS = frozenset(('contour', 'pocket', 'drill', 'break'))
 TOOL_PARAMETERS = ('lead_radius', 'lead_length', 'overcut_length', 'speed', 'start_radius')
 
 
@@ -227,7 +227,7 @@ class MachiningProject:
         self.validate()
         missing = [entry.id for step in self.steps for entry in step.entries
                    if isinstance(entry, MachiningOperation) and entry.enabled
-                   and step.kind not in ('break', 'ignored')
+                   and step.kind != 'break'
                    and entry.geometry_id in self.unresolved]
         if missing:
             raise ValueError('Unresolved machining geometry: ' + ', '.join(missing))

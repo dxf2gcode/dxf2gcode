@@ -358,7 +358,7 @@ class MachiningPanel(QWidget):
 
     def kind_text(self, kind):
         return {'contour': self.tr('Contour'), 'pocket': self.tr('Pocket'), 'drill': self.tr('Drilling'),
-                'break': self.tr('Holding tabs'), 'ignored': self.tr('Ignored')}[kind]
+                'break': self.tr('Holding tabs')}[kind]
 
     def refresh(self, selection=None):
         if self.binding is None:
@@ -381,8 +381,6 @@ class MachiningPanel(QWidget):
             tool = project.tools[step.tool_id]
             root = QTreeWidgetItem(self.tree, ['%s · %s · T%d' % (step.name, self.kind_text(step.kind), tool.tool_nr)])
             root.setToolTip(0, '%s · Ø%s' % (root.text(0), format_number(tool.tool_diameter, project.units)))
-            if step.kind == 'ignored':
-                root.setToolTip(0, self.tr('Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.'))
             root.setData(0, ROLE, ('step', step.id))
             tree_items[('step', step.id)] = root
             for entry in step.entries:
@@ -403,15 +401,10 @@ class MachiningPanel(QWidget):
                 item.setData(0, SOURCE_ROLE, source)
                 item.setToolTip(0, source)
                 self.entry_items[entry.id] = item
-                if step.kind == 'ignored':
-                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
-                    item.setText(1, self.tr('Excluded'))
-                    item.setToolTip(1, self.tr('Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.'))
-                else:
-                    item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                    item.setCheckState(1, Qt.CheckState.Checked if entry.enabled else Qt.CheckState.Unchecked)
-                    if isinstance(entry, MachiningOperation):
-                        item.setCheckState(2, Qt.CheckState.Checked if entry.optimize else Qt.CheckState.Unchecked)
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                item.setCheckState(1, Qt.CheckState.Checked if entry.enabled else Qt.CheckState.Unchecked)
+                if isinstance(entry, MachiningOperation):
+                    item.setCheckState(2, Qt.CheckState.Checked if entry.optimize else Qt.CheckState.Unchecked)
                 item.setSelected(entry.id in selected)
                 if self.context == entry.id:
                     font = item.font(0)
@@ -746,9 +739,6 @@ class MachiningPanel(QWidget):
             return
         kind, identity = item.data(0, ROLE)
         if kind == 'entry':
-            step, _ = self.commands.entries(self.binding.project, [identity])[0]
-            if step.kind == 'ignored':
-                return
             key = 'enabled' if column == 1 else 'optimize'
             value = item.checkState(column) == Qt.CheckState.Checked
             commands = self.commands
@@ -768,9 +758,8 @@ class MachiningPanel(QWidget):
         name.setObjectName('stepName')
         form.addRow(self.tr('Name'), name)
         kinds = QComboBox(dialog)
-        for key in (('ignored',) if step and step.kind == 'ignored' else ('contour', 'pocket', 'drill')):
+        for key in ('contour', 'pocket', 'drill'):
             kinds.addItem(self.kind_text(key), key)
-        kinds.setEnabled(not step or step.kind != 'ignored')
         kinds.setCurrentIndex(kinds.findData(step.kind) if step else 0)
         kinds.setProperty('explicit_kind', False)
         kinds.activated.connect(lambda index: kinds.setProperty('explicit_kind', True))
@@ -845,7 +834,7 @@ class MachiningPanel(QWidget):
             kinds.addItem(self.kind_text(kind), kind)
         sources = self.commands.entries(self.binding.project, identities)
         kinds_used = {step.kind for step, _ in sources}
-        if len(kinds_used) == 1 and 'ignored' not in kinds_used:
+        if len(kinds_used) == 1:
             kinds.setCurrentIndex(kinds.findData(next(iter(kinds_used))))
         form.addRow(self.tr('Kind'), kinds)
         tools = QComboBox(dialog)
@@ -1354,7 +1343,7 @@ class MachiningPanel(QWidget):
         reasons = {
             'literal actions require a machining step': self.tr('Literal actions require a machining step.'),
             'unresolved source contour': self.tr('The original contour is missing or ambiguous.'),
-            'special-layer assignments cannot change kind': self.tr('Holding-tab and ignored assignments must retain their kind.'),
+            'special-layer assignments cannot change kind': self.tr('Holding-tab assignments must retain their kind.'),
             'Select machining contours to change tools': self.tr('Select machining contours to change tools.'),
             'drilling requires a point/circle and G40': self.tr('Drilling requires a point or circle and G40.'),
             'a drilling point is not a milling contour': self.tr('A drilling point cannot be used as a milling contour.'),

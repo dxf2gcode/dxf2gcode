@@ -36,25 +36,35 @@ from toolpath_test_support import serialize_gcode
 
 
 class TestMachiningProject(GoldenTestBase):
-    def test_ignore_import_and_old_project_roundtrip_remain_excluded(self):
-        for legacy in (False, True):
-            with self.subTest(legacy=legacy):
-                shape, layers = self.drawing()
-                layers[0].name = 'IGNORE:helpers'
-                parent = _ParentStub(layers)
-                session = Project(parent)
-                if legacy:
-                    text = LegacyProject(parent, g.config, decode=decode_d2g).export()
-                    session.load(text, compleet=False)
-                text = session.export_current()
-                document = decode_project(text)
-                self.assertEqual(document.machining.steps[0].kind, 'ignored')
-                before = document.machining.to_dict()
-                session.load(text, compleet=False)
-                self.assertEqual(session.machining_drawing.project.to_dict(), before)
-                view = session.machining_drawing.materialize()[0]
-                self.assertFalse(view.exp_order_complete)
-                self.assertTrue(all(s.disabled for s in view.shapes))
+    def test_ignore_import_is_unassigned_and_can_be_assigned_normally(self):
+        from dxf2gcode.application.machining_actions import MachiningCommands
+        shape, layers = self.drawing()
+        layers[0].name = 'IGNORE:helpers'
+        binding = MachiningDrawing.capture(layers, g.config)
+        self.assertFalse(binding.project.steps)
+        self.assertEqual(len(binding.sources), 1)
+        self.assertFalse(binding.operations_by_geometry())
+        project = MachiningProject.from_dict(binding.project.to_dict())
+        self.assertFalse(project.steps)
+        commands = MachiningCommands(binding)
+        tool = ToolSettings.from_profile(1, g.config.vars.Tool_Parameters['1'])
+        commands.create_step('IGNORE:helpers', 'contour', tool)
+        target = binding.project.steps[0]
+        before = binding.project.to_dict()
+        commands.assign_to_step([], [shape], target.id)
+        entry = binding.project.steps[0].entries[0]
+        self.assertTrue(entry.enabled)
+        layer = binding.materialize()[0]
+        self.assertFalse(layer.should_ignore())
+        self.assertEqual(layer.exp_order_complete, [0])
+        self.assertFalse(layer.shapes[0].disabled)
+        commands.undo()
+        self.assertEqual(binding.project.to_dict(), before)
+        commands.redo()
+        self.assertTrue(binding.project.steps[0].entries[0].enabled)
+        rebound = MachiningDrawing(MachiningProject.from_dict(binding.project.to_dict()), layers)
+        self.assertFalse(rebound.materialize()[0].should_ignore())
+        self.assertEqual(rebound.materialize()[0].exp_order_complete, [0])
 
     def test_load_unifies_only_complete_equal_tool_definitions(self):
         _, binding = self.captured()

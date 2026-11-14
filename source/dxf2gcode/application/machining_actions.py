@@ -41,14 +41,14 @@ def default_step_values(project):
 def validate_target(binding, project, step, entry, source_kind=None):
     """Reject incompatible assignments without normalizing their own values."""
     if isinstance(entry, LiteralAction):
-        if step.kind in ('break', 'ignored'):
+        if step.kind == 'break':
             raise ValueError(entry.name + ': literal actions require a machining step')
         return
     shape = binding.sources.get(entry.geometry_id)
     if shape is None:
         raise ValueError(entry.id + ': unresolved source contour')
     label = '%s / %s' % (shape.parentLayer.name, shape.nr)
-    if source_kind in ('break', 'ignored') or step.kind in ('break', 'ignored'):
+    if source_kind == 'break' or step.kind == 'break':
         if source_kind != step.kind:
             raise ValueError(label + ': special-layer assignments cannot change kind')
         return
@@ -306,7 +306,7 @@ class MachiningCommands:
             sources = self.binding.sources
             self.binding.sources = dict(sources, **{identity: shape})
             try:
-                source_kind = 'break' if shape.parentLayer.isBreakLayer() else 'ignored' if shape.parentLayer.should_ignore() else None
+                source_kind = 'break' if shape.parentLayer.isBreakLayer() else None
                 validate_target(self.binding, project, step, entry, source_kind)
             except ValueError as error:
                 errors.append(str(error))
@@ -406,7 +406,7 @@ class MachiningCommands:
             selected = self.entries(project, identities)
             groups, differences, errors = {}, [], []
             for source, entry in selected:
-                if not isinstance(entry, MachiningOperation) or source.kind in ('break', 'ignored'):
+                if not isinstance(entry, MachiningOperation) or source.kind == 'break':
                     raise ValueError('special-layer assignments cannot change kind')
                 target_kind = kind or source.kind
                 if compensation is not None:
@@ -455,7 +455,7 @@ class MachiningCommands:
         def change(project):
             selected = self.entries(project, identities)
             if not selected or any(not isinstance(entry, MachiningOperation) or
-                    source.kind in ('break', 'ignored') for source, entry in selected):
+                    source.kind == 'break' for source, entry in selected):
                 raise ValueError('Select machining contours to change tools')
             tool_id = _register_tool(project, tool) if isinstance(tool, ToolSettings) else tool
             definition = project.tools[tool_id]

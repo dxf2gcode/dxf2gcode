@@ -136,6 +136,8 @@ print('Installed package, Qt resources, desktop files and translations verified'
         gcode = output.with_suffix(".ngc").read_text(encoding="utf-8")
         assert "G1 X" in gcode and "M2" in gcode
         print("Module/console launch and headless DXF export verified")
+        print(run([str(python), str(repo / 'tests' / 'verify_installed_machining.py'),
+                   '--fixture', str(repo / 'docs/assets/examples/tabs/rectangle-with-tab-mm.dxf')]).strip())
 
 
 def main():

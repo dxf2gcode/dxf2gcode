@@ -22,7 +22,7 @@ def project_tool_errors(project, config, translate=lambda text: text):
                   lead_length=tr('Lead length'), overcut_length=tr('Overcut length'))
     used = {}
     for step in project.steps:
-        if step.kind not in ('break', 'ignored') and any(e.enabled for e in step.entries):
+        if step.kind != 'break' and any(e.enabled for e in step.entries):
             used.setdefault(step.tool_id, []).append(step.name)
     errors = []
     for identity, names in used.items():

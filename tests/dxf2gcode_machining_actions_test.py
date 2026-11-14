@@ -247,7 +247,7 @@ class TestMachiningActions(GoldenTestBase):
         with self.assertRaises(ValueError):
             commands.set_operation_tool(selected + ['foreign'], tool)
         self.assertEqual(commands.binding.project.to_dict(), before)
-        commands.binding.project.steps[-1].kind = 'ignored'
+        commands.binding.project.steps[-1].kind = 'break'
         special = commands.binding.project.to_dict()
         with self.assertRaisesRegex(ValueError, 'Select machining contours'):
             commands.set_operation_tool(selected, tool)

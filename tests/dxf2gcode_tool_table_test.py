@@ -50,10 +50,10 @@ class TestToolTableExport(GoldenTestBase):
         for expected in ('T99', step.name, 'Finishing', 'missing', 'Diameter', 'Add or correct'):
             self.assertIn(expected, message)
 
-    def test_unused_disabled_ignored_and_break_steps_do_not_block(self):
+    def test_unused_disabled_and_break_steps_do_not_block(self):
         binding, step = self.drawing()
         binding.project.tools[step.tool_id] = replace(binding.project.tools[step.tool_id], tool_nr=99)
-        for kind in ('ignored', 'break'):
+        for kind in ('break',):
             step.kind = kind
             self.assertEqual(project_tool_errors(binding.project, g.config), [])
         step.kind = 'contour'

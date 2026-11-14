@@ -4696,10 +4696,6 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Attaches</translation>
     </message>
     <message>
-        <source>Ignored</source>
-        <translation>Ignoré</translation>
-    </message>
-    <message>
         <source>Custom G-code</source>
         <translation>G-code personnalisé</translation>
     </message>
@@ -4960,10 +4956,6 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Le contour d’origine est absent ou ambigu.</translation>
     </message>
     <message>
-        <source>Holding-tab and ignored assignments must retain their kind.</source>
-        <translation>Les affectations d’attaches et de contours ignorés doivent conserver leur type.</translation>
-    </message>
-    <message>
         <source>Drilling requires a point or circle and G40.</source>
         <translation>Le perçage nécessite un point ou un cercle et G40.</translation>
     </message>
@@ -5090,12 +5082,8 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Plusieurs étapes compatibles existent. Choisissez la destination pour « {0} ».</translation>
     </message>
     <message>
-        <source>Excluded</source>
-        <translation>Exclu</translation>
-    </message>
-    <message>
-        <source>Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.</source>
-        <translation>La géométrie ignorée est toujours exclue de l’export. Utiliser la case Export des opérations normales pour une exclusion temporaire.</translation>
+        <source>Holding-tab assignments must retain their kind.</source>
+        <translation>Les affectations d’attaches doivent conserver leur type.</translation>
     </message>
 </context>
 <context>

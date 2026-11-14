@@ -126,8 +126,6 @@ def parameter_snapshot(shape):
 def _kind(layer, shape):
     if layer.isBreakLayer():
         return 'break'
-    if layer.should_ignore():
-        return 'ignored'
     return 'drill' if shape.Drill else 'pocket' if shape.Pocket else 'contour'
 
 
@@ -167,6 +165,8 @@ class MachiningDrawing:
             for index in order:
                 shape = layer.shapes[index]
                 if isinstance(shape, CustomGCode):
+                    if layer.should_ignore():
+                        continue
                     if step is None:
                         tool = effective_tool(layer.shapes[next((i for i in order if not
                             isinstance(layer.shapes[i], CustomGCode)), index)], layer)
@@ -182,6 +182,8 @@ class MachiningDrawing:
                 geometry_id = getattr(shape, 'geometry_id', None) or new_id()
                 shape.geometry_id = geometry_id
                 project.geometries[geometry_id] = GeometryReference(geometry_id, *key)
+                if layer.should_ignore():
+                    continue
                 tool = effective_tool(shape)
                 tool = ToolSettings(**{key: getattr(tool, key) for key in ToolSettings.__dataclass_fields__})
                 tool_id = _register_tool(project, tool)
@@ -255,11 +257,10 @@ class MachiningDrawing:
             layer.nr = len(layers)
             layer.machining_step_id = step.id
             layer.config = configuration
-            layer.name = ('BREAKS:' + step.name if step.kind == 'break' else
-                          'IGNORE:' + step.name if step.kind == 'ignored' else step.name)
+            layer.name = 'BREAKS:' + step.name if step.kind == 'break' else step.name
             # User names do not acquire import-layer semantics.
             layer.isBreakLayer = lambda kind=step.kind: kind == 'break'
-            layer.should_ignore = lambda kind=step.kind: kind == 'ignored'
+            layer.should_ignore = lambda: False
             layer.shapes = Shapes()
             layer.exp_order_complete = []
             layer.exp_order = []
@@ -270,7 +271,7 @@ class MachiningDrawing:
                 if isinstance(entry, LiteralAction):
                     shape = CustomGCode(entry.name, sum(len(l.shapes) for l in layers) + len(layer.shapes),
                                         entry.gcode, layer)
-                    shape.disabled = not entry.enabled or step.kind == 'ignored'
+                    shape.disabled = not entry.enabled
                 elif entry.geometry_id not in self.sources:
                     continue  # disabled unresolved entries are retained in the document
                 else:
@@ -302,7 +303,7 @@ class MachiningDrawing:
                     shape.Drill, shape.Pocket = step.kind == 'drill', step.kind == 'pocket'
                     if entry.legacy_conflict:
                         shape.Drill, shape.Pocket, shape.cut_cor = entry.legacy_conflict
-                    shape.disabled = not entry.enabled or step.kind == 'ignored'
+                    shape.disabled = not entry.enabled
                     shape.send_to_TSP = entry.optimize
                     if shape.cw != entry.clockwise:
                         shape.reverse()

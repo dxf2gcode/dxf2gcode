@@ -526,56 +526,45 @@ def exercise_ignored_steps(window, app):
     from importlib import import_module
     from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
     from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QComboBox
-    from dxf2gcode.presentation.qt.machining_panel import ROLE
     Qt = QtCore.Qt
     QTest = import_module('PyQt%d.QtTest' % PYQT_VERSION).QTest
+    window.filename = str(ROOT / 'docs/assets/examples/ignored-layers/ignore-layers-mm.dxf')
+    assert window.load()
     panel = window.machining_panel
+    assert len(panel.binding.sources) == 8
+    assert {step.kind for step in panel.binding.project.steps} == {'contour'}
+    assert len(panel.binding.project.steps) == 2 and len(panel.unassigned) == 4
+    assert all(shape.parentLayer.name.startswith('IGNORE:') for shape in panel.unassigned)
+    assert all(shape.disabled for shape in panel.unassigned)
+    initial = panel.binding.project.to_dict()
+    comparison = next(s for s in panel.binding.project.steps if s.name == 'Compare_Unassigned')
+    panel.execute(lambda: panel.commands.remove([e.id for e in comparison.entries]))
+    assert len(panel.unassigned) == 6 and all(shape.disabled for shape in panel.unassigned)
+    for source in panel.unassigned:
+        assert panel.canvas_preview.counts[source.geometry_id] == (0, 0)
+    panel.undo()
+    assert panel.binding.project.to_dict() == initial
+    shape = panel.unassigned[0]
     before = panel.binding.project.to_dict()
-    history = len(panel.commands.undo_stack)
-    step_id = panel.binding.project.steps[0].id
-    def make_ignored(project):
-        step = next(s for s in project.steps if s.id == step_id)
-        step.kind = 'ignored'
-    panel.execute(lambda: panel.commands.perform('ignored fixture', make_ignored))
-    try:
-        step = next(s for s in panel.binding.project.steps if s.id == step_id)
-        entry_id = step.entries[0].id
-        for enabled in (False, True):
-            panel.execute(lambda enabled=enabled: panel.commands.update_entries([entry_id], enabled=enabled))
-            item = panel.entry_items[entry_id]
-            assert not item.flags() & Qt.ItemFlag.ItemIsUserCheckable
-            assert item.data(1, Qt.ItemDataRole.CheckStateRole) is None
-            assert item.data(2, Qt.ItemDataRole.CheckStateRole) is None
-            assert item.text(1) == panel.tr('Excluded')
-            assert item.toolTip(1) == panel.tr('Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.')
-            unchanged = panel.binding.project.to_dict()
-            panel.checked(item, 1)
-            panel.checked(item, 2)
-            app.processEvents()
-            assert panel.binding.project.to_dict() == unchanged
-            layer = next(l for l in panel.binding.materialize() if l.machining_step_id == step_id)
-            assert not layer.exp_order_complete and all(s.disabled for s in layer.shapes)
-        def inspect_new():
-            dialog = app.activeModalWidget()
-            kinds = next(combo for combo in dialog.findChildren(QComboBox) if combo.findData('contour') >= 0)
-            assert kinds.findData('ignored') == -1
-            dialog.reject()
-        QtCore.QTimer.singleShot(0, inspect_new)
-        assert panel.step_dialog() is None
-        QtCore.QTimer.singleShot(0, inspect_new)
-        assert panel.assignment_dialog((), ()) is None
-        def inspect_existing():
-            dialog = app.activeModalWidget()
-            kinds = next(combo for combo in dialog.findChildren(QComboBox) if combo.findData('ignored') >= 0)
-            assert kinds.count() == 1 and not kinds.isEnabled()
-            dialog.accept()
-        QtCore.QTimer.singleShot(0, inspect_existing)
-        result = panel.step_dialog(next(s for s in panel.binding.project.steps if s.id == step_id))
-        assert result[1] == 'ignored'
-    finally:
-        while len(panel.commands.undo_stack) > history:
-            panel.undo()
-    assert panel.binding.project.to_dict() == before
+    target = panel.binding.project.steps[0]
+    assert panel.execute(lambda: panel.commands.assign_to_step([], [shape], target.id))
+    assert len(panel.unassigned) == 3 and not shape.disabled
+    entry = panel.binding.operations_by_geometry()[shape.geometry_id][0][1]
+    assert panel.entry_items[entry.id].flags() & Qt.ItemFlag.ItemIsUserCheckable
+    layer = next(l for l in panel.binding.materialize() if l.machining_step_id == target.id)
+    assert not layer.should_ignore() and len(layer.exp_order_complete) == 3
+    panel.undo()
+    assert panel.binding.project.to_dict() == before and len(panel.unassigned) == 4
+    assert shape.disabled
+    def inspect_new():
+        dialog = app.activeModalWidget()
+        kinds = next(combo for combo in dialog.findChildren(QComboBox) if combo.findData('contour') >= 0)
+        assert kinds.findData('ignored') == -1
+        dialog.reject()
+    QtCore.QTimer.singleShot(0, inspect_new)
+    assert panel.step_dialog() is None
+    QtCore.QTimer.singleShot(0, inspect_new)
+    assert panel.assignment_dialog((), ()) is None
 
 
 def exercise_tab_modifiers(window, app, folder):

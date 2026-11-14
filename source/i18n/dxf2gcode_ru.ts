@@ -4952,10 +4952,6 @@ Skipped Geometries</source>
         <translation>Перемычки</translation>
     </message>
     <message>
-        <source>Ignored</source>
-        <translation>Пропускается</translation>
-    </message>
-    <message>
         <source>Custom G-code</source>
         <translation>Пользовательский G-код</translation>
     </message>
@@ -5216,10 +5212,6 @@ Skipped Geometries</source>
         <translation>Исходный контур отсутствует или неоднозначен.</translation>
     </message>
     <message>
-        <source>Holding-tab and ignored assignments must retain their kind.</source>
-        <translation>Назначения перемычек и пропускаемых контуров должны сохранять свой вид.</translation>
-    </message>
-    <message>
         <source>Drilling requires a point or circle and G40.</source>
         <translation>Для сверления требуется точка или окружность и G40.</translation>
     </message>
@@ -5346,12 +5338,8 @@ Skipped Geometries</source>
         <translation>Найдено несколько подходящих шагов. Выберите назначение для «{0}».</translation>
     </message>
     <message>
-        <source>Excluded</source>
-        <translation>Исключено</translation>
-    </message>
-    <message>
-        <source>Ignored geometry is always excluded from export. Use the Export checkbox on normal operations for temporary exclusion.</source>
-        <translation>Игнорируемая геометрия всегда исключена из экспорта. Для временного исключения обычных операций используйте флажок экспорта.</translation>
+        <source>Holding-tab assignments must retain their kind.</source>
+        <translation>Назначения перемычек должны сохранять свой тип.</translation>
     </message>
 </context>
 <context>

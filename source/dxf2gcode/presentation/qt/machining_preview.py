@@ -85,7 +85,7 @@ class MachiningPreview(QtCore.QObject):
                  if hasattr(shape, 'geos')}
         directions = panel.window.ui.actionShowPathDirections.isChecked()
         for step in binding.project.steps:
-            if step.kind in ('ignored', 'break'):
+            if step.kind == 'break':
                 continue
             for entry in step.entries:
                 if not isinstance(entry, MachiningOperation) or entry.id not in views:
