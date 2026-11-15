@@ -88,9 +88,10 @@ class TestReleasePublication(unittest.TestCase):
     def test_release_description_shows_highlights_and_preserves_provenance(self):
         manifest = self.manifest()
         marker = release_marker(manifest['revision'], manifest['run_id'])
-        text = publish_release.release_description(manifest, marker)
+        text = publish_release.release_description(manifest, marker, '### Changes in this release\n\n- Example fix')
         self.assertIn('Highlights of the 2.0.0 development line', text)
-        self.assertLess(text.index('Highlights'), text.index('<details>'))
+        self.assertLess(text.index('Example fix'), text.index('<details>'))
+        self.assertLess(text.index('<details>'), text.index('Highlights'))
         self.assertIn('**unsigned**', text)
         self.assertIn(manifest['revision'], text)
         self.assertIn(marker, text)
@@ -205,6 +206,81 @@ class TestReleasePublication(unittest.TestCase):
         updated = [payload for args, payload in calls if payload and 'body' in payload]
         self.assertEqual(updated[0]['name'], 'DXF2GCODE Develop 2.0.0.dev123')
         self.assertIn('Package version: `2.0.0.dev123`', updated[0]['body'])
+
+
+class TestReleaseChanges(unittest.TestCase):
+    def test_github_json_uses_utf8_on_windows_too(self):
+        from types import SimpleNamespace
+        with patch.object(publish_release.subprocess, 'run', return_value=SimpleNamespace(stdout='{"title":"caf\u00e9"}')) as run:
+            self.assertEqual(publish_release.gh('api', 'example')['title'], 'caf\u00e9')
+        self.assertEqual(run.call_args.kwargs['encoding'], 'utf-8')
+
+    def setUp(self):
+        self.previous = TestReleasePolicy().release(12)
+        self.manifest = TestReleasePublication().manifest()
+
+    def commit(self, number, subject, parents=1):
+        return dict(sha='%040x' % number, commit=dict(message=subject), parents=[{}]*parents)
+
+    def test_channel_baseline_pagination_categories_and_merge_deduplication(self):
+        draft = TestReleasePolicy().release(14)
+        draft['draft'] = True
+        foreign = TestReleasePolicy().release(15)
+        foreign['body'] = 'Unrelated preview'
+        stable = dict(TestReleasePolicy().release(16), tag_name='v1.9.0', prerelease=False)
+        pages = [dict(status='ahead', commits=[self.commit(101, 'feat(gui): add tab editing'),
+                 self.commit(102, 'fix(core): retain precision\n\nDetails'),
+                 self.commit(103, 'Merge branch', 2)]),
+                 dict(status='ahead', commits=[self.commit(102, 'fix(core): retain precision'),
+                 self.commit(104, 'docs: explain tools'), self.commit(105, 'test: cover tabs')])]
+        with patch.object(publish_release, 'gh', return_value=pages) as api:
+            text = publish_release.changes_since_previous(
+                'owner/repo', self.manifest, [self.previous, draft, foreign, stable])
+        self.assertIn('compare/develop-ci-12...', api.call_args.args[-1])
+        self.assertIn('--paginate', api.call_args.args)
+        for value in ('Features', 'Fixes', 'Documentation', 'Maintenance and tests', 'Full comparison'):
+            self.assertIn(value, text)
+        self.assertEqual(text.count('retain precision'), 1)
+        self.assertNotIn('Merge branch', text)
+        self.assertNotIn('Details', text)
+
+    def test_stable_compares_to_previous_stable_not_develop(self):
+        manifest = TestReleasePublication().manifest(ref='refs/tags/v2.0.0')
+        stable = dict(self.previous, tag_name='v1.9.0', prerelease=False)
+        with patch.object(publish_release, 'gh', return_value=[dict(status='identical', commits=[])]) as api:
+            text = publish_release.changes_since_previous('owner/repo', manifest, [self.previous, stable])
+        self.assertIn('compare/v1.9.0...', api.call_args.args[-1])
+        self.assertIn('No new non-merge commits', text)
+
+    def test_first_release_and_current_draft_need_no_comparison(self):
+        current = dict(self.previous, tag_name=self.manifest['tag'], draft=True)
+        with patch.object(publish_release, 'gh') as api:
+            text = publish_release.changes_since_previous('owner/repo', self.manifest, [current])
+        api.assert_not_called()
+        self.assertIn('First published release', text)
+
+    def test_version_highlights_precede_collapsed_development_history(self):
+        with patch.object(publish_release, 'gh', return_value=[dict(status='ahead', commits=[
+                self.commit(101, 'fix: intermediate behavior')])]):
+            text = publish_release.changes_since_previous(
+                'owner/repo', self.manifest, [self.previous], '- Final user-visible behavior.')
+        self.assertLess(text.index('Final user-visible'), text.index('<details>'))
+        self.assertIn('later commits can supersede earlier ones', text)
+        self.assertIn('Development commits', text)
+
+    def test_diverged_or_missing_comparison_blocks_inaccurate_notes(self):
+        for pages in ([], [dict(status='diverged', commits=[])]):
+            with self.subTest(pages=pages), patch.object(publish_release, 'gh', return_value=pages):
+                with self.assertRaisesRegex(ValueError, 'ancestor'):
+                    publish_release.changes_since_previous('owner/repo', self.manifest, [self.previous])
+
+    def test_breaking_changes_and_nonconventional_subjects_remain_visible(self):
+        commits = [self.commit(101, 'feat(core)!: remove [old] <API>'),
+                   self.commit(102, 'Retain literal change description')]
+        with patch.object(publish_release, 'gh', return_value=[dict(status='ahead', commits=commits)]):
+            text = publish_release.changes_since_previous('owner/repo', self.manifest, [self.previous])
+        self.assertIn('Breaking change: remove \\[old\\] &lt;API&gt;', text)
+        self.assertIn('Retain literal change description', text)
 
 
 if __name__ == '__main__':

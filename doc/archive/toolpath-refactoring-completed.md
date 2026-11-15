@@ -2,6 +2,68 @@
 
 Stand: **14.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+<a id="develop-machining-release"></a>
+
+## Schritt 4: maschining-project auf develop / dev13 veröffentlicht
+
+Übernahme und Veröffentlichung am **14.11.2026**, abschließender Download-/Start-
+und Website-Abgleich am **15.11.2026**. Der im Gespräch verlinkte Fehlerlauf
+`43605863555` gehörte zum ersten Kandidaten; er ist durch den grünen Lauf
+`43606276059` mit Testkorrektur `a4849c8` abgelöst, nicht als bestanden gewertet.
+
+`develop` wurde unter Erhalt sämtlicher Historie per Fast-forward auf `65da25e`
+übernommen. Gegenüber dem geprüften Kandidaten kam nur der Abschlussnachweis
+hinzu; Quell-/Test-/Buildstand sind identisch. GitHub markierte
+[PR #5](https://github.com/dxf2gcode/dxf2gcode/pull/5) als merged. Der ältere
+GitHub-Develop-Stand `4346709` wurde nicht über die lokale Integrationsbasis
+geschrieben; insbesondere bleibt der Qt-Fehlerdialog-Fix `8aeef7f` erhalten.
+
+[Develop-Prüflauf](https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608027083)
+und [Release-Lauf](https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632)
+sind vollständig erfolgreich. Der Release-Lauf prüfte erneut vier Vollsuiten
+mit je 1040 Tests, frische Ubuntu-Wheels Qt5/Qt6 sowie Windows-ZIP und tatsächliche
+MSI-Installation/GUI/Export/Deinstallation auf dem wegwerfbaren Runner.
+Veröffentlicht ist [Develop 2.0.0.dev13](https://github.com/dxf2gcode/dxf2gcode/releases/tag/develop-ci-43608298632),
+kein stabiler 2.0.0-Tag. Die Pipeline hat die Nummer aus den veröffentlichten
+Develop-Versionen bestimmt; die frühere Kandidatenversion dev22 war kein Release.
+
+Alle sechs öffentlichen Dateien heruntergeladen: Wheel, Quellarchiv, ZIP, MSI,
+Manifest und SHA256SUMS. Prüfsummen, veröffentlichte Assetliste und eingebettete
+Version/Revision in Quelle, Wheel und ZIP stimmen überein. Windows-Startprüfung
+bezieht sich auf dieselben endgültig veröffentlichten Dateien, keine lokale
+MSI-Installation über die Arbeitsumgebung. Das endgültige Wheel wurde zusätzlich
+in einer neuen Debian-venv installiert und unter X11/Xvfb mit Bearbeitung, Steg,
+Projekt-Roundtrip und Export geprüft; Herkunft `65da25e`, `dirty=false`, `origin=build`.
+[Maschinenlesbarer Nachweis](develop-machining-release-acceptance.json).
+
+[Pages-Deployment](https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608027016)
+erfolgreich. Installation/MSI, Bearbeitungs- und Stegkapitel HTTP 200; sämtliche
+16 aktuellen GUI-Bilder stimmen online bytegenau mit dem Repository überein.
+Die IGNORE-Beispiel-DXF stimmt nach Git-üblicher CRLF/LF-Normalisierung überein.
+Dies ist keine vorweggenommene Sichtabnahme: Die übernimmt der Nutzer am Schluss.
+macOS, Codesignierung und physische Maschinenfreigabe bleiben separat.
+
+## Releasebezogene Änderungen statt allgemeiner 2.0-Highlights (15.11.2026)
+
+Auf Nutzerwunsch für künftige Veröffentlichungen ergänzt: eigener Abschnitt je
+Paketversion mit letztem veröffentlichtem Release desselben Kanals als Basis,
+redaktionelle Versionshighlights und tatsächlicher paginierter Commitvergleich.
+Merge-/doppelte Commits werden nicht doppelt aufgeführt; Features/Fixes sind
+direkt sichtbar, Dokumentation/Wartung aufklappbar. Entwicklungshistorie ist als
+potenziell überholte Zwischenschritte gekennzeichnet; sie wird mit redaktionellen
+Highlights vollständig aufklappbar. Der allgemeine 2.0-Überblick bleibt
+getrennt im aufklappbaren Versionslinien-Abschnitt. Vollständiger Vergleich und
+Herkunftsmarker bleiben erhalten. Drafts/fremde Previews sind keine Vergleichsbasis;
+nicht vergleichbare Historie wird abgelehnt. Bereits öffentliche Releases bleiben
+unverändert. Die dev13-Versionsdatei dient als konkrete Referenz, nicht als
+nachträgliche öffentliche Textänderung.
+
+Nachweis: 20 fokussierte Releaseprüfungen bestanden, darunter Kanaltrennung,
+Pagination/Deduplizierung, erste Version, abweichende Historie, Highlights und
+UTF-8-Ausgabe. Reale unveröffentlichte Vorschau gegen dev12→dev13 über GitHub
+erzeugt. Wartungsvertrag und Download-Anleitung aktualisiert. Kein zusätzlicher
+Release allein für die Änderung des künftigen Beschreibungsgenerators.
+
 <a id="pr5-installation"></a>
 
 ## Schritt 3 / CI1 / M1: Kandidaten-Paketabnahme (14.11.2026)

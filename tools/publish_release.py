@@ -5,13 +5,75 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 from urllib.parse import quote
 
-from release_policy import publication_channel, release_marker, retention_candidates, verify_checksums
+from release_policy import (owned_develop_release, publication_channel, release_marker,
+                            retention_candidates, verify_checksums)
 
 
-def release_description(manifest, marker):
+def changes_since_previous(repository, manifest, releases, highlights=None):
+    """Describe only commits after the last published release in this channel."""
+    candidates = [item for item in releases
+                  if item['tag_name'] != manifest['tag'] and not item.get('draft')
+                  and (owned_develop_release(item) if manifest['kind'] == 'develop' else
+                       not item.get('prerelease') and re.fullmatch(r'v\d+\.\d+\.\d+', item['tag_name']))]
+    heading = '### Changes in %s\n\n' % manifest['version']
+    if not candidates:
+        return heading + ('First published release in this channel; no previous release '
+                          'is available for comparison. See the development-line overview below.') + (
+                              '\n\n'+highlights.strip() if highlights else '')
+    previous = max(candidates, key=lambda item: (item.get('published_at') or '', item['id']))
+    baseline = previous['tag_name']
+    endpoint = 'repos/%s/compare/%s...%s?per_page=100' % (
+        repository, quote(baseline, safe=''), manifest['revision'])
+    pages = gh('api', '--paginate', '--slurp', endpoint)
+    if not pages or any(page.get('status') not in ('ahead', 'identical') for page in pages):
+        raise ValueError('Previous release is not an ancestor of the current release')
+    groups = {'Features': [], 'Fixes': [], 'Documentation': [], 'Maintenance and tests': []}
+    seen = set()
+    for page in pages:
+        for commit in page['commits']:
+            if commit['sha'] in seen:
+                continue
+            seen.add(commit['sha'])
+            if len(commit.get('parents', [])) > 1:
+                continue  # The constituent changes are listed, not the merge again.
+            subject = (commit['commit']['message'].splitlines() or ['Untitled commit'])[0]
+            match = re.match(r'([a-z]+)(?:\([^)]+\))?!?:\s*(.*)', subject)
+            kind, title = match.groups() if match else ('other', subject)
+            if match and subject.split(':', 1)[0].endswith('!'):
+                title = 'Breaking change: ' + title
+            group = {'feat': 'Features', 'fix': 'Fixes', 'docs': 'Documentation'}.get(
+                kind, 'Maintenance and tests')
+            title = title.replace('\\', '\\\\').replace('[', '\\[').replace(']', '\\]')
+            title = title.replace('<', '&lt;').replace('>', '&gt;')
+            groups[group].append('- %s ([`%s`](https://github.com/%s/commit/%s))' % (
+                title, commit['sha'][:7], repository, commit['sha']))
+    intro = 'Since [%s](https://github.com/%s/releases/tag/%s).\n\n' % (
+        previous.get('name') or baseline, repository, quote(baseline, safe=''))
+    sections = []
+    for group, entries in groups.items():
+        if entries:
+            content = '#### %s\n\n%s' % (group, '\n'.join(entries))
+            if group in ('Documentation', 'Maintenance and tests'):
+                content = '<details>\n<summary>%s (%d)</summary>\n\n%s\n\n</details>' % (
+                    group, len(entries), content)
+            sections.append(content)
+    if not sections:
+        sections.append('No new non-merge commits since the previous release.')
+    compare = 'https://github.com/%s/compare/%s...%s' % (
+        repository, quote(baseline, safe=''), manifest['revision'])
+    history = ('Commit subjects describe development steps; later commits can supersede earlier ones.\n\n'
+               + '\n\n'.join(sections))
+    if highlights:
+        history = (highlights.strip() + '\n\n<details>\n<summary>Development commits</summary>\n\n'
+                   + history + '\n\n</details>')
+    return heading + intro + history + '\n\n[Full comparison](%s)' % compare
+
+
+def release_description(manifest, marker, changes=None):
     base = manifest['version'].split('.dev', 1)[0]
     notes = Path(__file__).resolve().parents[1] / 'doc/release-notes' / (base+'.md')
     summary = notes.read_text(encoding='utf-8').strip()
@@ -19,19 +81,21 @@ def release_description(manifest, marker):
         raise ValueError('A concise release summary is required')
     channel = ('Development preview for the planned %s release.' % base
                if manifest['kind'] == 'develop' else 'Stable release %s.' % base)
+    changes = changes or '### Changes in %s\n\nNo release comparison supplied.' % manifest['version']
     return ('%s\n\n%s\n\n'
+            '<details>\n<summary>Overview of the %s development line</summary>\n\n%s\n\n</details>\n\n'
             'Downloads: Windows x64 ZIP (extract fully), per-user MSI, Python wheel and source archive.\n'
             'Windows signing: **%s**. Verify downloads with `SHA256SUMS`.\n\n'
             '<details>\n<summary>Build details</summary>\n\n'
             'Package version: `%s`\n\nCommit: `%s`\n\nMSI ProductVersion: `%s`\n\n'
-            '</details>\n\n%s') % (channel, summary, manifest['windows_signing'],
+            '</details>\n\n%s') % (channel, changes, base, summary, manifest['windows_signing'],
                                      manifest['version'], manifest['revision'],
                                      manifest['msi_version'], marker)
 
 
 def gh(*arguments, payload=None):
     result = subprocess.run(['gh', *arguments], input=None if payload is None else json.dumps(payload),
-                            text=True, capture_output=True, check=True)
+                            text=True, encoding='utf-8', capture_output=True, check=True)
     return json.loads(result.stdout) if result.stdout.strip() else None
 
 
@@ -72,13 +136,16 @@ def publish(folder, repository, revision, ref):
             remove_transient_packages(repository, manifest['run_id'])
             print('This tested release is already published; leaving it unchanged.')
             return
+    notes = Path(__file__).resolve().parents[1] / 'doc/release-notes/releases' / (manifest['version']+'.md')
+    highlights = notes.read_text(encoding='utf-8').strip() if notes.is_file() else None
+    body = release_description(manifest, marker, changes_since_previous(repository, manifest, releases, highlights))
+    if release is not None:
         # A failed run may be retried after another release has advanced the
         # counter. Refresh this owned draft to match the rebuilt manifest.
         gh('api', 'repos/%s/releases/%s' % (repository, release['id']), '--method', 'PATCH', '--input', '-',
            payload=dict(name='DXF2GCODE %s%s' % ('Develop ' if kind == 'develop' else '', manifest['version']),
-                        body=release_description(manifest, marker)))
+                        body=body))
     else:
-        body = release_description(manifest, marker)
         release = gh('api', 'repos/%s/releases' % repository, '--method', 'POST', '--input', '-',
                      payload=dict(tag_name=tag, target_commitish=revision,
                                   name='DXF2GCODE %s%s' % ('Develop ' if kind == 'develop' else '', manifest['version']),

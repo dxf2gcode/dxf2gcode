@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben
 
-Stand: **14.11.2026**.
+Stand: **15.11.2026**.
 
 Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
 Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
@@ -12,10 +12,10 @@ Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
 ## Empfohlene Reihenfolge
 
 **Release-Freigabe:** Version **2.0.0** wird erst nach Abarbeitung der gesamten
-Todo freigegeben. Der Develop-Release **2.0.0.dev12** vor Umsetzung von
-R3/R1b ist veröffentlicht und seine Downloads sind geprüft;
-[Nachweis](archive/toolpath-refactoring-completed.md#develop-r3-checkpoint).
-Die Paket-/Installationsabnahme ist für den aktuellen Featureabschluss eingeplant.
+Todo freigegeben. Develop-Prerelease **2.0.0.dev13** enthält das abgenommene
+Bearbeitungsprojekt; endgültige Downloads und Installation sind geprüft.
+[Nachweis](archive/toolpath-refactoring-completed.md#develop-machining-release).
+Die abschließende Dokumentations-Sichtprüfung übernimmt der Nutzer.
 
 | Priorität | Offenes Thema | Vor Umsetzung klären |
 | --- | --- | --- |
@@ -23,7 +23,6 @@ Die Paket-/Installationsabnahme ist für den aktuellen Featureabschluss eingepla
 | Separat | [M1 – macOS](#m1) | Konkrete Zielumgebung vor einer macOS-Abnahme festlegen |
 | Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
 | Vor Abschluss durch Nutzer | [DOC1 – abschließende Sichtprüfung](#doc1) | Aktuelle Anleitung/Bilder fertig; Nutzer prüft die Darstellung am Schluss |
-| Integration/Release | [Featureabschluss und Develop-Release](planning/maschining-project-release-plan.md) | Nutzerabnahme und IGNORE abgeschlossen; Anleitung/Bilder und Installationsumfang gemäß Plan |
 | Zurückgestellt | [Teilkonturen](#teilkonturen) | Mit dem neuen Bearbeitungsmodell abstimmen |
 | Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
 | Optional, später | [PP1 – Separater Drehzahlblock](#pp1) | Postprozessorvertrag für Drehzahländerungen bei gleicher Werkzeugnummer abstimmen |
@@ -50,7 +49,7 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 - [ ] **M1 – macOS separat:** bei konkretem Bedarf Zielumgebung und
   Paket-/Startprüfung vereinbaren. Der beauftragte Kandidatenumfang
   Windows/Ubuntu/Debian ist [abgenommen](archive/toolpath-refactoring-completed.md#pr5-installation).
-  Endgültige Release-Artefakte werden im nachfolgenden Integrationsschritt geprüft.
+  Auch die endgültigen dev13-Artefakte sind geprüft; macOS bleibt separat.
 
 <a id="lc1"></a>
 
@@ -63,11 +62,6 @@ realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath
 
 <a id="r3"></a>
 <a id="r1b"></a>
-
-- [ ] **Integration/Develop-Release:** abschließende Nutzersichtprüfung,
-  vorbereiteten Kandidaten nach `develop` übernehmen und Develop-Prerelease
-  erstellen; endgültige Release-Artefakte gegen Herkunft/Hashes prüfen und starten.
-  [Abschluss- und Releaseplan](planning/maschining-project-release-plan.md).
 
 <a id="teilkonturen"></a>
 

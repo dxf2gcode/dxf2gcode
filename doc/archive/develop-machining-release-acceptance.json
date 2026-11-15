@@ -1,0 +1,207 @@
+{
+  "verified_on": "2026-11-15",
+  "published_at": "2026-11-14T15:12:10Z",
+  "release_url": "https://github.com/dxf2gcode/dxf2gcode/releases/tag/develop-ci-43608298632",
+  "manifest": {
+    "schema": 1,
+    "revision": "65da25ee6555546a86d456810255ce77585b9f94",
+    "source_date_epoch": 1794667993,
+    "date": "20261114",
+    "run_id": "43608298632",
+    "run_number": 2,
+    "build_number": 13,
+    "kind": "develop",
+    "version": "2.0.0.dev13",
+    "msi_version": "2.0.13",
+    "windows_signing": "unsigned",
+    "tag": "develop-ci-43608298632",
+    "wheel_build": "20261114g65da25e",
+    "artifact_stem": "dxf2gcode-2.0.0.dev13-20261114-g65da25e"
+  },
+  "develop_checks": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608027083",
+  "release_checks": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632",
+  "documentation_deployment": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608027016",
+  "jobs": [
+    {
+      "name": "checks / Python 3.11 / PyQt5",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632/job/132487583419"
+    },
+    {
+      "name": "checks / Python 3.13 / PyQt5",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632/job/132487583601"
+    },
+    {
+      "name": "checks / Python 3.12 / PyQt5",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632/job/132487583636"
+    },
+    {
+      "name": "checks / Python 3.11 / PyQt6",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632/job/132487583723"
+    },
+    {
+      "name": "checks / Build and verify Python packages",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632/job/132488233828"
+    },
+    {
+      "name": "checks / Build and verify Windows x64 ZIP and MSI",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632/job/132488541639"
+    },
+    {
+      "name": "Publish verified downloads and retain ten Develop releases",
+      "conclusion": "success",
+      "url": "https://github.com/dxf2gcode/dxf2gcode/actions/runs/43608298632/job/132489257876"
+    }
+  ],
+  "full_tests": [
+    {
+      "tests": 1040,
+      "seconds": 100.521
+    },
+    {
+      "tests": 1040,
+      "seconds": 107.907
+    },
+    {
+      "tests": 1040,
+      "seconds": 76.361
+    },
+    {
+      "tests": 1040,
+      "seconds": 104.318
+    }
+  ],
+  "sha256": {
+    "dxf2gcode-2.0.0.dev13-20261114-g65da25e-windows-x64.msi": "d29f6b73437414db62402223207955d9fd2253ea2f999cbcfd7d1cad5b1a6416",
+    "dxf2gcode-2.0.0.dev13-20261114-g65da25e-windows-x64.zip": "1311a3e415606be14ca7150e3e7b6ab3e5535d77f48560e86db6d0982b411c4e",
+    "dxf2gcode-2.0.0.dev13-20261114g65da25e-py3-none-any.whl": "cee8337b1b2e4d521343312903cf3cd394dc4fbf5840a56b269bfec5c89a82b6",
+    "dxf2gcode-2.0.0.dev13.tar.gz": "4ab86f01c66e3923a65aa7f12811b447d1d3e77b0c1835f01e3a66698aefc11e",
+    "release-manifest.json": "07b20544d8280736ba60de60d3f24054a2adb02a0b0985ebf630d5e7769f9ba4"
+  },
+  "debian_installed_provenance": {
+    "version": "2.0.0.dev13",
+    "revision": "65da25ee6555546a86d456810255ce77585b9f94",
+    "branch": "develop",
+    "commit_date": "2026-11-14T15:53:13+01:00",
+    "build_date": "2026-11-14T14:53:13+00:00",
+    "dirty": false,
+    "origin": "build"
+  },
+  "debian_wheel_sha256": "cee8337b1b2e4d521343312903cf3cd394dc4fbf5840a56b269bfec5c89a82b6",
+  "debian_x11_xvfb": "passed",
+  "website_assets": [
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/assign-existing.png",
+      "status": 200,
+      "sha256": "a30dadc191ca0ddbb1460ef75fcf9eca5d6b957412a1fa3fedcd3e1e7da08269",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/assign-new.png",
+      "status": 200,
+      "sha256": "ed88cd1acddb69b130b55522ec191c6ea056f310445211f0e28eb792f6b574f3",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/geometry-regions.png",
+      "status": 200,
+      "sha256": "1e0c1467e5c167851f8b134c9ace9d2880c96e2573826eee90655e7dc37ba578",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/ignore-unassigned.png",
+      "status": 200,
+      "sha256": "b9948da872e4b29b2dabf2c449be156f70f8226e325cab6bbb01b6d9d362af61",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/operations.png",
+      "status": 200,
+      "sha256": "2dcb0782c5571559f5d5b93c208437f49ebea3e9750ccc5650b12a24052c936e",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/parameter-groups.png",
+      "status": 200,
+      "sha256": "69fa9b9d8677442c4922a98de8a9f95091d400c30bc6d9b883fdf6ca05d0cf01",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/tab-dialog.png",
+      "status": 200,
+      "sha256": "68e57b8dc705cb9dd4695fe3a5a331d89f42a2362fad0f6979af837bc36db79a",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/tab-drag.png",
+      "status": 200,
+      "sha256": "77e5f76dbcd30569f1d531dda4c4289014941209673aa2a66f79bc37132f465d",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/tab-selected.png",
+      "status": 200,
+      "sha256": "5604b48acac1fac46fd7029a63ed737987922f5be551461d6081ce6950c65b94",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining/tools-table.png",
+      "status": 200,
+      "sha256": "7571f65708f01e9de3a7c6796ce9daf3129c8c67b293b0a9455222c40e386e8c",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/first-dxf/01-import.png",
+      "status": 200,
+      "sha256": "94dfb43865dbac7456e5056a227c4cf45c573d4f50b9357a2f35e947539da630",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/first-dxf/02-parameters.png",
+      "status": 200,
+      "sha256": "228938fb8661d430ff54991d7b6cf98d875881bfa3cb52716c44008e49f5841e",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining-basics/software-compensation-leads.png",
+      "status": 200,
+      "sha256": "be7349973816596f7c89c915ea60ca3a193994cfc4d2329d4c7980767adf9333",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/machining-basics/three-shapes.png",
+      "status": 200,
+      "sha256": "55228059a2adc01e3c51f0ad06517f46ca267263edeabb5345970808805c5682",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/settings/general-settings.png",
+      "status": 200,
+      "sha256": "447a2641370d5b539cd2dfce25545e98ad3fc4ac2cacfe9e42204f63b339f0ac",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/images/settings/parameter-names.png",
+      "status": 200,
+      "sha256": "1b818673ea17cacf22571dea6665ea05d7f6aa7195918fb04c701947be85e259",
+      "comparison": "exact bytes"
+    },
+    {
+      "url": "https://dxf2gcode.github.io/dxf2gcode/assets/examples/ignored-layers/ignore-layers-mm.dxf",
+      "status": 200,
+      "sha256": "2d00114ba819993a3a0a12eafbcd068abe142b641e4116ed44a7c85a6a491785",
+      "comparison": "text ignoring CRLF/LF"
+    }
+  ],
+  "limits": [
+    "Develop prerelease, not stable 2.0.0",
+    "Unsigned Windows packages",
+    "macOS and physical CNC acceptance separate",
+    "Documentation visual review deferred to user"
+  ]
+}

@@ -67,13 +67,32 @@ Draft kann erneut befüllt werden.
 
 ## Version und Herkunft
 
-Neue Releases beginnen mit einer kompakten, redaktionell gepflegten
-Zusammenfassung aus `doc/release-notes/<Basisversion>.md`, ohne Commitliste.
-Die Highlights beziehen sich auf die gesamte jeweilige Versionslinie;
-Develop-Stände werden ausdrücklich als Vorschau gekennzeichnet. Vor neuen
-Versionen die Zusammenfassung aktualisieren. Fehlt sie, wird nicht
-veröffentlicht. Technische Build-Angaben stehen darunter in einem
-aufklappbaren Bereich. Bereits veröffentlichte Releases bleiben unverändert.
+Neue Releases beginnen mit **Changes in <Paketversion>** und einem Vergleich
+zum zuletzt veröffentlichten Release desselben Kanals. Drafts, fremde Develop-
+Previews und das aktuelle Release werden nicht als Basis verwendet. Stable
+vergleicht mit Stable, Develop mit dem vorherigen eigenen Develop-Release.
+
+Vor einer Veröffentlichung die konkreten Anwenderänderungen unter
+`doc/release-notes/releases/<Paketversion>.md` pflegen, beispielsweise
+`releases/2.0.0.dev13.md`. Sie beschreiben das endgültige Verhalten seit dem
+Vorgänger, einschließlich relevanter Kompatibilitätsänderungen. Die Pipeline
+ermittelt die Paketversion weiterhin selbst; bei abweichender nächster Nummer
+den Dateinamen vor Veröffentlichung anpassen.
+
+Zusätzlich werden die tatsächlich neuen Commits über die paginierte GitHub-
+Compare-API ermittelt, nach Features/Fixes/Dokumentation/Wartung gruppiert und
+verlinkt. Merge-Commits erscheinen nicht nochmals. Mit gepflegten Highlights
+steht diese Entwicklungshistorie aufklappbar darunter; ohne eigene
+Versionsdatei dienen die gekennzeichneten Commit-Zusammenfassungen als Rückfall.
+Sie können überholte Zwischenschritte enthalten und ersetzen keine redaktionelle
+Beschreibung des Endverhaltens. Ein vollständiger Vergleichslink bleibt sichtbar.
+Ein nicht vergleichbarer/abweichender Verlauf stoppt die Veröffentlichung,
+statt einen unzutreffenden Änderungsumfang zu behaupten.
+
+Der allgemeine Überblick aus `doc/release-notes/<Basisversion>.md` steht getrennt
+im aufklappbaren Abschnitt zur Versionslinie, gefolgt von Download-/Buildangaben.
+Fehlt dieser Überblick, wird weiterhin nicht veröffentlicht. Bereits veröffentlichte
+Releases bleiben unverändert; eine Wiederholung verändert keinen öffentlichen Text.
 
 `release-manifest.json` enthält vollständigen Commit, Commitdatum,
 Workflow-Run, Paketversion, MSI-Version und Signierungsstatus.

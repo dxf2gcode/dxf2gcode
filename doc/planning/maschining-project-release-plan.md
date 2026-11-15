@@ -1,8 +1,9 @@
 # Abschluss von maschining-project und nächster Develop-Release
 
-Stand: **14.11.2026**. Schritte 1–3 abgeschlossen: Integrationsbasis, IGNORE,
-Anleitung/Bilder und Kandidaten-Paketabnahme. PR #5 ist gepusht und geprüft;
-noch kein Merge nach `develop` oder Release. Nutzersichtprüfung folgt am Schluss.
+Stand: **15.11.2026**. Schritte 1–4 abgeschlossen: PR #5 nach develop
+übernommen, Develop-Prerelease 2.0.0.dev13 veröffentlicht, endgültige Downloads
+und Debian-Start geprüft. Dokumentations-Sichtprüfung bleibt beim Nutzer.
+[Abschlussnachweis](../archive/toolpath-refactoring-completed.md#develop-machining-release).
 
 ## 1. Bestätigte Entscheidungen
 
@@ -191,5 +192,7 @@ keine Paket-/Installationsprüfung, SSH-Abnahme oder Veröffentlichung gestartet
 Nach dem anschließenden Auftrag für Schritt 1 ist die begrenzte IGNORE-Korrektur
 auf der isolierten Integrationsbasis umgesetzt und vom Nutzer abgenommen.
 Schritt 2 ist redaktionell abgeschlossen; die Sichtprüfung bleibt beim Nutzer.
-Schritt 3 ist nun ausdrücklich beauftragt: Kandidaten-PR, Windows-/Ubuntu-CI und
-Debian-Wheel-Abnahme. Merge nach develop und Veröffentlichung bleiben Etappe D.
+Schritt 3 und Etappe D sind abgeschlossen. PR #5 wurde am 14.11.2026 als
+zusammengeführt markiert; Release 2.0.0.dev13 wurde am selben Tag veröffentlicht.
+Endgültige Paket-/Website-Prüfung am 15.11.2026 bestätigt. Kein stabiler Release
+und keine physische Maschinenabnahme. Als verbleibender Nutzerpunkt gilt DOC1.

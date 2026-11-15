@@ -24,6 +24,14 @@ tags. The published preview number is separate from the GitHub workflow run numb
 
 ## Choose an artifact
 
+Future release descriptions distinguish **Changes in this package version**
+from the general development-line overview. The change section compares with
+the previous published release in the same channel, links the full comparison
+and uses version-specific highlights where provided. Linked commit summaries
+remain available; they can include intermediate development steps. The general
+2.0 overview and build details are collapsible. Existing older releases retain
+their original descriptions.
+
 | Artifact | Intended use |
 | --- | --- |
 | Windows x64 portable ZIP | Extract the entire archive and start `dxf2gcode.exe` |

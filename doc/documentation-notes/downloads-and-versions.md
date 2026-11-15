@@ -21,11 +21,14 @@ Die Anwenderanleitung soll vor allem diese Entscheidungen erklären:
   Dateiname und Anzeigename passen zusammen. Die Develop-Versionsnummer zählt
   veröffentlichte Stände unabhängig vom GitHub-Laufzähler weiter; beide Nummern
   können daher voneinander abweichen.
-- Release-Beschreibungen enthalten eine kurze Zusammenfassung der jeweiligen
-  Versionslinie statt einer Commitliste. Die gepflegten Texte unter
-  `doc/release-notes/` vor künftigen Veröffentlichungen aktualisieren.
-  Für 2.0 umfasst die Zusammenfassung die Arbeiten seit dem SourceForge-Merge
-  `f5520a8` vom 11.10.2026, nicht nur seit dem letzten Develop-Paket.
+- Release-Beschreibungen beginnen künftig mit den Änderungen der konkreten
+  Paketversion gegenüber dem vorherigen Release desselben Kanals. Redaktionelle
+  Highlights unter `doc/release-notes/releases/<Paketversion>.md` pflegen;
+  tatsächliche neue Commits samt Vergleichslink ergänzen dies automatisch.
+  Die Commitliste kann überholte Zwischenschritte enthalten und bleibt als
+  Entwicklungshistorie gekennzeichnet. Der allgemeine 2.0-Überblick steht
+  getrennt und aufklappbar darunter; er umfasst weiterhin die Entwicklung
+  seit dem SourceForge-Merge `f5520a8` vom 11.10.2026.
 - 2.0 als neue Entwicklungslinie erklären: getrennte Code-Verantwortlichkeiten,
   gemeinsamer Werkzeugwegplan, erweiterte Bearbeitung und geänderte Parameter-
   bedeutungen mit Migration. Der GitHub-Umzug ergänzt dies durch neue
