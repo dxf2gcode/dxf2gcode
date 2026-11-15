@@ -2,6 +2,68 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## Nutzerentscheidung zu DOC1, M1, LC1 und CAMotics (15.11.2026)
+
+<a id="doc1-accepted"></a>
+
+**DOC1 abgeschlossen:** Der Nutzer bestätigt die Dokumentations-Sichtprüfung.
+Der Punkt ist vollständig aus Kurz- und Detailliste entfernt; keine erneute
+Abnahme aufgrund bereits erledigter Dokumentationsarbeiten einfordern.
+
+<a id="m1-macos-dropped"></a>
+
+**M1/macOS nicht weiterverfolgt:** Der Nutzer will und kann die verbleibende
+macOS-Abnahme nicht durchführen. Sie entfällt als offene Aufgabe. Das ist
+keine macOS-Freigabe; die zuvor belegten Windows-/Ubuntu-/Debian-Nachweise bleiben.
+
+<a id="lc1-auto-dropped"></a>
+
+**LC1-Zusatzmodus verworfen:** Ein zusätzlicher automatischer LinuxCNC-CLI-
+stdout-Filter ist nicht gewünscht und entfällt aus beiden Listen. Dies betrifft
+die optionale Erweiterung, nicht die bestehende interaktive AXIS-Integration.
+
+**Spätere Simulation:** Beim verbleibenden optionalen Simulations-/Maschinenpunkt
+CAMotics als möglichen ersten Schritt für Fräs-G-Code vorgemerkt. Die
+[Projektseite](https://camotics.org/) nennt 3-Achs-Simulation und schließt
+Drehmaschinen-Simulation aus. Deshalb keine pauschale Abdeckung der Laser-/
+Heißdraht-/Drehbeispiele oder physische Freigabe daraus ableiten. Noch keine
+Installation oder Simulation gestartet. In beiden aktiven Listen verbleiben
+dieselben sechs Themen: CI1, Teilkonturen, PP1, Q1, GUI1 und optionale Simulation/
+Maschinenprüfung. Bisherige Links auf entfernte aktive Punkte führen hierher.
+
+## Planung auf zwei offene Listen reduziert (15.11.2026)
+
+Sämtliche fünf Dateien aus `doc/planning` gegen Todo und Abschlussnachweise
+geprüft. A1-Abschlussplan, Architektur-Bestandsaufnahme, R3/R1b-Umsetzungsplan
+und maschining-project-Releaseplan sind abgeschlossen und ins
+[Planungsarchiv](planning/README.md) verschoben. Der letzte Releaseplan ist
+vollständig abgearbeitet; die separat beim Nutzer verbleibende Sichtprüfung
+DOC1 wird nicht als unerledigter Integrations-/Releaseplan weitergeführt.
+
+Aus beiden aktiven Listen entfernt: umgesetzte Geometrie-/Bearbeitungstrennung,
+Verschieben/Kopieren, Migration/Undo/Exportreihenfolge, manuelle Stegregionen,
+Fang/Größenautomatik sowie Kandidaten- und endgültige Windows-/Ubuntu-/Debian-
+Paketabnahme. Die darüber hinaus vorgeschlagene selbsttätige Stegverteilung
+wurde vom Nutzer verworfen und ist keine offene Erweiterung.
+
+Nur `doc/todo.md` (Kurzcheckliste) und `doc/planning/open-task-details.md`
+(gleiche neun Themen mit Umfang/Abnahme) bleiben aktiv. CI1 enthält nur den
+ersten freigegebenen stabilen Release und Codesignierung, M1 nur macOS.
+DOC1, Teilkonturen, automatischer LC1-Filter, PP1, PySide6, Ribbon und optionale
+physische Maschinenabnahmen bleiben bewusst offen. Fehlenden LC1-Detailanker
+wiederhergestellt; historische R3-/R1b-Verweise führen ins Archiv.
+
+IDs, Entscheidungen D1–D48 und historische Quellen sind erhalten. Verschobene
+Dokumente sind ausdrücklich als Historie gekennzeichnet; alte Aussagen über
+offene Zwischenstände gelten nicht als neuer Auftrag. Fachmaterial bleibt über
+die Dokumentationsnotizen nutzbar. Reine Dokumentbereinigung, keine neuen
+Software-, Paket-, SSH- oder Maschinenläufe.
+
+Dokumentprüfung: Die beiden aktiven Listen haben dieselben neun Kennungen;
+die Kurzliste wird als neun offene Checkboxen dargestellt. Relative Datei- und
+Ankerverweise einschließlich aller verschobenen Pläne geprüft, ursprüngliche
+Entscheidungskennungen erhalten und Diff-Prüfung bestanden.
+
 ## Dokumentation nach Arbeitsablauf gegliedert (15.11.2026)
 
 Die vom Nutzer bestätigte Struktur ist umgesetzt: User guide mit Einstieg,
@@ -276,6 +338,8 @@ verwendet ebenfalls den verpflichtenden Hook. Keine manuelle Wiederholung einer
 bereits bestandenen Fast-Suite. Keine Paket-/Debian-/Maschinenabnahme, kein Push
 oder Release. Nächste Etappe: vollständiger Anleitungs-/Bildabgleich gemäß Plan.
 
+<a id="r3-r1b-complete"></a>
+
 ## R3/R1b fachlich abgenommen und Abschlussumfang festgelegt (14.11.2026)
 
 Der Nutzer erklärt das Feature `maschining-project` für fertig und die
@@ -289,7 +353,7 @@ Die optionale Wiederverwendung historischer Fremdinhalte einschließlich ihrer
 Rechteklärung wird verworfen. Keine ungeklärten Originale werden damit zur
 Übernahme freigegeben. Teilkonturen bleiben ausdrücklich offen.
 
-Der [Abschluss-/Releaseplan](../planning/maschining-project-release-plan.md)
+Der [Abschluss-/Releaseplan](planning/maschining-project-release-plan.md)
 trennt IGNORE, Anleitung/Bilder, Installationsnachweis und Merge/Develop-Prerelease.
 Bestätigt sind die begrenzte IGNORE-Korrektur vor dem Merge und die Matrix
 Windows-ZIP/MSI, Ubuntu Qt5/Qt6 sowie Debian-Wheel. macOS bleibt separat.
@@ -1025,7 +1089,7 @@ Ansicht visuell kontrolliert. Strenger Dokumentationsbuild und `git diff --check
 bestanden. Die 3D-Projektionsmathematik und Zeichenbefehle
 sind geprüft; reale GPU-/Treiberdarstellung bleibt Teil von P8. Keine Vollsuite,
 Paket-, Debian- oder Maschinenabnahme. Nutzeraufgaben stehen im
-[P8-Prüfablauf](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check).
+[P8-Prüfablauf](planning/r3-r1b-implementation-plan.md#r3-ui-user-check).
 
 ## R3: bündige Eingabespalten und getrennte Tooltips (08.11.2026)
 
@@ -1288,7 +1352,7 @@ Ein neuer leerer `ignored`-Schritt ist zulässig, das Verschieben einer normalen
 Kontur dorthin wird jedoch atomar abgelehnt. Der Dialog und die Exportcheckbox
 stellen diesen Sonderstatus derzeit nicht eindeutig dar. Keine Quellcodeänderung,
 keine neue vollständige Export-, GUI-, Paket- oder Maschinenabnahme.
-Die [Bedienentscheidung R3-IGNORE](../planning/r3-r1b-implementation-plan.md#r3-ui-followups)
+Die [Bedienentscheidung R3-IGNORE](planning/r3-r1b-implementation-plan.md#r3-ui-followups)
 bleibt offen; Werkzeugmenü und möglicher Formularleerraum sind dort ebenfalls
 ausdrücklich für später vorgemerkt.
 
@@ -1484,7 +1548,7 @@ ohne Fehler. Keine neue Vollsuite-, Paket-, Debian- oder Maschinenabnahme;
 kein Commit/Push. Die Sicht-/Bedienprüfung bleibt Teil von P8.
 
 [Anleitung](../../docs/user-guide/machining-steps.md),
-[Entscheidung und Nutzerprüfung](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check).
+[Entscheidung und Nutzerprüfung](planning/r3-r1b-implementation-plan.md#r3-ui-user-check).
 
 ## R3: Vorschub-/Winkelanzeige präzisiert (07.11.2026)
 
@@ -1546,7 +1610,7 @@ und Diff-Prüfung ohne Fehler.
 
 [Bedienung](../../docs/user-guide/machining-steps.md),
 [technische Notizen](../documentation-notes/gui-numeric-display.md).
-Die [Nutzerprüfung](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check)
+Die [Nutzerprüfung](planning/r3-r1b-implementation-plan.md#r3-ui-user-check)
 auf realem Monitor/Skalierung bleibt P8. Kein Commit, Push, Release oder
 zusätzlicher Vollsuite-/Paket-/Debian-/Maschinenlauf.
 
@@ -1593,7 +1657,7 @@ Native Windows-Qt-Ansichten verdeckt gerendert und visuell kontrolliert.
 GUI-Sprachkontexte gegen geladene Kataloge geprüft. Strikter Dokumentations-
 build und Diff-Prüfung ohne Fehler.
 
-Die [konkreten Aufgaben für P8](../planning/r3-r1b-implementation-plan.md#r3-ui-user-check)
+Die [konkreten Aufgaben für P8](planning/r3-r1b-implementation-plan.md#r3-ui-user-check)
 bleiben offen: Nutzerablauf, Bildschirm-/Skalierungseindruck, Referenzprojekte
 und Wiederladen. Keine erneute Vollsuite-, Paket-, Debian-, GPU- oder reale
 Maschinenabnahme. Kein Commit, Push oder Release in diesem Auftrag.
@@ -1731,7 +1795,7 @@ Debian-, Paket- oder physische Maschinenabnahme. P4–P6 wurden in diesem
 Auftrag nicht committet oder gepusht.
 
 [Anleitung](../../docs/user-guide/machining-steps.md),
-[Plan und Entscheidungen](../planning/r3-r1b-implementation-plan.md),
+[Plan und Entscheidungen](planning/r3-r1b-implementation-plan.md),
 [Modell-/Formatnotizen](../documentation-notes/machining-project-format.md).
 
 <a id="r3-r1b-p1-p3"></a>
@@ -1782,7 +1846,7 @@ wird keine Bearbeitung willkürlich ausgewählt. Keine neue manuelle
 Stegregionenbedienung. Keine neuen GUI-Beschriftungen hinzugefügt. Keine neue
 Vollsuite-, Paket-, Debian-, GPU- oder Maschinenabnahme und kein Release.
 
-[Detailplan](../planning/r3-r1b-implementation-plan.md),
+[Detailplan](planning/r3-r1b-implementation-plan.md),
 [Zuordnungstabelle, Dateivertrag und Quellen](../documentation-notes/machining-project-format.md).
 
 <a id="develop-r3-checkpoint"></a>
@@ -1829,7 +1893,7 @@ implementiert. Der Release fixiert ausdrücklich den Stand vor dieser Umsetzung.
 
 ## R3/R1b – Gemeinsamer Umsetzungsplan abgestimmt (06.11.2026)
 
-Der Nutzer hat den [Detailplan](../planning/r3-r1b-implementation-plan.md)
+Der Nutzer hat den [Detailplan](planning/r3-r1b-implementation-plan.md)
 nach mehreren Entscheidungsrunden bestätigt. Entities/Layers bleiben für
 Originalgeometrie und Auswahl; ein dritter Tab enthält Bearbeitungsschritte
 mit je einer Art und einem Werkzeug. Bearbeitungskonturen referenzieren die
@@ -1856,8 +1920,8 @@ Keine Freigabe einer stabilen Version oder neuen Debian-/Maschinenabnahme.
 ## A1 – Vollständiger Architekturabschluss (06.11.2026)
 
 Die beauftragte Variante V ist vollständig umgesetzt: P0–P4 und I0–I5 aus
-dem [Abschlussplan](../planning/a1-completion-plan.md). Die frühere
-[Bestandsaufnahme](../planning/architecture-acceptance.md) bleibt historisch
+dem [Abschlussplan](planning/a1-completion-plan.md). Die frühere
+[Bestandsaufnahme](planning/architecture-acceptance.md) bleibt historisch
 erhalten; A1 steht nicht mehr in der offenen Todo.
 
 **Fachlicher Vertrag:** Pocketing ist nur beim Fräsen mit Softwarekompensation
@@ -1969,7 +2033,7 @@ ausdrücklich beschlossene Sperre. Keine neuen GUI-Texte oder Übersetzungen.
 
 Projektlade-Meldungen, vollständige Aktualisierung bei Einstellungswechsel,
 auftragsweiter Exportabbruch und I0–I5 bleiben offen.
-[Restplan](../planning/a1-completion-plan.md). Keine Vollsuite, Debian-/SSH-,
+[Restplan](planning/a1-completion-plan.md). Keine Vollsuite, Debian-/SSH-,
 Paket- oder Maschinenprüfung. Kein Commit.
 
 <a id="a1-p1"></a>
@@ -1995,7 +2059,7 @@ unter beiden Qt-Bindungen geprüft. Generierte QM-Dateien bleiben ignoriert.
 Dies ist bewusst nur die gemeinsame Regel mit frühen Sperren. Menüfreigaben,
 Projektlade-Meldungen und der bestätigte auftragsweite Exportabbruch sind
 noch nicht vollständig angebunden. Keine entsprechende Gesamtfreigabe;
-auch I0–I5 bleiben offen. [Restplan](../planning/a1-completion-plan.md).
+auch I0–I5 bleiben offen. [Restplan](planning/a1-completion-plan.md).
 Keine Vollsuite, Debian-/SSH-, Paket- oder Maschinenprüfung. Kein Commit.
 
 <a id="a1-auswertung"></a>
@@ -2003,7 +2067,7 @@ Keine Vollsuite, Debian-/SSH-, Paket- oder Maschinenprüfung. Kein Commit.
 ## A1 – Architekturgrenzen und konkrete Falllücken ausgewertet (05.11.2026)
 
 Quellbasis `7246810` mit bestehender Testabdeckung abgeglichen. Die
-[A1-Auswertung](../planning/architecture-acceptance.md) benennt die
+[A1-Auswertung](planning/architecture-acceptance.md) benennt die
 repräsentative Maschinen-/Kompensations-/Profilmatrix und die genaue
 Importgrenze. Der Geometry-/Toolpath-Kern ist Qt-/Runtime-frei; die pauschale
 Aussage für sämtliche Domain-/Application-Module ist nicht zutreffend.
@@ -2023,7 +2087,7 @@ Dies dokumentiert die abgeschlossene Untersuchung und noch keine pauschale
 Architektur-, Release- oder Maschinenfreigabe.
 
 **Planung ergänzt:** Der Nutzer möchte die verbleibende Arbeit vor einer
-Entscheidung im Detail verstehen. Der [A1-Abschlussplan](../planning/a1-completion-plan.md)
+Entscheidung im Detail verstehen. Der [A1-Abschlussplan](planning/a1-completion-plan.md)
 trennt P0–P4 (konkrete Pocket-Fälle) und I0–I5 (zusätzliche Modell-/CLI-
 Entkopplung), benennt Dateien, notwendige Entscheidungen, Regressionen und
 Abschlusskriterien für beide möglichen Abnahmegrenzen. Keine Implementierung,
@@ -2047,7 +2111,7 @@ Keine Aussage über aktuelle praktische Funktionsfähigkeit oder Paketabnahme.
 Zum Zeitpunkt der Bestandsaufnahme waren Umfangsentscheidung, Implementierung,
 Regressionen, Simulation und geprüfte Anwenderanleitung noch offen. Der folgende
 Abschlussnachweis dokumentiert die inzwischen umgesetzte lokale Filterkorrektur;
-die verbleibenden Aufgaben stehen unter [LC1](../planning/open-task-details.md#lc1).
+die verbleibenden Aufgaben stehen unter [LC1](toolpath-refactoring-completed.md#lc1-auto-dropped).
 
 <a id="lc1-filter"></a>
 
@@ -2113,7 +2177,7 @@ Sitzung und Linux-Desktop-Integration sind dadurch nicht nachgewiesen.
 Keine neuen GUI-Texte, keine Übersetzungsänderung. Keine Vollsuite, Builds,
 Debian-/SSH-, LinuxCNC- oder Maschinenläufe. Kein Commit beauftragt.
 [Einrichtungshinweise und Grenzen](../documentation-notes/linuxcnc-integration.md#lokal-umgesetzter-gui-filter)
-bleiben von der noch offenen [LinuxCNC-Abnahme](../planning/open-task-details.md#lc1)
+bleiben von der noch offenen [LinuxCNC-Abnahme](toolpath-refactoring-completed.md#lc1-auto-dropped)
 getrennt; ein automatischer CLI-Filter wurde nicht ergänzt.
 
 <a id="lc1-axis"></a>
@@ -2168,7 +2232,7 @@ SHA-256 des korrigierten, lokal mit dem geprüften Remote-Modul abgeglichenen
 AXIS-Simulation.** Keine Maschinen-/Materialfreigabe, Paket-/Wheel-Abnahme,
 GMOCCAPY-, Wayland- oder Debian/PyQt6-Abnahme. Keine Vollsuite oder Builds.
 [Anwenderanleitung](../../docs/user-guide/linuxcnc-axis.md) ergänzt;
-[optionaler automatischer CLI-Filter](../planning/open-task-details.md#lc1)
+[optionaler automatischer CLI-Filter](toolpath-refactoring-completed.md#lc1-auto-dropped)
 bleibt eine gesonderte Entscheidung. Kein Commit erstellt.
 
 <a id="ci1"></a>
@@ -2780,7 +2844,7 @@ keine gemessene Messerstellung; ihre Länge ist am konkreten Aufbau zu prüfen.
 Aus der aktiven Todo übernommen am **02.11.2026**. Die folgenden Nachweise
 sind historische Abschlüsse, keine neue Live- oder CI-Prüfung. Die noch offene
 Inhaltsmigration und zusätzliche Abnahmen stehen ausschließlich in der
-[aktiven Todo](../todo.md#doc1). Der ausführliche
+[aktiven Todo](toolpath-refactoring-completed.md#doc1-accepted). Der ausführliche
 [Übergabebericht](../migration/zensical-prototype.md) bewahrt Herkunft,
 Commitbezüge und Wiederaufnahmebefehle.
 
@@ -3760,8 +3824,8 @@ Objekte statt eines simulierten Events; damit wurde der gemeldete Fehler vor
 der Korrektur reproduziert. Erneut bestehen alle 21 TreeView-Tests jeweils
 unter Qt5 und Qt6.
 
-Der Layerwechsel R1b bleibt zusammen mit R3 zurückgestellt; siehe
-[aktive Todo](../todo.md#r1b).
+Zum damaligen Zeitpunkt blieb R1b zusammen mit R3 zurückgestellt;
+[späterer Abschluss](#r3-r1b-complete).
 
 ## Versions- und Build-Metadaten
 
@@ -3824,7 +3888,7 @@ Diese Angaben übernehmen den bisherigen dokumentierten Prüfstand; bei der
 Dokumentzusammenführung wurden die Anwendungstests nicht neu ausgeführt.
 
 Die Implementierung ist erledigt; die Abnahme fertiger Artefakte bleibt
-als [M1 in der aktiven Todo](../todo.md#m1) offen.
+als [M1 in der aktiven Todo](toolpath-refactoring-completed.md#m1-macos-dropped) offen.
 
 ## Abgeschlossene Bereinigung
 
@@ -3873,7 +3937,7 @@ Grenzen sind getrennt zu lesen:
 | Alte Shape-Ausgabe und doppelte Werkzeugwegplanung entfernt | Etappen 2/4/6; für Anzeigezugriffe verbleiben lediglich aus Planaktionen abgeleitete Werte |
 
 Fertige Pakete und ihre Herkunft werden erst mit
-[M1](../todo.md#m1) abgenommen. Eine allgemeine
+[M1](toolpath-refactoring-completed.md#m1-macos-dropped) abgenommen. Eine allgemeine
 Release-Freigabe oder ein Nachweis physischer Bearbeitungsqualität folgt aus
 den dokumentierten Tests nicht.
 
@@ -3899,7 +3963,7 @@ erforderlichen Einrichtungsschritt.
 Der ursprüngliche Metadatenplan bestand aus Provider, gemeinsamer Herkunft
 für Wheel/Quellarchiv/MSI, umgestellter und übersetzter Anzeige, Entfernung
 der Keywords sowie Checkout-/Buildtests. Diese lokalen Schritte sind oben
-als umgesetzt erfasst; seine abschließende Paket-/Debian-Prüfung bleibt [M1](../todo.md#m1).
+als umgesetzt erfasst; seine abschließende Paket-/Debian-Prüfung bleibt [M1](toolpath-refactoring-completed.md#m1-macos-dropped).
 
 ## Historische Ausgangslage und ursprüngliche Etappen
 

@@ -5,8 +5,9 @@ Aktuelle Arbeitsdokumente liegen direkt in diesem Ordner:
 | Dokument / Ordner | Inhalt |
 | --- | --- |
 | [Architektur](architecture.md) | Paketstruktur und geltende Verträge für Geometrie, Planung, Vorschau und Export |
-| [Todo](todo.md) | Offene Aufgaben, Prioritäten und noch zu klärende Entscheidungen |
-| [Offene Detailpläne](planning/open-task-details.md) | Anforderungen und Abnahmekriterien der offenen Themen |
+| [Todo – Kurzliste](todo.md) | Einzige führende Abhakliste mit ausschließlich offenen Aufgaben |
+| [Offene Aufgaben – Details](planning/open-task-details.md) | Dieselben Kennungen mit Umfang und Abnahmekriterien |
+| [Archivierte Planungen](archive/planning/README.md) | Abgeschlossene Pläne und historische Befunde, keine offene Aufgabenliste |
 | [Dokumentationsnotizen](documentation-notes/README.md) | Fach- und Quellenmaterial für spätere Anwenderanleitungen |
 | [Arbeits- und Prüfregeln](working-agreements.md) | Vorgehen und Grenzen lokaler Prüfungen; verbindliche Repository-Regeln in AGENTS.md |
 | [Referenzen](references/) | Wissenschaftliche Veröffentlichungen und DXF-Spezifikationen |

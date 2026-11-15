@@ -1,114 +1,45 @@
-# DXF2GCODE: offene Aufgaben
+# DXF2GCODE: offene Aufgaben – Kurzliste
 
-Stand: **15.11.2026**.
+Stand: **15.11.2026**. Ausschließlich offene Arbeit; keine erledigten Checklisten.
+Dies ist die führende Statusliste. Dieselben Kennungen mit Umfang und
+Abnahmekriterien stehen in den [Details](planning/open-task-details.md).
+Ein Eintrag ist kein pauschaler Umsetzungs- oder Prüfauftrag.
 
-Diese Liste enthält ausschließlich offene Arbeiten und Entscheidungen.
-Die Reihenfolge ist ein Vorschlag, kein pauschaler Umsetzungsauftrag.
-[Abschlüsse und Prüfnachweise](archive/toolpath-refactoring-completed.md),
-[Detailanforderungen](planning/open-task-details.md),
-[Dokumentationsnotizen](documentation-notes/README.md) und
-[Arbeits-/Prüfregeln](working-agreements.md) werden getrennt gepflegt.
-
-## Empfohlene Reihenfolge
-
-**Release-Freigabe:** Version **2.0.0** wird erst nach Abarbeitung der gesamten
-Todo freigegeben. Develop-Prerelease **2.0.0.dev13** enthält das abgenommene
-Bearbeitungsprojekt; endgültige Downloads und Installation sind geprüft.
-[Nachweis](archive/toolpath-refactoring-completed.md#develop-machining-release).
-Die abschließende Dokumentations-Sichtprüfung übernimmt der Nutzer.
-
-| Priorität | Offenes Thema | Vor Umsetzung klären |
-| --- | --- | --- |
-| Releaseabschluss | [CI1 – Betriebsabnahme](#ci1) | Erste stabile Veröffentlichung und Codesignierung bleiben getrennt; Kandidaten-Paketabnahme bestanden |
-| Separat | [M1 – macOS](#m1) | Konkrete Zielumgebung vor einer macOS-Abnahme festlegen |
-| Optional | [LC1 – Automatischer LinuxCNC-CLI-Filter](#lc1) | Bedarf zusätzlich zum abgenommenen interaktiven GUI-Filter |
-| Vor Abschluss durch Nutzer | [DOC1 – abschließende Sichtprüfung](#doc1) | Aktuelle Anleitung/Bilder fertig; Nutzer prüft die Darstellung am Schluss |
-| Zurückgestellt | [Teilkonturen](#teilkonturen) | Mit dem neuen Bearbeitungsmodell abstimmen |
-| Optional | [Q1 – PySide6](#q1) | Konkreter Nutzungsbedarf und dauerhafter Prüfaufwand |
-| Optional, später | [PP1 – Separater Drehzahlblock](#pp1) | Postprozessorvertrag für Drehzahländerungen bei gleicher Werkzeugnummer abstimmen |
-| Optional | [GUI1 – Ribbon-Menüband](#gui1) | Bedienentwurf, Bibliothekswahl und Windows-/Linux-Kompatibilität |
-
-Alle geplanten Dokumentationsthemen **WP1–WP13** sind ausgearbeitet und
-veröffentlicht. Als nächstes konkrete fachliche Rückmeldungen einpflegen;
-weitere Software-/Plattform-/Maschinenabnahmen bleiben gesonderte Aufgaben.
-Der interaktive LinuxCNC-Dateifilter ist unter PyQt5/PyQt6 lokal und in einer
-realen Debian-/AXIS-Simulation geprüft; [Nachweis und Grenzen](archive/toolpath-refactoring-completed.md#lc1-axis).
-
-## Bereitstellung und Abnahme
+## Verbleibende Abnahmen
 
 <a id="ci1"></a>
 
-- [ ] **CI1 – Verbleibende Betriebsabnahme:** den ersten bewusst
-  freigegebenen stabilen Release nachvollziehen;
-  Codesignierung nach Zertifikatsbereitstellung ergänzen. Implementierung
-  und Develop-Aktivierung sind [abgeschlossen](archive/toolpath-refactoring-completed.md#ci1).
-  [Verbleibende Prüfpunkte](planning/open-task-details.md#ci1).
+- [ ] **CI1 – Stable und Signierung:** erster freigegebener stabiler Release und Windows-Codesignierung nach Zertifikatsbereitstellung.
 
-<a id="m1"></a>
-
-- [ ] **M1 – macOS separat:** bei konkretem Bedarf Zielumgebung und
-  Paket-/Startprüfung vereinbaren. Der beauftragte Kandidatenumfang
-  Windows/Ubuntu/Debian ist [abgenommen](archive/toolpath-refactoring-completed.md#pr5-installation).
-  Auch die endgültigen dev13-Artefakte sind geprüft; macOS bleibt separat.
-
-<a id="lc1"></a>
-
-- [ ] **LC1 – Optionaler automatischer LinuxCNC-CLI-Filter:** bei Bedarf
-  entscheiden, ob zusätzlich zum interaktiven GUI-Filter ein ausdrücklicher
-  automatischer stdout-Export ohne Bearbeitungsfenster angeboten werden soll.
-  [Verbleibender Umfang](planning/open-task-details.md#lc1).
-
-## Bedienmodell und zurückgestellte Erweiterungen
-
-<a id="r3"></a>
-<a id="r1b"></a>
+## Zurückgestellte oder optionale Erweiterungen
 
 <a id="teilkonturen"></a>
 
-- [ ] **Teilkonturen:** eigene Startpunkte, Leads und Überfahrten je
-  resultierender Teilkontur sowie stabile Zuordnung bei Neuberechnung und
-  Projekt-Roundtrip entwerfen. [Planungsumfang](planning/open-task-details.md#teilkonturen).
+- [ ] **Teilkonturen:** eigene Startpunkte, Leads und Überfahrten je resultierender Teilkontur.
 
 <a id="pp1"></a>
 
-- [ ] **PP1 – Separater Drehzahlblock, später:** einen eigenen konfigurierbaren
-  Postprozessorblock für geänderte Drehzahlen bei gleicher Werkzeugnummer
-  vorsehen, ohne den Werkzeugwechselblock erneut aufzurufen. Vor Umsetzung
-  Auslösebedingungen, Profilkompatibilität und unterstützte Maschinenarten
-  abstimmen. Nutzeranregung vom 07.11.2026; noch kein Implementierungsauftrag.
-  Der aktuelle Werkzeugwechsel bleibt gemäß
-  [D21](planning/r3-r1b-implementation-plan.md) an eine andere Nummer gebunden.
+- [ ] **PP1 – Drehzahlblock:** Drehzahländerung bei gleicher Werkzeugnummer ohne erneuten Werkzeugwechsel.
 
 <a id="q1"></a>
 
-- [ ] **Q1 – PySide6:** zusätzliche Qt-Bindung nur bei konkretem Bedarf
-  gesondert beauftragen; PyQt5/PyQt6 erhalten.
-  [Kompatibilitäts- und Prüfplan](planning/open-task-details.md#q1).
+- [ ] **Q1 – PySide6:** zusätzliche Qt-Bindung nur bei konkretem Bedarf.
 
 <a id="gui1"></a>
 
-- [ ] **GUI1 – Optionales Ribbon-Menüband:** eine moderne, einklappbare
-  Menüband-Oberfläche als mögliche Erweiterung prüfen. Vor Umsetzung
-  Bedienentwurf und Bibliothekswahl abstimmen; bestehende Aktionen und
-  Tastenkürzel wiederverwenden. [SARibbon](https://github.com/czyt1988/SARibbon)
-  als Kandidaten bewerten, insbesondere Python-Bindings für PyQt5/PyQt6,
-  Paketierung und Verhalten unter Windows und Linux. Noch kein
-  Umsetzungsauftrag.
+- [ ] **GUI1 – Ribbon:** Menüband, Bibliothek und Windows-/Linux-Verhalten abstimmen.
 
-## Dokumentationsinhalte
+<a id="maschinenabnahme"></a>
 
-<a id="doc1"></a>
+- [ ] **Optionale Simulations-/Maschinenprüfung:** CAMotics als späteren ersten Prüfschritt für Fräs-G-Code untersuchen; reale Prüfung bei Bedarf.
 
-- [ ] **DOC1 – Sichtprüfung durch den Nutzer:** Anleitung und aktuelle Bilder
-  sind erstellt und streng gebaut. Auf Nutzerwunsch erfolgt die abschließende
-  Sichtprüfung erst am Schluss; sie blockiert Schritt 3 nicht.
-  [Redaktioneller Abschluss](archive/toolpath-refactoring-completed.md#doc1-machining).
-- [ ] **Optionale Maschinenabnahme:** die Grbl-1.1-Laser- und LinuxCNC-2.9-
-  Heißdraht-/Drehdemonstrationen bei Bedarf für einen konkreten realen Aufbau
-  anpassen und gesondert abnehmen. Geladene Demoprofile und synthetische
-  Ausgabeprüfungen sind keine Controller-/Material-/Maschinenfreigabe.
-  Weitere macOS-/CNC-/ATC-/manuelle Abnahmen bleiben bei konkretem Bedarf separat;
-  die aktuelle Installationsmatrix ist unter M1 zusammengeführt.
+## Ablage und Freigabe
 
-Wiederaufnahme und technische Vorschau: [Übergabebericht](migration/zensical-prototype.md).
-Die fachlichen Notizen ersetzen keine Inhaltsabnahme oder Veröffentlichungsfreigabe.
+Die stabile Version **2.0.0** bleibt an die bisherige Todo-Freigabe gebunden;
+dies ist keine Freigabe, jetzt einen stabilen Tag zu erzeugen.
+Für längere lokale Test-, Paket- oder SSH-Läufe gelten die
+[Arbeitsregeln](working-agreements.md).
+
+[Abschlussnachweise](archive/toolpath-refactoring-completed.md),
+[archivierte Pläne](archive/planning/README.md) und
+[Dokumentationsnotizen](documentation-notes/README.md) stehen außerhalb der offenen Listen.

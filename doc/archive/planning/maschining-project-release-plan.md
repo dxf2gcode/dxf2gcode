@@ -1,9 +1,16 @@
 # Abschluss von maschining-project und nächster Develop-Release
 
+> **Historisches Archiv, 15.11.2026:** Dieses Dokument ist keine offene
+> Aufgabenliste. Frühere Vorschläge, Zwischenstände und offene Kästchen sind
+> durch die spätere Umsetzung bzw. Nutzerentscheidung überholt. Aktuelle offene
+> Arbeit steht ausschließlich in der [Kurzliste](../../todo.md) und den
+> [Details](../../planning/open-task-details.md). Abschlüsse und Grenzen stehen
+> im [Abschlussnachweis](../toolpath-refactoring-completed.md).
+
 Stand: **15.11.2026**. Schritte 1–4 abgeschlossen: PR #5 nach develop
 übernommen, Develop-Prerelease 2.0.0.dev13 veröffentlicht, endgültige Downloads
 und Debian-Start geprüft. Dokumentations-Sichtprüfung bleibt beim Nutzer.
-[Abschlussnachweis](../archive/toolpath-refactoring-completed.md#develop-machining-release).
+[Abschlussnachweis](../toolpath-refactoring-completed.md#develop-machining-release).
 
 ## 1. Bestätigte Entscheidungen
 
@@ -19,7 +26,7 @@ und Debian-Start geprüft. Dokumentations-Sichtprüfung bleibt beim Nutzer.
 - Anleitung, Bilder und Releasebeschreibung müssen zum integrierten Stand passen.
 
 Die bestätigten Abschlüsse werden in der Todo entfernt und im
-[Abschlussnachweis](../archive/toolpath-refactoring-completed.md) festgehalten.
+[Abschlussnachweis](../toolpath-refactoring-completed.md) festgehalten.
 Paket-/Installationsnachweise werden dadurch nicht vorweggenommen.
 
 ## 2. Ausgangslage und Integrationsweg
@@ -153,7 +160,7 @@ oder unbelegt als erledigt zu lassen.
 1040 Tests, frische Ubuntu Qt5/Qt6-Wheels, Windows-ZIP/MSI auf wegwerfbarem
 Runner und exaktes Kandidaten-Wheel auf Debian einschließlich X11/Xvfb geprüft.
 Kandidatenversion `2.0.0.dev22`, keine Veröffentlichung. Herkunft/Prüfsummen und
-Abnahmegrenzen im [Nachweis](../archive/toolpath-refactoring-completed.md#pr5-installation).
+Abnahmegrenzen im [Nachweis](../toolpath-refactoring-completed.md#pr5-installation).
 Endgültige Release-Artefakte bleiben Etappe D; macOS separat.
 
 ## 6. Etappe D – Merge und Develop-Veröffentlichung
@@ -173,7 +180,7 @@ Endgültige Release-Artefakte bleiben Etappe D; macOS separat.
    endgültige Artefakte gemäß Etappe C bestätigen und Ergebnis dokumentieren.
 
 Dies ist ein **Develop-Prerelease**, kein stabiler `v2.0.0`-Tag. Der bestehende
-[Releasevertrag](../release-pipeline.md) und die stabile Freigabegrenze bleiben
+[Releasevertrag](../../release-pipeline.md) und die stabile Freigabegrenze bleiben
 erhalten. Ein echter PR-Paketlauf kann den entsprechenden Teil von CI1 schließen;
 erster stabiler Release und spätere Codesignierung bleiben getrennt.
 

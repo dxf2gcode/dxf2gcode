@@ -1,7 +1,14 @@
 # A1: Detaillierter Abschlussplan
 
+> **Historisches Archiv, 15.11.2026:** Dieses Dokument ist keine offene
+> Aufgabenliste. Frühere Vorschläge, Zwischenstände und offene Kästchen sind
+> durch die spätere Umsetzung bzw. Nutzerentscheidung überholt. Aktuelle offene
+> Arbeit steht ausschließlich in der [Kurzliste](../../todo.md) und den
+> [Details](../../planning/open-task-details.md). Abschlüsse und Grenzen stehen
+> im [Abschlussnachweis](../toolpath-refactoring-completed.md).
+
 Stand: **06.11.2026**. **Vollständige Variante V abgeschlossen (P0–P4,
-I0–I5)**. [Ergebnis, Prüfnachweise und Grenzen](../archive/toolpath-refactoring-completed.md#a1-complete).
+I0–I5)**. [Ergebnis, Prüfnachweise und Grenzen](../toolpath-refactoring-completed.md#a1-complete).
 Die folgenden Abschnitte bewahren den beschlossenen Plan und den damaligen
 Ausgangsstand; sie sind keine Liste offener Aufgaben.
 

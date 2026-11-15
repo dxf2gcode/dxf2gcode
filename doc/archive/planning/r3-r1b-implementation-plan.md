@@ -1,14 +1,21 @@
 # R3 und R1b: gemeinsamer Umsetzungsplan
 
+> **Historisches Archiv, 15.11.2026:** Dieses Dokument ist keine offene
+> Aufgabenliste. Frühere Vorschläge, Zwischenstände und offene Kästchen sind
+> durch die spätere Umsetzung bzw. Nutzerentscheidung überholt. Aktuelle offene
+> Arbeit steht ausschließlich in der [Kurzliste](../../todo.md) und den
+> [Details](../../planning/open-task-details.md). Abschlüsse und Grenzen stehen
+> im [Abschlussnachweis](../toolpath-refactoring-completed.md).
+
 Stand: **14.11.2026**. **Plan vom Nutzer am 06.11.2026 bestätigt.**
 Commit, Push und Develop-Release vor der Umsetzung sind abgeschlossen.
-P1–P6 sind implementiert; [P1–P3-Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3)
-und [P4–P6-Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6).
+P1–P6 sind implementiert; [P1–P3-Nachweis](../toolpath-refactoring-completed.md#r3-r1b-p1-p3)
+und [P4–P6-Nachweis](../toolpath-refactoring-completed.md#r3-r1b-p4-p6).
 P8 ist vom Nutzer am 14.11.2026 fachlich abgenommen. Der aktuelle Stegumfang
 ist akzeptiert; zusätzliche selbsttätige Platzierung wird nicht weiter verfolgt.
 Nächster Schritt ist der [Integrations-/Releaseabschluss](maschining-project-release-plan.md).
 Bestätigte Fachregeln und technische Umsetzungsvorschläge sind unterschieden.
-[Planungsabschluss](../archive/toolpath-refactoring-completed.md#r3-r1b-plan).
+[Planungsabschluss](../toolpath-refactoring-completed.md#r3-r1b-plan).
 
 **Arbeitszweig seit 07.11.2026:** `maschining-project`.
 Der lokale P1–P3-Commit `5415018` und der fortgeführte R3/R1b-Stand
@@ -70,7 +77,7 @@ Ein Gruppenwechsel verändert nicht den ursprünglichen DXF-Layer.
 | D13 | Bei der ersten Übernahme entspricht die Bearbeitungsstruktur dem Layerbaum; spätere Änderungen bleiben ausschließlich in Bearbeitung. | Bestätigt; Werkzeugtrennung nach D8 erfordert bei gemischten Alt-Layern getrennte Schritte |
 
 Ein eigener Drehzahlblock bei gleicher Werkzeugnummer ist als spätere,
-separate Erweiterung [PP1](../todo.md#pp1) vorgemerkt (Nutzeranregung vom
+separate Erweiterung [PP1](../../todo.md#pp1) vorgemerkt (Nutzeranregung vom
 07.11.2026). D21 bleibt für den aktuellen Umfang gültig.
 
 Die Bedienregeln einschließlich Abschnitt 7 sind abgestimmt. Technische
@@ -121,14 +128,14 @@ Bearbeitungen besitzt eigene Werte, Richtung, Startpunkt und Exportposition.
 
 | Aktuelle Stelle | Bedeutung für die Umsetzung |
 | --- | --- |
-| [Shape](../../source/dxf2gcode/domain/project/shape.py) | Verbindet Geometrie, Bearbeitungsparameter, Startpunkt/Richtung, Auswahl und genau ein `parentLayer`. Diese Zuständigkeiten müssen schrittweise getrennt werden. |
-| [LayerContent](../../source/dxf2gcode/domain/project/layercontent.py) | Enthält Shape-Mitgliedschaft, Werkzeugvorgaben, Sonderlayersemantik und Exportreihenfolgen. Ein neuer Baum allein schafft noch keine unabhängigen Gruppen. |
-| [ToolSettings](../../source/dxf2gcode/domain/project/tool_settings.py) und [Shape-Aktionen](../../source/dxf2gcode/application/shapes.py) | Eigene Werkzeugwerte sind bereits modelliert. Einige Lead-Werte kennen explizite Vererbungszustände; Tiefen/Vorschübe sind dagegen häufig direkt gespeicherte Zahlen. |
-| [Project](../../source/dxf2gcode/domain/project/project.py) | Stellt Konturen über Layernamen und Geometriehashes wieder her; beim kleinen Reload wird auch die Shape-Nummer verwendet. Das genügt nicht als dauerhafte Arbeitsgangreferenz. |
-| [TreeHandler](../../source/dxf2gcode/presentation/qt/treehandling.py) | Überträgt die Baumreihenfolge in `exp_order`/`exp_order_complete`. Diese Exportzuständigkeit muss kontrolliert an den Bearbeitungsbaum übergehen. |
-| [Planungseingaben](../../source/dxf2gcode/adapters/toolpath/planning.py) | Liest aufgelöste Shape-/Werkzeug-/Layerwerte. Neuer Adapter soll Arbeitsgangwerte liefern, ohne Geometriealgorithmen oder den Planvertrag neu zu schreiben. |
-| [Routenoptimierung](../../source/dxf2gcode/application/optimization/routes.py) | Optimiert derzeit innerhalb der Layer; beide vorhandenen Modi und die relative Reihenfolge müssen erhalten bleiben. |
-| [Breaks](../../source/dxf2gcode/adapters/postprocessor/breaks.py) | Bestehende BREAKS:-Geometrien wirken über Layergrenzen hinweg; neue arbeitsgangbezogene Regionen dürfen diesen Importvertrag nicht unbemerkt ändern. |
+| [Shape](../../../source/dxf2gcode/domain/project/shape.py) | Verbindet Geometrie, Bearbeitungsparameter, Startpunkt/Richtung, Auswahl und genau ein `parentLayer`. Diese Zuständigkeiten müssen schrittweise getrennt werden. |
+| [LayerContent](../../../source/dxf2gcode/domain/project/layercontent.py) | Enthält Shape-Mitgliedschaft, Werkzeugvorgaben, Sonderlayersemantik und Exportreihenfolgen. Ein neuer Baum allein schafft noch keine unabhängigen Gruppen. |
+| [ToolSettings](../../../source/dxf2gcode/domain/project/tool_settings.py) und [Shape-Aktionen](../../../source/dxf2gcode/application/shapes.py) | Eigene Werkzeugwerte sind bereits modelliert. Einige Lead-Werte kennen explizite Vererbungszustände; Tiefen/Vorschübe sind dagegen häufig direkt gespeicherte Zahlen. |
+| [Project](../../../source/dxf2gcode/domain/project/project.py) | Stellt Konturen über Layernamen und Geometriehashes wieder her; beim kleinen Reload wird auch die Shape-Nummer verwendet. Das genügt nicht als dauerhafte Arbeitsgangreferenz. |
+| [TreeHandler](../../../source/dxf2gcode/presentation/qt/treehandling.py) | Überträgt die Baumreihenfolge in `exp_order`/`exp_order_complete`. Diese Exportzuständigkeit muss kontrolliert an den Bearbeitungsbaum übergehen. |
+| [Planungseingaben](../../../source/dxf2gcode/adapters/toolpath/planning.py) | Liest aufgelöste Shape-/Werkzeug-/Layerwerte. Neuer Adapter soll Arbeitsgangwerte liefern, ohne Geometriealgorithmen oder den Planvertrag neu zu schreiben. |
+| [Routenoptimierung](../../../source/dxf2gcode/application/optimization/routes.py) | Optimiert derzeit innerhalb der Layer; beide vorhandenen Modi und die relative Reihenfolge müssen erhalten bleiben. |
+| [Breaks](../../../source/dxf2gcode/adapters/postprocessor/breaks.py) | Bestehende BREAKS:-Geometrien wirken über Layergrenzen hinweg; neue arbeitsgangbezogene Regionen dürfen diesen Importvertrag nicht unbemerkt ändern. |
 
 A1 bleibt die Grundlage: Domain/Application importieren ohne Qt und konkrete
 Außenadapter. Ein gemeinsamer Plan steuert Vorschau und Export; blockierende
@@ -239,7 +246,7 @@ globalen Tabelle, bleiben seine gespeicherten Projektdaten erhalten; kein
 automatischer Ersatz durch Werkzeug 1. Diese Regel betrifft Bearbeitungs-
 und Werkzeugvorgaben, nicht allgemeine UI-Einstellungen wie Farben/Layout.
 Die Datenfelder und Herkunftsregeln sind in der
-[P1–P3-Zuordnungstabelle](../documentation-notes/machining-project-format.md) festgehalten.
+[P1–P3-Zuordnungstabelle](../../documentation-notes/machining-project-format.md) festgehalten.
 
 **Wichtiger Migrationsfall:** Eine alte gespeicherte Tiefe von −3 mm verrät
 nicht zuverlässig, ob sie früher bewusst gesetzt oder nur aus einem Standard
@@ -335,7 +342,7 @@ sie dürfen nicht im Zuge des Umbaus unbemerkt ihre Wirkung wechseln.
 **Stand 07.11.2026: umgesetzt nach späterer Nutzerfreigabe.**
 Die anfängliche Anweisung „nur planen“ wurde durch den Umsetzungsauftrag
 abgelöst. Der Vertrag gilt für Layers und Entities.
-[Abschluss und Prüfgrenzen](../archive/toolpath-refactoring-completed.md#r3-ui).
+[Abschluss und Prüfgrenzen](../toolpath-refactoring-completed.md#r3-ui).
 
 Bedienvertrag gemäß D23 und D25:
 
@@ -527,7 +534,7 @@ räumliche Regionsauswertung; Schleppmesser verwenden weiterhin ihre bisherige
 Stegverarbeitung. Strg-Ausrichtung folgt D44; automatische Platzierung bleibt offen. Vorschau und Export
 verwenden denselben Plan. Abnahmefälle: Gerade/Bogen, G40/G41/G42, beide
 Richtungen, Radien/Aufmaß, schmale/schräge Regionen, Eckverbindungen und
-Warnungsfälle. [Lokaler Nachweis](../archive/toolpath-refactoring-completed.md#d41).
+Warnungsfälle. [Lokaler Nachweis](../toolpath-refactoring-completed.md#d41).
 Das reale Korrekturverhalten einer Steuerung benötigt eine gesonderte Abnahme.
 
 **Stegmodus-Symbol:** Nutzerwahl Variante 2, gestrichelte Region mit Stift.
@@ -838,13 +845,13 @@ mit einer noch offenen fachlichen Entscheidung, von der ihr Verhalten abhängt.
 
 | Paket | Inhalt und hauptsächlich betroffene Bereiche | Abnahme / Voraussetzung |
 | --- | --- | --- |
-| P0 – Bedienvertrag, abgeschlossen | Regeln, Auswahl, Bearbeitungskonturen und Beispiele mit dem Nutzer abgestimmt. | [Planungsabschluss](../archive/toolpath-refactoring-completed.md#r3-r1b-plan); Implementierung und GUI-Abnahme folgen separat. |
-| P1 – Parameter und Identitäten, implementiert | Herkunft, IDs, Referenzen, Gruppen und Resolver im reinen Domain-Modell. | [Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3); [Zuordnungstabelle](../documentation-notes/machining-project-format.md). |
-| P2 – Gemeinsame Bearbeitungsgrundlage, implementiert | Legacy-Migration und getrennte Shape-/Layer-Projektionen mit eigenen Starts/Richtungen. | Gemeinsamer Resolver für Vorschau/Export; [Nachweis und Übergangsgrenzen](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3). |
-| P3 – Persistenz und Reload, implementiert | JSON 2.0, Altprojektmigration, IDs, Referenzbindung und GUI-/CLI-Projektwege. | Roundtrip, Versionen 1.1–1.5 und Exportabbruch bei ungelösten Referenzen [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3). |
-| P4 – Bearbeitungstab, implementiert | Bearbeitungsbaum, Auswahl/Canvas, Gruppenaktionen, Parameterherkunft und Originalauswahl gemäß D20. | DE/FR/RU und echte Qt5-/Qt6-Abläufe [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
-| P5 – R1b, implementiert | Atomare Mehrfachaktionen, Drop-Markierung, Menü/Sortierung, neue IDs beim Kopieren sowie Undo/Redo. | Eigene Werte/Zielvererbung, Rückgängig und stabile Redo-IDs [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
-| P6 – Export und Optimierung, implementiert | Sichtbare Bearbeitungsreihenfolge, Schritt-/G-Code-Grenzen, Werkzeugnummernvertrag D21 und geplante Routenendpunkte. | GUI/CLI-Ausgabe, beide Optimierungsmodi und Fehlerabbruch [geprüft](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
+| P0 – Bedienvertrag, abgeschlossen | Regeln, Auswahl, Bearbeitungskonturen und Beispiele mit dem Nutzer abgestimmt. | [Planungsabschluss](../toolpath-refactoring-completed.md#r3-r1b-plan); Implementierung und GUI-Abnahme folgen separat. |
+| P1 – Parameter und Identitäten, implementiert | Herkunft, IDs, Referenzen, Gruppen und Resolver im reinen Domain-Modell. | [Nachweis](../toolpath-refactoring-completed.md#r3-r1b-p1-p3); [Zuordnungstabelle](../../documentation-notes/machining-project-format.md). |
+| P2 – Gemeinsame Bearbeitungsgrundlage, implementiert | Legacy-Migration und getrennte Shape-/Layer-Projektionen mit eigenen Starts/Richtungen. | Gemeinsamer Resolver für Vorschau/Export; [Nachweis und Übergangsgrenzen](../toolpath-refactoring-completed.md#r3-r1b-p1-p3). |
+| P3 – Persistenz und Reload, implementiert | JSON 2.0, Altprojektmigration, IDs, Referenzbindung und GUI-/CLI-Projektwege. | Roundtrip, Versionen 1.1–1.5 und Exportabbruch bei ungelösten Referenzen [geprüft](../toolpath-refactoring-completed.md#r3-r1b-p1-p3). |
+| P4 – Bearbeitungstab, implementiert | Bearbeitungsbaum, Auswahl/Canvas, Gruppenaktionen, Parameterherkunft und Originalauswahl gemäß D20. | DE/FR/RU und echte Qt5-/Qt6-Abläufe [geprüft](../toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
+| P5 – R1b, implementiert | Atomare Mehrfachaktionen, Drop-Markierung, Menü/Sortierung, neue IDs beim Kopieren sowie Undo/Redo. | Eigene Werte/Zielvererbung, Rückgängig und stabile Redo-IDs [geprüft](../toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
+| P6 – Export und Optimierung, implementiert | Sichtbare Bearbeitungsreihenfolge, Schritt-/G-Code-Grenzen, Werkzeugnummernvertrag D21 und geplante Routenendpunkte. | GUI/CLI-Ausgabe, beide Optimierungsmodi und Fehlerabbruch [geprüft](../toolpath-refactoring-completed.md#r3-r1b-p4-p6). |
 | P7 – Stegregionen, abgeschlossen | Manueller Stegumfang einschließlich D41–D48 implementiert und akzeptiert. | Zusätzliche selbsttätige Verteilung wird gemäß Nutzerentscheidung vom 14.11.2026 nicht weiter verfolgt. |
 | P8 – Integrierte Nutzerabnahme, abgeschlossen | Nutzer bestätigt fachliche Abnahme am 14.11.2026. | Anleitung/Bilder und Paket-/Installationsnachweise gehören zum separaten Integrations-/Releaseplan. |
 
@@ -948,10 +955,10 @@ anschließend ausdrücklich beauftragt; Leerraum weiterhin für später:
   Zuweisen eines bestehenden Werkzeugs vor. Kein automatisches Anlegen und keine
   automatische Wertänderung beim Laden. Vorhandene Zieldateien bleiben erhalten,
   stdout bleibt bei Sperre leer. Historische Projektdateien haben dieselbe Sperre.
-  [Ergebnis und Prüfnachweis](../archive/toolpath-refactoring-completed.md#r3-tools).
+  [Ergebnis und Prüfnachweis](../toolpath-refactoring-completed.md#r3-tools).
 - **R3-ROWS:** Mit D29 erledigt: Kopfzeile enthält Werkzeugauswahl samt
   Durchmesser und Drehzahl. Versteckte Felder blenden vollständige Zeilen aus; natürliche
-  Gruppenhöhe statt Auffüllen. [Nachweis](../archive/toolpath-refactoring-completed.md#r3-preview-layout).
+  Gruppenhöhe statt Auffüllen. [Nachweis](../toolpath-refactoring-completed.md#r3-preview-layout).
 - **R3-IGNORE:** Fokussierte Untersuchung bestätigt: `ignored` übernimmt die
   Ausschlusswirkung importierter `IGNORE:`-Layer. Die Materialisierung setzt
   deren Konturen unabhängig von `entry.enabled` auf deaktiviert und nimmt sie
@@ -970,7 +977,7 @@ anschließend ausdrücklich beauftragt; Leerraum weiterhin für später:
   Umsetzung auf der isolierten Integrationsbasis abgeschlossen: nicht neu
   anbietbare Sonderart, vorhandene Art beim Bearbeiten gesperrt, ausgeschlossene
   Exportdarstellung ohne Checkbox. Altimport und Roundtrip erhalten die Daten;
-  kein Eingriff in die Werkzeugwegplanung. [Nachweis](../archive/toolpath-refactoring-completed.md#r3-ignore-complete).
+  kein Eingriff in die Werkzeugwegplanung. [Nachweis](../toolpath-refactoring-completed.md#r3-ignore-complete).
   Anschließende Nutzerpräzisierung vom 14.11.2026 ersetzt diese erste Fassung:
   IGNORE-Layer liefern beim Import unzugeordnete Originalkonturen, die später
   normal bearbeitet werden können. Für interne ignorierte Schritte gibt es
@@ -984,10 +991,10 @@ und leerer Exportreihenfolge bestätigt. Dies ist keine neue GUI-/Paketabnahme.
 
 ## Quellen und Abgrenzung
 
-- [R3-Anforderungen](open-task-details.md#r3), einschließlich des Nutzerwunsches
+- [R3-Anforderungen](open-task-details-2026-11-15.md#r3), einschließlich des Nutzerwunsches
   zu manuell angelegten Stegen vom 04.11.2026.
-- [R1b-Anforderungen](open-task-details.md#r1b) und [Teilkontur-Erweiterung](open-task-details.md#teilkonturen).
-- [Architekturverträge](../architecture.md) und [A1-Abschluss](../archive/toolpath-refactoring-completed.md#a1-complete).
+- [R1b-Anforderungen](open-task-details-2026-11-15.md#r1b) und [Teilkontur-Erweiterung](../../planning/open-task-details.md#teilkonturen).
+- [Architekturverträge](../../architecture.md) und [A1-Abschluss](../toolpath-refactoring-completed.md#a1-complete).
 - Die Quellen in Abschnitt 2 wurden für diesen Entwurf im aktuellen Checkout
   gelesen. Bestehende Tests wurden eingeordnet, für diese Planung nicht erneut
   ausgeführt. Noch keine feste Zeit-/Aufwandszusage; die Hauptaufwände liegen

@@ -1,12 +1,13 @@
 # R3/R1b: Bearbeitungsmodell und Projektformat 2.1
 
-Stand: **14.11.2026**, P1–P6 und manuelle Stegregionen D42 implementiert.
-P8 ist vom Nutzer am 14.11.2026 fachlich abgenommen. Der aktuelle Stegumfang ist
-akzeptiert; zusätzliche selbsttätige Platzierung wird nicht weiter verfolgt.
-Anleitung/Bilder und Paketnachweise folgen dem
-[Integrations-/Releaseplan](../planning/maschining-project-release-plan.md).
+Stand: **15.11.2026**. P1–P8, Integration und Develop-Release sind abgeschlossen.
+Nutzerabnahme am 14.11.2026; Anleitung/Bilder und endgültige Paketnachweise sind
+im [dev13-Abschluss](../archive/toolpath-refactoring-completed.md#develop-machining-release)
+festgehalten. Der akzeptierte Stegumfang wird nicht um selbsttätige Verteilung
+erweitert. Der [frühere Releaseplan](../archive/planning/maschining-project-release-plan.md)
+ist nur noch historische Quelle, keine offene Aufgabenliste.
 [Anwenderanleitung](../../docs/user-guide/machining-steps.md),
-[Plan und Entscheidungen D1–D22](../planning/r3-r1b-implementation-plan.md),
+[Plan und Entscheidungen D1–D48](../archive/planning/r3-r1b-implementation-plan.md),
 [P1–P3](../archive/toolpath-refactoring-completed.md#r3-r1b-p1-p3) und
 [P4–P6-Nachweis](../archive/toolpath-refactoring-completed.md#r3-r1b-p4-p6),
 [Formular-Korrektur D22](../archive/toolpath-refactoring-completed.md#r3-parameter-form-correction).
@@ -437,7 +438,7 @@ Originalkonturpartner behalten ihre räumliche Regionsauswertung; Schleppmesser
 bleiben unverändert. D41 selbst änderte keine IDs; D42 ergänzt Format 2.1.
 Bereits geschriebener
 G-Code bleibt bestehen; nach der Verhaltensänderung neu exportieren und prüfen.
-Siehe [Entscheidung und Abnahmefälle](../planning/r3-r1b-implementation-plan.md#6-reihenfolge-sonderfälle-und-haltestege).
+Siehe [Entscheidung und Abnahmefälle](../archive/planning/r3-r1b-implementation-plan.md#6-reihenfolge-sonderfälle-und-haltestege).
 
 ### Auswahl und abgeleitete Bezüge D43
 

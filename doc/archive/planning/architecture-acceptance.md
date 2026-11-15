@@ -1,5 +1,12 @@
 # A1: Reichweite der Architekturabnahme
 
+> **Historisches Archiv, 15.11.2026:** Dieses Dokument ist keine offene
+> Aufgabenliste. Frühere Vorschläge, Zwischenstände und offene Kästchen sind
+> durch die spätere Umsetzung bzw. Nutzerentscheidung überholt. Aktuelle offene
+> Arbeit steht ausschließlich in der [Kurzliste](../../todo.md) und den
+> [Details](../../planning/open-task-details.md). Abschlüsse und Grenzen stehen
+> im [Abschlussnachweis](../toolpath-refactoring-completed.md).
+
 Stand: **05.11.2026**, geprüfte Quellbasis `7246810` im Windows-Checkout.
 Diese Bestandsaufnahme trennt belegte Architekturverträge, konkrete Lücken
 und mögliche Folgeschritte. Sie ist keine vollständige Maschinen-, Profil-,
@@ -9,7 +16,7 @@ Paket- oder Plattformfreigabe.
 [Abschlussplan](a1-completion-plan.md) ist umgesetzt. Pocket-Gültigkeit,
 Projekt-/GUI-Aktualisierung und auftragsweiter Exportabbruch sind angebunden;
 sämtliche Domain-/Application-Module werden ohne Qt, Runtime-Globals oder
-konkrete Adapter importiert. [Abschluss und aktuelle Nachweise](../archive/toolpath-refactoring-completed.md#a1-complete).
+konkrete Adapter importiert. [Abschluss und aktuelle Nachweise](../toolpath-refactoring-completed.md#a1-complete).
 Die folgenden Befunde beschreiben ausschließlich die historische Quellbasis
 `7246810` vor der Umsetzung.
 
@@ -21,16 +28,16 @@ Verträge sind mit konkreten Regressionen verbunden:
 
 | Bereich | Beleg und Reichweite |
 | --- | --- |
-| Unveränderliche Planwerte und Diagnosen | [Planvertrag](../../tests/dxf2gcode_toolpath_contract_test.py): wiederholbare Planung, unveränderte Requests, vollständige Tiefenpässe, Warnungen mit Plan und Fehler ohne Plan |
-| Fräsen, Softwarekompensation | [Falltests](../../tests/dxf2gcode_toolpath_slices_test.py): offene/geschlossene Kontur, alternierende Pässe und passende Golden-Ausgaben |
+| Unveränderliche Planwerte und Diagnosen | [Planvertrag](../../../tests/dxf2gcode_toolpath_contract_test.py): wiederholbare Planung, unveränderte Requests, vollständige Tiefenpässe, Warnungen mit Plan und Fehler ohne Plan |
+| Fräsen, Softwarekompensation | [Falltests](../../../tests/dxf2gcode_toolpath_slices_test.py): offene/geschlossene Kontur, alternierende Pässe und passende Golden-Ausgaben |
 | Maschinenkompensation G41/G42 | Dieselben Falltests: offene/geschlossene Kontur, beide Seiten, Rücksetzen zwischen Tiefenpässen ein/aus und Seitenwechsel bei Umkehr |
 | Leads, Überfahrt und Tabs | Falltests: Lead-Aktionen vor/nach den Schnittpässen, ungültiger Auslauf ohne Plan, ausgewählte Tab-Pässe und Z-Höhen |
 | Software-Pocketing | Falltests: G40/G41/G42, Tiefen, sichere Verbindungen und Goldens; keine Aussage über Taschen mit Maschinenkompensation |
-| Bohren | Kreis und Punktloch, direkte/mehrfache Zustellung und XY-/XYZ-Projektion; [B1/B2](../../tests/dxf2gcode_machining_modes_test.py) ergänzt widersprüchliche Drill/Pocket/G41/G42-Zustände, Projekt-Roundtrip, Vorschau und Auflösung |
-| Schleppmesser | Falltests plus [Messerregressionen](../../tests/dxf2gcode_knife_passes_test.py): Spitzenweg, Schwenken, Rampen, Richtungsumkehr, Tiefen und G90/G91; keine Freigabe von Pocketing am Messer |
+| Bohren | Kreis und Punktloch, direkte/mehrfache Zustellung und XY-/XYZ-Projektion; [B1/B2](../../../tests/dxf2gcode_machining_modes_test.py) ergänzt widersprüchliche Drill/Pocket/G41/G42-Zustände, Projekt-Roundtrip, Vorschau und Auflösung |
+| Schleppmesser | Falltests plus [Messerregressionen](../../../tests/dxf2gcode_knife_passes_test.py): Spitzenweg, Schwenken, Rampen, Richtungsumkehr, Tiefen und G90/G91; keine Freigabe von Pocketing am Messer |
 | Drehen | Falltests: offene/geschlossene Linie/Bogen in G40, Durchmesserfaktor und bestehende Lead-Grenzen; keine generelle Dreh-/Pocket-/G41/G42-Abnahme |
-| Profile und Serialisierung | [Profiltests](../../tests/dxf2gcode_postpro_config_test.py), [Werkzeugwechseltests](../../tests/dxf2gcode_tool_change_test.py), Profilfähigkeiten und reale formatierte Endpunkte in den Falltests; keine beliebigen Anwenderprofile |
-| Vorschau/Export | Falltests vergleichen denselben Plan, wiederholte Ausgabe, formatierte Endpunkte und 2D-/3D-Projektionen; [Vorschauregressionen](../../tests/dxf2gcode_toolpath_preview_test.py) ergänzen Edits und Grundgeometrie. Painter-/Mock-OpenGL-Nachweise sind keine GPU-Abnahme |
+| Profile und Serialisierung | [Profiltests](../../../tests/dxf2gcode_postpro_config_test.py), [Werkzeugwechseltests](../../../tests/dxf2gcode_tool_change_test.py), Profilfähigkeiten und reale formatierte Endpunkte in den Falltests; keine beliebigen Anwenderprofile |
+| Vorschau/Export | Falltests vergleichen denselben Plan, wiederholte Ausgabe, formatierte Endpunkte und 2D-/3D-Projektionen; [Vorschauregressionen](../../../tests/dxf2gcode_toolpath_preview_test.py) ergänzen Edits und Grundgeometrie. Painter-/Mock-OpenGL-Nachweise sind keine GPU-Abnahme |
 
 Das frühere Tor „alle unterstützten und nicht unterstützten Kombinationen
 vollständig erfasst“ ist damit zu weit formuliert. Weitere Tests werden an
@@ -38,7 +45,7 @@ einen benannten Vertrag oder einen reproduzierbaren Befund gebunden.
 
 ## Genaue Importgrenze
 
-Der [Importgrenztest](../../tests/dxf2gcode_architecture_boundary_test.py)
+Der [Importgrenztest](../../../tests/dxf2gcode_architecture_boundary_test.py)
 importiert in frischen Prozessen alle Module unter `domain/geometry` und
 `domain/toolpath`, ohne PyQt, Presentation, Runtime-Globals oder Postprozessor
 zu laden. Der Planer erhält explizite Werte statt eines Postprozessorobjekts.
@@ -73,16 +80,16 @@ Planungsdienst aufgerufen. Beobachteter Iststand:
 | Schleppmesser / Softwarekompensation | Plan ohne Diagnose, keine Aktionen mit Rolle `pocket` |
 | Drehen / Softwarekompensation | Plan ohne Diagnose, 55 Aktionen mit Rolle `pocket` |
 
-Die [GUI](../../source/dxf2gcode/presentation/qt/canvas.py) bietet Pocketing
+Die [GUI](../../../source/dxf2gcode/presentation/qt/canvas.py) bietet Pocketing
 bei Maschinenkompensation und am Schleppmesser nicht an. Geladene oder direkt
 gesetzte Werte werden dadurch nicht automatisch ungültig. Der
-[Planer](../../source/dxf2gcode/domain/toolpath/planner.py) prüft derzeit den
+[Planer](../../../source/dxf2gcode/domain/toolpath/planner.py) prüft derzeit den
 Drill-/Pocket-/Kompensationskonflikt, jedoch keine vollständige Maschinen-/
 Pocket-Gültigkeitsmatrix. Die Diagnoseaufrufe bilden gesetzte Modellzustände
 nach, keinen vollständigen GUI-/CLI-Projektladeablauf.
 
 Für Drehen ist die Lage ausdrücklich uneinheitlich: Ein vorhandener
-[Menütest](../../tests/dxf2gcode_pocket_comp_mode_test.py) heißt zwar
+[Menütest](../../../tests/dxf2gcode_pocket_comp_mode_test.py) heißt zwar
 `test_the_pocket_mill_is_not_offered_for_the_lathe`, erwartet aber tatsächlich
 das Vorhandensein von „Pocket Mill“. Deshalb aus dem Testnamen kein Verbot
 ableiten und keinen stillen Verhaltenswechsel implementieren.
