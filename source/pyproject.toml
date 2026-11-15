@@ -21,6 +21,8 @@ dependencies = [
 
 [project.optional-dependencies]
 qt6 = ["PyQt6"]
+view-vispy = ["PyQt6", "vispy>=0.17,<0.18"]
+view-quick3d = ["PyQt6>=6.7"]
 
 [project.urls]
 Homepage = "https://dxf2gcode.github.io/dxf2gcode/"
@@ -48,6 +50,7 @@ sdist = "tools.build.setuptools_commands.SourceDistribution"
 dxf2gcode = [
     "_build_metadata.json",
     "presentation/qt/resources/*.ui",
+    "presentation/qt/resources/*.qml",
     "presentation/qt/resources/*.qrc",
     "presentation/qt/resources/images/*.svg",
     "presentation/qt/resources/images/*.png",

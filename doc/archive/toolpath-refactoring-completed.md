@@ -4081,3 +4081,276 @@ Laufzeitkonfiguration explizit an Anwendungsfälle übergeben, Importdaten
 normalisieren, den Werkzeugwegplan auf alle Maschinenarten ausweiten und
 schließlich die Start- und UI-Koordination trennen. Erst danach sind die
 Abhängigkeitsregeln der Zielstruktur vollständig erfüllt.
+
+<a id="gui1-p1-p2"></a>
+
+## GUI1 P1/P2 – gemeinsame Darstellung und optionaler VisPy-Prototyp
+
+Stand: **15.11.2026**, Arbeitszweig `ribbon-2d-3d`. Lokal umgesetzt;
+Nutzerprüfung bestätigt: „Ist geprüft und funktioniert soweit wie erwartet.“
+Damit ist der vorgesehene Nutzerprüfpunkt für P1/P2 abgeschlossen. Die Rückmeldung
+enthält keine separate Aufschlüsselung nach Dateien oder Einzelfällen und ist
+keine zusätzliche Plattform-/Paketabnahme. Nicht nach `develop` übernommen und
+nicht veröffentlicht; die Rendererentscheidung bleibt offen.
+
+- `application/view_scene.py`: renderer-unabhängige IDs, Pfade, 2D-/3D-Projektion
+  und Trefferprüfung; kein Qt-/VisPy-Import und keine separate Planung.
+- Adapter aus bestehenden Projekt-/Planungsdaten, mit Originalkonturen,
+  Operationen, Diagnosen und Stegregionen. Auswahländerungen nutzen denselben
+  Snapshot; Tiefenänderungen aktualisieren ihn.
+- Zusätzliche Ansichtsleiste und optionaler VisPy-Viewport: fester Draufblick,
+  räumliche Kamera, Einpassen, bestehende Farben/Linienrollen, Beschriftungen,
+  Start-/Endmarkierungen, Einzel-/Mehrfachauswahl und Baumkopplung. Mehrere
+  Treffer verlangen eine ausdrückliche Auswahl. Der alte Canvas bleibt erhalten.
+- PyQt6/VisPy erst bei Verwendung initialisieren; fehlende Abhängigkeiten
+  deaktivieren die Aktionen. Erkannte Fehler führen zum bisherigen Canvas zurück.
+  VisPy bleibt ein optionales Extra; CLI-/2D-Start importieren VisPy nicht.
+- DE/FR/RU-Texte ergänzt; QM-Dateien kompiliert, ihre neuen Einträge geladen und
+  gegen die TS-Texte geprüft. Bestehende unvollständige andere Katalogeinträge
+  wurden nicht als Teil dieser Änderung überarbeitet.
+
+**Gezielte Nachweise:**
+
+- Neue `dxf2gcode_view_scene_test.py`: **4 Tests unter PyQt5 und PyQt6 bestanden**.
+  Projektion ohne doppelte Tiefenpasslinien, räumliche Z-Werte, stabile getrennte
+  Treffer-IDs, fehlender Renderer/Initialisierungsfehler mit nutzbarem 2D-Canvas,
+  vollständige neue Übersetzungen einschließlich QM-Lookup.
+- Vorhandene `dxf2gcode_machining_panel_test.py`: **2 Tests je Qt-Bindung bestanden**
+  (bestehende reale Qt-Auswahl-/Projekt-/Bearbeitungsabläufe).
+- Nativer Windows-Grafiklauf `--gpu-worker` mit PyQt **6.12.0**, VisPy **0.17.0**,
+  NumPy **1.26.4**, OpenGL **4.6.0 Compatibility Profile Context 26.2.2.260218**.
+  `BreakExample_Circle.dxf` plus zweite Bearbeitung derselben Originalkontur:
+  reale Framebuffer-Ausgabe, räumlicher/Draufblick, Projektion für Treffer,
+  Mehrfachauswahl, Stegregionen, Snapshot-Wiederverwendung und Tiefenänderung
+  geprüft; Rückkehr zu 2D und unveränderte Projektdaten bestätigt.
+  Screenshots unter `.tox/view-prototype-spatial.png` und
+  `.tox/view-prototype.png` visuell geprüft (lokale, nicht versionierte Artefakte).
+
+**Grenzen:** Keine Vollsuite, Paket-/MSI-/Releaseprüfung oder Debian-/SSH-/macOS-
+Abnahme. Keine vergleichenden Geschwindigkeitsaussagen aus dem kleinen Grafiklauf.
+Manuelles Zeichnen/Verschieben/Bemaßen von Stegen bleibt P5; produktive Ablösung
+des bisherigen Canvas ist nicht freigegeben. Ein nativer Treiberabsturz ist kein
+durch Python generell abfangbarer Initialisierungsfehler.
+
+Weitere Etappen: [Vergleichsplan](../planning/gui1-renderer-comparison-plan.md).
+Startweg und bekannte Einschränkungen: [Bediennotizen](../documentation-notes/view-renderer-comparison.md).
+
+<a id="gui1-p3"></a>
+
+## GUI1 P3 – Qt Quick 3D mit gemeinsamer Projektanbindung
+
+Stand: **15.11.2026**, lokal auf `ribbon-2d-3d`. Keine Nutzerabnahme des neuen
+Kandidaten, kein Commit/Push, kein Merge oder Release aus dieser Etappe.
+
+- `quick3d_view.py` und `resources/view_comparison.qml`: native Qt-Quick-Ansicht
+  mit orthografischer Draufsicht und frei drehbarer räumlicher Kamera, Zoom,
+  Verschieben, Einpassen, Konturen, Operationen, Stegen und Beschriftungen.
+- Derselbe Snapshot wie VisPy; gleiche stabile IDs und Projektbefehle.
+  Gemeinsame Auswahl-/Trefferregeln und Stile nach `view_interaction.py`
+  verlagert. Auswahl verändert keine Projektdaten und plant nicht erneut.
+- Qt-Quick-Linien als kamerazugewandte Dreiecksbänder mit Vertexfarben und
+  Bildschirmbreiten, gemeinsame Strichelung, QML-Auflage für Texte und S/E.
+  Projektion entspricht `View3D.mapFrom3DScene`, ohne künstliche XY-Verschiebung.
+- Native `QQuickView`-Einbettung statt gemeinsamem `QQuickWidget`-Compositor:
+  VisPy/OpenGL und Qt Quick/Direct3D 11 im selben Hauptfenster geprüft.
+  Fehler deaktivieren nur den betroffenen Kandidaten und führen zu 2D zurück.
+- Erster nativer Frame vor Readback abwarten, QML-/Grafikfehler und Frame-Timeout
+  behandeln. Ein zu früher Readback ließ die geprüfte Qt-6.12-/D3D11-Kombination
+  leer bleiben; mit verzögerter Prüfung reale Geometrie sichtbar.
+- Renderer beim Schließen explizit freigeben und den ursprünglichen Qt-Message-
+  Handler nach VisPy-Initialisierung erhalten. Eine während der Erprobung
+  beobachtete Ressourcen-/Loggingwarnung beim Beenden des Mischbetriebs trat in
+  den abschließenden nativen Läufen beider Aktivierungsreihenfolgen nicht auf.
+- QML in Paketdaten und Source-Manifest aufgenommen; optionales Extra
+  `view-quick3d`. Drei neue UI-Texte DE/FR/RU übersetzt, QM-Dateien regeneriert.
+
+**Gezielte Nachweise:**
+
+- `dxf2gcode_view_scene_test.py`: **5 Tests unter PyQt6 bestanden**, unter
+  PyQt5 **4 bestanden / 1 passend übersprungen**. Einschließlich Pixelbreite und
+  unveränderter Mittellinie der Dreiecksgeometrie, Fehlerisolierung je Renderer
+  sowie neuer TS-/QM-Übersetzungen.
+- `dxf2gcode_machining_panel_test.py`: **2 Tests je Bindung bestanden**;
+  vorhandene Auswahl-, Parameter-, Projekt- und History-Abläufe unverändert.
+- Windows/PyQt **6.12.0**: native Worker `--quick-worker`, `--gpu-worker` und
+  isoliert `--quick-only-worker` mit echten Framebuffer-Ausgaben. Qt Quick:
+  **Direct3D11Rhi**; VisPy: **OpenGL 4.6 Compatibility Profile**.
+  `BreakExample_Circle.dxf` plus zweiter Bearbeitung derselben Originalkontur:
+  Bildinhalt, Start in Draufsicht, räumliche Ansicht, Qt-Projektionsvergleich
+  mit weniger als einem Pixel Abweichung, echter QML-Mausklick, Kamera/Zoom,
+  Mehrfachauswahl, Tiefenänderung, Snapshot-Wiederverwendung und Rückkehr zu 2D.
+  Beide Aktivierungsreihenfolgen nutzten denselben Snapshot; Projektdaten nach
+  Ansicht/Auswahl unverändert. Screenshots `.tox/quick3d-prototype*.png` lokal
+  erzeugt; räumliche Ausgabe visuell geprüft.
+
+**Grenzen:** Keine Vollsuite, MSI-/Paket-/Releaseprüfung oder Debian-/Linux-/macOS-
+Abnahme; keine Aussage zur schnelleren Bibliothek. Vergleich großer Projekte,
+Linienqualität und Bediengefühl bleiben P4, geometrische Stegbearbeitung P5.
+Die produktive Ablösung des bisherigen Canvas ist nicht freigegeben.
+
+Offene Schritte: [P4–P6](../planning/gui1-renderer-comparison-plan.md).
+Bedienung und Quellen: [Renderer-Vergleich](../documentation-notes/view-renderer-comparison.md).
+
+<a id="gui1-quick-navigation"></a>
+
+## GUI1 – Qt-Quick-3D-Navigation ohne unnötigen Geometrieaufbau
+
+Stand: **15.11.2026**, lokal auf `ribbon-2d-3d`. Nutzer meldete rucklige
+Navigation; der vereinbarte begrenzte Optimierungsschritt ist umgesetzt.
+
+- 16-ms-Aktualisierung ohne Neustart eines bereits laufenden Timers. Fortlaufende
+  Mausereignisse verhindern damit nicht mehr die nächste Aktualisierung.
+- Projektionen und vorbereitete Endpunkte/Grenzen wiederverwenden. Linienrollen
+  und Strichelung werden bei reiner Rotation nicht erneut aufbereitet.
+- Reines Verschieben aktualisiert nur Kamera und gegebenenfalls Beschriftungen;
+  kein neuer Vertexpuffer. Rotation/Zoom aktualisieren die kamerazugewandten
+  Bänder weiterhin, mit vereinfachter numerischer Aufbereitung statt vieler
+  temporärer Qt-Vektoren und Grenzberechnungen je Dreiecksvertex.
+- Kamera-/Beschriftungssignale getrennt; unveränderte Beschriftungen lösen kein
+  erneutes Zeichnen der QML-Auflage aus. Farben, Auswahl und Projektbefehle
+  bleiben erhalten; keine neuen GUI-Texte oder Übersetzungseinträge.
+
+**Begrenzte Messung:** gleiche lokale Windows-/Python-3.11-/PyQt-6.12-/D3D11-
+Umgebung, `BreakExample_Circle.dxf` mit zweiter Bearbeitung einer Originalkontur,
+ausgewählte Operationen und sichtbare räumliche Ansicht. Median von je zwölf
+direkt ausgeführten Python-`redraw()`-Aufrufen; keine GPU-/FPS-Messung und kein
+Vergleich mit VisPy. Vorherige Implementierung vor dem Umbau lokal gesichert.
+
+| Aktion | Vorher CPU ms | Nachher CPU ms |
+| --- | ---: | ---: |
+| Verschieben | 44,346 | 0,047 |
+| Drehen | 47,405 | 13,854 |
+| Zoomen | 40,566 | 19,032 |
+
+Nachher: **0 Geometrieübertragungen bei zwölf Verschiebungen**, jeweils zwölf
+bei Rotation und Zoom. Der Worker `--quick-benchmark` erzeugt die Messung aus dem
+aktuellen Stand; frühere Implementierung ist nicht Teil des Produktcodes.
+
+**Gezielte Prüfung:** `dxf2gcode_view_scene_test.py`: fünf Tests unter PyQt6
+bestanden; unter PyQt5 vier bestanden, ein Qt-Quick-spezifischer Test passend
+übersprungen. Nativer Direct3D11-Worker einschließlich Bildausgabe, QML-Klick,
+Projektion, Kamera/Zoom, Auswahl, Tiefenänderung und Rückkehr zum bisherigen
+Canvas bestanden. Zusätzliche native Regression: keine Geometrieübertragung
+beim Verschieben, Übertragung beim Drehen, laufende Draw-Timer trotz eines
+2-ms-Ereignisstroms. Bildschirmbreite/Mittellinie der Bänder weiter geprüft;
+aktuelle räumliche Ausgabe lokal visuell kontrolliert.
+
+**Grenzen:** keine Vollsuite, Paket-/Release- oder weitere Plattformabnahme.
+Große Datenmengen können bei Rotation/Zoom weiterhin Aufwand verursachen.
+Erneute Nutzerbeurteilung und vergleichende Bewertung bleiben
+[P4](../planning/gui1-renderer-comparison-plan.md).
+
+## GUI1 P4 – isolierter Debian-Vergleich vorbereitet und technisch geprüft
+
+Stand: **15.11.2026**, ausdrücklicher neuer Nutzerauftrag nach Rückmeldung:
+„Beide laufen aktuell relativ flüssig“, Vergleich zusätzlich auf Debian gewünscht.
+Keine daraus abgeleitete allgemeine Freigabe für spätere Debian-/Vollsuitenläufe.
+
+- Debian-Test-VM: **Debian 13.7, Python 3.13.5, X11/Xfce**, eigene venv mit
+  **PyQt6/Qt 6.12.0, VisPy 0.17.0, NumPy 2.5.4, PyOpenGL 3.1.10**.
+- Uncommittierten Arbeitsstand als getrennten Snapshot übertragen, SHA256
+  `a311d08854a71100c076e89703328adfd66943489bed3ab84c9696041c255f04`
+  auf dem Ziel verifiziert. Archiv enthält den Quellstand mit generierten
+  Qt-/Sprachressourcen, Vergleichsworker und zwei DXF-Beispielen, kein Releasepaket.
+- Testbasis `~/dxf2gcode-test-work/runs/view-comparison-20261115/`, eigene
+  HOME-/XDG-Verzeichnisse und Starter `start-view-comparison.sh`; zusätzlicher
+  Desktop-Starter „DXF2GCODE Ansichtsvergleich“. Bestehende Anwendungseinstellungen
+  und Installation unverändert. Fehlende XCB-Cursor-Bibliothek aus Debian-Quellen
+  lokal entpackt und nur im Starter über `LD_LIBRARY_PATH` eingebunden.
+- Echte vorhandene X11-Sitzung verwendet, kein Xvfb. Native Worker
+  `--quick-worker` und `--gpu-worker` beide Status 0: Bildausgabe, Qt-Projektion,
+  Auswahl, Kameras, Tiefenänderung, Snapshot-/Projektinvarianz, transparente
+  Körper, Rückkehr zum bisherigen Canvas und beide Aktivierungsreihenfolgen.
+  Qt Quick: **OpenGL**; VisPy: **OpenGL 4.5 Compatibility Profile**.
+- Virtuelles Grafikgerät Virtio, tatsächlicher Renderer **llvmpipe / LLVM 19.1.7,
+  Mesa 25.0.7**, `Accelerated: no`. Dies ist Software-Rendering auf der CPU,
+  kein Nachweis beschleunigter Linux-Grafik oder deren Leistungsfähigkeit.
+- Prüfprotokolle und Bilder auf der VM gespeichert; lokal `.tox/quick-smoke.log`,
+  `.tox/vispy-smoke.log` sowie `.tox/debian-*-transparent-tools.png` gesichert.
+  Beide Debian-Bilder visuell kontrolliert. Anwendung anschließend mit der
+  Steg-Beispieldatei in der Benutzersitzung geöffnet; laufender Prozess und
+  sichtbarer X11-Fenstertitel mit `BreakExample_Circle.dxf` bestätigt.
+
+**Grenzen:** Manuelle Debian-Nutzerprüfung noch offen. Keine Vollsuite, keine
+Debian-Paket-/Releaseabnahme, kein Performance-Benchmark oder Hardware-GPU-Test.
+Die Anwendung bleibt für den Nutzer geöffnet. Kein Commit/Push oder Merge.
+
+## GUI1 P4 – begrenzte CPU-Gegenprobe mit VisPy
+
+Stand: **15.11.2026**, auf Nutzerfrage nach vergleichbaren VisPy-Messwerten.
+Keine Änderung der Renderer; Mess-Worker für beide Kandidaten verwendbar gemacht.
+`--vispy-benchmark` und `--quick-benchmark` liefen nacheinander auf derselben
+lokalen Windows-/PyQt-6.12-Umgebung mit `BreakExample_Circle.dxf` und zusätzlicher
+Bearbeitung derselben Originalkontur. Je Aktion zwölf Aktualisierungen,
+ausgewählte Operationen, sichtbare räumliche Ansicht, gleiche Fensterumgebung.
+
+Neben `redraw()` wird die gesamte synchrone CPU-Aktualisierung **einschließlich
+Kamerazuweisung** erfasst: VisPy führt bereits im Kamera-Setter Arbeit aus,
+während Qt Quick zunächst nur seinen Kamerazustand ändert.
+
+| Aktion | VisPy CPU ms inkl. Kamera | Qt Quick 3D CPU ms inkl. Kamera |
+| --- | ---: | ---: |
+| Verschieben | 6,331 | 0,049 |
+| Drehen | 6,133 | 21,061 |
+| Zoomen | 7,118 | 25,710 |
+
+Im selben Durchlauf reine `redraw()`-Mediane: VisPy 5,425 / 5,040 / 5,821 ms;
+Qt Quick 0,047 / 21,058 / 25,708 ms. Vorangegangene kurze Läufe schwankten
+(VisPy ca. 7 ms; Qt Quick Rotation ca. 13–14 ms, Zoom ca. 19–22 ms).
+Diese kleinen Stichproben sind keine allgemeine Geschwindigkeitsrangliste.
+
+VisPy setzt je Aktualisierung Daten von 13 Liniengruppen neu (156 `set_data`-
+Aufrufe über zwölf Aktualisierungen); Qt Quick aktualisiert beim Verschieben
+keine Geometrie, beim Drehen/Zoomen je einmal seine gemeinsame Bandgeometrie.
+Das sind API-Aufrufe, keine gemessenen physischen GPU-Übertragungen oder Bytes.
+Qt Quick erzeugt dafür Dreiecke für Bildschirmbreiten, VisPy nutzt native Linien;
+Darstellungsqualität und Arbeitsumfang sind damit nicht pixelgenau gleichgesetzt.
+
+Beide nativen Worker einschließlich Bild-/Auswahl-/Projektprüfungen bestanden.
+Kein Warten auf GPU-Abschluss pro Messprobe, keine FPS-/Latenzmessung, keine
+großen Projekte, weiteren Plattformen oder Releasebuilds geprüft. Die vollständige
+vergleichende Bewertung und Rendererentscheidung bleiben [P4](../planning/gui1-renderer-comparison-plan.md).
+
+## GUI1 P4 – zuschaltbare transparente Werkzeugkörper in beiden Prototypen
+
+Stand: **15.11.2026**, lokal auf `ribbon-2d-3d`, vom Nutzer als Darstellungstest
+beauftragt. Gemeinsamer Schalter **„Transparente Werkzeuge (Test)“**, anfangs aus.
+Je ausgewählter aktivierter Bearbeitung mit gültigem Plan ein Zylinder am
+Startpunkt; Radius aus dem Plan, Testlänge vier Durchmesser, Deckkraft 25 %.
+Keine Projekt-/Exportänderung, Werkzeuganimation oder Kollisionsprüfung.
+
+- Qt-freie gemeinsame Körperbeschreibung und Zylindernetz mit 48 Seiten,
+  194 Vertices und 192 Dreiecken. Beide Renderer verwenden diese Tessellierung;
+  Qt Quick nutzt explizite Normalen, VisPy seine Mesh-Normalen und Beleuchtung.
+- VisPy: transparente Mesh-Objekte mit Transformationen und Alpha-Blending.
+  Tiefenschreibmaske nach dem Zeichnen wiederherstellen: andernfalls unterblieb
+  das Leeren des Tiefenpuffers im Folgeframe und Konturen verschwanden.
+  Neue Snapshot-Daten entfernen veraltete Körperobjekte.
+- Qt Quick: gemeinsames statisches `QQuick3DGeometry` mit Positionen/Normalen/
+  Indizes; Modelle über `Repeater3D`, ohne Tiefenschreiben und ohne Picking.
+  Kameraänderungen erzeugen die Zylindergeometrie nicht erneut.
+- Auswahl, Parameteränderungen und Ansicht synchronisieren die Körper;
+  Einpassen berücksichtigt deren Grenzen. Schalter-/Tooltiptexte DE/FR/RU
+  übersetzt, QM-Dateien kompiliert und neue Einträge geladen/geprüft.
+
+**Prüfung:** sechs fokussierte Tests unter PyQt6 bestanden; unter PyQt5 fünf
+bestanden und ein Qt-Quick-Test übersprungen. Gemeinsamer Körperfilter,
+Abmessungen und Mesh-Zahlen geprüft. Native Windows-Worker für Qt Quick/D3D11
+und VisPy/OpenGL mit zwei Körpern bestanden, einschließlich unverändertem
+Snapshot/Projekt, Ein-/Ausschalten und weiterhin sichtbaren Konturen im VisPy-
+Folgeframe. Beide Bilder `.tox/quick3d-transparent-tools.png` und
+`.tox/vispy-transparent-tools.png` visuell geprüft; gemeinsamer Rendererwechsel
+abschließend nativ geprüft.
+
+**Kurze Render-Gegenprobe:** Median aus sechs Rotationen nach je einer
+Aufwärmprobe, einschließlich Render/Readback, zwei Körper, gleicher lokaler
+Windows-/PyQt6-Stand und Beispiel wie zuvor. Qt Quick ca. 39,4 ms aus / 59,6 ms
+ein (2846×1108 Pixel); VisPy ca. 37,2 ms aus / 29,9 ms ein (2846×1107 Pixel).
+Dass VisPy hier mit zusätzlichen Körpern schneller gemessen wurde, zeigt die
+Streuung/Anlauf- und Synchronisierungseinflüsse dieser kleinen Probe; daraus
+keinen Vorteil durch Transparenz ableiten. Die Readback-APIs und Auflagen sind
+verschieden. Dies ist keine FPS-Messung oder belastbare Bibliotheksrangliste.
+
+Keine Vollsuite, Plattform-/Paket-/Releaseabnahme. Nutzerprüfung mit größerer
+Auswahl und überlagerten transparenten Körpern bleibt Teil von
+[P4](../planning/gui1-renderer-comparison-plan.md).

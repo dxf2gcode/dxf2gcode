@@ -74,24 +74,32 @@ Bedarf und dauerhaften zusätzlichen Prüfaufwand vor Umsetzung entscheiden.
 
 ### GUI1 – Ribbon und integrierte 2D-/3D-Ansichten
 
-**Nutzerziel vom 15.11.2026:** Die 2D-Ansicht dient primär zur Bearbeitung,
-die 3D-Ansicht primär zur Darstellung. Beide werden stärker integriert und
-über ein gemeinsames Ribbon-Menü bedient. Ansichten und Ribbon gehören zum
-selben Entwicklungsschritt.
+**Nutzerziel vom 15.11.2026:** Den geprüften 2D-Canvas erhalten und eine
+integrierte räumliche Ansicht entwickeln, die langfristig auch die präzise
+Bearbeitung übernehmen kann. Zunächst nur ein kleines Ansichts-Menüband;
+weitere Ribbon-Themen und die vollständige Ribbon-Bibliothekswahl später.
 
 **Arbeitszweig:** `ribbon-2d-3d`, aus dem bereinigten `develop`-Stand `3da5a15`
 angelegt. Bis zur stabilen, fachlich abgenommenen Lösung bleiben diese
 Änderungen auf dem eigenen Zweig; erst danach nach `develop` übernehmen.
 
-- [ ] Bedienkonzept und Zusammenspiel der 2D-/3D-Ansicht einschließlich
-  Ansichtswechsel und Ribbon-Aktionen konkret abstimmen.
-- [ ] Ribbon-Entwurf und Bibliothekswahl festlegen; vorhandene Aktionen und
-  Tastenkürzel weiterverwenden sowie Windows-/Linux-Verhalten berücksichtigen.
-- [ ] SARibbon als bisherigen Kandidaten hinsichtlich Python-/PyQt5-/PyQt6-
-  Anbindung, Paketierung sowie Windows-/Linux-Verhalten bewerten.
+Die konkrete Reihenfolge und Nutzerprüfungen stehen im
+[Abarbeitungsplan](gui1-renderer-comparison-plan.md): gemeinsamer Vergleich
+einschließlich Nutzerprüfung (P4) und erst anschließend der gezielte
+Bearbeitungsnachweis (P5).
+PySide6 ist dafür nicht erforderlich; Q1 bleibt unabhängig zurückgestellt.
 
-Die jetzige Beauftragung bereitet den Zweig vor und hält das Ziel fest;
-GUI-Implementierung und konkrete Bibliotheksentscheidung folgen separat.
+Gemeinsame Datenanbindung, Auswahlkopplung und Projektbefehle sollen später
+übernommen werden. Bestehende Farben, Planungs-/Exportverhalten und der nutzbare
+2D-Weg bleiben erhalten. ModernGL wird vorerst nicht prototypisiert.
+
+Rendererwahl, Startansicht, geteilte Ansicht und spätere Ablösung des bisherigen
+Canvas sind offen. SARibbon bleibt ein späterer Kandidat für das vollständige
+Ribbon. Die lokale P1/P2-Umsetzung ist im
+[Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-p1-p2)
+festgehalten; die P3-Umsetzung unter
+[Qt Quick 3D](../archive/toolpath-refactoring-completed.md#gui1-p3).
+Längere Plattform-/Paketprüfungen folgen nur nach Auftrag.
 
 <a id="maschinenabnahme"></a>
 

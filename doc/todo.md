@@ -27,7 +27,7 @@ Ein Eintrag ist kein pauschaler Umsetzungs- oder Prüfauftrag.
 
 <a id="gui1"></a>
 
-- [ ] **GUI1 – Ribbon und 2D/3D:** 2D zur Bearbeitung und 3D zur Darstellung integrieren; auf `ribbon-2d-3d` entwickeln.
+- [ ] **GUI1 – Ribbon und 2D/3D:** VisPy und Qt Quick 3D vergleichen, Nutzerprüfung und Rendererentscheidung; bestehenden 2D-Canvas erhalten. [Abarbeitungsplan](planning/gui1-renderer-comparison-plan.md) auf `ribbon-2d-3d`; übriges Ribbon später.
 
 <a id="maschinenabnahme"></a>
 

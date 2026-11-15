@@ -350,6 +350,8 @@ class MainWindow(QMainWindow):
         self.cont_mirrory = False
 
         self.restoreWindowState()
+        from dxf2gcode.presentation.qt.view_comparison import ViewComparison
+        self.view_comparison = ViewComparison(self)
 
     def tr(self, string_to_translate):
         """
@@ -1742,6 +1744,9 @@ class MainWindow(QMainWindow):
             logger.error("G-code filter cancelled without export")
         logger.debug(self.tr("Closing"))
         self.saveWindowState()
+        comparison = getattr(self, 'view_comparison', None)
+        if comparison is not None:
+            comparison.shutdown()
         # Detach Qt-bound StreamHandler so logging.shutdown() won't crash
         # on a deleted QTextBrowser at exit. See messagebox.py / logger.py
         for handler in logger.handlers[:]:

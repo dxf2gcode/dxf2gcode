@@ -5706,4 +5706,63 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Vor dem Zeichnen eines Stegs eine Kontur oder Bearbeitung auswählen.</translation>
     </message>
 </context>
+<context>
+    <name>ViewComparison</name>
+    <message>
+        <source>View comparison</source>
+        <translation>Ansichtsvergleich</translation>
+    </message>
+    <message>
+        <source>2D canvas</source>
+        <translation>2D-Canvas</translation>
+    </message>
+    <message>
+        <source>VisPy: top view</source>
+        <translation>VisPy: Draufsicht</translation>
+    </message>
+    <message>
+        <source>VisPy: spatial view</source>
+        <translation>VisPy: räumliche Ansicht</translation>
+    </message>
+    <message>
+        <source>Fit all</source>
+        <translation>Alles einpassen</translation>
+    </message>
+    <message>
+        <source>The prototype requires PyQt6.</source>
+        <translation>Der Prototyp benötigt PyQt6.</translation>
+    </message>
+    <message>
+        <source>Start with the existing 2D canvas to use the comparison.</source>
+        <translation>Für den Vergleich mit dem bestehenden 2D-Canvas starten.</translation>
+    </message>
+    <message>
+        <source>VisPy is not installed. The 2D canvas remains available.</source>
+        <translation>VisPy ist nicht installiert. Der 2D-Canvas bleibt verfügbar.</translation>
+    </message>
+    <message>
+        <source>The 3D prototype is unavailable; using the 2D canvas.</source>
+        <translation>Der 3D-Prototyp ist nicht verfügbar; der 2D-Canvas wird verwendet.</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D: top view</source>
+        <translation>Qt Quick 3D: Draufsicht</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D: spatial view</source>
+        <translation>Qt Quick 3D: räumliche Ansicht</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D is not installed. The 2D canvas remains available.</source>
+        <translation>Qt Quick 3D ist nicht installiert. Der 2D-Canvas bleibt verfügbar.</translation>
+    </message>
+    <message>
+        <source>Transparent tools (test)</source>
+        <translation>Transparente Werkzeuge (Test)</translation>
+    </message>
+    <message>
+        <source>Selected operations: 25% opacity, actual diameter; test length = four diameters. No collision check.</source>
+        <translation>Ausgewählte Bearbeitungen: 25 % Deckkraft, tatsächlicher Durchmesser; Testlänge = vier Durchmesser. Keine Kollisionsprüfung.</translation>
+    </message>
+</context>
 </TS>

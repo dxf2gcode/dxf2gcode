@@ -9,6 +9,7 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 
 | Thema | Geplantes Inhaltspaket | Material |
 | --- | --- | --- |
+| [Renderer-Vergleich](view-renderer-comparison.md) | GUI1 P1–P3 | VisPy-/Qt-Quick-3D-Prototypen, Startweg, Auswahl, gemeinsame Darstellungsdaten und Prüfgrenzen |
 | [Bearbeitungsmodell und Projektformat 2.1](machining-project-format.md) | R3/R1b P1–P6, D42 | Bearbeitungstab, Regionsobjekte/Scopes, Zeichnen/Undo, Herkunft, Migration, IGNORE-Erstimport und Vergleichs-DXF |
 | [Zahlenanzeige und Formularbreiten](gui-numeric-display.md) | R3-UI D28/D29 | Konfigurierbare Anzeige, volle Eingabegenauigkeit, gemeinsame skalierbare Spalten |
 | [LinuxCNC-Dateifilter](linuxcnc-integration.md) | LC1 | Historischer und aktueller Integrationsweg, Befunde, Nutzen und noch freizugebender Prüfplan |

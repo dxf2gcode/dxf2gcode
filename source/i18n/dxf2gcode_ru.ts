@@ -5925,4 +5925,63 @@ Skipped Geometries</source>
         <translation>Перед рисованием перемычки выберите контур или операцию обработки.</translation>
     </message>
 </context>
+<context>
+    <name>ViewComparison</name>
+    <message>
+        <source>View comparison</source>
+        <translation>Сравнение видов</translation>
+    </message>
+    <message>
+        <source>2D canvas</source>
+        <translation>Холст 2D</translation>
+    </message>
+    <message>
+        <source>VisPy: top view</source>
+        <translation>VisPy: вид сверху</translation>
+    </message>
+    <message>
+        <source>VisPy: spatial view</source>
+        <translation>VisPy: пространственный вид</translation>
+    </message>
+    <message>
+        <source>Fit all</source>
+        <translation>Показать всё</translation>
+    </message>
+    <message>
+        <source>The prototype requires PyQt6.</source>
+        <translation>Для прототипа требуется PyQt6.</translation>
+    </message>
+    <message>
+        <source>Start with the existing 2D canvas to use the comparison.</source>
+        <translation>Для сравнения запустите приложение с существующим холстом 2D.</translation>
+    </message>
+    <message>
+        <source>VisPy is not installed. The 2D canvas remains available.</source>
+        <translation>VisPy не установлен. Холст 2D остаётся доступным.</translation>
+    </message>
+    <message>
+        <source>The 3D prototype is unavailable; using the 2D canvas.</source>
+        <translation>Прототип 3D недоступен; используется холст 2D.</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D: top view</source>
+        <translation>Qt Quick 3D: вид сверху</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D: spatial view</source>
+        <translation>Qt Quick 3D: пространственный вид</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D is not installed. The 2D canvas remains available.</source>
+        <translation>Qt Quick 3D не установлен. Холст 2D остаётся доступным.</translation>
+    </message>
+    <message>
+        <source>Transparent tools (test)</source>
+        <translation>Прозрачные инструменты (тест)</translation>
+    </message>
+    <message>
+        <source>Selected operations: 25% opacity, actual diameter; test length = four diameters. No collision check.</source>
+        <translation>Выбранные операции: непрозрачность 25 %, фактический диаметр; тестовая длина = четыре диаметра. Без проверки столкновений.</translation>
+    </message>
+</context>
 </TS>

@@ -157,6 +157,8 @@ class MachiningTree(QTreeWidget):
 
 
 class MachiningPanel(QWidget):
+    preview_updated = QtCore.pyqtSignal(object)
+
     def __init__(self, window):
         super().__init__(window)
         self.window = window
@@ -598,6 +600,7 @@ class MachiningPanel(QWidget):
                         scene.set_shape_disabled(shape, shape.disabled)
             self.canvas_preview.refresh(self.binding.preview_layers)
             self.modifiers.update_usage(self.binding.preview_layers)
+            self.preview_updated.emit(self.binding.preview_layers)
         scene.update()
         if self.window.TreeHandler.auto_update_export_order:
             self.draw_route()

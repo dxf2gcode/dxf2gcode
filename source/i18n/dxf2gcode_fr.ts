@@ -5669,4 +5669,63 @@ Documentation GitHub : https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Sélectionner un contour ou une opération avant de dessiner une attache.</translation>
     </message>
 </context>
+<context>
+    <name>ViewComparison</name>
+    <message>
+        <source>View comparison</source>
+        <translation>Comparaison des vues</translation>
+    </message>
+    <message>
+        <source>2D canvas</source>
+        <translation>Canevas 2D</translation>
+    </message>
+    <message>
+        <source>VisPy: top view</source>
+        <translation>VisPy : vue de dessus</translation>
+    </message>
+    <message>
+        <source>VisPy: spatial view</source>
+        <translation>VisPy : vue spatiale</translation>
+    </message>
+    <message>
+        <source>Fit all</source>
+        <translation>Tout cadrer</translation>
+    </message>
+    <message>
+        <source>The prototype requires PyQt6.</source>
+        <translation>Le prototype nécessite PyQt6.</translation>
+    </message>
+    <message>
+        <source>Start with the existing 2D canvas to use the comparison.</source>
+        <translation>Démarrer avec le canevas 2D existant pour utiliser la comparaison.</translation>
+    </message>
+    <message>
+        <source>VisPy is not installed. The 2D canvas remains available.</source>
+        <translation>VisPy n’est pas installé. Le canevas 2D reste disponible.</translation>
+    </message>
+    <message>
+        <source>The 3D prototype is unavailable; using the 2D canvas.</source>
+        <translation>Le prototype 3D est indisponible ; le canevas 2D est utilisé.</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D: top view</source>
+        <translation>Qt Quick 3D : vue de dessus</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D: spatial view</source>
+        <translation>Qt Quick 3D : vue spatiale</translation>
+    </message>
+    <message>
+        <source>Qt Quick 3D is not installed. The 2D canvas remains available.</source>
+        <translation>Qt Quick 3D n’est pas installé. Le canevas 2D reste disponible.</translation>
+    </message>
+    <message>
+        <source>Transparent tools (test)</source>
+        <translation>Outils transparents (test)</translation>
+    </message>
+    <message>
+        <source>Selected operations: 25% opacity, actual diameter; test length = four diameters. No collision check.</source>
+        <translation>Opérations sélectionnées : opacité de 25 %, diamètre réel ; longueur de test = quatre diamètres. Aucun contrôle de collision.</translation>
+    </message>
+</context>
 </TS>

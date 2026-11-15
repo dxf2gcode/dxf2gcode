@@ -8,7 +8,7 @@ include dxf2gcode.appdata.xml
 include dxf2gcode.desktop
 include dxf2gcode.py
 include dxf2gcode.pro
-recursive-include dxf2gcode *.py *.ui *.qrc *.svg *.png *.ico *.icns
+recursive-include dxf2gcode *.py *.ui *.qml *.qrc *.svg *.png *.ico *.icns
 exclude dxf2gcode/presentation/qt/resources/dxf2gcode_images_rc.py
 include i18n/*.ts
 include i18n/*.qm
