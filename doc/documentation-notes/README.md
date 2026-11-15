@@ -13,7 +13,7 @@ Offene Arbeiten stehen in der [Todo](../todo.md), Prüfnachweise in
 | [Zahlenanzeige und Formularbreiten](gui-numeric-display.md) | R3-UI D28/D29 | Konfigurierbare Anzeige, volle Eingabegenauigkeit, gemeinsame skalierbare Spalten |
 | [LinuxCNC-Dateifilter](linuxcnc-integration.md) | LC1 | Historischer und aktueller Integrationsweg, Befunde, Nutzen und noch freizugebender Prüfplan |
 | [Postprozessoren und Entwicklerdokumentation](postprocessors-and-development.md) | WP9–WP13 | Format-/Werkzeugwechselverträge, fünf Beispielgrenzen, Build-/Testquellen, Downloads und Rechte |
-| [Pflege der Dokumentationswebsite](documentation-site-maintenance.md) | Veröffentlichung und spätere Developer Guide | Zensical-Umgebung, lokale Vorschau, strikter Build und Pages-Workflow; aus öffentlichem Prototyp ausgelagert |
+| [Pflege der Dokumentationswebsite](documentation-site-maintenance.md) | Navigation und Veröffentlichung | Vereinbarte Hauptbereiche/Arbeitsabläufe, Übersichtsseiten, stabile URLs, Zensical-Build und Pages-Workflow |
 | [Erste DXF bis zum G-Code](first-dxf-workflow.md) | WP1, Grundlage für WP2–WP7 | Rechteck, aktuelle Screenshots, G40-Demonstrationsprofil und Exportnachweis |
 | [Oberfläche, Import und Projekte](interface-import-projects.md) | WP2, Grundlage für WP3 und WP8 | Bedienung, Formate, Zeichnungspfade, Reload und Grenzen der Projektwiederherstellung |
 | [Reihenfolge, Bearbeitung und Vorschau](order-machining-and-preview.md) | WP3–WP5, Grundlage für WP6 und WP8–WP9 | Constraint-Modi, Kontur/Tasche/Bohren, Standardwerte, Kompensation, Leads und Diagnosen |

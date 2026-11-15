@@ -86,19 +86,11 @@ project/contour settings can override them. See
 
 ## Tool table and project snapshots
 
-![Tool table with compact fields and tool-number entries](../assets/images/machining/tools-table.png)
-
-A new DXF uses the current tool table. A loaded project retains its saved
-definitions. Identical complete definitions are unified in the selector;
-differences are marked **Project deviation**. Replacing such a definition with
-its table counterpart updates every step using that project tool. An export
-diagnostic lists missing numbers/differences and affected steps; resolve those
-used by active operations before exporting. Tools are not added silently.
-
-The table's numeric identifier is the tool number, not a free-text tool name.
-Profile lead dimensions initialize machining defaults; the form edits these
-as contour/step values. Display decimal settings affect presentation without
-rounding saved values. See [Machining parameters](machining-parameters.md).
+The **Tools table** page belongs to application configuration. Its operating
+guide is collected under [Tools](tools/index.md):
+[maintain the table](tools/tool-table.md), [assign tools](tools/assignments.md)
+and [resolve saved project differences](tools/project-tools.md).
+These settings are separate from output postprocessor configuration.
 
 ## When settings take effect
 

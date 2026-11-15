@@ -2,6 +2,32 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## Dokumentation nach Arbeitsablauf gegliedert (15.11.2026)
+
+Die vom Nutzer bestätigte Struktur ist umgesetzt: User guide mit Einstieg,
+Zeichnung/Projekt, Werkzeugen, Bearbeitungsvorbereitung, Werkzeugwegen/Ausgabe
+und Spezialanwendungen. Settings, Postprocessors sowie Help and troubleshooting
+stehen daneben auf oberster Ebene. Entwickler- und Projektinformationen bleiben
+separat; Postprozessor-Beispiele sind unter Postprocessors zusammengeführt.
+
+Kurze Bereichsübersichten öffnen über die Gruppenüberschriften; Breadcrumbs
+zeigen die Einordnung. Andere Gruppen bleiben standardmäßig zusammengeklappt.
+Die Startseite bietet Bereichseinstiege statt einer langen flachen Kapitelliste.
+Werkzeugtabelle, Zuordnung und Projektabweichungen sind als zusammenhängender
+Werkzeugbereich ausgearbeitet; vorhandene ausführliche Absätze aus dem
+Bearbeitungskapitel dorthin verlagert und in den Einstellungen verlinkt.
+Bestehende Seitenpfade und relevante Anker bleiben erhalten, einschließlich
+Installation, Diagnosen, Support und den bisherigen Werkzeug-Verweiszielen.
+
+Nachweis: strenger Zensical-Build und Diff-Prüfung bestanden. 56 eindeutige
+Navigationsseiten, sämtliche bisherigen Navigationspfade enthalten, keine
+doppelte Kapitelzuordnung. Erzeugtes HTML auf sieben Hauptbereiche, sechs
+User-guide-Gruppen, passende Unterordnung, anklickbare Übersichten, Breadcrumbs
+und aktive/inaktive Aufklappzustände geprüft. Reine Dokumentänderung; keine
+Quellcode-, Vollsuite-, Paket- oder Maschinenprüfung dafür gestartet. Die
+abschließende generelle Dokumentations-Sichtprüfung bleibt wie vereinbart beim
+Nutzer; Struktur-/Publikationsnachweis ist davon getrennt.
+
 ## Repository-Startseite auf Bearbeitungsprojekte aktualisiert (15.11.2026)
 
 Auf Nutzerrückmeldung die tatsächlich verwendete Root-README per GitHub-API

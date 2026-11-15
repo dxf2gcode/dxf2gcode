@@ -7,41 +7,73 @@ docs_dir = "docs"
 site_dir = ".tox/docs-site"
 nav = [
   { "Home" = "index.md" },
-  { "Installation and startup" = "installation.md" },
-  { "First DXF to G-code" = "getting-started/first-dxf-to-gcode.md" },
   { "User guide" = [
-    { "Interface and navigation" = "user-guide/interface-and-navigation.md" },
-    { "Import drawings and save projects" = "user-guide/import-and-projects.md" },
-    { "Machining steps" = "user-guide/machining-steps.md" },
-    { "Shapes, layers and tree order" = "user-guide/shapes-layers-and-order.md" },
-    { "Route optimization" = "user-guide/route-optimization.md" },
-    { "Machining parameters" = "user-guide/machining-parameters.md" },
-    { "Contours, pockets and drilling" = "user-guide/contours-pockets-and-drilling.md" },
-    { "Cutter compensation and lead moves" = "user-guide/compensation-and-leads.md" },
-    { "Preview and export" = "user-guide/preview-and-export.md" },
-    { "Toolpath diagnostics" = "user-guide/toolpath-diagnostics.md" },
-    { "Tabs and breaking layers" = "user-guide/tabs-and-breaking-layers.md" },
-    { "Machine modes" = "user-guide/machine-modes.md" },
-    { "Drag-knife cutting" = "user-guide/drag-knife-cutting.md" },
-    { "Command-line usage" = "user-guide/command-line-usage.md" },
-    { "LinuxCNC / AXIS integration" = "user-guide/linuxcnc-axis.md" },
-    { "Troubleshooting and FAQ" = "user-guide/troubleshooting.md" },
-    { "Application settings" = "user-guide/application-settings.md" },
-    { "Layer naming rules" = "user-guide/layer-naming-rules.md" },
+    "user-guide/index.md",
+    { "Getting started" = [
+      "getting-started/index.md",
+      { "Install and start" = "installation.md" },
+      { "First DXF to G-code" = "getting-started/first-dxf-to-gcode.md" },
+      { "Find your way around" = "user-guide/interface-and-navigation.md" },
+    ] },
+    { "Drawing and project" = [
+      "user-guide/drawing/index.md",
+      { "Select geometry, entities and layers" = "user-guide/geometry.md" },
+      { "Import drawings and manage projects" = "user-guide/import-and-projects.md" },
+    ] },
+    { "Tools" = [
+      "user-guide/tools/index.md",
+      { "Maintain the tool table" = "user-guide/tools/tool-table.md" },
+      { "Assign and change tools" = "user-guide/tools/assignments.md" },
+      { "Resolve project-tool differences" = "user-guide/tools/project-tools.md" },
+    ] },
+    { "Prepare machining" = [
+      "user-guide/preparation/index.md",
+      { "Create steps and assign contours" = "user-guide/machining-steps.md" },
+      { "Set parameters and own values" = "user-guide/machining-parameters.md" },
+      { "Mill contours, clear pockets and drill" = "user-guide/contours-pockets-and-drilling.md" },
+      { "Set compensation and lead moves" = "user-guide/compensation-and-leads.md" },
+      { "Create and edit holding tabs" = "user-guide/tabs-and-breaking-layers.md" },
+    ] },
+    { "Toolpaths and output" = [
+      "user-guide/output/index.md",
+      { "Set the machining order" = "user-guide/shapes-layers-and-order.md" },
+      { "Optimize travel" = "user-guide/route-optimization.md" },
+      { "Check the preview and export" = "user-guide/preview-and-export.md" },
+    ] },
+    { "Special applications" = [
+      "user-guide/special-applications/index.md",
+      { "Choose a machine mode" = "user-guide/machine-modes.md" },
+      { "Cut with a drag knife" = "user-guide/drag-knife-cutting.md" },
+      { "Work with LinuxCNC / AXIS" = "user-guide/linuxcnc-axis.md" },
+      { "Use the command line" = "user-guide/command-line-usage.md" },
+    ] },
   ] },
-  { "Postprocessor reference" = [
+  { "Settings" = [
+    "settings/index.md",
+    { "Application settings" = "user-guide/application-settings.md" },
+    { "Set defaults through DXF layer names" = "user-guide/layer-naming-rules.md" },
+  ] },
+  { "Postprocessors" = [
+    "reference/index.md",
     { "Configuration and templates" = "reference/postprocessors.md" },
     { "Tool changes and macros" = "reference/tool-changes.md" },
+    { "Examples" = [
+      "examples/index.md",
+      { "Laser cutter" = "examples/laser.md" },
+      { "Hot-wire and foam" = "examples/hot-wire.md" },
+      { "Lathe output" = "examples/lathe.md" },
+      { "DXF output" = "examples/dxf-output.md" },
+      { "Python text output" = "examples/python-output.md" },
+    ] },
   ] },
-  { "Postprocessor examples" = [
-    { "Overview and limits" = "examples/index.md" },
-    { "Laser cutter" = "examples/laser.md" },
-    { "Hot-wire and foam" = "examples/hot-wire.md" },
-    { "Lathe output" = "examples/lathe.md" },
-    { "DXF output" = "examples/dxf-output.md" },
-    { "Python text output" = "examples/python-output.md" },
+  { "Help and troubleshooting" = [
+    "help/index.md",
+    { "Frequently asked questions" = "user-guide/troubleshooting.md" },
+    { "Diagnose toolpath and export problems" = "user-guide/toolpath-diagnostics.md" },
+    { "Get support or report a problem" = "project/support.md" },
   ] },
   { "Developer guide" = [
+    "developer/index.md",
     { "Development setup" = "developer/setup.md" },
     { "Architecture" = "developer/architecture.md" },
     { "Tests" = "developer/tests.md" },
@@ -50,9 +82,9 @@ nav = [
     { "Contributing" = "developer/contributing.md" },
     { "Documentation maintenance" = "developer/documentation.md" },
   ] },
-  { "Project" = [
+  { "Project information" = [
+    "project/index.md",
     { "Releases and downloads" = "project/downloads.md" },
-    { "Support and issue reporting" = "project/support.md" },
     { "License and credits" = "project/license-and-credits.md" },
     { "Historical documentation" = "project/history.md" },
   ] },
@@ -63,7 +95,7 @@ language = "en"
 logo = "assets/images/dxf2gcode_symbol.png"
 favicon = "assets/images/dxf2gcode_symbol.png"
 font = false
-features = ["content.code.copy"]
+features = ["content.code.copy", "navigation.indexes", "navigation.path"]
 
 [project.markdown_extensions]
 pymdownx.snippets.base_path = ["docs/assets/examples/postprocessors"]

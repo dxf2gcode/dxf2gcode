@@ -52,7 +52,7 @@ settings belong to drag-knife mode, for example.
 Project values remain saved when external configuration changes. Updating a
 tool/default snapshot is an explicit action under **Advanced** in the tree
 menu. Before export, used tool definitions must match the current table.
-See [Machining steps](machining-steps.md#saved-values-and-changed-drawings)
+See [Resolve project-tool differences](tools/project-tools.md)
 for resolving deviations and missing tools.
 
 ## Read shared and mixed values

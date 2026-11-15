@@ -1,5 +1,22 @@
 # Documentation site maintenance
 
+## Agreed information structure (15 November 2026)
+
+The top-level sections are Home, User guide, Settings, Postprocessors,
+Help and troubleshooting, Developer guide and Project information. User guide
+contains six workflow groups: Getting started, Drawing and project, Tools,
+Prepare machining, Toolpaths and output, Special applications. Tool configuration
+and assignment have their own guide; emitted tool-change commands remain under
+Postprocessors. Support's existing URL stays under `project/support/`, but its
+navigation position is Help. No URL migration is implied by regrouping.
+
+Section `index.md` pages give short starting points. Zensical's documented
+`navigation.indexes` and `navigation.path` keep those headings clickable and
+display breadcrumbs. Do not enable global expansion or flatten all the chapters
+again. The [public maintenance guide](../../docs/developer/documentation.md)
+records the editing contract and the
+[upstream reference](https://zensical.org/docs/setup/navigation/) explains it.
+
 The current public developer chapter is
 [Documentation maintenance](../../docs/developer/documentation.md). This internal
 note retains the operational setup details from the earlier public prototype.

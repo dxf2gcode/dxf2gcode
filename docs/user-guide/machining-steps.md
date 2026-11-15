@@ -36,34 +36,10 @@ an empty step or an unused current selection. Without a selection it creates
 an empty step. Double-click a step, or press **F2** with the tree focused, to
 change its name, kind and tool. Selecting its row already exposes its defaults;
 there are no redundant Edit step/Edit step defaults context-menu commands.
-Both tool lists combine saved tools and the current tool table. Identical
-complete definitions appear once. Entries show the T-number, diameter and
-project unit. Saved definitions that differ from the table are marked
-**Project deviation**; the matching **Tool table** variant remains available.
-Differing spindle speeds or lead values appear as additional details. Hover
-over an entry for its further values.
-
-With a step row selected, selecting the matching table variant replaces that project definition in
-**all steps using it**. Other definitions of the same T-number remain unchanged.
-Choosing a different T-number changes only the selected step. Undo restores
-the previous assignments and definitions. Project files retain their tool
-values; later table changes are never applied automatically. Loading a project
-unifies fully equal saved definitions without rounding their values.
-
-To change the tool for one or several selected machining contours, use the same tool
-dropdown. Only the selected assignments change. The application first looks for
-an existing step with the same kind, complete target tool definition and exact
-stored source-step defaults. One matching step is reused; multiple matches open
-a target chooser. Cancel changes nothing. Names alone do not prevent reuse.
-Without a match, a fully selected step changes its tool in place; a partial
-selection moves to a new step directly after its source. Own values and
-assignment identities remain intact. Different tools/defaults remain separate.
-Explicit **New step** always creates a step. Undo/Redo restores the complete action together. Mixed
-tools show **Different tools**. Other applicable parameters can also be edited
-for the whole selection. Explicitly clicking an operation in the canvas changes
-its preview emphasis while retaining a Ctrl-selected group; parameter edits
-still apply to the whole selected group. This selection-based change does not replace tool
-definitions for unselected steps.
+Tool-table preparation and saved project definitions are covered in
+[Tools](tools/index.md). For selection-specific changes, see
+[Assign and change tools](tools/assignments.md). Each step still has exactly
+one kind and one tool; changing selected assignments can reuse or create a step.
 
 ![Roughing and finishing share one original rectangle with independent operations](../assets/images/machining/operations.png)
 
@@ -462,21 +438,10 @@ and overcut. Preview-only actions do not activate manual route display.
 
 ## Saved values and changed drawings
 
-Projects retain saved tool/default values when external profiles change.
-Before export, every tool used by an enabled machining step must match the
-current tool table. A missing tool number or different definition blocks the
-whole export, preserving an existing output file and leaving stdout empty.
-Empty or disabled steps and unassigned geometry do not block export.
-Holding-tab regions do not export as separate machining steps.
-
-The diagnostic identifies the tool number and affected steps. For missing
-numbers it lists the saved definition; for differing tools it compares the
-project and table values. Add or correct the tool through the tool-table
-configuration, or choose an existing table tool for the affected steps.
-Selecting the matching table definition replaces the deviation in all steps
-sharing it. Tools are not created automatically. Preview and project saving
-remain available while the conflict is unresolved. The rule also applies to
-CLI exports and historical project files.
+Saved tool definitions remain independent of later profile changes.
+[Resolve project-tool differences](tools/project-tools.md) explains missing
+numbers, deviations and their whole-export block. Drawing references and project
+defaults have separate restoration rules below.
 
 The context menu offers explicit **Update tool from profile** and **Update
 step defaults from profile** actions, with undo. Own operation values remain

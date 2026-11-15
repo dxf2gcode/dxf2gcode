@@ -38,6 +38,19 @@ generated files through `file://`.
 
 ## Add or revise a chapter
 
+Place operating instructions in the User guide's workflow groups: Getting
+started, Drawing and project, Tools, Prepare machining, Toolpaths and output,
+or Special applications. Settings, Postprocessors and Help and troubleshooting
+are separate main sections. Collect postprocessor examples under Postprocessors.
+
+Each section starts with its own `index.md`. The `navigation.indexes` feature
+makes the section heading open that overview without a duplicate menu entry;
+`navigation.path` displays its location above the content. Keep other sections
+collapsed by default. Add every guide page once to `zensical.toml`, preserve
+published addresses and anchors, and link to the authoritative chapter instead
+of copying its complete instructions. See the
+[Zensical navigation reference](https://zensical.org/docs/setup/navigation/).
+
 Write current instructions from the current implementation. Distinguish a
 code-reviewed command from an executed example. Name units, prerequisites and
 the actual profile when movement/output matters. Use original or cleared assets

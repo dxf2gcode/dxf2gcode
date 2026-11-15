@@ -1,51 +1,33 @@
 <h1 id="dxf2gcode"><img src="assets/images/dxf2gcode_logo.png" alt="dxf2gcode"></h1>
 
 dxf2gcode converts 2D DXF drawings into G-code for CNC machines. It provides
-a Qt interface for preparing drawings and toolpaths, with configurable
+a Qt interface for preparing drawings and machining operations, with configurable
 postprocessors for output.
 
-**Development documentation.** These chapters describe the current development
-version toward 2.0.0. The guide covers operation, postprocessors, examples and
-development. Example acceptance limits are stated on the relevant pages.
+**Development documentation.** This guide describes the current development
+line toward 2.0.0. Example and platform acceptance limits are stated in the
+relevant chapters.
 
-- Follow [First DXF to G-code](getting-started/first-dxf-to-gcode.md) for a
-  step-by-step example with a downloadable drawing.
-- Explore [Interface and navigation](user-guide/interface-and-navigation.md)
-  and [Import drawings and save projects](user-guide/import-and-projects.md).
-- Organize shared contours, tools and independent operations with
-  [Machining steps](user-guide/machining-steps.md).
-- Prepare [tree order](user-guide/shapes-layers-and-order.md) and
-  [route optimization](user-guide/route-optimization.md), set
-  [machining parameters](user-guide/machining-parameters.md), and choose
-  [contours, pockets or drilling](user-guide/contours-pockets-and-drilling.md).
-- Review [compensation and leads](user-guide/compensation-and-leads.md),
-  compare [preview and export](user-guide/preview-and-export.md), and resolve
-  [toolpath diagnostics](user-guide/toolpath-diagnostics.md).
-- Add [tabs](user-guide/tabs-and-breaking-layers.md), understand
-  [machine modes](user-guide/machine-modes.md) and prepare
-  [drag-knife cuts](user-guide/drag-knife-cutting.md).
-- Use the [command line](user-guide/command-line-usage.md), consult
-  [troubleshooting](user-guide/troubleshooting.md), and configure
-  [application settings](user-guide/application-settings.md) or
-  [parameterized layer names](user-guide/layer-naming-rules.md).
-- Follow [Installation and startup](installation.md) for the Windows MSI,
-  portable ZIP or development checkout.
-- Adapt output using the [postprocessor reference](reference/postprocessors.md),
-  [tool-change contracts](reference/tool-changes.md) and
-  [five example references](examples/index.md).
-- Start development with [setup](developer/setup.md),
-  [architecture](developer/architecture.md), [tests](developer/tests.md) and
-  [Qt/translations](developer/qt-and-translations.md). See
-  [packaging](developer/packaging.md), [contributing](developer/contributing.md)
-  and [website maintenance](developer/documentation.md) for maintenance work.
-- Find [downloads](project/downloads.md), [support](project/support.md),
-  [license and credits](project/license-and-credits.md) and
-  [historical documentation](project/history.md).
-- Find the source code in the [GitHub repository](https://github.com/dxf2gcode/dxf2gcode).
-- Previously published packages remain in the
-  [SourceForge download archive](https://sourceforge.net/projects/dxf2gcode/files/).
-  Check each package's description: the archive also contains development builds.
+## Start with your task
 
+| Area | What you will find |
+| --- | --- |
+| [User guide](user-guide/index.md) | The workflow from installation and original drawing through tools, machining and export |
+| [Settings](settings/index.md) | Application, display, machines, configuration profiles and DXF layer rules |
+| [Postprocessors](reference/index.md) | Select/adapt output profiles, tool-change commands, syntax and examples |
+| [Help and troubleshooting](help/index.md) | Frequently asked questions, toolpath/export diagnostics and reporting problems |
+| [Developer guide](developer/index.md) | Setup, architecture, tests, builds, translations and documentation |
+| [Project information](project/index.md) | Downloads, versions, license, credits and historical material |
+
+New to DXF2GCODE? [Install and start](installation.md), then follow
+[First DXF to G-code](getting-started/first-dxf-to-gcode.md).
+For existing drawings, start with [Drawing and project](user-guide/drawing/index.md).
+
+Expand the relevant group in the navigation. Its heading opens a short overview;
+the breadcrumb above each page shows where you are. Settings, postprocessors
+and help remain directly accessible outside the User guide.
+
+The source is maintained in the [GitHub repository](https://github.com/dxf2gcode/dxf2gcode).
+Use [current downloads](project/downloads.md) for package/channel information.
 The historical [SourceForge wiki](https://sourceforge.net/p/dxf2gcode/wiki/Home/)
-may describe older versions. Use the current chapters above for the development
-interface and preparation workflow.
+may describe older versions; use the current guide for this development workflow.
