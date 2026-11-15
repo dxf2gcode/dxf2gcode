@@ -2,6 +2,16 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## Eigener Zweig für Ribbon und integrierte Ansichten vorbereitet (15.11.2026)
+
+Die vorherigen Dokumentations-/Planbereinigungen einschließlich der identischen
+Vergleichs-DXF im gewünschten `dxf`-Ordner sind mit `3da5a15` auf `develop`
+gesichert und gepusht. Darauf den neuen Arbeitszweig `ribbon-2d-3d` angelegt.
+Das Nutzerziel ist unter GUI1 in beiden offenen Listen festgehalten: 2D primär
+zur Bearbeitung, 3D primär zur Darstellung, gemeinsame Bedienung über Ribbon.
+Umsetzung und Abnahme erfolgen zunächst auf diesem Zweig. Noch keine GUI-
+Änderung, Bibliotheksfestlegung oder Funktionsabnahme durch das Anlegen des Zweigs.
+
 ## Nutzerentscheidung zu DOC1, M1, LC1 und CAMotics (15.11.2026)
 
 <a id="doc1-accepted"></a>

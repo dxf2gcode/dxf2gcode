@@ -27,7 +27,7 @@ Ein Eintrag ist kein pauschaler Umsetzungs- oder Prüfauftrag.
 
 <a id="gui1"></a>
 
-- [ ] **GUI1 – Ribbon:** Menüband, Bibliothek und Windows-/Linux-Verhalten abstimmen.
+- [ ] **GUI1 – Ribbon und 2D/3D:** 2D zur Bearbeitung und 3D zur Darstellung integrieren; auf `ribbon-2d-3d` entwickeln.
 
 <a id="maschinenabnahme"></a>
 

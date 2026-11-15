@@ -72,14 +72,26 @@ Bedarf und dauerhaften zusätzlichen Prüfaufwand vor Umsetzung entscheiden.
 
 <a id="gui1"></a>
 
-### GUI1 – Optionales Ribbon-Menüband
+### GUI1 – Ribbon und integrierte 2D-/3D-Ansichten
 
-- [ ] Bedienentwurf und Bibliothekswahl abstimmen; vorhandene Aktionen und
-  Tastenkürzel weiterverwenden.
+**Nutzerziel vom 15.11.2026:** Die 2D-Ansicht dient primär zur Bearbeitung,
+die 3D-Ansicht primär zur Darstellung. Beide werden stärker integriert und
+über ein gemeinsames Ribbon-Menü bedient. Ansichten und Ribbon gehören zum
+selben Entwicklungsschritt.
+
+**Arbeitszweig:** `ribbon-2d-3d`, aus dem bereinigten `develop`-Stand `3da5a15`
+angelegt. Bis zur stabilen, fachlich abgenommenen Lösung bleiben diese
+Änderungen auf dem eigenen Zweig; erst danach nach `develop` übernehmen.
+
+- [ ] Bedienkonzept und Zusammenspiel der 2D-/3D-Ansicht einschließlich
+  Ansichtswechsel und Ribbon-Aktionen konkret abstimmen.
+- [ ] Ribbon-Entwurf und Bibliothekswahl festlegen; vorhandene Aktionen und
+  Tastenkürzel weiterverwenden sowie Windows-/Linux-Verhalten berücksichtigen.
 - [ ] SARibbon als bisherigen Kandidaten hinsichtlich Python-/PyQt5-/PyQt6-
   Anbindung, Paketierung sowie Windows-/Linux-Verhalten bewerten.
 
-Kein aktueller Implementierungsauftrag; keine Bibliotheksfreigabe vorweggenommen.
+Die jetzige Beauftragung bereitet den Zweig vor und hält das Ziel fest;
+GUI-Implementierung und konkrete Bibliotheksentscheidung folgen separat.
 
 <a id="maschinenabnahme"></a>
 
