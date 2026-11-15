@@ -14,9 +14,12 @@ with configurable postprocessors for output.
 
 See the documentation for installation, startup and an introduction to the workflow.
 
-**Development status:** the `develop` branch on GitHub is being actively
-modernized and restructured. It does not automatically represent a stable
-release. [Develop downloads](https://github.com/dxf2gcode/dxf2gcode/releases?q=develop-ci-&include_prereleases=1)
+**Development status:** the machining-project workflow is now integrated into
+`develop` and available in
+[2.0.0.dev13](https://github.com/dxf2gcode/dxf2gcode/releases/tag/develop-ci-43608298632)
+and subsequent Develop versions. This development line does not automatically
+represent a stable release.
+[Develop downloads](https://github.com/dxf2gcode/dxf2gcode/releases?q=develop-ci-&include_prereleases=1)
 are published after tests and package checks pass. For historical releases, visit the
 [SourceForge downloads](https://sourceforge.net/projects/dxf2gcode/files/).
 The download archive also contains development builds and release candidates;
@@ -25,9 +28,13 @@ check the selected version's description before installing.
 ## Features
 
 - Import 2D DXF drawings and save or reload `.d2g` projects.
-- Inspect drawings and toolpaths in the Qt interface.
+- Inspect original geometry and independent machining operations in linked
+  Geometry and Machining views.
 - Configure milling, lathe and drag-knife machine modes.
 - Prepare contours and pockets, including depth passes and lead moves.
+- Organize named machining steps, reuse a contour in several operations and
+  undo/redo machining changes.
+- Import or draw holding-tab regions and edit their placement and dimensions.
 - Export through configurable postprocessor profiles, including G-code output.
 - Run command-line exports as well as the graphical application.
 - Import PDF and PostScript through the optional external `pdftops` and
@@ -35,6 +42,40 @@ check the selected version's description before installing.
 
 See the [technical documentation](source/README.md) for the package structure,
 runtime requirements and build details.
+
+## Machining projects
+
+The current workflow separates the original drawing from its machining preparation:
+
+- **Geometry** keeps the original Entities and Layers structure for selection.
+  Moving or copying a machining assignment does not move the original contour
+  between DXF layers.
+- **Machining** contains named steps, each with one machining kind and one tool.
+  A contour can belong to several operations, for example roughing and finishing,
+  with independent depths, feeds, leads and start points. Export activation and
+  order belong to this view.
+- **Editing and tools:** move/copy assignments, reuse compatible steps, edit
+  several selected operations and undo/redo changes. Provenance symbols distinguish
+  own values from inherited step defaults. Saved project tools are compared with
+  the current tool table; used deviations must be resolved before export.
+- **Holding tabs:** imported `BREAKS:` geometry and manually drawn regions are
+  linked to the operations they affect. Direct 2D editing supports moving,
+  resizing and entering dimensions, with optional contour alignment and automatic
+  sizing from tool diameter plus the configured remaining tab length.
+- **Unassigned contours:** original geometry without an operation has no toolpath
+  or export. `IGNORE:` contours initially enter this state and can later receive
+  ordinary machining assignments, unless excluded entirely during import.
+- **Saved preparation:** new projects use **D2G 2.1**, including native tab regions
+  and their assignments. D2G 2.0 and legacy 1.1–1.5 projects remain readable;
+  older application versions cannot read the new format.
+
+![Current Machining view with roughing and finishing operations sharing one rectangle](docs/assets/images/machining/operations.png)
+
+Read [Machining steps](https://dxf2gcode.github.io/dxf2gcode/user-guide/machining-steps/),
+[Holding tabs](https://dxf2gcode.github.io/dxf2gcode/user-guide/tabs-and-breaking-layers/)
+and [Projects](https://dxf2gcode.github.io/dxf2gcode/user-guide/import-and-projects/)
+for the detailed workflow. Compact parameter groups and configurable number
+display keep the interface readable without reducing stored or input precision.
 
 ## Installation and startup
 

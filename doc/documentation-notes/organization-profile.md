@@ -1,5 +1,18 @@
 # GitHub-Organisationsseite und Beispielbilder
 
+## Hauptrepository: aktueller Bearbeitungsstand (15.11.2026)
+
+Die Startseite <https://github.com/dxf2gcode/dxf2gcode> verwendet die
+[README.md des Hauptrepositorys](../../README.md), nicht das separate
+Organisationsprofil. Sie beschreibt den seit dev13 integrierten Geometrie-/
+Bearbeitungsablauf, Mehrfachbearbeitung, Werkzeuge/Vererbung, native Stegregionen,
+unzugeordnete IGNORE-Konturen und D2G 2.1 samt Lesekompatibilität. Das aktuelle
+Bild stammt aus dem abgenommenen Dokumentationssatz unter
+[Bildherkunft](../../docs/assets/images/machining/README.txt). Bedienungsdetails
+bleiben in der Anwenderanleitung; Develop wird weiterhin als Vorschau bezeichnet.
+
+## Separates Organisationsprofil
+
 Stand: **03.11.2026**. Redaktionsmaterial für WP2 und die Projektvorstellung.
 
 Die öffentliche Startseite unter <https://github.com/dxf2gcode> wird aus

@@ -1,6 +1,22 @@
 # DXF2GCODE: abgeschlossene Arbeiten und Prüfergebnisse
 
-Stand: **14.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
+
+## Repository-Startseite auf Bearbeitungsprojekte aktualisiert (15.11.2026)
+
+Auf Nutzerrückmeldung die tatsächlich verwendete Root-README per GitHub-API
+bestätigt und um den seit dev13 integrierten Stand ergänzt: Geometrie/Bearbeitung,
+benannte Schritte und Mehrfachbearbeitung, Undo/Redo, Werkzeugauflösung,
+Stegregionen, unzugeordnete IGNORE-Konturen und D2G 2.1 mit alten Lesern.
+Aktuellen eigenen Screenshot und direkte Links zu den passenden Anleitungen
+eingebunden. Develop bleibt Vorschau; keine stabile oder physische Freigabe
+behauptet. Das separate Organisationsprofil wird durch diese Änderung nicht
+stillschweigend mitgeändert.
+
+Nachweis: 12 lokale README-/Bildverweise, Markdown-Diff und GitHub-Markdown-
+Rendering erfolgreich geprüft. Reine Dokumentänderung, keine Quellcode- oder
+Pakettests erforderlich. Veröffentlichung auf develop und Abgleich der
+öffentlichen README gehören zu diesem Auftrag.
 
 <a id="develop-machining-release"></a>
 
