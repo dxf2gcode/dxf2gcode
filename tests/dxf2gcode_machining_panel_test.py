@@ -1154,7 +1154,11 @@ def exercise_region_dimensions(window, app, identity):
     assert tabs.dimension_hover == 0
     QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton, pos=pos)
     editor = tabs.dimension_editor
-    assert editor is not None and float(editor.text()) == labels[0][3]
+    assert editor is not None and editor.text() == labels[0][2].rsplit(' ', 1)[0]
+    QTest.keyClick(editor, Qt.Key.Key_Return)
+    assert panel.binding.project.to_dict() == before and len(panel.commands.undo_stack) == history
+    QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+    editor = tabs.dimension_editor
     editor.setText('nan')
     QTest.keyClick(editor, Qt.Key.Key_Return)
     assert panel.binding.project.to_dict() == before and tabs.dimension_editor is editor

@@ -576,6 +576,9 @@ class MachiningPanel(QWidget):
         scene = getattr(self.window, 'canvas_scene', None)
         if scene is None or self.binding is None:
             return
+        comparison = getattr(self.window, 'view_comparison', None)
+        if comparison is not None and comparison.refresh_cached_selection():
+            return
         with self.binding.preview_batch():
             for shape in self.window.shapes:
                 if hasattr(shape, 'machining_binding'):

@@ -85,8 +85,9 @@ angelegt. Bis zur stabilen, fachlich abgenommenen Lösung bleiben diese
 
 Die konkrete Reihenfolge und Nutzerprüfungen stehen im
 [Abarbeitungsplan](gui1-renderer-comparison-plan.md): gemeinsamer Vergleich
-einschließlich Nutzerprüfung (P4) und erst anschließend der gezielte
-Bearbeitungsnachweis (P5).
+einschließlich Nutzerprüfung (P4). VisPy ist vorläufig bevorzugt; der beauftragte
+Steg-Bearbeitungsnachweis (P5) ist lokal umgesetzt. Offen sind die Nutzerprüfung
+der Bearbeitung und die endgültige Rendererentscheidung; Qt Quick bleibt erhalten.
 PySide6 ist dafür nicht erforderlich; Q1 bleibt unabhängig zurückgestellt.
 
 Gemeinsame Datenanbindung, Auswahlkopplung und Projektbefehle sollen später
@@ -100,6 +101,12 @@ Ribbon. Die lokale P1/P2-Umsetzung ist im
 festgehalten; die P3-Umsetzung unter
 [Qt Quick 3D](../archive/toolpath-refactoring-completed.md#gui1-p3).
 Längere Plattform-/Paketprüfungen folgen nur nach Auftrag.
+
+Der gesondert beauftragte GL-/AGG-Test für die VisPy-Draufsicht ist
+[dokumentiert](../documentation-notes/vispy-line-benchmark.md). Nach Nutzerentscheidung
+ist GL für beide VisPy-Ansichten umgesetzt, einschließlich Projektion-/Liniencache
+und verzögerter Aktualisierung des versteckten Canvas. Offen bleibt die optische
+und Bedienungsabnahme; AGG wird nicht als Produktionsweg verfolgt.
 
 <a id="maschinenabnahme"></a>
 

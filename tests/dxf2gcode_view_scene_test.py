@@ -15,6 +15,49 @@ from dxf2gcode.application.view_scene import ScenePath, ViewScene, hit_paths, pr
 
 
 class TestViewScene(unittest.TestCase):
+    def test_vispy_original_colour_and_full_vs_partial_selection(self):
+        from unittest.mock import patch
+        import dxf2gcode.bootstrap.runtime_state as g
+        with patch.object(g, 'config', g.config or SimpleNamespace(mode3d=False)):
+            from dxf2gcode.presentation.qt.canvas2d import ShapeGUI
+        from dxf2gcode.presentation.qt.vispy_view import vispy_path_pen
+        from dxf2gcode.presentation.qt.machining_preview import MachiningPreview
+        from dxf2gcode.presentation.qt.qt_compat import QtCore
+        preview = SimpleNamespace(view=SimpleNamespace(viewportTransform=True))
+        source = SimpleNamespace(cut_cor=42, isSelected=lambda: False, isDisabled=lambda: False)
+        panel = SimpleNamespace(context='a', binding=SimpleNamespace(sources={'g': source}),
+            canvas_preview=SimpleNamespace(path_pen=lambda *args: MachiningPreview.path_pen(preview, *args)))
+        view = SimpleNamespace(panel=panel, selected=set(), geometry_selection={'g': (0, 2)})
+        geometry = ScenePath('g', 'g', 'geometry', ())
+        a, b = (ScenePath(name, 'g', 'operation', ()) for name in ('a', 'b'))
+        for correction in (40, 41, 42):
+            source.cut_cor = correction
+            pen = vispy_path_pen(view, geometry, 'geometry')
+            self.assertEqual((pen.color().name(), pen.widthF()), ('#000000', 1.))
+        view.selected, view.geometry_selection = {'a', 'b'}, {'g': (2, 2)}
+        pen = vispy_path_pen(view, geometry, 'geometry')
+        self.assertEqual((pen.color().name(), pen.widthF()), ('#ff0000', 3.))
+        for operation in (a, b):
+            pen = vispy_path_pen(view, operation, 'cut')
+            self.assertEqual(pen.widthF(), .6)
+            self.assertEqual(pen.style(), QtCore.Qt.PenStyle.SolidLine)
+        view.selected, view.geometry_selection = {'a'}, {'g': (1, 2)}
+        source.isSelected = lambda: True
+        original = vispy_path_pen(view, geometry, 'geometry')
+        self.assertEqual((original.widthF(), original.style()), (1., QtCore.Qt.PenStyle.DotLine))
+        self.assertEqual(vispy_path_pen(view, a, 'cut').widthF(), 3.)
+        other = vispy_path_pen(view, b, 'cut')
+        self.assertEqual((other.widthF(), other.style()), (.6, QtCore.Qt.PenStyle.DashLine))
+        view.geometry_selection = {'g': (1, 1)}
+        self.assertEqual(vispy_path_pen(view, a, 'cut').widthF(), .6)
+
+    def test_connected_line_chains_keep_corners_and_gaps(self):
+        from dxf2gcode.presentation.qt.vispy_view import connected_chains
+        a, b, c, d = (0, 0, 0), (1, 0, 0), (1, 1, 0), (3, 3, 0)
+        self.assertEqual(list(connected_chains(((a, b), (b, c), (c, a), (d, c)))),
+                         [[a, b, c, a], [d, c]])
+        self.assertEqual(list(connected_chains(((a, a), (d, c)))), [[d, c]])
+
     def test_test_tools_use_plan_radius_and_shared_closed_mesh(self):
         path = ScenePath('op', 'geo', 'operation', (((2, 3, -1), (5, 3, -1), 'cut'),),
                          plan=SimpleNamespace(tool_radius=2.))
@@ -103,7 +146,468 @@ class TestViewScene(unittest.TestCase):
                 self.assertEqual(translator.translate('ViewComparison', message), entries[message].text)
 
 
-def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchmark=False):
+def verify_vispy_plane_stacking(app, renderer):
+    """Coincident paths stay ordered even after cached styles change selection."""
+    import numpy as np
+    from dxf2gcode.presentation.qt.qt_compat.QtGui import QColor, QPen
+    line = (((0., 0., 0.), (10., 0., 0.), 'cut'),)
+    paths = (ScenePath('selected', 'geo', 'operation', line),
+             ScenePath('geo', 'geo', 'geometry', line),
+             ScenePath('other', 'geo', 'operation', line))
+    original_style = renderer.path_style
+    # Distinct test colours make a wrong draw order visible in the framebuffer.
+    renderer.path_style = lambda path, role: QPen(QColor(
+        'blue' if path.kind == 'operation' and path.identity in renderer.selected else
+        'lime' if path.kind == 'operation' else 'red'), 3.)
+    try:
+        for spatial in (False, True, False):
+            renderer.set_spatial(spatial)
+            for selected in ('selected', 'other'):
+                renderer.set_scene(ViewScene(paths), {selected})
+                if spatial:
+                    assert all(key[0] == 0 for key, node in renderer.nodes.items() if node.visible)
+                    continue
+                renderer.camera.rect = (-2., -5., 14., 10.)
+                app.processEvents()
+                renderer.redraw()
+                assert {key[0] for key, node in renderer.nodes.items() if node.visible} == {0, 1, 2}
+                assert all(key[2] == 3. and node.method == 'gl' for key, node in renderer.nodes.items() if node.visible)
+                frame = renderer.canvas.render()
+                x, y = renderer.project((5., 0., 0.))
+                x = round(x*frame.shape[1]/renderer.viewport().width())
+                y = round(y*frame.shape[0]/renderer.viewport().height())
+                pixels = frame[max(0, y-1):y+2, max(0, x-1):x+2, :3].astype(float)
+                assert np.min(np.linalg.norm(pixels-(0., 0., 255.), axis=2)) < 10, 'Selected path is covered'
+        # Reordering the snapshot must not change the stacking contract.
+        renderer.set_scene(ViewScene(tuple(reversed(paths))), {'selected'})
+        assert all(node.order == key[0] for key, node in renderer.nodes.items() if node.visible)
+    finally:
+        renderer.path_style = original_style
+    # The actual semantic palette: an unselected circle stays black, while a
+    # selected right-angle contour has a joined blue corner.
+    from math import cos, sin, pi
+    circle = [(15.+5*cos(i*2*pi/180), 5*sin(i*2*pi/180), 0.) for i in range(180)]
+    circle.append(circle[0])
+    circle_segments = tuple((a, b, 'cut') for a, b in zip(circle, circle[1:]))
+    rectangle = ((0., -5., 0.), (0., 5., 0.), (5., 5., 0.), (5., -5., 0.), (0., -5., 0.))
+    rect_segments = tuple((a, b, 'cut') for a, b in zip(rectangle, rectangle[1:]))
+    renderer.set_scene(ViewScene((ScenePath('circle', 'circle', 'geometry', circle_segments),
+        ScenePath('circle-op', 'circle', 'operation', circle_segments),
+        ScenePath('rect', 'rect', 'geometry', rect_segments),
+        ScenePath('rect-op', 'rect', 'operation', rect_segments))), {'rect-op'})
+    renderer.camera.rect = (-3., -7., 26., 14.)
+    app.processEvents()
+    frame = renderer.canvas.render()
+    def location(point):
+        x, y = renderer.project(point)
+        return (round(x*frame.shape[1]/renderer.viewport().width()),
+                round(y*frame.shape[0]/renderer.viewport().height()))
+    left, top = location((9., 6., 0.))
+    right, bottom = location((21., -6., 0.))
+    pixels = frame[top:bottom+1, left:right+1, :3].astype(int)
+    assert not np.any(pixels[..., 2]-pixels[..., 0] > 15), 'Unselected circle shows blue fragments'
+    selected_nodes = [node for key, node in renderer.nodes.items() if node.visible and key[0] == 2]
+    assert selected_nodes and all(node.method == 'gl' and node.connect == 'segments' for node in selected_nodes)
+    assert all(node.width == .6 for node in selected_nodes)
+    assert any(node.width == 1. and key[1][:3] == (0., 0., 0.)
+               for key, node in renderer.nodes.items() if node.visible and key[0] == 1)
+    renderer.grab().save(str(ROOT / '.tox/vispy-line-joins.png'))
+
+
+def verify_vispy_selection_cache(window):
+    from unittest.mock import patch
+    from PyQt6.QtCore import QPoint
+    panel, band = window.machining_panel, window.view_comparison
+    original = window.TreeHandler.auto_update_export_order
+    window.TreeHandler.auto_update_export_order = False
+    try:
+        band.activate('plane')
+        snapshot = band.snapshot
+        operation = next(p for p in snapshot.paths if p.kind == 'operation')
+        with patch.object(panel.canvas_preview, 'refresh', wraps=panel.canvas_preview.refresh) as legacy:
+            with patch.object(panel.binding, 'materialize', wraps=panel.binding.materialize) as materialize:
+                panel.select_canvas_operation(operation.identity)
+                assert materialize.call_count == legacy.call_count == 0, 'Selection rebuilt the hidden legacy preview'
+            assert band.snapshot is snapshot and operation.identity in band.renderer.selected
+            assert band.legacy_stale
+            with patch.object(panel, 'selection_changed', wraps=panel.selection_changed) as changed:
+                band.renderer.pick(QPoint(-10000, -10000))
+                assert changed.call_count == 1
+                assert not panel.selected_entries() and panel.context is None
+                assert legacy.call_count == 0
+            panel.select_canvas_operation(operation.identity)
+            band.activate('legacy')
+            assert legacy.call_count == 1 and not band.legacy_stale
+            assert operation.identity in panel.canvas_preview.selected
+        band.activate('plane')
+    finally:
+        window.TreeHandler.auto_update_export_order = original
+    print('VisPy selection cache: hidden legacy preview deferred and refreshed on return passed')
+
+
+def verify_vispy_caches(app, renderer):
+    from contextlib import ExitStack
+    from unittest.mock import patch
+    from dxf2gcode.presentation.qt import vispy_view
+    from PyQt6 import QtCore, QtTest
+    a, b = (0., 0., 0.), (10., 0., 0.)
+    scene = ViewScene((ScenePath('g', 'g', 'geometry', ((a, b, 'geometry'),)),
+        ScenePath('a', 'g', 'operation', (((0., 1., 0.), (10., 1., 0.), 'cut'),
+                                       ((-2., 1., 0.), (0., 1., 0.), 'lead_in'))),
+        ScenePath('b', 'g', 'operation', (((0., 2., 0.), (10., 2., 0.), 'cut'),))))
+    renderer.set_scene(scene, {'a'})
+    app.processEvents()
+    renderer.canvas.render()
+    with ExitStack() as stack:
+        projection = stack.enter_context(patch.object(ScenePath, 'projected', autospec=True, side_effect=ScenePath.projected))
+        dash = stack.enter_context(patch.object(vispy_view, 'dash_segments', wraps=vispy_view.dash_segments))
+        uploads = [stack.enter_context(patch.object(node, 'set_data', wraps=node.set_data)) for node in renderer.nodes.values()]
+        x, y = renderer.camera.rect.pos
+        w, h = renderer.camera.rect.size
+        renderer.camera.rect = (x+.1, y, w, h)
+        renderer.redraw()
+        renderer.canvas.render()
+        assert projection.call_count == dash.call_count == 0
+        assert not any(upload.call_count for upload in uploads), 'Pan uploaded unchanged lines'
+        renderer.set_scene(scene, {'a'})
+        assert not any(upload.call_count for upload in uploads), 'Unchanged selection uploaded lines'
+        renderer.camera.zoom(1.02)
+        renderer.redraw()
+        renderer.canvas.render()
+        assert dash.call_count > 0 and projection.call_count == 0
+        cut_color = renderer.panel.canvas_preview.path_pen('cut').color().getRgbF()
+        assert not any(upload.call_count for key, upload in zip(renderer.nodes, uploads)
+                       if key[1] == cut_color and key[0] == 2), 'Zoom uploaded unchanged solid cuts'
+        renderer.set_scene(scene, {'b'})
+        assert projection.call_count == 0, 'Selection recalculated plan projections'
+    for index in range(12):
+        renderer.set_scene(scene, {'a' if index % 2 else 'b'})
+    assert len(renderer.nodes) < 12, 'Obsolete style nodes accumulated'
+    assert all(node.method == 'gl' for node in renderer.nodes.values())
+    replacement = ViewScene(scene.paths[:1])
+    with patch.object(ScenePath, 'projected', autospec=True, side_effect=ScenePath.projected) as projection:
+        renderer.set_scene(replacement, set())
+        assert projection.call_count == 1
+    assert len(renderer.nodes) == 1
+    # A continuous mouse stream must not indefinitely postpone the redraw.
+    renderer.canvas.render()
+    app.processEvents()
+    renderer.timer.stop()
+    pulse = QtCore.QTimer()
+    pulse.setInterval(2)
+    pulse.timeout.connect(renderer.schedule)
+    draws = QtTest.QSignalSpy(renderer.timer.timeout)
+    loop = QtCore.QEventLoop()
+    pulse.start()
+    QtCore.QTimer.singleShot(150, loop.quit)
+    loop.exec()
+    pulse.stop()
+    assert len(draws) > 0
+    print('VisPy GL caches: pan without projection/dash/upload; zoom/selection invalidation and bounded nodes passed')
+
+
+def verify_vispy_picking(app, renderer):
+    from unittest.mock import patch
+    from PyQt6.QtCore import QPoint
+    line = (((0., 0., -2.), (10., 0., -2.), 'cut'),)
+    scene = ViewScene((ScenePath('original', 'original', 'geometry', line),
+        ScenePath('op-a', 'original', 'operation', line),
+        ScenePath('op-b', 'original', 'operation', line),
+        ScenePath('disabled', 'original', 'operation', line, enabled=False),
+        ScenePath('region', '', 'region', (((4., -1., 0.), (4., 1., 0.), 'tab'),)),
+        ScenePath('zero', 'zero', 'operation', (((3., 3., 0.), (3., 3., 0.), 'cut'),))))
+    for spatial in (False, True, False):
+        renderer.set_spatial(spatial)
+        renderer.set_scene(scene, set())
+        renderer.fit()
+        app.processEvents()
+        for moved in (False, True):
+            if moved:
+                if spatial:
+                    renderer.camera.azimuth += 17
+                else:
+                    renderer.camera.zoom(1.13)
+            positions = [QPoint(4, 4)] + [QPoint(*map(round, renderer.project(p)))
+                for p in ((5., 0., -2.), (4., 0., 0.), (3., 3., 0.))]
+            for disabled in (False, True):
+                renderer.show_disabled = disabled
+                for position in positions:
+                    for kinds in (('operation', 'region'), ('geometry',)):
+                        reference = hit_paths(scene, (position.x(), position.y()), renderer.project,
+                            True, kinds=kinds, show_disabled=disabled)
+                        with patch.object(renderer, 'project', side_effect=AssertionError('Per-point projection used')):
+                            assert renderer.path_hits(position, kinds) == reference
+        cached = renderer._hit_screen[spatial]
+        renderer.path_hits(QPoint(10, 10))
+        assert renderer._hit_screen[spatial] is cached
+    renderer.set_scene(ViewScene(), set())
+    assert not renderer.path_hits(QPoint(0, 0))
+    assert not renderer._hit_screen
+    print('VisPy picking: vectorized hits match reference, camera/scene/visibility invalidation passed')
+
+
+def verify_vispy_top_transition(window):
+    import numpy as np
+    band = window.view_comparison
+    band.actions['spatial'].trigger()
+    renderer = band.renderer
+    camera = renderer.spatial_camera
+    camera.set_state(elevation=34., azimuth=120., roll=13., scale_factor=camera.scale_factor*.7,
+                     center=tuple(camera.center))
+    before = camera.get_state()
+    band.actions['plane'].trigger()
+    animation = renderer.top_transition
+    assert renderer.spatial and renderer._top_start == before
+    animation.setCurrentTime(animation.duration()//2)
+    assert 34. < camera.elevation < 90. and camera.scale_factor != before['scale_factor']
+    points = ((0., 0., 0.), (1., 0., -3.), (0., 1., -1.5))
+    renderer._animate_top_frame(1.)
+    end = [renderer.project(point) for point in points]
+    animation.setCurrentTime(animation.duration())
+    assert not renderer.spatial and renderer.camera is renderer.plane_camera
+    np.testing.assert_allclose([renderer.project(point) for point in points], end, atol=.01)
+    band.actions['spatial'].trigger()
+    assert renderer.spatial and camera.get_state() == before, (renderer.spatial, camera.get_state(), before)
+    band.actions['plane'].trigger()
+    animation.setCurrentTime(animation.duration()//2)
+    band.actions['spatial'].trigger()
+    assert renderer._top_start is None and camera.get_state() == before
+    print('VisPy top transition: orientation, zoom, seamless projection and cancel passed')
+
+
+def verify_vispy_shared_depth_passes(renderer):
+    import numpy as np
+    from dxf2gcode.application.toolpath.projections import plan_preview_segments
+    from dxf2gcode.presentation.qt.view_interaction import dash_segments
+    cut = SimpleNamespace(kind='linear_xy', args=((0., 0.), (10., 0.)), role='cut')
+    reverse_cut = SimpleNamespace(kind='linear_xy', args=cut.args[::-1], role='cut')
+    plan = SimpleNamespace(approach_xy=(0., 0.), workpiece_top=0.,
+        compensation_space='nominal', actions=(
+            SimpleNamespace(kind='linear_z', args=(-1.5,), role='plunge'), cut,
+            SimpleNamespace(kind='linear_z', args=(-3.,), role='plunge'), reverse_cut))
+    segments = tuple((s.start, s.end, s.role) for s in plan_preview_segments(plan))
+    path = ScenePath('depth-pass', 'depth-pass', 'operation', segments, plan=plan)
+    renderer.set_spatial(False)
+    renderer.set_scene(ViewScene((path,)), {path.identity})
+    renderer.fit()
+    drawing_data = renderer.projected_data()
+    depths = {a[2] for a, _, role in renderer.projected_segments(path) if role == 'cut'}
+    assert depths == {-1.5, -3.}
+    assert any(a[:2] == b[:2] and a[2] != b[2] for a, b, _ in renderer.projected_segments(path))
+    shallow = renderer.project((5., 0., -1.5))
+    deep = renderer.project((5., 0., -3.))
+    assert all(abs(a-b) < 1e-6 for a, b in zip(shallow, deep))
+    renderer.canvas.render()
+    renderer.set_scene(renderer.snapshot, set())
+    cut_color = renderer.path_style(path, 'cut').color().getRgbF()
+    for zoom in (0.8, 1.4):
+        renderer.camera.zoom(zoom)
+        renderer.redraw()
+        unit = renderer.camera.rect.height / renderer.height()
+        expected = dash_segments([((0., 0., 0.), (10., 0., 0.))], unit)
+        node = next(node for key, node in renderer.nodes.items() if key[1] == cut_color)
+        np.testing.assert_allclose(node.pos, np.asarray(expected, dtype=np.float32))
+        renderer.canvas.render()
+    renderer.set_spatial(True)
+    assert renderer.projected_data() is drawing_data
+    shallow = renderer.project((5., 0., -1.5))
+    deep = renderer.project((5., 0., -3.))
+    assert max(abs(a-b) for a, b in zip(shallow, deep)) > 1.
+    for zoom in (0.83, 1.37):
+        renderer.camera.scale_factor *= zoom
+        renderer.redraw()
+        node = next(node for key, node in renderer.nodes.items() if key[1] == cut_color)
+        pairs = node.pos.reshape(-1, 2, 3)
+        horizontal = pairs[pairs[:, 0, 2] == pairs[:, 1, 2]]
+        shallow = horizontal[horizontal[:, 0, 2] == -1.5, :, :2]
+        deep = horizontal[horizontal[:, 0, 2] == -3., :, :2]
+        assert len(shallow) > 1
+        np.testing.assert_allclose(shallow, deep)
+        renderer.canvas.render()
+    print('VisPy shared XYZ: both passes and plunges retained with fixed overhead and tilted views')
+
+
+def verify_vispy_segment_gaps(app, renderer):
+    import numpy as np
+    def segments(points):
+        return tuple((a, b, 'geometry') for a, b in zip(points, points[1:]))
+    first = ((0., 0., 0.), (2., 0., 0.), (2., 2., 0.), (0., 2., 0.), (0., 0., 0.))
+    second = tuple((x+5., y, z) for x, y, z in first)
+    paths = (ScenePath('two-pieces', 'two-pieces', 'geometry', segments(first)+segments(second)),
+        ScenePath('separate', 'separate', 'geometry', segments(((9., 0., 0.), (11., 0., 0.)))),
+        ScenePath('dashed', 'offset', 'operation', (((0., 3., 0.), (11., 3., 0.), 'cut'),)))
+    renderer.set_spatial(False)
+    renderer.set_scene(ViewScene(paths), set())
+    renderer.fit()
+    app.processEvents()
+    frame = renderer.canvas.render()
+    assert len(renderer.nodes) == 2
+    assert all(node.connect == 'segments' and node.method == 'gl' for node in renderer.nodes.values())
+    for point in ((3.5, 0., 0.), (8., 0., 0.)):
+        x, y = renderer.project(point)
+        x = round(x*frame.shape[1]/renderer.viewport().width())
+        y = round(y*frame.shape[0]/renderer.viewport().height())
+        assert np.min(frame[y-1:y+2, x-1:x+2, :3]) > 245, 'Segments bridged independent pieces'
+    print('VisPy segments: few batched visuals, separate pieces/contours and dash gaps passed')
+
+
+def verify_vispy_selection_appearance(app, window, capture=False):
+    from PyQt6.QtCore import QPoint, Qt
+    panel, band = window.machining_panel, window.view_comparison
+    band.activate('plane')
+    groups = {}
+    for path in band.snapshot.paths:
+        if path.kind == 'operation':
+            groups.setdefault(path.geometry, []).append(path.identity)
+    geometry, identities = next((g, ids) for g, ids in groups.items() if len(ids) > 1)
+    before = panel.binding.project.to_dict()
+    for mode in ('plane', 'spatial'):
+        band.activate(mode)
+        renderer = band.renderer
+        original = next(p for p in band.snapshot.paths if p.identity == geometry)
+        paths = [p for p in band.snapshot.paths if p.identity in identities]
+        for state in ('none', 'all', 'partial'):
+            renderer.pick(QPoint(-10000, -10000))
+            if state == 'all':
+                for index, identity in enumerate(identities):
+                    panel.select_canvas_operation(identity, bool(index))
+            elif state == 'partial':
+                panel.select_canvas_operation(identities[0])
+            pen = renderer.path_style(original, 'geometry')
+            assert pen.color().name() == ('#000000' if state == 'none' else '#ff0000')
+            assert pen.widthF() == (3. if state == 'all' else 1.)
+            for path in paths:
+                pen = renderer.path_style(path, 'cut')
+                thick = state == 'partial' and path.identity == identities[0]
+                assert pen.widthF() == (3. if thick else .6)
+                assert pen.style() == (Qt.PenStyle.SolidLine if state == 'all' or thick else Qt.PenStyle.DashLine)
+            frame = renderer.canvas.render()
+            assert frame[..., :3].min() < 150
+            if capture:
+                app.processEvents()
+                renderer.grab().save(str(ROOT / ('.tox/vispy-1997-'+mode+'-'+state+'.png')))
+        assert panel.binding.project.to_dict() == before
+    print('VisPy selection appearance: none/all/partial, black originals, both views and unchanged project passed')
+
+
+def tab_editing_worker(app, window):
+    """Real Qt events and GPU projection, sharing production tab commands."""
+    from unittest.mock import patch
+    from PyQt6 import QtCore, QtGui, QtTest
+    from dxf2gcode.application.tab_regions import world_vertices, to_drawing, rectangle_size
+    panel, band = window.machining_panel, window.view_comparison
+    band.actions['spatial'].trigger()
+    app.processEvents()
+    renderer, modifiers = band.renderer, panel.modifiers
+    assert renderer is not None
+    operation = next(p for p in band.snapshot.paths if p.kind == 'operation')
+    # Put a manual rectangle across a real nominal contour, not a GPU-only item.
+    source = panel.binding.sources[operation.geometry]
+    from dxf2gcode.application.tab_regions import nominal_contour
+    from dxf2gcode.domain.toolpath.tabs import point
+    x, y = point(nominal_contour(source)[0], .5)
+    region = modifiers.assignment_defaults()
+    region.scope, region.targets, region.placement_mode = 'operations', [operation.identity], 'manual'
+    vertices = ((x-3, y-3), (x+3-1e-10, y-3), (x+3-1e-10, y+3), (x-3, y+3))
+    region.vertices = to_drawing(panel.binding, vertices)
+    panel.execute(lambda: panel.commands.create_region(region))
+    modifiers.set_mode(True)
+    app.processEvents()
+    assert not renderer.spatial and band.actions['plane'].isChecked()
+    renderer.camera.rect = (x-12, y-12, 24, 24)
+    app.processEvents()
+    surface = renderer.viewport()
+    def pixel(xy):
+        return renderer.tab_project(xy).toPoint()
+    for xy in vertices:
+        actual = renderer.tab_scene_point(renderer.tab_project(xy))
+        assert max(abs(a-b) for a, b in zip(actual, xy)) < 1e-6
+    modifiers.clear_reference()
+    QtTest.QTest.mouseClick(surface, QtCore.Qt.MouseButton.LeftButton, pos=pixel((x, y)))
+    assert modifiers.context == region.id
+    before = panel.binding.project.to_dict()
+    count = len(panel.commands.undo_stack)
+    start, end = pixel((x, y)), pixel((x+1, y+1))
+    QtTest.QTest.mousePress(surface, QtCore.Qt.MouseButton.LeftButton, pos=start)
+    QtTest.QTest.mouseMove(surface, end)
+    assert modifiers.gesture['kind'] == 'move' and not modifiers.dimension_labels(renderer)
+    QtTest.QTest.mouseRelease(surface, QtCore.Qt.MouseButton.LeftButton, pos=end)
+    assert len(panel.commands.undo_stack) == count+1
+    after = panel.binding.project.to_dict()
+    assert after != before
+    panel.undo(); assert panel.binding.project.to_dict() == before
+    panel.redo(); assert panel.binding.project.to_dict() == after
+    panel.undo()
+    panel.execute(lambda: panel.commands.update_region(region.id, placement_mode='snap'))
+    automatic = panel.binding.project.to_dict()
+    modifiers.select(region.id)
+    # Dimension field is hosted over the native GL canvas and keeps the centre.
+    axis, rect, _, value = modifiers.dimension_labels(renderer)[0]
+    QtTest.QTest.mouseClick(surface, QtCore.Qt.MouseButton.LeftButton, pos=rect.center().toPoint())
+    editor = modifiers.dimension_editor
+    assert editor is not None and editor.parent() is surface
+    from dxf2gcode.presentation.qt.numeric_display import format_number
+    assert editor.text() == format_number(value, panel.binding.project.units)
+    count = len(panel.commands.undo_stack)
+    QtTest.QTest.keyClick(editor, QtCore.Qt.Key.Key_Return)
+    assert panel.binding.project.to_dict() == automatic
+    assert len(panel.commands.undo_stack) == count, 'Unchanged formatted size rounded geometry'
+    QtTest.QTest.mouseClick(surface, QtCore.Qt.MouseButton.LeftButton, pos=rect.center().toPoint())
+    editor = modifiers.dimension_editor
+    editor.setText(str(value+2))
+    QtTest.QTest.keyClick(editor, QtCore.Qt.Key.Key_Return)
+    changed = world_vertices(panel.binding, modifiers.records()[region.id])
+    assert abs(rectangle_size(changed)[axis]-(value+2)) < 1e-6
+    assert abs(sum(v[0] for v in changed)/4-x) < 1e-6
+    assert abs(sum(v[1] for v in changed)/4-y) < 1e-6
+    assert modifiers.records()[region.id].placement_mode == 'manual'
+    panel.undo(); assert panel.binding.project.to_dict() == automatic
+    panel.undo(); assert panel.binding.project.to_dict() == before
+    modifiers.select(region.id)
+    # Ctrl drag reaches the existing geometric snap and is one undo command.
+    with patch.object(modifiers, 'snap_gesture', wraps=modifiers.snap_gesture) as snap:
+        QtTest.QTest.mousePress(surface, QtCore.Qt.MouseButton.LeftButton, pos=start)
+        event = QtGui.QMouseEvent(QtCore.QEvent.Type.MouseMove, QtCore.QPointF(end),
+            QtCore.QPointF(surface.mapToGlobal(end)), QtCore.Qt.MouseButton.NoButton,
+            QtCore.Qt.MouseButton.LeftButton, QtCore.Qt.KeyboardModifier.ControlModifier)
+        app.sendEvent(surface, event)
+        QtTest.QTest.mouseRelease(surface, QtCore.Qt.MouseButton.LeftButton,
+            QtCore.Qt.KeyboardModifier.ControlModifier, end)
+        assert snap.call_count == 2
+    assert modifiers.gesture is None
+    # Drawing works in the same view and keeps the persistent editing mode.
+    panel.select_canvas_operation(operation.identity)
+    modifiers.set_creation_mode('manual')
+    modifiers.start_draw()
+    original_ids = set(modifiers.records())
+    QtTest.QTest.mousePress(surface, QtCore.Qt.MouseButton.LeftButton, pos=pixel((x-2, y-2)))
+    QtTest.QTest.mouseMove(surface, pixel((x+2, y+2)))
+    QtTest.QTest.mouseRelease(surface, QtCore.Qt.MouseButton.LeftButton, pos=pixel((x+2, y+2)))
+    assert len(set(modifiers.records())-original_ids) == 1
+    assert modifiers.drawing and modifiers.mode
+    panel.undo(); assert set(modifiers.records()) == original_ids
+    modifiers.select(region.id)
+    with patch.object(modifiers, 'edit_assignment') as edit:
+        QtTest.QTest.mouseDClick(surface, QtCore.Qt.MouseButton.LeftButton, pos=pixel((x, y)))
+        assert edit.call_count == 1
+    app.processEvents()
+    renderer.grab().save(str(ROOT / '.tox/vispy-tab-editing.png'))
+    # A spatial view cannot silently reinterpret a drawing gesture in 3D.
+    band.actions['spatial'].trigger()
+    assert renderer.spatial and not modifiers.mode
+    verify_vispy_selection_appearance(app, window)
+    verify_vispy_top_transition(window)
+    verify_vispy_selection_cache(window)
+    verify_vispy_plane_stacking(app, renderer)
+    verify_vispy_caches(app, renderer)
+    verify_vispy_picking(app, renderer)
+    verify_vispy_shared_depth_passes(renderer)
+    verify_vispy_segment_gaps(app, renderer)
+    print('VisPy tab editing: select, drag, dimension, Ctrl snap, draw, double click, undo/redo passed')
+    print('VisPy coincident lines: plane ordering, selection changes and spatial/plane switching passed')
+
+
+def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchmark=False, editing=False, appearance_project=None):
     import faulthandler
     faulthandler.dump_traceback_later(20, exit=True)
     from unittest.mock import patch
@@ -140,10 +644,10 @@ def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchma
                 window = module.MainWindow(app)
         g.window = window
         module.options = SimpleNamespace(post_pro=window.MyPostProcessor.output_text[0])
-        window.filename = str(ROOT / 'dxf/BreakExample_Circle.dxf')
+        window.filename = str(appearance_project or ROOT / 'dxf/BreakExample_Circle.dxf')
         assert window.load()
         band, panel = window.view_comparison, window.machining_panel
-        if gpu:
+        if gpu and appearance_project is None:
             from copy import deepcopy
             from dataclasses import replace
             from dxf2gcode.domain.project.machining_project import new_id
@@ -154,6 +658,18 @@ def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchma
             panel.refresh()
             panel.refresh_preview()
         before = panel.binding.project.to_dict()
+        if appearance_project is not None:
+            verify_vispy_selection_appearance(app, window, capture=True)
+            window.close()
+            app.processEvents()
+            faulthandler.cancel_dump_traceback_later()
+            return
+        if editing:
+            tab_editing_worker(app, window)
+            window.close()
+            app.processEvents()
+            faulthandler.cancel_dump_traceback_later()
+            return
         if gpu:
             plane_key = 'quickplane' if kind == 'quick3d' else 'plane'
             spatial_key = 'quickspatial' if kind == 'quick3d' else 'spatial'
@@ -413,7 +929,11 @@ def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchma
 
 
 if __name__ == '__main__':
-    if '--gpu-worker' in sys.argv:
+    if '--appearance-project' in sys.argv:
+        worker(True, appearance_project=Path(sys.argv[sys.argv.index('--appearance-project')+1]).resolve())
+    elif '--vispy-editing-worker' in sys.argv:
+        worker(True, editing=True)
+    elif '--gpu-worker' in sys.argv:
         worker(True)
     elif '--quick-worker' in sys.argv:
         worker(True, 'quick3d')

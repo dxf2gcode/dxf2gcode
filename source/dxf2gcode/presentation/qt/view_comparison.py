@@ -5,8 +5,8 @@ import logging
 from time import perf_counter
 
 from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
-from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QStackedWidget, QToolBar
-from dxf2gcode.presentation.qt.qt_compat.QtGui import QAction, QActionGroup
+from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QStackedWidget, QToolBar, QStyle
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QAction, QActionGroup, QIcon
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ class ViewComparison(QtCore.QObject):
         self.renderer, self.snapshot, self.key = None, None, None
         self.renderers = {}
         self.active_kind = 'vispy'
+        self.legacy_stale = False
         self.sizes = window.ui.splitter.sizes()
         self.stack = QStackedWidget()
         self.stack.setMinimumSize(window.canvas.minimumSize())
@@ -40,7 +41,7 @@ class ViewComparison(QtCore.QObject):
             action.setCheckable(True)
             self.group.addAction(action)
             self.band.addAction(action)
-            action.triggered.connect(lambda checked=False, key=key: self.activate(key))
+            action.triggered.connect(lambda checked=False, key=key: self.activate(key, animate=True))
             self.actions[key] = action
         self.actions['legacy'].setChecked(True)
         self.band.addSeparator()
@@ -77,11 +78,13 @@ class ViewComparison(QtCore.QObject):
 
     def failed(self, error, kind=None):
         kind = kind or self.active_kind
+        refresh_legacy = self.active_kind == kind and self.legacy_stale
         logger.warning('%s: %s', self.tr('The 3D prototype is unavailable; using the 2D canvas.'), error)
         if self.active_kind == kind:
             self.stack.setCurrentWidget(self.window.canvas)
             self.actions['legacy'].setChecked(True)
             self.renderer = None
+            self.legacy_stale = False
         self.disable(self.tr('The 3D prototype is unavailable; using the 2D canvas.')+'\n'+str(error), kind)
         renderer = self.renderers.pop(kind, None)
         if renderer is not None:
@@ -89,10 +92,24 @@ class ViewComparison(QtCore.QObject):
                 renderer.dispose()
             self.stack.removeWidget(renderer)
             renderer.deleteLater()
+        if refresh_legacy:
+            self.panel.refresh_preview()
 
-    def activate(self, key):
+    def activate(self, key, animate=False):
+        vispy = self.renderers.get('vispy')
+        if (animate and key == 'plane' and vispy is not None
+                and self.stack.currentWidget() is vispy and vispy.animate_top()):
+            return
+        if vispy is not None:
+            vispy.cancel_top_transition()
+        if key in ('spatial', 'quickplane', 'quickspatial') and self.panel.modifiers.mode:
+            self.panel.modifiers.set_mode(False)
+        self.panel.modifiers.close_dimension_editor()
         if key == 'legacy':
             self.stack.setCurrentWidget(self.window.canvas)
+            if self.legacy_stale:
+                self.legacy_stale = False
+                self.panel.refresh_preview()
             return
         kind = 'quick3d' if key.startswith('quick') else 'vispy'
         self.active_kind = kind
@@ -118,19 +135,48 @@ class ViewComparison(QtCore.QObject):
         except Exception as error:
             self.failed(error, kind)
 
+    def scene_key(self):
+        binding = self.panel.binding
+        from dxf2gcode.application.tab_regions import to_world
+        return (id(binding), repr(binding.project.to_dict()),
+                repr(self.window.application_context.config.var_dict),
+                repr(getattr(self.window.MyPostProcessor, 'vars', None)),
+                to_world(binding, ((0, 0), (1, 0), (0, 1))))
+
+    def refresh_cached_selection(self):
+        """A hidden legacy canvas need not rematerialize an unchanged project."""
+        if (self.active_kind != 'vispy' or self.renderer is None
+                or self.stack.currentWidget() is not self.renderer or self.snapshot is None
+                or self.window.TreeHandler.auto_update_export_order):
+            return False
+        self.panel.binding.synchronize_editor()
+        if self.scene_key() != self.key:
+            return False
+        self.legacy_stale = True
+        self.update_scene(())
+        self.panel.modifiers.repaint()
+        return True
+
     def update_scene(self, layers):
         if self.renderer is None or self.stack.currentWidget() is not self.renderer:
             return
         try:
             binding = self.panel.binding
-            key = (id(binding), repr(binding.project.to_dict()),
-                   repr(self.window.application_context.config.var_dict),
-                   repr(getattr(self.window.MyPostProcessor, 'vars', None)))
+            key = self.scene_key()
             if key != self.key:
                 from dxf2gcode.presentation.qt.view_scene_adapter import build_view_scene
                 started = perf_counter()
                 self.snapshot = build_view_scene(self.panel, layers)
                 self.key = key
+                # Keep every operation's diagnostic available even when pure
+                # selection no longer repaints the hidden active-operation view.
+                from dxf2gcode.presentation.qt.machining_panel import SOURCE_ROLE
+                for path in self.snapshot.paths:
+                    item = self.panel.entry_items.get(path.identity)
+                    if path.kind == 'operation' and item is not None:
+                        item.setToolTip(0, item.data(0, SOURCE_ROLE) + (' · ' + path.diagnostic if path.diagnostic else ''))
+                        item.setIcon(0, self.panel.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning)
+                                     if path.diagnostic else QIcon())
                 logger.debug('View snapshot: %d paths, %.3f s',
                              len(self.snapshot.paths), perf_counter()-started)
             selected = set(self.panel.selected_entries()) | self.panel.modifiers.selected_regions
@@ -144,6 +190,8 @@ class ViewComparison(QtCore.QObject):
 
     def fit(self):
         if self.renderer is not None and self.stack.currentWidget() is self.renderer:
+            if self.active_kind == 'vispy':
+                self.renderer.finish_top_transition()
             self.renderer.fit()
         elif getattr(self.window, 'canvas_scene', None) is not None:
             self.window.canvas.autoscale()

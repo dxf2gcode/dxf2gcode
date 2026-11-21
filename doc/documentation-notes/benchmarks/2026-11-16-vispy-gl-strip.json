@@ -1,0 +1,174 @@
+{
+  "method": "current",
+  "drawing": "AFluegel Rippen b2 0201.dxf",
+  "drawing_sha256": "0de8b721cbfa626b1ab186c3fd2493a42c67adadacdb2cb88e1c2d3f80262924",
+  "python": "3.11.1 (tags/v3.11.1:a7a450f, Dec  6 2022, 19:58:39) [MSC v.1934 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "processor": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+  "vispy": "0.17.0",
+  "samples": 12,
+  "camera_only": false,
+  "clicks_only": false,
+  "measurements": {
+    "idle": {
+      "update_median_ms": 0.0,
+      "frame_median_ms": 46.17,
+      "frame_p95_ms": 61.56,
+      "frame_max_ms": 62.9,
+      "count": 12,
+      "visuals": 260
+    },
+    "pan_unselected": {
+      "update_median_ms": 14.97,
+      "frame_median_ms": 71.09,
+      "frame_p95_ms": 80.33,
+      "frame_max_ms": 80.56,
+      "count": 12,
+      "visuals": 260
+    },
+    "zoom_unselected": {
+      "update_median_ms": 30.29,
+      "frame_median_ms": 86.99,
+      "frame_p95_ms": 100.05,
+      "frame_max_ms": 108.92,
+      "count": 12,
+      "visuals": 260
+    },
+    "selection_single": {
+      "update_median_ms": 21.47,
+      "frame_median_ms": 74.73,
+      "frame_p95_ms": 87.05,
+      "frame_max_ms": 88.88,
+      "count": 8,
+      "visuals": 262
+    },
+    "selection_multiple": {
+      "update_median_ms": 23.13,
+      "frame_median_ms": 103.3,
+      "frame_p95_ms": 119.72,
+      "frame_max_ms": 125.89,
+      "count": 8,
+      "visuals": 322
+    },
+    "pan_multiple": {
+      "update_median_ms": 20.31,
+      "frame_median_ms": 88.44,
+      "frame_p95_ms": 98.23,
+      "frame_max_ms": 99.4,
+      "count": 12,
+      "visuals": 322
+    },
+    "zoom_multiple": {
+      "update_median_ms": 32.15,
+      "frame_median_ms": 103.62,
+      "frame_p95_ms": 120.33,
+      "frame_max_ms": 122.7,
+      "count": 12,
+      "visuals": 322
+    },
+    "pan_all_selected": {
+      "update_median_ms": 24.44,
+      "frame_median_ms": 125.35,
+      "frame_p95_ms": 143.2,
+      "frame_max_ms": 147.36,
+      "count": 12,
+      "visuals": 462
+    }
+  },
+  "checkpoints": {
+    "before_load": {
+      "working_mib": 152.87,
+      "private_mib": 440.39,
+      "peak_working_mib": 152.87,
+      "peak_commit_mib": 440.39
+    },
+    "after_load": {
+      "working_mib": 170.48,
+      "private_mib": 456.8,
+      "peak_working_mib": 170.48,
+      "peak_commit_mib": 456.8
+    },
+    "first_view": {
+      "working_mib": 385.18,
+      "private_mib": 784.72,
+      "peak_working_mib": 391.64,
+      "peak_commit_mib": 791.53
+    },
+    "idle": {
+      "working_mib": 387.82,
+      "private_mib": 784.74,
+      "peak_working_mib": 394.54,
+      "peak_commit_mib": 791.58
+    },
+    "pan_unselected": {
+      "working_mib": 390.13,
+      "private_mib": 785.0,
+      "peak_working_mib": 396.89,
+      "peak_commit_mib": 791.83
+    },
+    "zoom_unselected": {
+      "working_mib": 394.11,
+      "private_mib": 785.14,
+      "peak_working_mib": 400.88,
+      "peak_commit_mib": 791.94
+    },
+    "selection_single": {
+      "working_mib": 400.94,
+      "private_mib": 789.43,
+      "peak_working_mib": 407.71,
+      "peak_commit_mib": 796.22
+    },
+    "selection_multiple": {
+      "working_mib": 430.37,
+      "private_mib": 816.32,
+      "peak_working_mib": 437.14,
+      "peak_commit_mib": 823.16
+    },
+    "pan_multiple": {
+      "working_mib": 430.43,
+      "private_mib": 816.32,
+      "peak_working_mib": 437.2,
+      "peak_commit_mib": 823.16
+    },
+    "zoom_multiple": {
+      "working_mib": 425.0,
+      "private_mib": 809.45,
+      "peak_working_mib": 437.2,
+      "peak_commit_mib": 823.16
+    },
+    "pan_all_selected": {
+      "working_mib": 439.02,
+      "private_mib": 823.65,
+      "peak_working_mib": 445.79,
+      "peak_commit_mib": 830.48
+    },
+    "end": {
+      "working_mib": 440.24,
+      "private_mib": 824.34,
+      "peak_working_mib": 446.9,
+      "peak_commit_mib": 833.12
+    }
+  },
+  "status": "passed",
+  "qt": "6.12.0",
+  "pyqt": "6.12.0",
+  "load_ms": 647.34,
+  "first_view_ms": 2695.43,
+  "gl_renderer": "AMD Radeon RX 6700 XT",
+  "gl_version": "4.6.0 Compatibility Profile Context 26.2.2.260218",
+  "logical_canvas": [
+    805,
+    705
+  ],
+  "framebuffer": [
+    881,
+    1006,
+    4
+  ],
+  "dpr": 1.25,
+  "geometries": 63,
+  "operations": 63,
+  "segments": 21647,
+  "initial_visuals": 260,
+  "project_unchanged": true
+}

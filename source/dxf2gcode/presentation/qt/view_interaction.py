@@ -6,22 +6,31 @@ from dxf2gcode.presentation.qt.qt_compat.QtGui import QPen
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMenu
 from dxf2gcode.application.view_scene import hit_paths
 
-def dash_segments(segments, unit, dotted=False):
+def dash_segments(segments, unit, dotted=False, align_depth_passes=False):
     """Expand dashes for portable GL lines; preserve phase across short pieces."""
     result, phase = [], 0.
+    patterns = {}
     on, period = (1., 3.) if dotted else (5., 8.)
     for start, end in segments:
         length, offset = dist(start, end), 0.
         if not length:
             continue
+        pattern_phase = phase
+        if align_depth_passes and start[2] == end[2]:
+            a, b = (tuple(round(v, 12) for v in point[:2]) for point in (start, end))
+            key = tuple(sorted((a, b)))
+            first_start, pattern_phase = patterns.setdefault(key, (a, phase))
+            if a != first_start:
+                start, end = end, start
         while offset < length:
-            remaining = ((on if phase < on else period)-phase)*unit
+            remaining = ((on if pattern_phase < on else period)-pattern_phase)*unit
             stop = min(length, offset+max(remaining, unit*1e-6))
-            if phase < on:
+            if pattern_phase < on:
                 for position in (offset, stop):
                     result.append(tuple(a+(b-a)*position/length for a, b in zip(start, end)))
-            phase = (phase+(stop-offset)/unit) % period
+            pattern_phase = (pattern_phase+(stop-offset)/unit) % period
             offset = stop
+        phase = (phase+length/unit) % period if align_depth_passes else pattern_phase
     return result
 
 
@@ -51,12 +60,14 @@ class ViewInteraction:
         return pen
 
 
+    def path_hits(self, point, kinds=('operation', 'region')):
+        return hit_paths(self.snapshot, (point.x(), point.y()), self.project,
+                         self.spatial, show_disabled=self.show_disabled, kinds=kinds)
+
     def pick(self, point, control=False):
-        hits = hit_paths(self.snapshot, (point.x(), point.y()), self.project,
-                         self.spatial, show_disabled=self.show_disabled)
+        hits = self.path_hits(point)
         if not hits:
-            hits = hit_paths(self.snapshot, (point.x(), point.y()), self.project,
-                             self.spatial, kinds=('geometry',))
+            hits = self.path_hits(point, kinds=('geometry',))
         identity = hits[0] if len(hits) == 1 else None
         if len(hits) > 1:
             menu = QMenu(self)
@@ -80,7 +91,12 @@ class ViewInteraction:
             else:
                 self.panel.select_canvas_operation(identity, control)
         elif not hits and not control:
-            self.panel.tree.setCurrentItem(None)
-            self.panel.tree.clearSelection()
-            self.panel.modifiers.clear_reference()
-            self.panel.refresh_preview()
+            # Clear current item and selection as one logical action. Native
+            # signals used to repaint twice before the explicit third refresh.
+            blocked = self.panel.tree.blockSignals(True)
+            try:
+                self.panel.tree.setCurrentItem(None)
+                self.panel.tree.clearSelection()
+            finally:
+                self.panel.tree.blockSignals(blocked)
+            self.panel.selection_changed()

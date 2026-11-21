@@ -387,6 +387,12 @@ class TabModifiers(QtCore.QObject):
             self.catalog.viewport().update()
 
     def set_mode(self, enabled):
+        comparison = getattr(self.panel.window, 'view_comparison', None)
+        if (enabled and comparison is not None and comparison.renderer is not None
+                and comparison.stack.currentWidget() is comparison.renderer
+                and comparison.active_kind == 'vispy'):
+            comparison.activate('plane')
+            comparison.actions['plane'].setChecked(True)
         self.mode = bool(enabled)
         self.panel.buttons['tabs'].setChecked(self.mode)
         self.panel.tab_placement_action.setVisible(self.mode)
@@ -841,22 +847,24 @@ class TabModifiers(QtCore.QObject):
         editor.setObjectName('tabDimensionEditor')
         editor.setProperty('dimensionAxis', axis)
         editor.setGeometry(rect.toAlignedRect().adjusted(-3, -3, 3, 3))
-        editor.setText(repr(value))
+        initial_text = format_number(value, self.panel.binding.project.units)
+        editor.setText(initial_text)
         editor.setToolTip(self.tr('Enter a positive size. Enter confirms; Escape cancels.'))
         editor.installEventFilter(self)
         self.dimension_editor = editor
 
         def confirm():
             from dxf2gcode.application.tab_regions import world_vertices, resize_rectangle, to_drawing
+            entered = editor.isModified() or editor.text() != initial_text
             try:
-                number = float(editor.text().replace(',', '.'))
+                # Formatting the initial text must never round stored geometry.
+                number = float(editor.text().replace(',', '.')) if entered else value
                 vertices = world_vertices(self.panel.binding, self.records()[identity])
                 changed = resize_rectangle(vertices, axis, number)
             except (ValueError, KeyError):
                 editor.setFocus()
                 editor.selectAll()
                 return
-            entered = editor.isModified()
             self.close_dimension_editor()
             if number != value or entered and self.records()[identity].placement_mode != 'manual':
                 values = dict(placement_mode='manual')
@@ -891,6 +899,8 @@ class TabModifiers(QtCore.QObject):
 
     def projection(self, xy, view=None):
         view = view or self.panel.window.canvas
+        if hasattr(view, 'tab_project'):
+            return view.tab_project(xy)
         if hasattr(view, 'viewportTransform'):
             return view.viewportTransform().map(QtCore.QPointF(xy[0], -xy[1]))
         z = xy[2] if len(xy) > 2 else self.panel.binding.project.configuration['Depth_Coordinates']['axis3_start_mill_depth']
@@ -1048,6 +1058,11 @@ class TabModifiers(QtCore.QObject):
             self.panel.canvas_preview.overlay.update()
         if self.dialog_view is not None:
             self.dialog_view.viewport().update()
+        comparison = getattr(self.panel.window, 'view_comparison', None)
+        if comparison is not None:
+            renderer = comparison.renderers.get('vispy')
+            if renderer is not None and renderer.isVisible():
+                renderer.labels.update()
         if self.dimension_editor is not None:
             self.dimension_editor.raise_()
 
@@ -1091,6 +1106,11 @@ class TabModifiers(QtCore.QObject):
                         self.edit_assignment()
                     return True
         views = [v for v in (window.canvas, self.dialog_view) if v is not None and hasattr(v, 'mapToScene')]
+        comparison = getattr(window, 'view_comparison', None)
+        if comparison is not None:
+            renderer = comparison.renderers.get('vispy')
+            if renderer is not None and renderer.isVisible() and not renderer.spatial:
+                views.append(renderer)
         view = next((v for v in views if watched is v.viewport() or watched is v), None)
         if view is not None and kind == QtCore.QEvent.Type.MouseButtonRelease and self.ignore_release:
             self.ignore_release = False
@@ -1121,8 +1141,11 @@ class TabModifiers(QtCore.QObject):
             return False
         if kind != QtCore.QEvent.Type.MouseMove and event.button() != Qt.MouseButton.LeftButton:
             return False
-        p = view.mapToScene(event.pos())
-        xy = (p.x(), -p.y())
+        if hasattr(view, 'tab_scene_point'):
+            xy = view.tab_scene_point(event.pos())
+        else:
+            p = view.mapToScene(event.pos())
+            xy = (p.x(), -p.y())
         from dxf2gcode.application.tab_regions import world_vertices, to_drawing
         label = next((label for label in self.dimension_labels(view)
                       if label[1].contains(QtCore.QPointF(event.pos()))), None)

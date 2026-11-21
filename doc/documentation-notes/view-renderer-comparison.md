@@ -152,8 +152,118 @@ dieser Software-Rendering-Konfiguration und kein allgemeiner Nachweis der
 Debian-/Linux-GPU-Performance. Nutzerprüfung und andere Plattformen bleiben
 gesondert zu beurteilen.
 
+## VisPy-Stegbearbeitung prüfen
+
+Im aktuellen Versuch teilen Drauf- und Raumansicht die XYZ-Werkzeugwege.
+Die feste Draufsicht schaut senkrecht auf dieselben Tiefendurchgänge. VisPy
+verwendet für durchgezogene Linien die gemeinsamen XYZ-Segmente. Nur für
+Strichmuster wird die sichtbare XY-Länge verwendet und jede deckungsgleiche
+Strecke pro Bearbeitung und Bewegungsart einmal gemustert. In der Raumansicht
+erhalten wiederholte horizontale Abschnitte dieselbe Strichfolge auf ihren
+jeweiligen Tiefen. Die Draufsicht behält ihre
+Zeichenreihenfolge, blendet deckungsgleiche nicht ausgewählte Schnittsegmente
+unter der Originalkontur wie bisher aus und bietet die Stegbearbeitung an.
+
+In der VisPy-Draufsicht werden Linien ohne Tiefentest in fester Reihenfolge
+gezeichnet: nicht ausgewählte Bearbeitungen, Originalgeometrie und zuletzt
+ausgewählte Bearbeitungen. Deckungsgleiche G40-Pfade erhalten damit eine eindeutige
+Überlagerung. Die räumliche Ansicht verwendet weiterhin den Tiefentest;
+Farben, Linienarten und Werkzeugwegdaten bleiben erhalten.
+Nach Nutzerentscheidung vom 16.11.2026 verwenden Modell- und Werkzeugweglinien
+in beiden VisPy-Ansichten ausschließlich `method='gl'`. AGG und dessen Muster
+sind nicht in die Produktionsansicht übernommen. Striche/Punkte werden als
+GL-Segmente gebündelt. Originale und exakt deckungsgleiche, nicht ausgewählte
+Schnittsegmente werden in der Draufsicht nicht doppelt gezeichnet; andere
+Bearbeitungsrollen und räumliche Linien bleiben erhalten.
+
+Seit Nutzerkorrektur vom 21.11.2026 gilt in beiden VisPy-Ansichten:
+
+| Auswahl je Originalkontur | Originalkontur | Zugehörige Werkzeugwege |
+| --- | --- | --- |
+| Keine | Schwarz, 1 | Dünn, 0,6 und gestrichelt |
+| Alle zugehörigen Bearbeitungen | Rot, 3 | Alle dünn, 0,6; jeweilige semantische Linienart |
+| Weniger als alle | Rot gepunktet, 1 | Gewählte Schnittkontur 3; nicht gewählte dünn, 0,6 und gestrichelt |
+
+Originalkonturen übernehmen keine G41-/G42-Farbe aus einer aktiven Bearbeitung
+mehr. Eine einzige gewählte Bearbeitung gilt bei nur einer Verknüpfung bereits
+als vollständige Auswahl. Bei Teilauswahl bleiben semantische Werkzeugwegfarben
+und Muster erhalten; deren Basisbreite wird für gewählte Bahnen um 1 erhöht
+(Schnitt 2 → 3, Taschenbahn 1 → 2). Der im Formular aktive Arbeitsgang erhält
+keine zusätzliche Ausnahme gegenüber der Auswahlregel. Bestehende Farben für
+deaktivierte Geometrie und Stegregionen bleiben erhalten. Diese Regeln betreffen
+VisPy, nicht den bisherigen Canvas oder den Qt-Quick-Vergleichsadapter.
+
+Die Werte sind Stiftparameter, keine Zusage exakt gleicher physischer
+Pixelbreiten auf allen Grafiktreibern. GL hat keine AGG-Eckverbindungen.
+Die Qt-Auflage für Stegregionen, Maße und Beschriftungen bleibt bestehen.
+
+Für ein vorhandenes Projekt mit Mehrfachbearbeitung kann die native
+Auswahlprüfung explizit gestartet werden, beispielsweise:
+
+```powershell
+.tox/package-build/Scripts/python.exe tests/dxf2gcode_view_scene_test.py --appearance-project dxf/1997.d2g
+```
+
+Die projektbezogene Prüfung ist optional und benötigt die lokal vorhandene
+Datei. Der reguläre native Stegworker prüft dieselben Regeln zusätzlich mit
+seiner selbst erzeugten Mehrfachbearbeitung aus `BreakExample_Circle.dxf`.
+
+Projektionen und Segmentarrays werden pro Snapshot/Ansicht gespeichert.
+Beim Verschieben werden keine Linien neu hochgeladen; Zoom erneuert nur
+maßabhängige Strichdaten. Auswahlwechsel aktualisieren die betroffenen
+Stilgruppen. Der ausgeblendete bisherige Canvas wird bei unverändertem Projekt
+nicht neu aufgebaut und bei Rückkehr aktualisiert. Bei automatischer
+Exportreihenfolge bleibt der bestehende vollständige Aktualisierungspfad aktiv.
+[Messung vor/nach der GL-Optimierung](vispy-line-benchmark.md#nachtrag-gl-optimierung).
+Die Canvas-Trefferprüfung nutzt ebenfalls gecachte Projektionen und gebündelte
+Transformationen statt einer Szenengraphabfrage je Segmentendpunkt.
+[Gesonderter Klicknachweis](vispy-line-benchmark.md#canvas-klickpfad) einschließlich
+Auswahl und Leerraum-Abwahl; die ältere Baum-Auswahlmessung erfasste das nicht.
+
+**Strip-Versuch beendet (16.11.2026):** Der Nutzer sieht keinen optischen Vorteil
+und hat die Rückkehr zur gebündelten GL-Segmentdarstellung entschieden.
+Modell-/Werkzeugweglinien verwenden wieder durchgehend `connect='segments'`;
+Strip-Schalter, Strip-Pool und zugehörige Cache-Zweige sind entfernt. Die schnelle
+Trefferprüfung und alle bisherigen GL-Caches bleiben erhalten.
+[Historischer Versuch und Messung](vispy-line-benchmark.md#strip-versuch).
+
+Die VisPy-Draufsicht verwendet dieselbe Stegbearbeitung wie der bisherige Canvas.
+Im Ansichtsband VisPy wählen und im Bearbeitungstab den Stegmodus einschalten;
+aus der räumlichen VisPy-Ansicht wird dabei in die feste XY-Draufsicht gewechselt.
+Ein Wechsel zur räumlichen Ansicht beendet den Stegmodus.
+
+Beim Klick auf „VisPy: Draufsicht“ aus der Raumansicht dreht, verschiebt und
+zoomt die Kamera in rund 400 ms zum letzten Ausschnitt der festen Draufsicht.
+Beim ersten Wechsel wird die Zeichnung eingepasst. Durch erneutes Wählen der
+Raumansicht kehrt man zum vorherigen räumlichen Blick zurück. Der automatische
+Wechsel beim Einschalten des Stegmodus erfolgt sofort.
+
+Für die Nutzerprüfung `BreakExample_Circle.dxf` laden, eine Bearbeitung auswählen
+und eine neue Region aufziehen. Danach eine Region einmal auswählen, durch
+erneutes Ziehen verschieben und mit Strg an der Originalkontur ausrichten.
+Die Maße an oberer/rechter Kante anklicken, einen Wert bestätigen und
+Rückgängig/Wiederherstellen prüfen. Die Maßänderung behält den Mittelpunkt bei
+und schaltet automatische Bemessung auf manuell. Während des Ziehens verschwinden
+die Maßfelder. Doppelklick öffnet den bestehenden Stegdialog.
+Das geöffnete Maßfeld zeigt die konfigurierte Anzeigegenauigkeit (standardmäßig
+3 Stellen in mm, 5 in inch). Unverändertes Bestätigen erhält den vollständigen
+Geometriewert und den bisherigen Bemessungsmodus; eigene Eingaben werden mit
+ihrer eingegebenen Genauigkeit übernommen.
+Dies bei stärkerem und schwächerem Zoom mit dem bisherigen Canvas vergleichen.
+
+Der explizite lokale GPU-Test lautet:
+
+```powershell
+.tox/package-build/Scripts/python.exe tests/dxf2gcode_view_scene_test.py --vispy-editing-worker
+```
+
+Dieser Nachweis gilt für die Stegbearbeitung, nicht für alle bisherigen
+Canvas-Aktionen oder die endgültige Rendererwahl. Der bisherige Debian-Teststand
+enthält diese später ergänzte Bearbeitung noch nicht.
+
 ## Quellen
 
+- [GL-/AGG-Performance- und RAM-Vergleich an AFluegel Rippen](vispy-line-benchmark.md)
 - [VisPy: Installation und Qt-Backends](https://vispy.org/installation.html)
 - [VisPy: Kameras](https://vispy.org/api/vispy.scene.cameras.html)
 - [Qt Quick 3D: eigene Geometrie](https://doc.qt.io/qt-6/qquick3dgeometry.html)

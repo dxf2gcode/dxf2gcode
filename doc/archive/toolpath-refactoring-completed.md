@@ -4240,6 +4240,306 @@ Große Datenmengen können bei Rotation/Zoom weiterhin Aufwand verursachen.
 Erneute Nutzerbeurteilung und vergleichende Bewertung bleiben
 [P4](../planning/gui1-renderer-comparison-plan.md).
 
+<a id="gui1-vispy-lines-benchmark"></a>
+## GUI1 – GL-/AGG-Performance und RAM an Rippen-DXF (16.11.2026)
+
+Auf ausdrücklichen Nutzerauftrag `AFluegel Rippen b2 0201.dxf` nativ unter
+Windows/AMD RX 6700 XT geprüft: 63 Konturen, 63 Bearbeitungen, 21.647 projizierte
+Segmente, Qt 6.12/VisPy 0.17. Separates Werkzeug
+`tools/benchmark_vispy_lines.py` mit frischen Prozessen, temporärer Konfiguration,
+einer Methode pro Adapter und unverändertem Projekt. Produktionsansicht und
+Einstellungen nicht umgestellt.
+
+Die einfache AGG-Variante hätte nach Einpassen 4.962 Visuals benötigt und wurde
+an der Vorabgrenze von 1.500 gestoppt; keine tatsächliche Laufzeit-/RAM-Abnahme
+für diesen Ansatz. GL und gebündeltes AGG wurden vollständig durchlaufen,
+einschließlich Pan, Zoom, Einzel-/Mehrfachauswahl und Prozessspeicherzählern.
+Das gebündelte Experiment verwendet VisPys privaten Strip-Baker; dessen
+Produktivübernahme ist ausdrücklich nicht freigegeben.
+
+Beispielmediane einschließlich GPU-Readback: Pan/Mehrfachauswahl mit Neuaufbau
+124 ms GL / 317 ms AGG, Zoom 131 / 303 ms, Auswahlwechsel 427 / 630 ms.
+Isolierter Kamera-Pan ohne Upload bei 24 ausgewählten Bearbeitungen dagegen
+8,23 / 11,22 ms (je 30 Proben, keine Uploads beobachtet). Peak-Working-Set im
+vollständigen Ablauf 448 / 497 MiB; Private-Commit-Spitze 830 / 884 MiB.
+Keine VRAM-, Langzeit-Leck- oder Bildschirm-FPS-Messung.
+
+Die zugrunde liegende Darstellungsleistung ist damit für weitere AGG-Erprobung
+plausibel; vor einer Umstellung sind Bündelung und Cache für Navigation und
+Auswahl nötig. Zoomen und Auswahl sind durch die Kamera-Gegenprobe nicht
+optimiert. Die vollständigen Methoden, Hardware-/Skalierungsbedingungen,
+Streuwerte, Schutzgrenzen und fünf JSON-Rohdaten stehen im
+[Messbericht](../documentation-notes/vispy-line-benchmark.md).
+Erzeugte AGG-Aufnahme visuell geprüft; CLI-Hilfe und Python-Syntax geprüft.
+Keine Vollsuite, Debian-/3D-/Paket-/Releaseabnahme oder abschließende Rendererwahl.
+
+<a id="gui1-vispy-gl-cache"></a>
+## GUI1 – Einheitliche VisPy-GL-Linien und Cache (16.11.2026)
+
+Nach ausdrücklicher Nutzerentscheidung für GL anstelle des 2D-beschränkten
+AGG-LineVisual den VisPy-Prototyp für Modell-/Werkzeugweglinien in beiden
+Ansichten auf `method='gl'` umgestellt. Kein AGG-Produktionspfad und keine
+Übernahme seiner internen Muster. Die vorhandene Strich-/Punktaufteilung bleibt
+als gebündelte GL-Segmentdarstellung erhalten; Qt-Auflagen für Stege/Maße bleiben.
+
+Projektionen/semantische Arrays pro Snapshot und Ansicht speichern, Strichdaten
+pro Maßstab zwischenspeichern und Gruppen nur bei tatsächlicher Änderung
+hochladen. Pan lädt keine Linien, Zoom nur geänderte Strichgruppen; Auswahl
+berechnet keine Planprojektionen. Veraltete Stilobjekte entfernen und vor dem
+ersten Upload einpassen. Reine Auswahl baut den versteckten Legacy-Canvas bei
+unverändertem Projekt/Transform/Konfiguration/Postprozessor nicht mehr auf;
+Rückkehr und Grafikfehler aktualisieren ihn. Parameteränderungen und automatische
+Exportreihenfolge behalten den vollständigen Aktualisierungspfad. Diagnosen
+aller Operationen aus dem aktuellen Snapshot in den Baum übernehmen.
+
+Exakt deckungsgleiche nicht ausgewählte Schnittsegmente in der Draufsicht unter
+der Originalkontur aussparen, damit dünne AA-Ränder keine blauen Fragmente
+erzeugen. Plan, Export und räumliche Bahnen bleiben erhalten. Alpha-Blending
+explizit gesetzt; AGG-Breitenfaktor entfernt. GL-Strichstärken/Ecken bleiben
+treiberabhängig und bedürfen optischer Nutzerprüfung.
+
+**Prüfung:** sieben fokussierte Tests unter Qt6, sechs unter Qt5 und ein
+Qt-Quick-Test übersprungen. Bestehende Bearbeitungs-/Übersetzungsprüfungen je
+zweimal unter Qt5 und Qt6 bestanden. Native GPU- und Stegbearbeitungsworker
+bestanden: Raum-/Draufsicht, Auswahl, Planänderung, transparente Körper,
+Rückkehr zum alten Canvas, Maße/Zeichnen/Fang/Undo, Cache-Invalidierung,
+ausbleibende Pan-Uploads, unveränderte Schnittarrays bei Zoom, begrenzte
+Stilobjekte und Timer unter fortlaufenden Ereignissen. GL-Aufnahme visuell geprüft.
+
+**Rippen-DXF nach Optimierung:** gleiche Umgebung/Größe wie im vorherigen
+Vergleich, aktueller Produktionspfad über `--method current`. Mediane inklusive
+Readback: Pan/Mehrfachauswahl 9,98 statt 123,84 ms, Zoom 20,99 statt 130,80 ms,
+Mehrfachauswahlwechsel 26,21 statt 426,88 ms. Peak-Working-Set 356 statt 448 MiB,
+Peak-Private-Commit 755 statt 830 MiB. Projektinhalt unverändert geprüft.
+[Nachtrag und JSON-Rohdaten](../documentation-notes/vispy-line-benchmark.md#nachtrag-gl-optimierung).
+Keine neue Debian-, Paket-, Vollsuite-, Release- oder physische Maschinenabnahme.
+
+## GUI1 – Verzögerte Canvas-Auswahl durch Trefferprüfung (16.11.2026)
+
+Auf Nutzerhinweis den zuvor nicht gemessenen Maus-/Picking-Pfad geprüft.
+Die Rippen-DXF benötigte ca. 2,49 s pro Auswahlklick und 8,10 s für Auswahl
+plus Leerraum-Abwahl: jede Segmentkoordinate wurde einzeln projiziert und bei
+Leerraum zusätzlich die gesamte Originalgeometrie durchsucht. Die vorherigen
+Auswahlmessungen begannen bei Baum-Auswahl und deckten diese Ursache nicht ab.
+
+VisPy verwendet jetzt Snapshot-/Ansichtsdaten, eine gebündelte Transformation,
+vektorisierte Abstände und einen invalidierbaren Bildschirmcache. Nearest-
+Trefferliste, Toleranz und Mehrfachtreffer-Menü bleiben erhalten. Leerraum-
+Abwahl wird als eine logische Auswahländerung statt mehrerer Repaints behandelt.
+
+Echte Qt-Klickmessung mit gleichem Eingabepunkt, zwei Aufwärmabläufen und je drei
+Proben: Auswahl ca. 71 ms, Auswahl plus Leerraum ca. 93 ms, jeweils inklusive
+Bildabruf und automatischer erster Menüwahl bei Mehrfachtreffern. Prozess-
+Working-Set-Spitze ca. 356 statt 350 MiB im kurzen Klicktest. Keine FPS- oder
+Langzeit-/Leck-Aussage. [Rohdaten und Grenzen](../documentation-notes/vispy-line-benchmark.md#canvas-klickpfad).
+
+Native Stegbearbeitungs-/Pickingprüfung bestanden: Trefferlisten stimmen in
+geprüften Fällen mit der bisherigen Referenz überein, einschließlich Kamera-,
+Ansichts- und Sichtbarkeitswechsel, Nullsegmenten und leerem Snapshot. Keine
+per-Endpunkt-Projektion im neuen Picking; Cache-Wiederverwendung nachgewiesen.
+Leerraum erzeugt einen Auswahlwechsel und leert den Kontext. Sieben Tests unter
+Qt6, sechs unter Qt5 plus ein übersprungener Qt-Quick-Test bestanden. Nativer
+Qt-Quick-/VisPy-Interoperabilitätsworker bestanden. Keine Vollsuite, Debian-,
+Paket- oder Releaseprüfung; Nutzerprüfung am eigenen Klickablauf bleibt offen.
+
+## GUI1 – GL-`connect='strip'` zum Vergleich (16.11.2026)
+
+Auf ausdrücklichen Nutzerwunsch durchgezogene, zusammenhängende Pfadstücke
+als native GL-Line-Strips umgesetzt. Unabhängige Stücke/Konturen/Rollen nicht
+verbinden; Strich-/Punktlinien weiter als GL-Segmente bündeln. Der aktive
+Prototyp-Schalter `VispyView.SOLID_CONNECT = 'strip'` kann für den bisherigen
+Weg auf `'segments'` zurückgesetzt werden. Keine AGG-Rückkehr oder Exportänderung.
+Strip-Objekte je Snapshot/Ansicht/Pfadstück wiederverwenden, statt bei jeder
+Auswahl neue GL-Objekte zu erzeugen; neuen Snapshot mit leerem Pool beginnen.
+
+Native Steg-/Cache-/Picking-/Lückenprüfungen und GPU-Worker bestanden.
+Framebuffer-Zwischenräume getrennter Stücke bleiben weiß, Muster bleiben
+unterbrochen, Rückwechsel funktioniert und Pool-Objekte werden wiederverwendet.
+Sieben Tests unter Qt6, sechs unter Qt5 und ein übersprungener Qt-Quick-Test
+bestanden. Strip-Aufnahme visuell geprüft; tatsächlicher Eckvorteil bedarf
+Nutzerbeurteilung auf dem eigenen Grafiktreiber.
+
+Rippen-DXF, gleiche Messbedingungen: 260–462 aktive LineVisuals statt 3–8.
+Pan/Mehrfachauswahl ca. 88 statt 10 ms, Zoom ca. 104 statt 21 ms,
+Baum-Mehrfachauswahlwechsel ca. 103 statt 26 ms. Peak-Working-Set ca. 447 statt
+356 MiB. Der Versuch bleibt wie beauftragt aktiv, ist aber keine Performance-
+Freigabe für die endgültige Ansicht. [Messung/Rohdaten](../documentation-notes/vispy-line-benchmark.md#strip-versuch).
+Keine Vollsuite, neue Plattform-, Paket- oder Releaseabnahme.
+
+## GUI1 – Strip-Versuch nach Nutzerprüfung zurückgenommen (16.11.2026)
+
+Der Nutzer erkennt keinen optischen Vorteil und hat die Rückkehr zur vorherigen
+Umsetzung beauftragt. Gebündelte GL-Segmente in Drauf- und Raumansicht wieder
+hergestellt; Strip-Schalter, Strip-Objektpool und experimentelle Cache-Zweige
+entfernt. Projektions-/Strich-/Upload-Caches, schnelle vektorisierte Trefferprüfung,
+gesammelte Leerraum-Abwahl und verzögerte Aktualisierung des versteckten Canvas
+bleiben erhalten. Keine Geometrie-/Planungs-/Exportänderung.
+
+Native Cache-, Steg-, Picking-, Überlagerungs- und Segment-Lückenprüfungen
+bestanden. Wenige nach Stil gebündelte Visuals, getrennte Konturen und
+Strichlücken geprüft. Der historische Strip-Vergleich bleibt als Nachweis;
+Entscheidung ist aus dem offenen Plan entfernt. Kein erneuter langer Benchmark
+für die Rücknahme erforderlich; keine Paket-/Plattform-/Releaseabnahme.
+
+## GUI1 – Standard-AGG-LineVisual: direkte XYZ-Daten geprüft (16.11.2026)
+
+Auf Nachfrage die bisher zu pauschal formulierte 2D-Grenze präzisiert.
+Öffentliche `scene.visuals.Line`-API, VisPy 0.17.0, `method='agg'`,
+`connect='strip'`, native Turntable-Szene und synchroner Renderaufruf:
+XY-Punktarray erfolgreich, XYZ-Punktarray scheitert mit
+`ValueError: cannot reshape array of size 6 into shape (2,2)`.
+Direkter Baker-Gegentest zeigt dasselbe Ergebnis. Bestätigt ist die Grenze
+dieses Standardelements für direkte XYZ-Daten, keine allgemeine Unmöglichkeit
+von AGG in 3D oder eines angepassten Adapters. Aktive GL-Implementierung nicht
+geändert. [Präzisierung und externer Fehlerbericht](../documentation-notes/vispy-line-benchmark.md).
+
+## GUI1 – VisPy-Originalfarben und Auswahlumfang (21.11.2026)
+
+Auf Nutzerhinweis `1997.d2g` geprüft: rechte 7 besitzt zwei G42-Bearbeitungen
+mit T5, eine mit 0,1 mm Aufmaß. Die frühere Originalfarbe wurde aus der aktiven
+Legacy-Korrektur abgeleitet und war daher dunkelmagenta. VisPy verwendet für
+nicht ausgewählte aktive Originalkonturen jetzt Schwarz unabhängig von G40/41/42.
+Die bestehende Statuspalette für deaktivierte Geometrie bleibt erhalten.
+
+Auswahlumfang bestimmt die Hervorhebung: vollständige Auswahl → Original rot
+mit Stiftbreite 3, alle zugehörigen Bearbeitungen dünn 0,6; Teilauswahl → Original
+rot gepunktet mit Breite 1, gewählte Schnittbahn 3, andere Bearbeitungen 0,6
+gestrichelt. Semantische Farben/Muster bleiben erhalten; andere gewählte Rollen
+bei Teilauswahl erhalten Basisbreite +1. Der aktive Parameterkontext hebt diese
+Regel nicht auf. Bei genau einer zugehörigen Bearbeitung ist deren Auswahl
+vollständig. Änderung auf VisPy beschränkt; keine Planungs-/Exportänderung.
+
+**Prüfung:** acht fokussierte Tests unter Qt6, sieben unter Qt5 und ein
+Qt-Quick-Test übersprungen. Unit-Nachweis für G40/G41/G42, keine/vollständige/
+teilweise Auswahl sowie Einzelfall mit einer Verknüpfung. Nativer GPU- und
+Steg-/Cache-/Picking-Worker bestanden; auch die selbst erzeugte Mehrfachbearbeitung
+prüft jetzt beide Ansichten und unveränderten Projektinhalt.
+
+Die vom Nutzer bereitgestellte lokale `dxf/1997.d2g` zusätzlich mit
+`--appearance-project` nativ geladen: keine/alle/eine Bearbeitung der rechten 7
+in Drauf- und Raumansicht geprüft, Projekt unverändert. Drei Draufsicht-Aufnahmen
+`.tox/vispy-1997-plane-{none,all,partial}.png` visuell geprüft. Projektdatei nicht
+verändert oder zum Commit hinzugefügt. Keine Vollsuite oder neue Plattform-/
+Paket-/Releaseabnahme; optische Nutzerprüfung am eigenen Fenster bleibt offen.
+
+<a id="gui1-shared-xyz"></a>
+## GUI1 – Gemeinsame XYZ-Werkzeugwege im VisPy-Versuch (21.11.2026)
+
+Drauf- und Raumansicht verwenden dieselben XYZ-Segmente, dieselben vorbereiteten
+Positionsarrays und dieselben räumlichen Daten für die Trefferprüfung. Die
+Bildschirmkoordinaten der Trefferprüfung hängen von der aktiven Kamera ab.
+Die feste XY-Kamera bietet Verschieben und Zoomen. Die Raumkamera bleibt drehbar.
+Zeichenreihenfolge und Stegauflage der Draufsicht bleiben für den Versuch erhalten.
+
+Der lokale native OpenGL-Worker hat zwei deckungsgleiche Schnitte auf Z −1,5
+und −3 mm samt Zustellung geprüft. Beide Durchgänge sind im gemeinsamen
+Datenbestand vorhanden, werden von oben auf denselben Bildbereich projiziert
+und sind in der Raumansicht getrennt. Trefferprüfung, Auswahl und Stegeditor
+sind im selben Lauf geprüft. Optische Nutzerprüfung und Performancebewertung
+in der üblichen Bedienung bleiben offen. Die Start- und Aufräumarbeiten stehen
+im [Übernahmeplan](../planning/gui1-renderer-comparison-plan.md#p6--auswahl-und-übernahmeplan).
+
+Nach Rückmeldung zum Zoomen die Strichmuster der Draufsicht korrigiert. Zuvor
+lief die Strichfolge über die wiederholten XYZ-Segmente weiter, sodass derselbe
+XY-Abschnitt pro Tiefe an einer anderen Stelle im Muster beginnen konnte.
+Für Strichmuster werden deckungsgleiche XY-Segmente je Bearbeitung und Rolle
+einmal berücksichtigt. Senkrechte Bewegungen zählen dabei nicht zur sichtbaren
+Länge. Die XY-Abschnitte werden pro Szene gespeichert und beim Zoomen wird
+das Muster in der passenden Bildschirmgröße erzeugt. Native Prüfung mit zwei
+Tiefendurchgängen bei zwei Zoomstufen gegen den einzelnen XY-Durchgang bestanden.
+In der Raumansicht verwenden deckungsgleiche horizontale Abschnitte derselben
+Bewegungsart denselben Musterbeginn auf ihrer jeweiligen Tiefe, auch bei
+umgekehrter Fahrtrichtung. Beide Tiefen sind bei zwei Zoomstufen geprüft.
+
+Der VisPy-Draufsichtknopf animiert aus der Raumansicht in 400 ms Winkel,
+Mittelpunkt und Zoom. Ziel ist der zuletzt verwendete Draufsicht-Ausschnitt
+oder die eingepasste Zeichnung beim ersten Wechsel. Danach übernimmt die feste
+XY-Kamera. Der vorherige räumliche Blick wird beim Zurückschalten wiederhergestellt.
+Der native Test prüft einen Zwischenzustand, die Übereinstimmung der projizierten
+Punkte beim Kamerahandoff, Rückkehr und Abbruch. Der Stegmodus schaltet sofort um.
+
+<a id="gui1-p5-vispy"></a>
+## GUI1 P5 – VisPy-Stegbearbeitung (15.11.2026)
+
+Nach dem Vergleich vorläufig VisPy bevorzugt und den Bearbeitungsnachweis
+beauftragt; Qt Quick 3D bleibt erhalten. Die feste VisPy-Draufsicht nutzt nun
+die vorhandenen `TabModifiers`: Projektion und inverse XY-Abbildung im Adapter,
+Qt-Auflage für Regionen, Griffe und Maßfelder, native Qt-Ereignisse für Auswahl,
+Verschieben, Zeichnen, Strg-Fang und Doppelklick. Die VisPy-Kamera erhält keine
+vom Stegeditor verbrauchten Mausereignisse. NumPy-Koordinaten werden vor einer
+Projektänderung in Python-`float` umgewandelt.
+
+Projektbefehle, Undo/Redo, Zuordnung und automatische/manuelle Bemessung werden
+vom bisherigen Canvas wiederverwendet. Bestätigte Maßeingabe behält den
+Mittelpunkt bei und wechselt zur manuellen Bemessung; beim Ziehen werden keine
+Maßfelder dargestellt. Aus der räumlichen VisPy-Ansicht schaltet der Stegmodus
+zur Draufsicht; ein Wechsel zur räumlichen Ansicht beendet den Modus.
+
+**Lokale Prüfung:** sechs Renderer-Vertragstests unter PyQt6 bestanden.
+`--vispy-editing-worker` bestand im nativen Windows-/OpenGL-Fenster: inverse
+Projektion bei gezoomter Ansicht, Auswahl, Verschieben mit einem Undo-Eintrag,
+Undo/Redo einschließlich Projektvergleich, Maßfeld über der nativen Ansicht,
+Mittelpunkt und automatisch/manuell, Strg-Aufruf des gemeinsamen Fangs,
+Zeichnen bei weiterhin aktivem Modus und Doppelklick. Die erzeugte Aufnahme
+`.tox/vispy-tab-editing.png` zeigt ausgerichtete Region, Griffe und beide Maße;
+visuell geprüft. Je zwei Bearbeitungs-/Übersetzungstests unter PyQt5 und PyQt6
+bestanden, einschließlich der bestehenden Canvas-Ereignistests.
+
+Offen bleibt die Nutzerprüfung bei unterschiedlichen Zoomstufen im Vergleich
+zum bisherigen Canvas. Keine neue Debian-, Paket-, Vollsuite- oder Releaseabnahme;
+der zuvor bereitgestellte Debian-Teststand enthält diese Ergänzung noch nicht.
+Keine vollständige Übernahme aller Canvas-Aktionen oder endgültige Rendererwahl.
+
+**Korrektur nach Nutzerprüfung (15.11.2026):** Der Editor zeigte zuvor den
+vollständigen Float-Wert, etwa `3.999999999…`; im schmalen Feld war nur das Ende
+sichtbar. Er verwendet jetzt die konfigurierte Anzeigepräzision. Unverändertes
+Bestätigen erhält den ungerundeten Wert, den automatischen Bemessungsmodus und
+den Undo-Stand. Eigene Eingaben behalten ihre Eingabegenauigkeit. Der native
+VisPy-Worker besteht mit gezielt erzeugter Float-Abweichung, formatiertem
+Editorwert und unverändertem Projekt nach Enter; anschließendes Ändern und
+Undo funktionieren weiterhin. Die je zwei bestehenden Bearbeitungs- und
+Übersetzungstests bestanden unter Qt5 und Qt6; der Canvas-Test prüft nun
+ebenfalls unverändertes Bestätigen und weiterhin präzise eigene Eingaben.
+
+**Korrektur der VisPy-Draufsicht (15.11.2026):** Linientiefentest dort deaktiviert
+und Zeichenreihenfolge nach Originalgeometrie, nicht ausgewählter und ausgewählter
+Bearbeitung festgelegt. Die Batch-Schlüssel enthalten die Zeichenebene; gleiche
+Farben/Breiten aus unterschiedlichen Ebenen werden nicht mehr zusammengefasst.
+Auch wiederverwendete Linienobjekte erhalten beim Ansichtswechsel den passenden
+Tiefentest. Räumliche Darstellung, bestehende Farben und Projekt-/Planungsdaten
+bleiben erhalten. Der native Stegbearbeitungs-Worker bestand einschließlich
+Framebuffer-Gegenprobe mit drei exakt deckungsgleichen Pfaden, Auswahlwechsel
+und Draufsicht–Raumansicht–Draufsicht. Sechs Renderer-Vertragstests bestanden.
+Nutzerprüfung des zuvor gezeigten Beispiels bleibt offen; keine neue
+Plattform- oder Paketabnahme.
+
+**Nachkorrektur nach Bildprüfung (15.11.2026):** Unverbundene GL-Einzelsegmente
+ließen Ecken offen; nicht ausgewählte Bearbeitungen lagen weiterhin über der
+Originalkontur. Durchgezogene Linien der VisPy-Draufsicht verwenden jetzt
+verbundene AGG-Pfade mit Eckverbindungen, Endkappen und Kantenglättung.
+Räumliche Linien und gestrichelte Pfade behalten ihre bisherige Methode.
+Getrennte Stücke, Nullsegmente und Lücken werden nicht künstlich verbunden.
+Die korrigierte Reihenfolge ist: nicht ausgewählte Bearbeitungen,
+Originalgeometrie, ausgewählte Bearbeitungen. Der kosmetische Qt-Stift mit
+Breite 0 wird als ein Pixel dargestellt.
+
+Sieben fokussierte Renderer-Tests und der native Stegbearbeitungs-Worker
+bestanden. Die erweiterte Framebuffer-Gegenprobe zeigt ein ausgewähltes Rechteck
+mit geschlossenen Ecken und einen nicht ausgewählten schwarzen Kreis ohne
+ausgeprägt blaue Pixel trotz deckungsgleicher Bearbeitung. Aufnahme
+`.tox/vispy-line-joins.png` visuell geprüft; Auswahl- und Ansichtswechsel sowie
+Stegbearbeitung bleiben im nativen Nachweis enthalten. Keine neue Plattform-,
+Paket- oder Performanceabnahme; Nutzerprüfung des eigenen Beispiels bleibt offen.
+
+**Strichstärke nach Nutzerprüfung (15.11.2026):** Die AGG-Hervorhebung in der
+Draufsicht reduziert: normale Konturen weiterhin 1 Pixel, ausgewählte
+durchgezogene Linien 1,5 statt 2 Pixel, aktive 2 statt 3 Pixel. Farben,
+Eckverbindungen, gestrichelte und räumliche Linien bleiben erhalten.
+Sieben Renderer-Tests und der native Stegbearbeitungs-/Framebuffer-Worker
+bestanden; Sollbreiten im Worker geprüft, aktualisierte Aufnahme
+`.tox/vispy-line-joins.png` visuell geprüft. Keine Behauptung einer pixelgenauen
+Übereinstimmung unterschiedlicher Renderer; optische Nutzerabnahme bleibt offen.
+
 ## GUI1 P4 – isolierter Debian-Vergleich vorbereitet und technisch geprüft
 
 Stand: **15.11.2026**, ausdrücklicher neuer Nutzerauftrag nach Rückmeldung:
