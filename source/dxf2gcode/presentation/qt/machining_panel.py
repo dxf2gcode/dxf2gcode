@@ -19,7 +19,8 @@ from dxf2gcode.presentation.qt.qt_compat.QtGui import (
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout, QTreeWidget, QTreeWidgetItem,
     QAbstractItemView, QLabel, QToolBar, QStyle, QHeaderView, QSizePolicy,
-    QDialog, QDialogButtonBox, QLineEdit, QComboBox, QMenu, QInputDialog, QSplitter, QFrame)
+    QDialog, QDialogButtonBox, QLineEdit, QComboBox, QMenu, QInputDialog, QSplitter, QFrame,
+    QStyleOptionComboBox, QStyleOptionViewItem, QStylePainter)
 
 Qt = QtCore.Qt
 ROLE = Qt.ItemDataRole.UserRole
@@ -27,6 +28,24 @@ SOURCE_ROLE = int(ROLE) + 1
 TABLE_TOOL_ROLE = int(ROLE) + 2
 MIME = 'application/x-dxf2gcode-machining'
 logger = logging.getLogger(__name__)
+
+
+class PlacementComboBox(QComboBox):
+    """Show the active mode as an icon and keep the popup labels."""
+
+    def showPopup(self):
+        view = self.view()
+        text_width = view.sizeHintForColumn(self.modelColumn())
+        view.setMinimumWidth(max(self.width(), text_width + 2 * view.frameWidth() + 8))
+        super().showPopup()
+
+    def paintEvent(self, event):
+        option = QStyleOptionComboBox()
+        self.initStyleOption(option)
+        option.currentText = ''
+        with QStylePainter(self) as painter:
+            painter.drawComplexControl(QStyle.ComplexControl.CC_ComboBox, option)
+            painter.drawControl(QStyle.ControlElement.CE_ComboBoxLabel, option)
 
 
 def history_icon(palette, redo=False):
@@ -71,6 +90,60 @@ class MachiningTree(QTreeWidget):
         self.drop_marker = QFrame(self.viewport())
         self.drop_marker.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.drop_marker.hide()
+        self.pressed_check = None
+
+    def checkbox_at(self, position):
+        index = self.indexAt(position)
+        if (index.column() not in (1, 2) or index.data(Qt.ItemDataRole.CheckStateRole) is None
+                or not index.flags() & Qt.ItemFlag.ItemIsEnabled):
+            return QtCore.QModelIndex()
+        option = QStyleOptionViewItem()
+        self.itemDelegate().initStyleOption(option, index)
+        option.widget = self
+        option.rect = self.visualRect(index)
+        indicator = self.style().subElementRect(QStyle.SubElement.SE_ItemViewItemCheckIndicator, option, self)
+        return index if indicator.contains(position) else QtCore.QModelIndex()
+
+    def mousePressEvent(self, event):
+        self.pressed_check = None
+        if event.button() == Qt.MouseButton.LeftButton:
+            index = self.checkbox_at(event.pos())
+            if index.isValid():
+                self.pressed_check = QtCore.QPersistentModelIndex(index)
+                event.accept()
+                return
+        elif event.button() == Qt.MouseButton.RightButton and self.columnAt(event.pos().x()) in (1, 2):
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.RightButton and self.columnAt(event.pos().x()) in (1, 2):
+            event.accept()
+            return
+        if self.pressed_check is not None and event.button() == Qt.MouseButton.LeftButton:
+            pressed, self.pressed_check = self.pressed_check, None
+            index = self.checkbox_at(event.pos())
+            if pressed == QtCore.QPersistentModelIndex(index) and index.isValid():
+                item = self.itemFromIndex(index)
+                state = (Qt.CheckState.Unchecked if item.checkState(index.column()) == Qt.CheckState.Checked
+                         else Qt.CheckState.Checked)
+                item.setCheckState(index.column(), state)
+            event.accept()
+            return
+        super().mouseReleaseEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.pressed_check is not None:
+            event.accept()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self.checkbox_at(event.pos()).isValid():
+            self.mousePressEvent(event)
+            return
+        super().mouseDoubleClickEvent(event)
 
     def payload(self):
         items = self.selectedItems()
@@ -175,31 +248,38 @@ class MachiningPanel(QWidget):
         layout.addWidget(bar)
         self.buttons = {}
         for key, text, icon, callback in (
-                ('new', self.tr('Create…'), QStyle.StandardPixmap.SP_FileIcon, self.new_step),
                 ('up', self.tr('Move up'), QStyle.StandardPixmap.SP_ArrowUp, lambda: self.nudge(-1)),
                 ('down', self.tr('Move down'), QStyle.StandardPixmap.SP_ArrowDown, lambda: self.nudge(1)),
-                ('undo', self.tr('Undo'), None, self.undo),
-                ('redo', self.tr('Redo'), None, self.redo),
                 ('collapse', self.tr('Collapse all'), QStyle.StandardPixmap.SP_TitleBarShadeButton, lambda: self.tree.collapseAll()),
                 ('expand', self.tr('Expand all'), QStyle.StandardPixmap.SP_TitleBarUnshadeButton, lambda: self.tree.expandAll())):
             if key == 'collapse':
                 spacer = QWidget(bar)
                 spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
                 bar.addWidget(spacer)
-            if key in ('up', 'undo', 'collapse'):
+            if key == 'collapse':
                 bar.addSeparator()
-            action_icon = history_icon(self.palette(), key == 'redo') if key in ('undo', 'redo') else self.style().standardIcon(icon)
-            action = bar.addAction(action_icon, text)
+            action = bar.addAction(self.style().standardIcon(icon), text)
             action.triggered.connect(callback)
             action.setObjectName('machining_' + key)
             self.buttons[key] = action
         self.buttons['collapse'].setIcon(window.ui.layersCollapsePushButton.icon())
         self.buttons['expand'].setIcon(window.ui.layersExpandPushButton.icon())
-        self.buttons['new'].setToolTip(self.tr('Create machining step…'))
-        for key, shortcut in (('undo', 'Ctrl+Z'), ('redo', 'Ctrl+Shift+Z')):
+        create = QAction(self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon), self.tr('Create…'), self)
+        create.setObjectName('machining_new')
+        create.setToolTip(self.tr('Create machining step…'))
+        create.setEnabled(False)
+        create.triggered.connect(self.new_step)
+        self.buttons['new'] = create
+        for key, text, callback, shortcut in (
+                ('undo', self.tr('Undo'), self.undo, 'Ctrl+Z'),
+                ('redo', self.tr('Redo'), self.redo, 'Ctrl+Shift+Z')):
+            action = QAction(history_icon(self.palette(), key == 'redo'), text, self)
+            action.setObjectName('machining_' + key)
+            action.triggered.connect(callback)
+            action.setEnabled(False)
             keys = QKeySequence(shortcut).toString(QKeySequence.SequenceFormat.NativeText)
-            self.buttons[key].setToolTip('%s (%s)' % (self.buttons[key].text(), keys))
-        bar.widgetForAction(self.buttons['new']).setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+            action.setToolTip('%s (%s)' % (text, keys))
+            self.buttons[key] = action
         self.tree = MachiningTree(self)
         self.tree.setColumnCount(3)
         self.tree.setHeaderLabels([self.tr('Machining'), self.tr('Export'), self.tr('Optimize')])
@@ -210,6 +290,9 @@ class MachiningPanel(QWidget):
         self.tree.itemCollapsed.connect(self.update_tree_actions)
         self.tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.menu)
+        header = self.tree.header()
+        header.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        header.customContextMenuRequested.connect(self.header_checkbox_menu)
         self.tree.itemSelectionChanged.connect(self.selection_changed)
         self.tree.itemChanged.connect(self.checked)
         self.tree.itemDoubleClicked.connect(self.edit_item)
@@ -229,21 +312,22 @@ class MachiningPanel(QWidget):
         self.modifiers = TabModifiers(self)
         parameter_layout.addWidget(self.modifiers.editor, 1)
         self.buttons['tabs'] = QAction(tab_mode_icon(self.palette()), self.modifiers.tr('Tab edit mode'), self)
-        after_create = bar.actions()[bar.actions().index(self.buttons['new'])+1]
-        bar.insertAction(after_create, self.buttons['tabs'])
         self.buttons['tabs'].setObjectName('machining_tabs')
         self.buttons['tabs'].setCheckable(True)
+        self.buttons['tabs'].setEnabled(False)
         self.buttons['tabs'].triggered.connect(lambda enabled: self.modifiers.start_draw()
                                               if enabled else self.modifiers.set_mode(False))
-        self.tab_placement = QComboBox(bar)
+        self.tab_placement = PlacementComboBox(self)
         self.tab_placement.setObjectName('tabCreationMode')
-        self.tab_placement.setToolTip(self.modifiers.tr('Tab placement'))
+        self.tab_placement.setAccessibleName(self.modifiers.tr('Tab placement'))
         self.tab_placement.addItem(self.modifiers.tr('Snap to contour'), 'snap')
         self.tab_placement.addItem(self.modifiers.tr('Draw manually'), 'manual')
         self.tab_placement.setCurrentIndex(self.tab_placement.findData(self.modifiers.drawing_mode()))
-        self.tab_placement.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
-        self.tab_placement_action = bar.insertWidget(after_create, self.tab_placement)
-        self.tab_placement_action.setVisible(False)
+        self.tab_placement.setIconSize(QtCore.QSize(18, 18))
+        self.tab_placement.setMinimumWidth(64)
+        self.tab_placement.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.tab_placement.setToolTip(self.tab_placement.currentText())
+        self.tab_placement.currentTextChanged.connect(self.tab_placement.setToolTip)
         self.tab_placement.currentIndexChanged.connect(
             lambda: self.modifiers.set_creation_mode(self.tab_placement.currentData()))
         self.splitter.setSizes([250, 350])
@@ -280,12 +364,13 @@ class MachiningPanel(QWidget):
         if total and len(sizes) == 2:
             splitter.setSizes([preferred, max(1, total-preferred)])
 
-    def attach(self):
+    def attach(self, *, geometry_only=False):
         """Migrate after the original model is built, before machining input."""
         binding = self.window.d2g.machining_drawing
         if binding is None:
             self.window.TreeHandler.updateExportOrder(True)
-            binding = MachiningDrawing.capture(self.window.layerContents, g.config)
+            binding = MachiningDrawing.capture(self.window.layerContents, g.config,
+                                              geometry_only=geometry_only)
             self.window.d2g.machining_drawing = binding
             if not isinstance(self.window.layerContents, Layers):
                 self.window.layerContents = Layers(self.window.layerContents)
@@ -303,6 +388,8 @@ class MachiningPanel(QWidget):
             self.context = None
             self.token = str(uuid4())
         self.setEnabled(True)
+        self.buttons['new'].setEnabled(True)
+        self.buttons['tabs'].setEnabled(True)
         self.freeze_original_trees()
         self.refresh()
 
@@ -509,7 +596,7 @@ class MachiningPanel(QWidget):
             return self.commands.step(self.binding.project, identity)
         return None
 
-    def execute(self, callback):
+    def execute(self, callback, *, checkbox_only=False):
         from dxf2gcode.application.tab_regions import configured_tab_length
         self.commands.tab_length = configured_tab_length(g.config.var_dict, self.binding.project.units)
         self.commands.target_choices = {}
@@ -537,7 +624,7 @@ class MachiningPanel(QWidget):
         g.config.machine_type = self.binding.project.configuration['General']['machine_type']
         if bool(g.config.metric) != (self.binding.project.units == 'mm'):
             self.window.setMeasurementUnits(int(self.binding.project.units == 'mm'))
-        if len(selected) == 1:
+        if not checkbox_only and len(selected) == 1:
             entry = next((e for s in self.binding.project.steps for e in s.entries
                           if e.id == selected[0] and isinstance(e, MachiningOperation)), None)
             if entry is not None and entry.geometry_id in self.binding.sources:
@@ -551,7 +638,10 @@ class MachiningPanel(QWidget):
                 self.context = None
         if self.context and not any(e.id == self.context for s in self.binding.project.steps for e in s.entries):
             self.context = None
-        self.refresh()
+        if checkbox_only:
+            self.refresh_checkboxes()
+        else:
+            self.refresh()
         if result is not None:
             labels = dict(tool=self.tr('Tool'), diameter=self.tr('Tool diameter'), kind=self.tr('Kind'),
                           tool_diameter=self.tr('Tool diameter'), tool_nr=self.tr('Tool'))
@@ -615,13 +705,15 @@ class MachiningPanel(QWidget):
         self.canvas_edit_context = False
         self.selection_from_geometry = False
         current = self.tree.currentItem()
-        if current is not None and current.data(0, ROLE)[0] == 'modifier':
-            group = current.parent()
-            operation = group.data(0, ROLE)[1] if group else None
-            self.modifiers.select(current.data(0, ROLE)[1], operation=operation, anchor=current)
-            return
-        if current is not None and current.data(0, ROLE)[0] == 'modifier_group':
-            self.modifiers.select_regions([current.child(i).data(0, ROLE)[1] for i in range(current.childCount())], anchor=current)
+        if current is not None and current.data(0, ROLE)[0] in ('modifier', 'modifier_group'):
+            selected = self.tree.selectedItems()
+            regions = {item.data(0, ROLE)[1] for item in selected if item.data(0, ROLE)[0] == 'modifier'}
+            regions.update(item.child(i).data(0, ROLE)[1] for item in selected
+                           if item.data(0, ROLE)[0] == 'modifier_group' for i in range(item.childCount()))
+            primary = next(iter(regions)) if len(regions) == 1 else None
+            group = current.parent() if current.data(0, ROLE) == ('modifier', primary) else None
+            self.modifiers.link_operation = group.data(0, ROLE)[1] if group else None
+            self.modifiers.select_regions(regions, primary=primary, preserve_tree=True)
             return
         self.modifiers.clear_reference()
         ids = self.selected_entries()
@@ -670,7 +762,7 @@ class MachiningPanel(QWidget):
         self.refresh_preview()
         self.update_reference_marks()
 
-    def geometry_selected(self):
+    def geometry_selected(self, *, update_tree_only=False):
         if self.busy or self.binding is None:
             return
         self.canvas_edit_context = False
@@ -690,8 +782,32 @@ class MachiningPanel(QWidget):
         self.context = ids[0] if len(ids) == 1 else None
         self.commands.selection = tuple(ids)
         self.modifiers.update_draw_selection()
-        self.refresh(ids)
+        if update_tree_only:
+            self.select_existing_entries(ids)
+        else:
+            self.refresh(ids)
         self.refresh_preview()
+
+    def select_existing_entries(self, identities):
+        """Apply a viewport selection without rebuilding an unchanged tree."""
+        selected = set(identities)
+        current = self.tree.currentItem()
+        kind, identity = current.data(0, ROLE) if current is not None else (None, None)
+        if kind != 'entry' or identity not in selected:
+            current = self.entry_items.get(identities[0]) if identities else None
+        with QtCore.QSignalBlocker(self.tree):
+            self.tree.clearSelection()
+            for key, item in self.entry_items.items():
+                font = item.font(0)
+                if font.bold() != (self.context == key):
+                    font.setBold(self.context == key)
+                    item.setFont(0, font)
+                if key in selected:
+                    item.setSelected(True)
+            self.tree.setCurrentItem(current, 0, QtCore.QItemSelectionModel.SelectionFlag.NoUpdate)
+        self.update_tree_actions()
+        self.show_parameters()
+        self.update_reference_marks()
 
     def select_canvas_operation(self, identity, toggle=False):
         self.modifiers.clear_reference()
@@ -741,19 +857,52 @@ class MachiningPanel(QWidget):
                 [entry.id], start=tuple(float(value) for value in dialog.result)))
 
     def checked(self, item, column):
-        if self.busy or column not in (1, 2):
+        if self.busy or column not in (1, 2) or item.data(column, Qt.ItemDataRole.CheckStateRole) is None:
             return
         kind, identity = item.data(0, ROLE)
         if kind == 'entry':
             key = 'enabled' if column == 1 else 'optimize'
             value = item.checkState(column) == Qt.CheckState.Checked
             commands = self.commands
-            # Qt5 still accesses the changed item after emitting itemChanged.
-            # Rebuilding the tree inside that signal can free its native item.
+            # Finish Qt's checkbox event before refreshing the project view.
             def apply_checked():
                 if self.commands is commands:
-                    self.execute(lambda: commands.update_entries([identity], **{key: value}))
+                    self.execute(lambda: commands.update_entries([identity], keep_selection=True, **{key: value}),
+                                 checkbox_only=True)
             QtCore.QTimer.singleShot(0, apply_checked)
+
+    def refresh_checkboxes(self):
+        with QtCore.QSignalBlocker(self.tree):
+            for _, entry in self.commands.entries(self.binding.project, self.entry_items):
+                item = self.entry_items[entry.id]
+                item.setCheckState(1, Qt.CheckState.Checked if entry.enabled else Qt.CheckState.Unchecked)
+                if isinstance(entry, MachiningOperation):
+                    item.setCheckState(2, Qt.CheckState.Checked if entry.optimize else Qt.CheckState.Unchecked)
+        self.buttons['undo'].setEnabled(bool(self.commands.undo_stack))
+        self.buttons['redo'].setEnabled(bool(self.commands.redo_stack))
+        self.show_parameters()
+
+    def checkbox_menu(self, column, global_position):
+        if self.binding is None or column not in (1, 2):
+            return
+        rows = {identity: item.checkState(column) == Qt.CheckState.Checked
+                for identity, item in self.entry_items.items()
+                if item.data(column, Qt.ItemDataRole.CheckStateRole) is not None}
+        key = 'enabled' if column == 1 else 'optimize'
+        labels = ((self.tr('Enable export for all'), self.tr('Disable export for all')) if column == 1
+                  else (self.tr('Enable optimization for all'), self.tr('Disable optimization for all')))
+        menu = QMenu(self)
+        for text, value in zip(labels, (True, False)):
+            identities = tuple(identity for identity, checked in rows.items() if checked != value)
+            action = menu.addAction(text, lambda checked=False, ids=identities, flag=value:
+                self.execute(lambda: self.commands.update_entries(ids, keep_selection=True, **{key: flag}),
+                             checkbox_only=True))
+            action.setEnabled(bool(identities))
+        menu.exec(global_position)
+
+    def header_checkbox_menu(self, position):
+        header = self.tree.header()
+        self.checkbox_menu(header.logicalIndexAt(position.x()), header.viewport().mapToGlobal(position))
 
     def step_dialog(self, step=None, from_selection=False, global_position=None, selection_count=0):
         dialog = QDialog(self)
@@ -773,6 +922,8 @@ class MachiningPanel(QWidget):
         tools = QComboBox(dialog)
         selected_tool = step.tool_id if step else next(iter(self.binding.project.tools), None)
         self.populate_tool_combo(tools, selected_tool, shared_replacement=step is not None)
+        if selected_tool is None and tools.count():
+            tools.setCurrentIndex(0)
         form.addRow(self.tr('Tool definition'), tools)
         mode = QComboBox(dialog)
         mode.setObjectName('assignmentMode')
@@ -847,6 +998,8 @@ class MachiningPanel(QWidget):
         tools.setObjectName('assignmentStepTool')
         tool_id = sources[0][0].tool_id if sources else next(iter(self.binding.project.tools), None)
         self.populate_tool_combo(tools, tool_id)
+        if tool_id is None and tools.count():
+            tools.setCurrentIndex(0)
         form.addRow(self.tr('Tool definition'), tools)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel, dialog)
         buttons.accepted.connect(dialog.accept)
@@ -1179,6 +1332,10 @@ class MachiningPanel(QWidget):
     def menu(self, position):
         if not self.binding:
             return
+        column = self.tree.columnAt(position.x())
+        if column in (1, 2):
+            self.checkbox_menu(column, self.tree.viewport().mapToGlobal(position))
+            return
         clicked = self.tree.itemAt(position)
         if clicked is not None and not clicked.isSelected():
             self.tree.clearSelection()
@@ -1254,8 +1411,12 @@ class MachiningPanel(QWidget):
         fields = ('speed', 'start_radius', 'lead_radius', 'lead_length', 'overcut_length')
 
         def label(tool):
-            text = 'T%d · Ø%s %s' % (tool.tool_nr, format_number(tool.tool_diameter, units), units)
             peers = [other for other in all_tools if other.tool_nr == tool.tool_nr]
+            diameter = format_number(tool.tool_diameter, units)
+            if any(other.tool_diameter != tool.tool_diameter and
+                   format_number(other.tool_diameter, units) == diameter for other in peers):
+                diameter = str(tool.tool_diameter)
+            text = 'T%d · Ø%s %s' % (tool.tool_nr, diameter, units)
             # Include differing saved values, rather than an internal list index.
             for key in fields:
                 if len({getattr(other, key) for other in peers}) <= 1:
@@ -1268,12 +1429,7 @@ class MachiningPanel(QWidget):
                         for other in peers if getattr(other, key) is not None):
                     rendered = str(value)
                 text += ' · %s: %s %s' % (self.parameter_label(key), rendered, unit)
-            if len({other.tool_diameter for other in peers}) > 1 and any(
-                    other.tool_diameter != tool.tool_diameter and
-                    format_number(other.tool_diameter, units) == format_number(tool.tool_diameter, units)
-                    for other in peers):
-                text = text.replace('Ø' + format_number(tool.tool_diameter, units), 'Ø' + str(tool.tool_diameter), 1)
-            return text
+            return text, diameter
 
         combo.clear()
         table_values = {tool for _, tool in table_tools}
@@ -1286,7 +1442,7 @@ class MachiningPanel(QWidget):
             seen.add(tool)
             table = tool in table_values
             identity = next((key for key, value in project_tools if value == tool), identity)
-            text = label(tool)
+            text, diameter = label(tool)
             same_number = {other for other in all_tools if other.tool_nr == tool.tool_nr}
             has_table_number = any(other.tool_nr == tool.tool_nr for other in table_values)
             if not table and not has_table_number:
@@ -1295,8 +1451,10 @@ class MachiningPanel(QWidget):
                 text += ' · ' + (self.tr('Tool table') if table else self.tr('Project deviation'))
             combo.addItem(text, identity)
             index = combo.count()-1
-            tooltip = '\n'.join('%s: %s %s' % (self.parameter_label(key), getattr(tool, key),
-                'rpm' if key == 'speed' else units) for key in fields)
+            tooltip = '\n'.join([
+                '%s: %s %s' % (self.tr('Tool diameter'), diameter, units),
+                *('%s: %s %s' % (self.parameter_label(key), getattr(tool, key),
+                                'rpm' if key == 'speed' else units) for key in fields)])
             if table:
                 hint = (self.tr('Replacing a project deviation with its table definition updates all steps using that project tool.')
                         if shared_replacement else self.tr('Selecting a table tool copies its values into the project.'))
@@ -1332,7 +1490,7 @@ class MachiningPanel(QWidget):
             'overcut_enabled': self.tr('Overcut'), 'lead_radius': self.tr('Lead radius'),
             'lead_length': self.tr('Lead length'), 'overcut_length': self.tr('Overcut length'),
             'drag_swivel_depth': self.tr('Knife swivel height'), 'drag_angle': self.tr('Knife swivel angle'),
-            'cut_cor': self.tr('Cutter compensation'), 'break_pass': self.tr('Holding-tab first pass'),
+            'cut_cor': self.tr('Cutter compensation'),
             'speed': self.tr('Spindle speed'), 'start_radius': self.tr('Start radius')}[key]
 
     def value_choices(self, key):
@@ -1388,6 +1546,10 @@ class MachiningPanel(QWidget):
             self.execute(self.commands.redo)
 
     def draw_route(self):
+        self._draw_route()
+        self.window.view_comparison.repaint_overlay()
+
+    def _draw_route(self):
         scene = self.window.canvas_scene
         try:
             layers = self.binding.materialize()
@@ -1419,7 +1581,6 @@ class MachiningPanel(QWidget):
                     scene.addexproute(layer.exp_order, layer.nr)
             if scene.routearrows:
                 scene.addexprouteen(config)
-                self.window.ui.actionDeleteG0Paths.setEnabled(True)
         finally:
             scene.shapes = previous
         scene.update()

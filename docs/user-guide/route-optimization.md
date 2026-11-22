@@ -12,15 +12,14 @@ enable checkboxes on for shapes that belong in the output.
 
 | Action | Effect |
 | --- | --- |
-| Export Shapes without Optimization | Synchronize the tree order and export enabled rows in that order |
+| Export G-code... | Synchronize the tree order and export enabled rows in that order |
 | Optimize Paths | Calculate a route and update the contour order in the tree |
-| Optimize and Export Shapes | Optimize, then export the resulting order |
-| Live Update Export Route | Control automatic redrawing of the route display after edits |
+| Optimize and export G-code... | Optimize, then export the resulting order |
+| Show export order | Show the connections in export order and refresh them after edits |
 
-The first three commands are in the **Export** menu. A normal export also
-updates the route display, but does not optimize it. A displayed route is a
-visualization of the current sequence; drawing arrows is not an optimization
-request. When live display is off, reordering still updates the export order.
+These controls are in the **Output** group in the ribbon. Turning **Show export
+order** off immediately hides the connections. The current tree order still
+determines the sequence used by a normal export.
 
 After **Optimize Paths**, inspect the new tree order before exporting. A later
 normal export retains that resulting order; it does not restore the old manual

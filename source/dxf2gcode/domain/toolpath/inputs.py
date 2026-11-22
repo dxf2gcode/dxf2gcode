@@ -78,7 +78,6 @@ class MachiningSettings:
     feed_depth: float = 100.0
     safe_margin: float = 1.0
     retract_depth: float = 5.0
-    break_pass: int = -1
     lead_in_mode: str = "off"
     lead_out_mode: str = "off"
     overcut_enabled: bool = False
@@ -117,14 +116,8 @@ class MachineCapabilities:
 
 @dataclass(frozen=True)
 class PlanningState:
-    """Initial modal values needed by the existing tab rules.
-
-    z_word is deliberately distinct from the physical Z coordinate: existing
-    incremental profiles base tab eligibility and restoration on that word.
-    Keeping both preserves their output until the rule is changed explicitly.
-    """
+    """Initial modal values carried from the postprocessor."""
     feed: float = 0.0
-    z_word: float = 0.0
     last_absolute_z: float = 0.0
     knife_heading: Optional[float] = None
 

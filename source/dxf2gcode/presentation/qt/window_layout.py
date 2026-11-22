@@ -55,7 +55,13 @@ class WindowLayout(QtCore.QObject):
         margins = ui.centralwidget.layout().contentsMargins()
         width = sidebar + ui.canvas.minimumWidth() + ui.splitter.handleWidth() + margins.left()+margins.right()
         height = max(240, ui.canvas.minimumHeight()) + messages + ui.messageSplitter.handleWidth()
-        height += window.menuBar().height() + margins.top()+margins.bottom()
+        view = getattr(window, 'view_comparison', None)
+        if view is not None:
+            height += view.band.sizeHint().height()
+        title_bar = window.menuWidget()
+        if title_bar is not None:
+            height += title_bar.height()
+        height += margins.top()+margins.bottom()
         window.setMinimumSize(width, height)
 
     def save(self, settings):

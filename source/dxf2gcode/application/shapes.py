@@ -82,20 +82,6 @@ class SetShapeLeadMode:
         return tuple(updated)
 
 
-class SetShapeBreakPass:
-    """Set the pass from which a shape's tab or break geometry is processed."""
-
-    def execute(self, shapes, break_pass):
-        break_pass = int(break_pass)
-        if break_pass < -1:
-            raise ValueError("break_pass must be -1 or a non-negative pass")
-        updated = []
-        for shape in shapes:
-            shape.break_pass = break_pass
-            updated.append(shape)
-        return tuple(updated)
-
-
 class UpdateShapeParameters:
     """Apply validated machining parameter values to selected shapes."""
 

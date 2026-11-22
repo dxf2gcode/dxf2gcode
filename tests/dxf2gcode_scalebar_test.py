@@ -418,11 +418,10 @@ class TestScaleBarOption(unittest.TestCase):
         spec_text = "\n".join(CONFIG_SPEC)
         self.assertIn("show_scale_bar", spec_text)
 
-    def test_default_is_disabled(self):
-        # the default keeps the behaviour of the program before the scale bar
+    def test_default_is_enabled(self):
         cfg = self._load()
-        self.assertFalse(cfg.var_dict["General"]["show_scale_bar"])
-        self.assertFalse(scale_bar_enabled(cfg))
+        self.assertTrue(cfg.var_dict["General"]["show_scale_bar"])
+        self.assertTrue(scale_bar_enabled(cfg))
 
     def test_option_is_available_in_the_config_window(self):
         _app()
@@ -440,18 +439,17 @@ class TestScaleBarOption(unittest.TestCase):
         try:
             # the checkbox shows the value of the config file
             checkbox = window.cfg_window_def["General"]["show_scale_bar"]
-            self.assertFalse(checkbox.getValue())
+            self.assertTrue(checkbox.getValue())
 
-            # the user enables the scale bar and applies the changes
-            checkbox.checkbox.setChecked(True)
+            checkbox.checkbox.setChecked(False)
             window.applyChanges()
 
-            self.assertTrue(cfg.var_dict["General"]["show_scale_bar"])
-            self.assertTrue(scale_bar_enabled(cfg))
+            self.assertFalse(cfg.var_dict["General"]["show_scale_bar"])
+            self.assertFalse(scale_bar_enabled(cfg))
 
             # the same way the main window applies the configuration
             cfg.update_config()
-            self.assertTrue(scale_bar_enabled(cfg))
+            self.assertFalse(scale_bar_enabled(cfg))
         finally:
             window.close()
 
@@ -460,7 +458,7 @@ class TestScaleBarOption(unittest.TestCase):
         cfg = self._load()
         self.assertEqual(cfg.version_mismatch, "")
         self.assertFalse(cfg.default_config)
-        self.assertFalse(cfg.var_dict["General"]["show_scale_bar"])
+        self.assertTrue(cfg.var_dict["General"]["show_scale_bar"])
         # the file must not have been discarded
         self.assertFalse(os.path.exists(self._cfg_path + ".bad"))
 

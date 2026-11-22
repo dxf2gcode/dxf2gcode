@@ -14,7 +14,7 @@ is named in package metadata; individual files and Git history record additional
 authors and contributions. Preserve their copyright notices and attribution
 rather than treating the current repository owner as the sole author.
 
-The runtime uses ConfigObj, PyQt and PyOpenGL; development, packaging and the
+The runtime uses ConfigObj and PyQt, with VisPy for the optional 3D view; development, packaging and the
 documentation website use additional tools, including Zensical. Those projects
 have their own licenses and notices. A dependency declaration or download link
 does not assign their copyright to DXF2GCODE.

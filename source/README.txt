@@ -22,7 +22,7 @@ Run from this directory with:
 Dependencies
 ------------
 
-Use Python 3.9 or newer with PyQt5 or PyQt6, PyOpenGL and configobj. For PDF or PostScript
+Use Python 3.9 or newer with PyQt5 or PyQt6 and configobj. The VisPy view requires Python 3.10 or newer, PyQt6 and OpenGL. For PDF or PostScript
 input, install pdftops and pstoedit as well.
 
 Install the Python package
@@ -44,7 +44,7 @@ Build a release from a repository checkout
 
 Install the build frontend and both Qt bindings in a developer environment:
 
-  python -m pip install build PyQt5 PyQt6 configobj PyOpenGL
+  python -m pip install build PyQt5 PyQt6 configobj
 
 Install Qt 6 rcc and Qt Linguist lrelease using the operating system's
 development tools and put them on PATH. From this directory, run:

@@ -119,7 +119,6 @@ SOURCES += \
     dxf2gcode/presentation/qt/arrow.py \
     dxf2gcode/presentation/qt/canvas.py \
     dxf2gcode/presentation/qt/canvas2d.py \
-    dxf2gcode/presentation/qt/canvas3d.py \
     dxf2gcode/presentation/qt/configuration_widgets.py \
     dxf2gcode/presentation/qt/configuration_help.py \
     dxf2gcode/domain/toolpath/knife_geometry.py \
@@ -138,7 +137,6 @@ SOURCES += \
     dxf2gcode/presentation/qt/__init__.py \
     dxf2gcode/presentation/qt/qt_compat/QtCore.py \
     dxf2gcode/presentation/qt/qt_compat/QtGui.py \
-    dxf2gcode/presentation/qt/qt_compat/QtOpenGLWidgets.py \
     dxf2gcode/presentation/qt/qt_compat/QtWidgets.py \
     dxf2gcode/presentation/qt/qt_compat/__init__.py
 

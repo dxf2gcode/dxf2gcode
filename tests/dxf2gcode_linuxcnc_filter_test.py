@@ -90,7 +90,7 @@ def worker(case):
     g.folder = constants.DEFAULT_CONFIG_FOLDER + '.filter_test'
     config = MyConfig()
     config.var_dict['General']['write_to_stdout'] = True
-    config.var_dict['General']['mode3d'] = False
+    config.var_dict['General']['use_vispy'] = False
     config.var_dict['Logging']['console_loglevel'] = 'INFO'
     config.save_varspace()
     for name, selected in (('a.cfg', case in ('reverse-order', 'default')),

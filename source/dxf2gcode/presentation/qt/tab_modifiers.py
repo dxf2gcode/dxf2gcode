@@ -4,10 +4,11 @@ The existing project entries remain the storage/export contract. References in
 the tree are views of those entries, never additional machining operations.
 """
 from collections import defaultdict
+from dataclasses import replace
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 from dxf2gcode.presentation.qt.qt_compat.QtGui import QPainterPath, QPainterPathStroker, QPen, QIcon, QPixmap, QPainter, QPalette, QFontMetricsF, QCursor
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (
-    QGroupBox, QVBoxLayout, QFormLayout, QLabel, QLineEdit, QCheckBox, QPushButton, QTreeWidgetItem, QStyle, QWidget, QHBoxLayout, QToolButton, QTreeWidget, QMenu, QMessageBox, QDialog, QDialogButtonBox, QComboBox, QGraphicsView, QGraphicsScene, QHeaderView, QInputDialog)
+    QGroupBox, QVBoxLayout, QFormLayout, QLabel, QLineEdit, QCheckBox, QPushButton, QTreeWidgetItem, QStyle, QWidget, QHBoxLayout, QToolButton, QTreeWidget, QMenu, QMessageBox, QDialog, QDialogButtonBox, QComboBox, QHeaderView, QInputDialog, QAbstractItemView)
 from dxf2gcode.presentation.qt.numeric_display import set_number, format_number
 from dxf2gcode.domain.project.machining_project import MachiningOperation
 from dxf2gcode.adapters.toolpath.preparation import prepare_shape
@@ -80,8 +81,6 @@ class TabModifiers(QtCore.QObject):
         self.ignore_release = False
         self.last_height = None
         self.last_units = None
-        self.dialog_view = None
-        self.editor_dialog = None
         self.preview_segments = ()
         self.dimension_hover = None
         self.dimension_editor = None
@@ -98,6 +97,16 @@ class TabModifiers(QtCore.QObject):
         layout.addWidget(self.origin)
         form = QFormLayout()
         layout.addLayout(form)
+        self.name_field = QLineEdit(self.editor)
+        self.name_field.setObjectName('tabModifier_name')
+        self.name_field.editingFinished.connect(lambda: self.commit('name'))
+        form.addRow(self.tr('Name'), self.name_field)
+        self.placement = QComboBox(self.editor)
+        self.placement.setObjectName('tabModifier_placement')
+        self.placement.addItem(self.tr('Snap to contour'), 'snap')
+        self.placement.addItem(self.tr('Draw manually'), 'manual')
+        self.placement.activated.connect(self.change_placement)
+        form.addRow(self.tr('Tab placement'), self.placement)
         self.fields = {}
         for key, label in (('height', self.tr('Tab top')), ('xy_feed', self.tr('XY feed')), ('z_feed', self.tr('Z feed'))):
             field = QLineEdit(self.editor)
@@ -108,19 +117,33 @@ class TabModifiers(QtCore.QObject):
             self.fields[key] = field
         self.form = form
         self.enabled = QCheckBox(self.tr('Region enabled'), self.editor)
-        self.enabled.toggled.connect(self.change_enabled)
+        self.enabled.stateChanged.connect(self.change_enabled)
         layout.addWidget(self.enabled)
         self.info = QLabel(self.editor)
         self.info.setWordWrap(True)
         layout.addWidget(self.info)
-        edit = QPushButton(self.tr('Edit tab region'), self.editor)
-        self.edit_button = edit
-        edit.clicked.connect(self.edit_assignment)
-        layout.addWidget(edit)
-        assignment = QPushButton(self.tr('Change assignment…'), self.editor)
-        self.assignment_button = assignment
-        assignment.clicked.connect(self.edit_assignment)
-        layout.addWidget(assignment)
+        self.assignment_scope = QComboBox(self.editor)
+        self.assignment_scope.setObjectName('tabModifier_scope')
+        for text, value in ((self.tr('Global'), 'global'), (self.tr('Step'), 'steps'),
+                            (self.tr('Selected operations'), 'operations')):
+            self.assignment_scope.addItem(text, value)
+        form.addRow(self.tr('Assignment'), self.assignment_scope)
+        self.assignment_targets = QTreeWidget(self.editor)
+        self.assignment_targets.setObjectName('tabModifier_targets')
+        self.assignment_targets.setHeaderHidden(True)
+        self.assignment_targets.setMaximumHeight(110)
+        layout.addWidget(self.assignment_targets)
+        self.no_targets = QLabel(self.tr('No common intersecting targets.'), self.editor)
+        self.no_targets.setWordWrap(True)
+        layout.addWidget(self.no_targets)
+        self.clear_exclusions = QCheckBox(self.editor)
+        layout.addWidget(self.clear_exclusions)
+        self.assignment_button = QPushButton(self.tr('Apply assignment'), self.editor)
+        self.assignment_button.clicked.connect(self.apply_assignment)
+        layout.addWidget(self.assignment_button)
+        self.assignment_scope.currentIndexChanged.connect(self.populate_assignment_targets)
+        self.assignment_targets.itemChanged.connect(self.update_assignment_button)
+        self.clear_exclusions.toggled.connect(self.update_assignment_button)
         self.unlink_button = QPushButton(self.tr('Remove assignment'), self.editor)
         self.unlink_button.setObjectName('removeTabAssignment')
         self.unlink_button.clicked.connect(self.remove_assignment)
@@ -158,8 +181,6 @@ class TabModifiers(QtCore.QObject):
         self.editor.hide()
         if self.panel.buttons.get('tabs') is not None:
             self.panel.buttons['tabs'].setChecked(False)
-        if hasattr(self.panel, 'tab_placement_action'):
-            self.panel.tab_placement_action.setVisible(False)
 
     def label(self, region):
         source = self.panel.binding.sources.get(region.geometry_id)
@@ -169,6 +190,14 @@ class TabModifiers(QtCore.QObject):
 
     def affected(self, identity):
         return {part[0] for regions in self.usage.values() for part in regions.get(identity, ())}
+
+    def regions_for_operations(self, operations):
+        return {identity for regions in self.usage.values() for identity, parts in regions.items()
+                if any(part[0] in operations for part in parts)}
+
+    def selected_only(self):
+        view = getattr(self.panel.window, 'view_comparison', None)
+        return view is not None and view.selected_paths_action.isChecked()
 
     def update_usage(self, layers):
         from dxf2gcode.application.tab_regions import to_world
@@ -230,7 +259,8 @@ class TabModifiers(QtCore.QObject):
         self.catalog.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.catalog.header().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.catalog.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
-        self.catalog.currentItemChanged.connect(lambda item, old: self.select(item.data(0, ROLE)) if item and not self.updating else None)
+        self.catalog.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.catalog.itemSelectionChanged.connect(self.catalog_selection_changed)
         self.catalog.itemDoubleClicked.connect(lambda item, col: self.edit_assignment())
         layout.addWidget(self.catalog)
         def collapse(checked):
@@ -242,6 +272,13 @@ class TabModifiers(QtCore.QObject):
             geometry_panel.splitter.refresh()
         toggle.toggled.connect(collapse)
         geometry_panel.sections.append((toggle, self.catalog))
+
+    def catalog_selection_changed(self):
+        if self.updating:
+            return
+        identities = [item.data(0, ROLE) for item in self.catalog.selectedItems()]
+        self.link_operation = None
+        self.select_regions(identities, primary=identities[0] if len(identities) == 1 else None)
 
     def populate_tree(self):
         panel, tree = self.panel, self.panel.tree
@@ -279,7 +316,7 @@ class TabModifiers(QtCore.QObject):
                     child.setData(0, ROLE, ('modifier', region.id))
                     child.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
                     self.nodes.setdefault(region.id, child)
-                    if self.context == region.id:
+                    if region.id in self.selected_regions:
                         entry_item.setExpanded(True)
                         group.setExpanded(True)
             if self.catalog is not None:
@@ -292,7 +329,8 @@ class TabModifiers(QtCore.QObject):
                     item.setData(0, ROLE, region.id)
                     item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
                     if self.context == region.id:
-                        self.catalog.setCurrentItem(item)
+                        self.catalog.setCurrentItem(item, 0, QtCore.QItemSelectionModel.SelectionFlag.NoUpdate)
+                    item.setSelected(region.id in self.selected_regions)
         finally:
             self.updating = False
             panel.busy = was_busy
@@ -302,11 +340,14 @@ class TabModifiers(QtCore.QObject):
         self.related_operations = set().union(*(self.affected(i) for i in self.selected_regions)) if self.selected_regions else set()
         panel.update_reference_marks()
 
-    def select(self, identity, edit=False, operation=None, anchor=None):
+    def select(self, identity, edit=False, operation=None, anchor=None, *, toggle=False):
         if identity not in self.records():
             return
         self.link_operation = operation
-        self.select_regions([identity], primary=identity, anchor=anchor or self.nodes.get(identity))
+        identities = self.selected_regions ^ {identity} if toggle else {identity}
+        primary = next(iter(identities)) if len(identities) == 1 else None
+        target = identity if identity in identities else primary
+        self.select_regions(identities, primary=primary, anchor=anchor or self.nodes.get(target))
         if edit:
             self.set_mode(True)
 
@@ -315,7 +356,7 @@ class TabModifiers(QtCore.QObject):
         self.selected_regions.clear()
         self.related_operations.clear()
 
-    def select_regions(self, identities, primary=None, anchor=None, source_layer=None):
+    def select_regions(self, identities, primary=None, anchor=None, source_layer=None, *, preserve_tree=False):
         self.selected_regions = set(identities) & set(self.records())
         self.context = primary if primary in self.selected_regions else None
         self.source_layer = source_layer
@@ -327,7 +368,12 @@ class TabModifiers(QtCore.QObject):
         was_busy = self.panel.busy
         self.panel.busy = True
         try:
-            self.panel.tree.clearSelection()
+            if not preserve_tree:
+                self.panel.tree.clearSelection()
+                if len(self.selected_regions) > 1:
+                    for identity in self.selected_regions:
+                        if identity in self.nodes:
+                            self.nodes[identity].setSelected(True)
             for tree in (self.panel.window.ui.layersShapesTreeView, self.panel.window.ui.entitiesTreeView):
                 tree.clearSelection()
             for geometry, source in self.panel.binding.sources.items():
@@ -337,7 +383,7 @@ class TabModifiers(QtCore.QObject):
                     anchor.parent().setExpanded(True)
                     if anchor.parent().parent():
                         anchor.parent().parent().setExpanded(True)
-                self.panel.tree.setCurrentItem(anchor)
+                self.panel.tree.setCurrentItem(anchor, 0, QtCore.QItemSelectionModel.SelectionFlag.NoUpdate)
                 anchor.setSelected(True)
         finally:
             self.panel.busy = was_busy
@@ -388,29 +434,24 @@ class TabModifiers(QtCore.QObject):
 
     def set_mode(self, enabled):
         comparison = getattr(self.panel.window, 'view_comparison', None)
-        if (enabled and comparison is not None and comparison.renderer is not None
-                and comparison.stack.currentWidget() is comparison.renderer
-                and comparison.active_kind == 'vispy'):
+        if enabled and comparison is not None and comparison.renderer is not None:
             comparison.activate('plane')
-            comparison.actions['plane'].setChecked(True)
         self.mode = bool(enabled)
         self.panel.buttons['tabs'].setChecked(self.mode)
-        self.panel.tab_placement_action.setVisible(self.mode)
         combo = self.panel.tab_placement
         blocked = combo.blockSignals(True)
         combo.setCurrentIndex(combo.findData(self.drawing_mode()))
         combo.blockSignals(blocked)
+        combo.setToolTip(combo.currentText())
         if not self.mode:
             self.cancel()
             self.dimension_hover = None
             if hasattr(self.panel.window.canvas, 'viewport'):
                 self.panel.window.canvas.viewport().unsetCursor()
-            if self.editor_dialog is not None:
-                self.editor_dialog.close()
-        elif not hasattr(self.panel.window.canvas, 'mapToScene') and self.editor_dialog is None:
-            QtCore.QTimer.singleShot(0, self.open_2d_editor)
         self.panel.show_parameters()
         self.repaint()
+        if comparison is not None and comparison.renderer is not None:
+            comparison.renderer.redraw()
 
     def open_from_geometry(self, shapes):
         geometries = {getattr(s, 'geometry_id', None) for s in shapes}
@@ -419,50 +460,78 @@ class TabModifiers(QtCore.QObject):
             self.select(identity, edit=True)
 
     def show(self):
-        region = self.records().get(self.context)
-        if region is None:
-            self.context = None
-            if self.selected_regions:
-                self.updating = True
-                self.scope.setText(self.tr('Tab regions'))
-                self.origin.setText(self.tr('Linked contours are highlighted; their machining parameters are not selected for editing.'))
-                for field in self.fields.values():
-                    field.clear()
-                    field.setReadOnly(True)
-                self.enabled.setEnabled(False)
-                for button in (self.edit_button, self.assignment_button, self.remove_button, self.unlink_button):
-                    button.setEnabled(False)
-                self.info.setText(self.tr('{0} operations').format(len(self.related_operations)))
-                self.editor.show()
-                self.updating = False
-                return True
+        regions = self.editable_regions()
+        if not regions:
             self.editor.hide()
             return False
         units = self.panel.binding.project.units
+        mixed = self.tr('Different values')
         self.updating = True
         try:
-            for button in (self.edit_button, self.assignment_button, self.remove_button):
-                button.setEnabled(True)
-            self.unlink_button.setEnabled(self.link_operation in self.affected(region.id))
-            self.scope.setText(self.label(region))
+            region = regions[0]
+            self.remove_button.setEnabled(len(regions) == 1 and self.context is not None)
+            self.unlink_button.setEnabled(len(regions) == 1 and self.link_operation in self.affected(region.id))
+            self.scope.setText(self.label(region) if len(regions) == 1 else self.tr('{0} tabs').format(len(regions)))
             self.origin.setText(self.tr('Changes affect every linked operation. Remove assignment to exclude only one operation.'))
-            self.enabled.setChecked(region.enabled)
-            self.enabled.setEnabled(self.mode)
+            names = {r.name for r in regions}
+            self.name_field.setPlaceholderText(mixed if len(names) > 1 else '')
+            self.name_field.setText(region.name if len(names) == 1 else '')
+            self.name_field.setModified(False)
+            placement = {r.placement_mode for r in regions}
+            self.placement.setPlaceholderText(mixed)
+            self.placement.setCurrentIndex(self.placement.findData(region.placement_mode) if len(placement) == 1 else -1)
+            enabled = {r.enabled for r in regions}
+            self.enabled.setTristate(len(enabled) > 1)
+            self.enabled.setCheckState(Qt.CheckState.PartiallyChecked if len(enabled) > 1
+                                       else Qt.CheckState.Checked if region.enabled else Qt.CheckState.Unchecked)
             for key, field in self.fields.items():
-                set_number(field, getattr(region, key), units, 'length' if key == 'height' else 'feed')
+                values = {getattr(r, key) for r in regions}
+                field.setPlaceholderText(mixed if len(values) > 1 else '')
+                set_number(field, getattr(region, key) if len(values) == 1 else None,
+                           units, 'length' if key == 'height' else 'feed')
                 field.setModified(False)
-                field.setReadOnly(not self.mode)
                 label = {'height': self.tr('Tab top'), 'xy_feed': self.tr('XY feed'), 'z_feed': self.tr('Z feed')}[key]
                 self.form.labelForField(field).setText(label+' ['+units+('/min' if key != 'height' else '')+']')
-            self.info.setText(self.tr('{0} operations').format(len(self.affected(region.id))))
+            scopes = {r.scope for r in regions}
+            self.assignment_scope.setPlaceholderText(mixed)
+            self.assignment_scope.setCurrentIndex(self.assignment_scope.findData(region.scope) if len(scopes) == 1 else -1)
+            excluded = set().union(*(r.excluded for r in regions))
+            self.clear_exclusions.setText(self.tr('Clear local exclusions ({0})').format(len(excluded)))
+            self.clear_exclusions.setVisible(bool(excluded))
+            self.clear_exclusions.setChecked(False)
+            self.info.setText(self.tr('{0} operations').format(len(self.related_operations)))
             self.editor.show()
         finally:
             self.updating = False
+        self.populate_assignment_targets()
         return True
 
+    def editable_regions(self):
+        return [r for r in self.records().values() if r.id in self.selected_regions or r.id == self.context]
+
+    def apply_properties(self, **values):
+        updates = {}
+        for region in self.editable_regions():
+            change = dict(values)
+            if values.get('placement_mode') == 'snap' and region.placement_mode != 'snap':
+                from dxf2gcode.application.tab_regions import to_drawing
+                vertices = self.standard_vertices(replace(region, placement_mode='snap'))
+                if vertices is None:
+                    self.show()
+                    return
+                change['vertices'] = to_drawing(self.panel.binding, vertices)
+            updates[region.id] = change
+        if updates:
+            self.panel.execute(lambda: self.panel.commands.update_regions(updates))
+        self.show()
+
     def commit(self, key):
-        field = self.fields[key]
-        if self.updating or not self.mode or not field.isModified() or self.context not in self.records():
+        field = self.name_field if key == 'name' else self.fields[key]
+        if self.updating or not field.isModified():
+            return
+        field.setModified(False)
+        if key == 'name':
+            self.apply_properties(name=field.text())
             return
         from math import isfinite
         try:
@@ -473,18 +542,72 @@ class TabModifiers(QtCore.QObject):
             self.panel.report_warning(self.tr('Enter valid tab height and positive feeds.'))
             self.show()
             return
-        self.panel.execute(lambda: self.panel.commands.update_region(self.context, **{key: value}))
-        self.show()
+        self.apply_properties(**{key: value})
 
-    def change_enabled(self, value):
-        if not self.updating and self.context in self.records():
-            self.panel.execute(lambda: self.panel.commands.update_region(self.context, enabled=value))
+    def change_placement(self):
+        if not self.updating and self.placement.currentData():
+            self.apply_properties(placement_mode=self.placement.currentData())
+
+    def change_enabled(self):
+        state = self.enabled.checkState()
+        if not self.updating and state != Qt.CheckState.PartiallyChecked:
+            self.apply_properties(enabled=state == Qt.CheckState.Checked)
+
+    def populate_assignment_targets(self):
+        if self.updating:
+            return
+        from dxf2gcode.application.tab_regions import overlapping_operations
+        kind = self.assignment_scope.currentData()
+        regions = self.editable_regions()
+        with QtCore.QSignalBlocker(self.assignment_targets):
+            self.assignment_targets.clear()
+            self.assignment_targets.setVisible(kind in ('steps', 'operations'))
+            if regions and kind in ('steps', 'operations'):
+                index = 0 if kind == 'steps' else 1
+                common = set.intersection(*({target[index] for target in overlapping_operations(self.panel.binding, r)}
+                                            for r in regions))
+                for step in self.panel.binding.project.steps:
+                    rows = [(step.id, step.name)] if kind == 'steps' else [
+                        (e.id, step.name+' / '+self.panel.entry_items[e.id].text(0))
+                        for e in step.entries if e.id in self.panel.entry_items]
+                    for identity, text in rows:
+                        if identity not in common:
+                            continue
+                        selected = sum(r.scope == kind and identity in r.targets for r in regions)
+                        item = QTreeWidgetItem(self.assignment_targets, [text])
+                        item.setData(0, ROLE, identity)
+                        item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable)
+                        item.setCheckState(0, Qt.CheckState.Checked if selected == len(regions)
+                                           else Qt.CheckState.PartiallyChecked if selected else Qt.CheckState.Unchecked)
+        self.no_targets.setVisible(kind in ('steps', 'operations') and not self.assignment_targets.topLevelItemCount())
+        self.update_assignment_button()
+
+    def assignment_values(self):
+        scope = self.assignment_scope.currentData()
+        rows = [self.assignment_targets.topLevelItem(i) for i in range(self.assignment_targets.topLevelItemCount())]
+        targets = [item.data(0, ROLE) for item in rows if item.checkState(0) == Qt.CheckState.Checked]
+        if not scope or scope != 'global' and not targets or any(
+                item.checkState(0) == Qt.CheckState.PartiallyChecked for item in rows):
+            return {}
+        return dict(scope=scope, targets=targets, **({'excluded': []} if self.clear_exclusions.isChecked() else {}))
+
+    def update_assignment_button(self):
+        if self.updating:
+            return
+        values = self.assignment_values()
+        self.assignment_button.setEnabled(bool(values) and any(
+            any(getattr(r, key) != value for key, value in values.items()) for r in self.editable_regions()))
+
+    def apply_assignment(self):
+        values = self.assignment_values()
+        if values:
+            self.apply_properties(**values)
 
     def remove(self):
         if self.context not in self.records():
             return
         message = self.tr('Delete this region globally? {0} effective operations are affected. This can be undone.').format(len(self.affected(self.context)))
-        if QMessageBox.question(self.editor_dialog or self.panel, self.tr('Delete region…'), message,
+        if QMessageBox.question(self.panel, self.tr('Delete region…'), message,
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No) != QMessageBox.StandardButton.Yes:
             return
         self.panel.execute(lambda: self.panel.commands.remove_region(self.context))
@@ -545,7 +668,7 @@ class TabModifiers(QtCore.QObject):
             initial_targets &= valid
             if not initial_targets:
                 initial_scope = ''
-        dialog = QDialog(self.editor_dialog or self.panel)
+        dialog = QDialog(self.panel)
         dialog.setWindowTitle(self.tr('Tab region'))
         dialog.setObjectName('tabRegionDialog')
         layout = QVBoxLayout(dialog)
@@ -883,8 +1006,10 @@ class TabModifiers(QtCore.QObject):
         self.repaint()
 
     def snap_gesture(self, gesture, choose=False):
-        from dxf2gcode.application.tab_regions import alignment_candidates, align_rectangle
-        candidates = alignment_candidates(self.panel.binding, gesture['vertices'])
+        from dxf2gcode.application.tab_regions import alignment_candidates, alignment_contours, align_rectangle
+        if 'snap_contours' not in gesture:
+            gesture['snap_contours'] = alignment_contours(self.panel.binding)
+        candidates = alignment_candidates(self.panel.binding, gesture['vertices'], gesture['snap_contours'])
         if len(candidates) == 1:
             gesture['vertices'] = align_rectangle(gesture['vertices'], next(iter(candidates.values())))
         elif len(candidates) > 1 and choose:
@@ -907,14 +1032,17 @@ class TabModifiers(QtCore.QObject):
         return self.panel.canvas_preview.project((xy[0], xy[1], z))
 
     def displayed(self):
-        if self.mode:
+        selected_only = self.selected_only()
+        if self.mode and not selected_only:
             return set(self.records())
         operations = set(self.panel.selected_entries())
-        geometries = {g for g, s in self.panel.binding.sources.items() if s.isSelected()}
-        if self.panel.selection_from_geometry:
+        if selected_only:
+            operations.update(self.related_operations)
+        elif self.panel.selection_from_geometry:
+            geometries = {g for g, s in self.panel.binding.sources.items() if s.isSelected()}
             operations.update(e.id for s in self.panel.binding.project.steps for e in s.entries
                               if isinstance(e, MachiningOperation) and e.geometry_id in geometries)
-        result = {r.id for r in self.records().values() if self.affected(r.id) & operations}
+        result = self.regions_for_operations(operations)
         result.update(self.selected_regions)
         if self.context in self.records():
             result.add(self.context)
@@ -936,18 +1064,17 @@ class TabModifiers(QtCore.QObject):
             result[identity] = path
         return result
 
-    def hit(self, point, view=None):
-        if not self.mode:
-            return False
+    def hit(self, point, view=None, *, toggle=False):
         stroke = QPainterPathStroker()
         stroke.setWidth(12)
         point = QtCore.QPointF(point)
         for identity, path in self.paths(view).items():
             if stroke.createStroke(path).contains(point) or path.contains(point):
-                self.select(identity)
+                self.select(identity, toggle=toggle)
                 return True
-        self.select_geometry(point, view)
-        return True
+        if self.mode and not toggle:
+            self.select_geometry(point, view)
+        return self.mode
 
     def geometry_hits(self, point, view=None):
         """Original contours under a viewport point, independent of compensation."""
@@ -1056,13 +1183,9 @@ class TabModifiers(QtCore.QObject):
     def repaint(self):
         if hasattr(self.panel, 'canvas_preview'):
             self.panel.canvas_preview.overlay.update()
-        if self.dialog_view is not None:
-            self.dialog_view.viewport().update()
         comparison = getattr(self.panel.window, 'view_comparison', None)
         if comparison is not None:
-            renderer = comparison.renderers.get('vispy')
-            if renderer is not None and renderer.isVisible():
-                renderer.labels.update()
+            comparison.repaint_overlay()
         if self.dimension_editor is not None:
             self.dimension_editor.raise_()
 
@@ -1105,10 +1228,10 @@ class TabModifiers(QtCore.QObject):
                     if kind == QtCore.QEvent.Type.MouseButtonDblClick:
                         self.edit_assignment()
                     return True
-        views = [v for v in (window.canvas, self.dialog_view) if v is not None and hasattr(v, 'mapToScene')]
+        views = [window.canvas]
         comparison = getattr(window, 'view_comparison', None)
         if comparison is not None:
-            renderer = comparison.renderers.get('vispy')
+            renderer = comparison.renderer
             if renderer is not None and renderer.isVisible() and not renderer.spatial:
                 views.append(renderer)
         view = next((v for v in views if watched is v.viewport() or watched is v), None)
@@ -1157,12 +1280,13 @@ class TabModifiers(QtCore.QObject):
                 self.repaint()
             return label is not None
         if kind == QtCore.QEvent.Type.MouseButtonPress:
+            control = bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier)
             handles = world_vertices(self.panel.binding, self.records()[self.context]) if self.context in self.records() else ()
             handle_distance = min(((self.projection(v, view)-QtCore.QPointF(event.pos())).manhattanLength()
                                    for v in handles), default=float('inf')) if len(handles) == 4 else float('inf')
             on_handle = handle_distance <= 4 and (label is None or handle_distance <
                         (label[1].center()-QtCore.QPointF(event.pos())).manhattanLength())
-            if label and not on_handle:
+            if label and not on_handle and not control:
                 self.edit_dimension(label[0], label[1], label[3], view)
                 return True
             point = QtCore.QPointF(event.pos())
@@ -1174,10 +1298,12 @@ class TabModifiers(QtCore.QObject):
                 stroke = QPainterPathStroker()
                 stroke.setWidth(12 if already_selected else 4)
                 if corner is not None or path.contains(point) or stroke.createStroke(path).contains(point):
-                    self.select(identity)
+                    if not control:
+                        self.select(identity)
                     action = ('resize' if corner is not None else 'move') if already_selected else 'select'
                     self.gesture = dict(kind=action, id=identity,
-                                        start=xy, vertices=vertices, original=vertices, corner=corner)
+                                        start=xy, vertices=vertices, original=vertices, corner=corner,
+                                        press=event.pos(), control_press=control)
                     break
             if self.gesture is None and self.drawing:
                 if self.draw_operations:
@@ -1192,6 +1318,10 @@ class TabModifiers(QtCore.QObject):
             return True
         if self.gesture and kind == QtCore.QEvent.Type.MouseMove:
             gesture = self.gesture
+            if 'press' in gesture and not gesture.get('dragged'):
+                gesture['dragged'] = (event.pos() - gesture['press']).manhattanLength() > 4
+                if gesture.get('control_press') and not gesture['dragged']:
+                    return True
             if gesture['kind'] == 'select':
                 return True
             x, y = gesture['start']
@@ -1219,13 +1349,23 @@ class TabModifiers(QtCore.QObject):
             gesture['unsnapped'] = gesture['vertices']
             if gesture['snap']:
                 self.snap_gesture(gesture)
-            if not self.preview_timer.isActive():
-                self.preview_timer.start(50)
+            self.preview_segments = ()
+            self.preview_timer.start(120)
             self.repaint()
             return True
         if kind == QtCore.QEvent.Type.MouseButtonRelease:
             gesture = self.gesture
+            control = bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier)
             if gesture:
+                identity = gesture['id']
+                if (identity is not None and not gesture.get('dragged')
+                        and (event.pos() - gesture['press']).manhattanLength() <= 4
+                        and (control or gesture.get('control_press'))):
+                    self.gesture = None
+                    self.preview_timer.stop()
+                    self.preview_segments = ()
+                    self.select(identity, toggle=control)
+                    return True
                 if gesture['kind'] == 'select':
                     self.gesture = None
                     if gesture.get('pick_geometry'):
@@ -1233,12 +1373,14 @@ class TabModifiers(QtCore.QObject):
                         self.pending = self.prepare_pending()
                         if (event.pos()-gesture['press']).manhattanLength() > 4:
                             self.panel.report_warning(self.tr('Select a contour or machining operation before drawing a tab.'))
+                    elif gesture.get('control_press'):
+                        self.select(identity)
                     self.repaint()
                     return True
-                if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-                    gesture['vertices'] = gesture.get('unsnapped', gesture['vertices'])
-                    self.snap_gesture(gesture, choose=True)
                 self.preview_timer.stop()
+                gesture['vertices'] = gesture.get('unsnapped', gesture['vertices'])
+                if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                    self.snap_gesture(gesture, choose=True)
                 self.preview_segments = ()
                 self.gesture = None
                 vertices = gesture['vertices']
@@ -1262,7 +1404,7 @@ class TabModifiers(QtCore.QObject):
                     self.select_geometry(event.pos(), view)
                     self.pending = self.prepare_pending()
                 self.repaint()
-            elif self.dimension_editor is None:
+            elif self.dimension_editor is None and not control:
                 self.select_geometry(event.pos(), view)
             return True
         return self.gesture is not None
@@ -1270,71 +1412,34 @@ class TabModifiers(QtCore.QObject):
     def compute_preview(self):
         if not self.gesture or self.gesture['kind'] == 'select':
             return
-        from copy import deepcopy
-        from dxf2gcode.application.machining import MachiningDrawing
-        from dxf2gcode.application.tab_regions import to_drawing
+        from copy import copy
+        from dataclasses import replace
+        from dxf2gcode.application.tab_regions import overlapping_operations, to_drawing
         from dxf2gcode.application.toolpath.projections import plan_preview_segments
-        project = deepcopy(self.panel.binding.project)
-        region = deepcopy(self.pending if self.gesture['kind'] == 'draw' else self.records()[self.gesture['id']])
-        if not region.scope:
-            region.scope = 'global'  # Preview only; creation resolves the actual operation.
-        region.vertices = to_drawing(self.panel.binding, self.gesture['vertices'])
-        project.regions[region.id] = region
-        binding = MachiningDrawing(project, self.panel.binding.source_layers)
-        layers = binding.materialize(allow_unresolved=True)
+        live = self.panel.binding
+        source = self.pending if self.gesture['kind'] == 'draw' else self.records()[self.gesture['id']]
+        region = replace(source, scope=source.scope or 'global', vertices=to_drawing(live, self.gesture['vertices']))
+        targets = {entry for _, entry in overlapping_operations(live, region, assigned_only=True)}
+        if self.selected_only():
+            targets.intersection_update(set(self.panel.selected_entries()) | self.related_operations)
+        if not targets:
+            return
+        binding = copy(live)
+        binding.project = replace(live.project, regions={**live.project.regions, region.id: region})
+        # Machine modes using predecessor state still need the complete export order.
+        subset = targets if binding.project.configuration['General']['machine_type'] == 'milling' else None
+        layers = binding.materialize(allow_unresolved=True, operation_ids=subset)
         segments = []
         for layer in layers.non_break_layer_iter():
             if layer.should_ignore():
                 continue
             for shape in layer.shapes.not_disabled_iter():
-                if not hasattr(shape, 'geos'):
+                if shape.operation_id not in targets or not hasattr(shape, 'geos'):
                     continue
                 prepare_shape(shape, build_preview=False)
                 result = preview_result(shape, self.panel.window.MyPostProcessor, layers)
                 if result.plan is not None:
-                    from dataclasses import replace
                     actions = tuple(a if a.modifier_id == region.id else replace(a, role='cut') for a in result.plan.actions)
                     segments.extend(s for s in plan_preview_segments(replace(result.plan, actions=actions)) if s.role == 'tab')
         self.preview_segments = tuple(segments)
         self.repaint()
-
-    def open_2d_editor(self):
-        if not self.mode or self.editor_dialog is not None:
-            return
-        from dxf2gcode.presentation.qt.canvas2d import ShapeGUI
-        controller = self
-        class EditorView(QGraphicsView):
-            def drawForeground(self, painter, rect):
-                painter.save()
-                painter.resetTransform()
-                controller.paint(painter, self)
-                painter.restore()
-        dialog = QDialog(self.panel)
-        self.editor_dialog = dialog
-        dialog.setWindowTitle(self.tr('Tab regions · 2D editor'))
-        layout = QVBoxLayout(dialog)
-        view = EditorView(dialog)
-        scene = QGraphicsScene(view)
-        view.setScene(scene)
-        self.dialog_view = view
-        for source in self.panel.window.shapes:
-            if source.parentLayer.isBreakLayer():
-                continue
-            start = source.get_start_end_points(True)
-            path = QPainterPath(QtCore.QPointF(start.x, -start.y))
-            source.make_path(lambda caller, a, b: path.lineTo(b.x, -b.y), lambda caller, a: None)
-            scene.addPath(path, QPen(ShapeGUI.PEN_NORMAL))
-        view.viewport().installEventFilter(self)
-        view.viewport().setMouseTracking(True)
-        view.installEventFilter(self)
-        layout.addWidget(view)
-        draw = QPushButton(self.tr('Draw new tab region…'), dialog)
-        draw.clicked.connect(self.start_draw)
-        layout.addWidget(draw)
-        dialog.resize(900, 650)
-        dialog.show()
-        view.fitInView(scene.itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
-        def closed():
-            self.editor_dialog, self.dialog_view = None, None
-            self.set_mode(False)
-        dialog.finished.connect(closed)

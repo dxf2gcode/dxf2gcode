@@ -15,6 +15,31 @@ from dxf2gcode.application.view_scene import ScenePath, ViewScene, hit_paths, pr
 
 
 class TestViewScene(unittest.TestCase):
+    def test_windows_startup_activation_is_limited_to_original_foreground(self):
+        from unittest.mock import Mock
+        from dxf2gcode.presentation.qt.startup_activation import WindowsStartupActivation
+
+        activation = WindowsStartupActivation.__new__(WindowsStartupActivation)
+        activation.launch_window = 1
+        activation.foreground = Mock(return_value=3)
+        activation.set_foreground = Mock(return_value=False)
+        activation.window_thread = Mock(return_value=10)
+        activation.current_thread = Mock(return_value=20)
+        activation.is_hung = Mock(return_value=False)
+        activation.attach_input = Mock(return_value=True)
+        activation.bring_to_top = Mock()
+        activation.set_active = Mock()
+        activation.activate(2)
+        activation.set_foreground.assert_not_called()
+        activation.attach_input.assert_not_called()
+        activation.foreground.side_effect = (1, 1, 1, 2)
+        activation.activate(2)
+        activation.set_foreground.assert_called_once_with(2)
+        self.assertEqual([call.args for call in activation.attach_input.call_args_list],
+                         [(20, 10, True), (20, 10, False)])
+        activation.bring_to_top.assert_called_once_with(2)
+        activation.set_active.assert_called_once_with(2)
+
     def test_vispy_original_colour_and_full_vs_partial_selection(self):
         from unittest.mock import patch
         import dxf2gcode.bootstrap.runtime_state as g
@@ -72,27 +97,6 @@ class TestViewScene(unittest.TestCase):
         self.assertTrue(all(0 <= i < len(vertices) for face in faces for i in face))
         self.assertEqual({v[2] for v in vertices}, {0., 1.})
 
-    def test_quick_geometry_preserves_centerline_and_pixel_width(self):
-        from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
-        if PYQT_VERSION != 6:
-            self.skipTest('Qt Quick 3D prototype uses PyQt6')
-        from array import array
-        from PyQt6.QtGui import QQuaternion, QVector3D
-        from PyQt6.QtWidgets import QApplication
-        from dxf2gcode.presentation.qt.quick3d_view import LineGeometry, qt_point
-        app = QApplication.instance() or QApplication([])
-        self.assertIsNotNone(app)
-        geometry = LineGeometry()
-        rotation = QQuaternion.fromEulerAngles(-90, 0, 0)
-        a, b = (0., 0., 0.), (10., 0., 0.)
-        geometry.upload({((.1, .2, .3, 1.), 2.): [a, b]}, rotation, 2.)
-        values = array('f')
-        values.frombytes(geometry.vertexData().data())
-        self.assertEqual(len(values), 6*7)
-        p, q = QVector3D(*values[:3]), QVector3D(*values[7:10])
-        self.assertLess(((p+q)/2-qt_point(a)).length(), 1e-5)
-        self.assertAlmostEqual((p-q).length()*2., 2., places=5)
-
     def test_plane_deduplicates_depth_passes_and_preserves_3d(self):
         action = SimpleNamespace(kind='linear_xy', args=((0, 0), (10, 0)), role='cut')
         plan = SimpleNamespace(approach_xy=(0, 0), workpiece_top=0,
@@ -124,12 +128,30 @@ class TestViewScene(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout.decode(errors='replace')+
                          result.stderr.decode(errors='replace'))
 
+    def test_legacy_profile_migrates_and_later_2d_choice_persists(self):
+        from unittest.mock import patch
+        import dxf2gcode.bootstrap.runtime_state as g
+        from dxf2gcode.adapters.config.runtime_config import MyConfig
+        with tempfile.TemporaryDirectory() as folder, patch.object(g, 'folder', folder):
+            config = MyConfig()
+            general = config.var_dict['General']
+            general.pop('use_vispy')
+            general['mode3d'] = False
+            config.save_varspace()
+            migrated = MyConfig()
+            self.assertTrue(migrated.use_vispy)
+            self.assertNotIn('mode3d', migrated.var_dict['General'])
+            migrated.var_dict['General']['use_vispy'] = False
+            migrated.save_varspace()
+            self.assertFalse(MyConfig().use_vispy)
+
     def test_all_new_messages_are_translated(self):
         import ast
         import xml.etree.ElementTree as ET
         source = ROOT / 'source/dxf2gcode/presentation/qt/view_comparison.py'
         messages = {node.args[0].value for node in ast.walk(ast.parse(source.read_text(encoding='utf-8')))
                     if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                    and isinstance(node.func.value, ast.Name) and node.func.value.id == 'self'
                     and node.func.attr == 'tr' and node.args and isinstance(node.args[0], ast.Constant)}
         for language in ('de', 'fr', 'ru'):
             contexts = ET.parse(ROOT / ('source/i18n/dxf2gcode_'+language+'.ts')).findall('context')
@@ -146,72 +168,59 @@ class TestViewScene(unittest.TestCase):
                 self.assertEqual(translator.translate('ViewComparison', message), entries[message].text)
 
 
-def verify_vispy_plane_stacking(app, renderer):
-    """Coincident paths stay ordered even after cached styles change selection."""
+def verify_vispy_shared_drawing(app, renderer):
+    """Both cameras preserve front-to-back order at the animation handoff."""
     import numpy as np
-    from dxf2gcode.presentation.qt.qt_compat.QtGui import QColor, QPen
-    line = (((0., 0., 0.), (10., 0., 0.), 'cut'),)
-    paths = (ScenePath('selected', 'geo', 'operation', line),
-             ScenePath('geo', 'geo', 'geometry', line),
-             ScenePath('other', 'geo', 'operation', line))
+    from PyQt6.QtCore import Qt
+    from PyQt6.QtGui import QColor, QPen
+    def line(z):
+        return (((0., 0., z), (10., 0., z), 'cut'),)
+    # Separate the sample depths enough to survive framebuffer depth quantization.
+    paths = (ScenePath('deep', 'geo', 'operation', line(-300.)),
+             ScenePath('geo', 'geo', 'geometry', line(0.)),
+             ScenePath('dash', 'geo', 'operation', (((0., 2., -300.), (10., 2., -300.), 'rapid'),)))
     original_style = renderer.path_style
-    # Distinct test colours make a wrong draw order visible in the framebuffer.
     renderer.path_style = lambda path, role: QPen(QColor(
-        'blue' if path.kind == 'operation' and path.identity in renderer.selected else
-        'lime' if path.kind == 'operation' else 'red'), 3.)
+        'blue' if path.kind == 'operation' else 'black'), 3. if role == 'cut' else 1.,
+        Qt.PenStyle.SolidLine if role == 'cut' else Qt.PenStyle.DashLine)
+    def render_depths():
+        node = next(iter(renderer.nodes.values()))
+        transform = node.transforms.get_transform('visual', 'render')
+        clip = transform.map(((5., 0., 0.), (5., 0., -150.), (5., 0., -300.)))
+        return clip[:, 2] / clip[:, 3]
+
     try:
-        for spatial in (False, True, False):
-            renderer.set_spatial(spatial)
-            for selected in ('selected', 'other'):
-                renderer.set_scene(ViewScene(paths), {selected})
-                if spatial:
-                    assert all(key[0] == 0 for key, node in renderer.nodes.items() if node.visible)
-                    continue
-                renderer.camera.rect = (-2., -5., 14., 10.)
-                app.processEvents()
-                renderer.redraw()
-                assert {key[0] for key, node in renderer.nodes.items() if node.visible} == {0, 1, 2}
-                assert all(key[2] == 3. and node.method == 'gl' for key, node in renderer.nodes.items() if node.visible)
-                frame = renderer.canvas.render()
-                x, y = renderer.project((5., 0., 0.))
-                x = round(x*frame.shape[1]/renderer.viewport().width())
-                y = round(y*frame.shape[0]/renderer.viewport().height())
-                pixels = frame[max(0, y-1):y+2, max(0, x-1):x+2, :3].astype(float)
-                assert np.min(np.linalg.norm(pixels-(0., 0., 255.), axis=2)) < 10, 'Selected path is covered'
-        # Reordering the snapshot must not change the stacking contract.
-        renderer.set_scene(ViewScene(tuple(reversed(paths))), {'selected'})
-        assert all(node.order == key[0] for key, node in renderer.nodes.items() if node.visible)
+        renderer.set_spatial(False)
+        renderer.set_scene(ViewScene(paths), {'deep'})
+        renderer.camera.rect = (-2., -5., 14., 10.)
+        renderer.fitted.add(False)
+        app.processEvents()
+        renderer.set_spatial(True)
+        assert renderer.animate_top()
+        renderer._animate_top_frame(1.)
+        renderer.redraw()
+        orbit_frame = renderer.canvas.render()
+        orbit_depths = render_depths()
+        nodes = dict(renderer.nodes)
+        uploads = dict(renderer._uploads)
+        renderer.finish_top_transition()
+        plane_frame = renderer.canvas.render()
+        plane_depths = render_depths()
+        assert np.all(np.diff(orbit_depths) > 0) and np.all(np.diff(plane_depths) > 0)
+        np.testing.assert_allclose(np.diff(plane_depths), np.diff(orbit_depths), rtol=1e-5)
+        assert renderer.nodes == nodes and renderer._uploads == uploads
+        x, y = renderer.project((5., 0., 0.))
+        x = round(x*plane_frame.shape[1]/renderer.viewport().width())
+        y = round(y*plane_frame.shape[0]/renderer.viewport().height())
+        # A viewport height change can move the one-pixel line across the rounding boundary.
+        orbit_strip = orbit_frame[y-1:y+2, x, :3]
+        plane_strip = plane_frame[y-1:y+2, x, :3]
+        orbit_pixel = orbit_strip[np.argmin(orbit_strip.max(axis=1))]
+        plane_pixel = plane_strip[np.argmin(plane_strip.max(axis=1))]
+        np.testing.assert_allclose(orbit_pixel, plane_pixel, atol=8)
+        assert max(plane_pixel) < 32
     finally:
         renderer.path_style = original_style
-    # The actual semantic palette: an unselected circle stays black, while a
-    # selected right-angle contour has a joined blue corner.
-    from math import cos, sin, pi
-    circle = [(15.+5*cos(i*2*pi/180), 5*sin(i*2*pi/180), 0.) for i in range(180)]
-    circle.append(circle[0])
-    circle_segments = tuple((a, b, 'cut') for a, b in zip(circle, circle[1:]))
-    rectangle = ((0., -5., 0.), (0., 5., 0.), (5., 5., 0.), (5., -5., 0.), (0., -5., 0.))
-    rect_segments = tuple((a, b, 'cut') for a, b in zip(rectangle, rectangle[1:]))
-    renderer.set_scene(ViewScene((ScenePath('circle', 'circle', 'geometry', circle_segments),
-        ScenePath('circle-op', 'circle', 'operation', circle_segments),
-        ScenePath('rect', 'rect', 'geometry', rect_segments),
-        ScenePath('rect-op', 'rect', 'operation', rect_segments))), {'rect-op'})
-    renderer.camera.rect = (-3., -7., 26., 14.)
-    app.processEvents()
-    frame = renderer.canvas.render()
-    def location(point):
-        x, y = renderer.project(point)
-        return (round(x*frame.shape[1]/renderer.viewport().width()),
-                round(y*frame.shape[0]/renderer.viewport().height()))
-    left, top = location((9., 6., 0.))
-    right, bottom = location((21., -6., 0.))
-    pixels = frame[top:bottom+1, left:right+1, :3].astype(int)
-    assert not np.any(pixels[..., 2]-pixels[..., 0] > 15), 'Unselected circle shows blue fragments'
-    selected_nodes = [node for key, node in renderer.nodes.items() if node.visible and key[0] == 2]
-    assert selected_nodes and all(node.method == 'gl' and node.connect == 'segments' for node in selected_nodes)
-    assert all(node.width == .6 for node in selected_nodes)
-    assert any(node.width == 1. and key[1][:3] == (0., 0., 0.)
-               for key, node in renderer.nodes.items() if node.visible and key[0] == 1)
-    renderer.grab().save(str(ROOT / '.tox/vispy-line-joins.png'))
 
 
 def verify_vispy_selection_cache(window):
@@ -236,9 +245,11 @@ def verify_vispy_selection_cache(window):
                 assert not panel.selected_entries() and panel.context is None
                 assert legacy.call_count == 0
             panel.select_canvas_operation(operation.identity)
-            band.activate('legacy')
+            band.failed('test render failure')
+            assert band.stack.currentWidget() is window.canvas
             assert legacy.call_count == 1 and not band.legacy_stale
             assert operation.identity in panel.canvas_preview.selected
+        band.start(True)
         band.activate('plane')
     finally:
         window.TreeHandler.auto_update_export_order = original
@@ -277,7 +288,7 @@ def verify_vispy_caches(app, renderer):
         assert dash.call_count > 0 and projection.call_count == 0
         cut_color = renderer.panel.canvas_preview.path_pen('cut').color().getRgbF()
         assert not any(upload.call_count for key, upload in zip(renderer.nodes, uploads)
-                       if key[1] == cut_color and key[0] == 2), 'Zoom uploaded unchanged solid cuts'
+                       if key == (cut_color, 3.)), 'Zoom uploaded unchanged solid cuts'
         renderer.set_scene(scene, {'b'})
         assert projection.call_count == 0, 'Selection recalculated plan projections'
     for index in range(12):
@@ -376,9 +387,7 @@ def verify_vispy_top_transition(window):
 
 
 def verify_vispy_shared_depth_passes(renderer):
-    import numpy as np
     from dxf2gcode.application.toolpath.projections import plan_preview_segments
-    from dxf2gcode.presentation.qt.view_interaction import dash_segments
     cut = SimpleNamespace(kind='linear_xy', args=((0., 0.), (10., 0.)), role='cut')
     reverse_cut = SimpleNamespace(kind='linear_xy', args=cut.args[::-1], role='cut')
     plan = SimpleNamespace(approach_xy=(0., 0.), workpiece_top=0.,
@@ -403,10 +412,7 @@ def verify_vispy_shared_depth_passes(renderer):
     for zoom in (0.8, 1.4):
         renderer.camera.zoom(zoom)
         renderer.redraw()
-        unit = renderer.camera.rect.height / renderer.height()
-        expected = dash_segments([((0., 0., 0.), (10., 0., 0.))], unit)
-        node = next(node for key, node in renderer.nodes.items() if key[1] == cut_color)
-        np.testing.assert_allclose(node.pos, np.asarray(expected, dtype=np.float32))
+        verify_depth_dash_alignment(renderer, cut_color)
         renderer.canvas.render()
     renderer.set_spatial(True)
     assert renderer.projected_data() is drawing_data
@@ -416,15 +422,20 @@ def verify_vispy_shared_depth_passes(renderer):
     for zoom in (0.83, 1.37):
         renderer.camera.scale_factor *= zoom
         renderer.redraw()
-        node = next(node for key, node in renderer.nodes.items() if key[1] == cut_color)
-        pairs = node.pos.reshape(-1, 2, 3)
-        horizontal = pairs[pairs[:, 0, 2] == pairs[:, 1, 2]]
-        shallow = horizontal[horizontal[:, 0, 2] == -1.5, :, :2]
-        deep = horizontal[horizontal[:, 0, 2] == -3., :, :2]
-        assert len(shallow) > 1
-        np.testing.assert_allclose(shallow, deep)
+        verify_depth_dash_alignment(renderer, cut_color)
         renderer.canvas.render()
     print('VisPy shared XYZ: both passes and plunges retained with fixed overhead and tilted views')
+
+
+def verify_depth_dash_alignment(renderer, cut_color):
+    import numpy as np
+    node = renderer.nodes[(cut_color, .6)]
+    pairs = node.pos.reshape(-1, 2, 3)
+    horizontal = pairs[pairs[:, 0, 2] == pairs[:, 1, 2]]
+    shallow = horizontal[horizontal[:, 0, 2] == -1.5, :, :2]
+    deep = horizontal[horizontal[:, 0, 2] == -3., :, :2]
+    assert len(shallow) > 1
+    np.testing.assert_allclose(shallow, deep)
 
 
 def verify_vispy_segment_gaps(app, renderer):
@@ -452,6 +463,7 @@ def verify_vispy_segment_gaps(app, renderer):
 
 
 def verify_vispy_selection_appearance(app, window, capture=False):
+    from unittest.mock import Mock, patch
     from PyQt6.QtCore import QPoint, Qt
     panel, band = window.machining_panel, window.view_comparison
     band.activate('plane')
@@ -461,6 +473,21 @@ def verify_vispy_selection_appearance(app, window, capture=False):
             groups.setdefault(path.geometry, []).append(path.identity)
     geometry, identities = next((g, ids) for g, ids in groups.items() if len(ids) > 1)
     before = panel.binding.project.to_dict()
+    renderer = band.renderer
+    linked = [path for path in band.snapshot.paths if path.identity in identities[:2]]
+    anchor = renderer.labels.rect().center()
+    labels = {geometry: [((anchor.x(), anchor.y()), path.title, '') for path in linked]}
+    painter = Mock()
+    painter.fontMetrics.return_value = renderer.labels.fontMetrics()
+    with patch.object(renderer, 'world_units_per_pixel', return_value=1e6):
+        renderer.labels.paint_operation_labels(painter, labels)
+    assert [call.args[1] for call in painter.drawText.call_args_list] == [
+        panel.modifiers.tr('{0} operations').format(2)]
+    painter.reset_mock()
+    with patch.object(renderer, 'world_units_per_pixel', return_value=1e-6):
+        renderer.labels.paint_operation_labels(painter, labels)
+    assert [call.args[1] for call in painter.drawText.call_args_list] == [path.title for path in linked]
+    assert len({call.args[0].y() for call in painter.drawText.call_args_list}) == 2
     for mode in ('plane', 'spatial'):
         band.activate(mode)
         renderer = band.renderer
@@ -511,7 +538,24 @@ def tab_editing_worker(app, window):
     vertices = ((x-3, y-3), (x+3-1e-10, y-3), (x+3-1e-10, y+3), (x-3, y+3))
     region.vertices = to_drawing(panel.binding, vertices)
     panel.execute(lambda: panel.commands.create_region(region))
+    verify_canvas_tab_multiselection(window)
+    other = next(p for p in band.snapshot.paths if p.kind == 'operation' and p.geometry != operation.geometry)
+    outline = next(p for p in band.snapshot.paths if p.identity == region.id)
+    assert operation.identity in modifiers.affected(region.id)
+    panel.select_canvas_operation(other.identity)
+    assert renderer.path_visible(outline)
+    band.buttons['selected_paths'].click()
+    assert not renderer.path_visible(outline)
     modifiers.set_mode(True)
+    assert region.id not in modifiers.paths(renderer)
+    panel.select_canvas_operation(operation.identity)
+    assert renderer.path_visible(outline)
+    assert region.id in modifiers.paths(renderer)
+    modifiers.set_mode(False)
+    band.buttons['selected_paths'].click()
+    band.buttons['tabs'].click()
+    assert band.buttons['tabs'].isChecked() and panel.tab_placement.isVisible()
+    modifiers.cancel()
     app.processEvents()
     assert not renderer.spatial and band.actions['plane'].isChecked()
     renderer.camera.rect = (x-12, y-12, 24, 24)
@@ -535,8 +579,10 @@ def tab_editing_worker(app, window):
     assert len(panel.commands.undo_stack) == count+1
     after = panel.binding.project.to_dict()
     assert after != before
-    panel.undo(); assert panel.binding.project.to_dict() == before
-    panel.redo(); assert panel.binding.project.to_dict() == after
+    band.buttons['undo'].click()
+    assert panel.binding.project.to_dict() == before
+    band.buttons['redo'].click()
+    assert panel.binding.project.to_dict() == after
     panel.undo()
     panel.execute(lambda: panel.commands.update_region(region.id, placement_mode='snap'))
     automatic = panel.binding.project.to_dict()
@@ -581,7 +627,14 @@ def tab_editing_worker(app, window):
     modifiers.start_draw()
     original_ids = set(modifiers.records())
     QtTest.QTest.mousePress(surface, QtCore.Qt.MouseButton.LeftButton, pos=pixel((x-2, y-2)))
-    QtTest.QTest.mouseMove(surface, pixel((x+2, y+2)))
+    from dxf2gcode.presentation.qt import tab_modifiers
+    with patch.object(tab_modifiers, 'preview_result', wraps=tab_modifiers.preview_result) as plan:
+        QtTest.QTest.mouseMove(surface, pixel((x+2, y+2)))
+        assert modifiers.preview_timer.isActive()
+        plan.assert_not_called()
+        assert set(modifiers.records()) == original_ids
+        QtTest.QTest.qWait(180)
+        assert [call.args[0].operation_id for call in plan.call_args_list] == [operation.identity]
     QtTest.QTest.mouseRelease(surface, QtCore.Qt.MouseButton.LeftButton, pos=pixel((x+2, y+2)))
     assert len(set(modifiers.records())-original_ids) == 1
     assert modifiers.drawing and modifiers.mode
@@ -595,19 +648,292 @@ def tab_editing_worker(app, window):
     # A spatial view cannot silently reinterpret a drawing gesture in 3D.
     band.actions['spatial'].trigger()
     assert renderer.spatial and not modifiers.mode
+    verify_tab_inline_parameters(app, window)
     verify_vispy_selection_appearance(app, window)
     verify_vispy_top_transition(window)
     verify_vispy_selection_cache(window)
-    verify_vispy_plane_stacking(app, renderer)
+    renderer = band.renderer
+    verify_vispy_shared_drawing(app, renderer)
     verify_vispy_caches(app, renderer)
     verify_vispy_picking(app, renderer)
     verify_vispy_shared_depth_passes(renderer)
     verify_vispy_segment_gaps(app, renderer)
     print('VisPy tab editing: select, drag, dimension, Ctrl snap, draw, double click, undo/redo passed')
-    print('VisPy coincident lines: plane ordering, selection changes and spatial/plane switching passed')
+    print('VisPy shared rendering: line buffers and depth ordering match at handoff')
 
 
-def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchmark=False, editing=False, appearance_project=None):
+def verify_canvas_tab_multiselection(window):
+    from PyQt6.QtCore import QPoint, Qt
+    from PyQt6.QtTest import QTest
+
+    panel, band = window.machining_panel, window.view_comparison
+    renderer, tabs = band.renderer, panel.modifiers
+    before = panel.binding.project.to_dict()
+    for spatial in (True, False):
+        band.activate('spatial' if spatial else 'plane')
+        tabs.set_mode(not spatial)
+        candidates = {}
+        if spatial:
+            for path in renderer.snapshot.paths:
+                if path.kind != 'region':
+                    continue
+                for a, b, _ in path.segments:
+                    point = QPoint(*(round(value) for value in renderer.project(tuple((u+v)/2 for u, v in zip(a,b)))))
+                    if renderer.viewport().rect().contains(point) and renderer.path_hits(point, kinds=('region',)) == (path.identity,):
+                        candidates[path.identity] = point
+                        break
+        else:
+            paths = tabs.paths(renderer)
+            for identity, path in paths.items():
+                point = path.boundingRect().center()
+                if renderer.viewport().rect().contains(point.toPoint()) and [
+                        key for key, outline in paths.items() if outline.contains(point)] == [identity]:
+                    candidates[identity] = point.toPoint()
+        first, second = tuple(candidates)[:2]
+        tabs.select(first)
+        QTest.mouseClick(renderer.viewport(), Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier,
+                         candidates[second])
+        assert tabs.selected_regions == {first, second}
+        assert len(tabs.editable_regions()) == 2
+        QTest.mouseClick(renderer.viewport(), Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier,
+                         candidates[second])
+        assert tabs.selected_regions == {first} and tabs.context == first
+    tabs.set_mode(False)
+    band.activate('spatial')
+    assert panel.binding.project.to_dict() == before
+    print('Canvas tab selection: Ctrl add/remove in top and spatial views passed')
+
+
+def verify_tab_inline_parameters(app, window):
+    from importlib import import_module
+    from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
+    from dxf2gcode.presentation.qt.tab_modifiers import ROLE
+    QTest = import_module(f'PyQt{PYQT_VERSION}.QtTest').QTest
+    Qt = QtCore.Qt
+
+    panel, tree = window.machining_panel, window.machining_panel.tree
+    tabs = panel.modifiers
+    window.ui.mytabWidget.setCurrentWidget(panel)
+    group = next(group for group in tabs.groups if group.childCount() >= 2)
+    group.parent().setExpanded(True)
+    group.setExpanded(True)
+    items = [group.child(i) for i in range(2)]
+    identities = {item.data(0, ROLE)[1] for item in items}
+    initial = panel.binding.project.to_dict()
+    for i, item in enumerate(items):
+        tree.scrollToItem(item)
+        app.processEvents()
+        QTest.mouseClick(tree.viewport(), Qt.MouseButton.LeftButton,
+                         Qt.KeyboardModifier.ControlModifier if i else Qt.KeyboardModifier.NoModifier,
+                         tree.visualItemRect(item).center())
+    assert tabs.selected_regions == identities and not tabs.mode
+    height = tabs.fields['height']
+    assert height.isVisible() and not height.isReadOnly() and tabs.enabled.isEnabled()
+    history = len(panel.commands.undo_stack)
+    height.setFocus()
+    height.selectAll()
+    QTest.keyClicks(height, '-1.75')
+    QTest.keyClick(height, Qt.Key.Key_Return)
+    assert all(tabs.records()[key].height == -1.75 for key in identities)
+    assert len(panel.commands.undo_stack) == history + 1 and tabs.selected_regions == identities
+    name = tabs.name_field
+    name.setFocus()
+    name.selectAll()
+    QTest.keyClicks(name, 'Shared name')
+    QTest.keyClick(name, Qt.Key.Key_Return)
+    assert all(tabs.records()[key].name == 'Shared name' for key in identities)
+    tabs.enabled.setChecked(False)
+    assert all(not tabs.records()[key].enabled for key in identities)
+    panel.undo()
+    assert all(tabs.records()[key].enabled for key in identities)
+    panel.undo()
+    tabs.assignment_scope.setCurrentIndex(tabs.assignment_scope.findData('operations'))
+    target = tabs.assignment_targets.topLevelItem(0)
+    assert target is not None
+    target.setCheckState(0, Qt.CheckState.Checked)
+    expected = tabs.assignment_values()
+    if not tabs.assignment_button.isEnabled():
+        tabs.assignment_scope.setCurrentIndex(tabs.assignment_scope.findData('global'))
+        expected = tabs.assignment_values()
+    assert tabs.assignment_button.isEnabled()
+    tabs.assignment_button.click()
+    assert all(all(getattr(tabs.records()[key], field) == value
+                   for field, value in expected.items()) for key in identities)
+    panel.undo()
+    panel.undo()
+    assert panel.binding.project.to_dict() == initial
+    print('Inline tab editor: Ctrl selection, batch height, assignment and undo passed')
+
+
+def verify_vispy_mouse_controls(app, window):
+    from unittest.mock import patch
+    from PyQt6.QtCore import QEvent, QPoint, QPointF, Qt
+    from PyQt6.QtGui import QContextMenuEvent, QMouseEvent
+    from PyQt6.QtTest import QTest
+    from PyQt6.QtWidgets import QMenu
+
+    band, panel = window.view_comparison, window.machining_panel
+    band.activate('plane')
+    renderer = band.renderer
+    operation_geometries = {p.geometry for p in band.snapshot.paths if p.kind == 'operation'}
+    path = next(p for p in band.snapshot.paths
+                if p.kind == 'geometry' and p.enabled and p.identity in operation_geometries)
+    start, end, _ = renderer.projected_segments(path)[0]
+    x, y = renderer.project(tuple((a+b)/2 for a, b in zip(start, end)))
+    point = QPoint(round(x), round(y))
+    widget = renderer.pick_widget
+    QTest.mousePress(widget, Qt.MouseButton.LeftButton, pos=point-QPoint(8, 8))
+    end = point+QPoint(8, 8)
+    app.sendEvent(widget, QMouseEvent(QEvent.Type.MouseMove, QPointF(end), QPointF(widget.mapToGlobal(end)),
+                                     Qt.MouseButton.NoButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier))
+    assert renderer.selection_band.frame.isActive()
+    assert renderer.selection_band.pending.bottomRight() == end
+    renderer.selection_band.frame.stop()
+    renderer.selection_band.update_outline()
+    assert not renderer.selection_band.outline.isEmpty()
+    pixmap = renderer.selection_band.grab()
+    pixel = (QPointF(renderer.selection_band.outline.center()) * pixmap.devicePixelRatio()).toPoint()
+    assert pixmap.toImage().pixelColor(pixel).alpha() > 0
+    rows = dict(panel.entry_items)
+    QTest.mouseRelease(widget, Qt.MouseButton.LeftButton, pos=end)
+    assert renderer.selection_band.outline.isEmpty()
+    assert panel.binding.sources[path.identity].isSelected()
+    assert panel.entry_items == rows
+    assert any(p.identity in panel.selected_entries() for p in band.snapshot.paths
+               if p.kind == 'operation' and p.geometry == path.identity)
+    with patch('dxf2gcode.presentation.qt.canvas.MyDropDownMenu') as menu:
+        app.sendEvent(widget, QContextMenuEvent(QContextMenuEvent.Reason.Mouse,
+                                                point, widget.mapToGlobal(point)))
+        scene, position, clicked = menu.call_args.args
+        assert scene is window.canvas_scene and position == widget.mapToGlobal(point)
+        assert (clicked.x, clicked.y) == renderer.tab_scene_point(point)
+    window.ui.actionLiveUpdateExportRoute.setChecked(True)
+    assert window.canvas_scene.routearrows
+    with patch('dxf2gcode.presentation.qt.vispy_view.paint_arrowhead') as arrows:
+        renderer.labels.grab()
+        assert arrows.call_count >= len(window.canvas_scene.routearrows)
+    with patch('dxf2gcode.presentation.qt.vispy_view.scale_bar_enabled', return_value=True):
+        with patch.object(renderer.scale_bar, 'paint', wraps=renderer.scale_bar.paint) as paint:
+            renderer.labels.grab()
+            paint.assert_called_once()
+    window.ui.actionLiveUpdateExportRoute.setChecked(False)
+    assert not window.canvas_scene.routearrows and not window.canvas_scene.routetext
+    window.updateExportRoute()
+    assert not window.canvas_scene.routearrows
+
+    band.activate('spatial')
+    operation = next(p for p in band.snapshot.paths if p.kind == 'operation' and p.geometry == path.identity)
+    panel.select_canvas_operation(operation.identity)
+    right = Qt.MouseButton.RightButton
+    point = widget.rect().center()
+    global_point = widget.mapToGlobal(point)
+    menu_positions = []
+
+    def inspect_menu(menu, position):
+        menu_positions.append(position)
+        actions = {action.text(): action for action in menu.actions()}
+        for label in ('Move workpiece zero here ...', 'Set Nearest StartPoint', 'Draw new tab region…'):
+            assert not actions[label].isEnabled()
+            assert actions[label].toolTip() == 'Available in top view.'
+        for label in ('Invert Selection', 'Switch Direction', 'Set Sharpest StartPoint', 'Assign machining…'):
+            assert actions[label].isEnabled(), label
+
+    with patch.object(QMenu, 'exec', new=inspect_menu):
+        QTest.mouseClick(widget, right, pos=point)
+        app.sendEvent(widget, QContextMenuEvent(QContextMenuEvent.Reason.Mouse, point, global_point))
+        app.processEvents()
+        assert menu_positions == [global_point]
+
+        scale = renderer.camera.scale_factor
+        end = point + QPoint(0, 35)
+        QTest.mousePress(widget, right, pos=point)
+        app.sendEvent(widget, QMouseEvent(QEvent.Type.MouseMove, QPointF(end), QPointF(widget.mapToGlobal(end)),
+                                         Qt.MouseButton.NoButton, right, Qt.KeyboardModifier.NoModifier))
+        QTest.mouseRelease(widget, right, pos=end)
+        app.processEvents()
+        assert renderer.camera.scale_factor != scale
+        assert menu_positions == [global_point]
+    band.activate('plane')
+
+
+def verify_machining_checkboxes(app, window):
+    from importlib import import_module
+    from unittest.mock import patch
+    from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
+    from dxf2gcode.presentation.qt.qt_compat.QtGui import QContextMenuEvent
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMenu
+    QTest = import_module(f'PyQt{PYQT_VERSION}.QtTest').QTest
+    Qt = QtCore.Qt
+    panel = window.machining_panel
+    tree = panel.tree
+    first, second = tuple(panel.entry_items)[:2]
+    window.show()
+    window.ui.mytabWidget.setCurrentWidget(panel)
+    panel.select_canvas_operation(first)
+    app.processEvents()
+
+    def entry(identity):
+        return panel.commands.entries(panel.binding.project, [identity])[0][1]
+
+    def indicator(column):
+        item = panel.entry_items[second]
+        tree.scrollToItem(item)
+        rect = tree.visualRect(tree.indexFromItem(item, column))
+        return next(point for x in range(rect.left(), rect.right() + 1)
+                    if tree.checkbox_at(point := QtCore.QPoint(x, rect.center().y())).isValid())
+
+    def assert_selection():
+        assert tree.currentItem() is panel.entry_items[first]
+        assert panel.selected_entries() == [first] and panel.context == first
+
+    for column, field in ((1, 'enabled'), (2, 'optimize')):
+        previous = getattr(entry(second), field)
+        selected_item = tree.currentItem()
+        QTest.mouseClick(tree.viewport(), Qt.MouseButton.LeftButton, pos=indicator(column))
+        app.processEvents()
+        assert getattr(entry(second), field) != previous
+        assert_selection()
+        assert tree.currentItem() is selected_item
+        position = indicator(column)
+        history = len(panel.commands.undo_stack)
+
+        def disable_all(menu, *_):
+            assert_selection()
+            expected = 'Disable export for all' if column == 1 else 'Disable optimization for all'
+            action = next(a for a in menu.actions() if a.text() == panel.tr(expected))
+            assert action.isEnabled()
+            action.trigger()
+        with patch.object(QMenu, 'exec', new=disable_all):
+            QTest.mouseClick(tree.viewport(), Qt.MouseButton.RightButton, pos=position)
+            app.sendEvent(tree.viewport(), QContextMenuEvent(QContextMenuEvent.Reason.Mouse,
+                position, tree.viewport().mapToGlobal(position)))
+        assert len(panel.commands.undo_stack) == history + 1
+        assert not any(getattr(entry(identity), field) for identity in panel.entry_items)
+        assert_selection()
+        def enable_all(menu, *_):
+            assert_selection()
+            expected = 'Enable export for all' if column == 1 else 'Enable optimization for all'
+            action = next(a for a in menu.actions() if a.text() == panel.tr(expected))
+            assert action.isEnabled()
+            action.trigger()
+        header = tree.header()
+        position = QtCore.QPoint(header.sectionViewportPosition(column) + 1, 1)
+        with patch.object(QMenu, 'exec', new=enable_all):
+            app.sendEvent(header.viewport(), QContextMenuEvent(QContextMenuEvent.Reason.Mouse,
+                position, header.viewport().mapToGlobal(position)))
+        assert len(panel.commands.undo_stack) == history + 2
+        assert all(getattr(entry(identity), field) for identity in panel.entry_items)
+        assert_selection()
+        panel.undo()
+        assert not any(getattr(entry(identity), field) for identity in panel.entry_items)
+        panel.undo()
+        if field == 'enabled':
+            assert entry(first).enabled
+        panel.undo()
+        assert getattr(entry(second), field) == previous
+
+
+def worker(gpu=False, editing=False, appearance_project=None):
     import faulthandler
     faulthandler.dump_traceback_later(20, exit=True)
     from unittest.mock import patch
@@ -624,7 +950,7 @@ def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchma
         g.folder = str(Path(folder) / 'config')
         Path(g.folder).mkdir()
         g.config = MyConfig()
-        g.config.mode3d, g.quiet = False, True
+        g.quiet = True
         from dxf2gcode.presentation.qt import application as module
         from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene
         if PYQT_VERSION == 6:
@@ -633,20 +959,166 @@ def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchma
             from dxf2gcode.presentation.qt.generated.dxf2gcode_ui5 import Ui_MainWindow
         module.Ui_MainWindow, module.MyGraphicsScene = Ui_MainWindow, MyGraphicsScene
         g.folder = str(Path(folder) / 'config')
-        QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
-        QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat,
-                                QtCore.QSettings.Scope.UserScope, folder)
         app = QApplication([])
-        if gpu:
+        settings = QtCore.QSettings(str(Path(folder) / 'window.ini'), QtCore.QSettings.Format.IniFormat)
+        settings.setValue('MainWindow/view/selectedPathsOnly', True)
+        settings.setValue('MainWindow/view/showRetracts', False)
+        settings.setValue('MainWindow/view/showOriginAxes', False)
+        with patch.object(QtCore, 'QSettings', return_value=settings):
             window = module.MainWindow(app)
-        else:
-            with patch('dxf2gcode.presentation.qt.view_comparison.importlib.util.find_spec', return_value=None):
-                window = module.MainWindow(app)
         g.window = window
         module.options = SimpleNamespace(post_pro=window.MyPostProcessor.output_text[0])
+        band, panel = window.view_comparison, window.machining_panel
+        assert band.selected_paths_action.isChecked() and not band.retracts_action.isChecked()
+        assert not band.origin_axes_action.isChecked()
+        band.selected_paths_action.setChecked(False)
+        band.retracts_action.setChecked(True)
+        def check_view_band(vispy):
+            groups = (
+                (('open', window.ui.actionOpen), ('reload', window.ui.actionReload),
+                 ('save_project', window.ui.actionSaveProjectAs),
+                 ('options', band.buttons['options'].defaultAction()), ('exit', window.ui.actionClose)),
+                (('workpiece_zero', window.ui.actionMoveWorkpieceZero), ('scale', window.ui.actionScaleAll),
+                 ('rotate', window.ui.actionRotateAll), ('mirror', window.ui.actionMirrorAll)),
+                (('new', panel.buttons['new']), ('tabs', panel.buttons['tabs'])),
+                (('export', window.ui.actionExportShapes), ('optimize', window.ui.actionOptimizePaths),
+                 ('optimize_export', window.ui.actionOptimizeAndExportShapes),
+                 ('route_live', window.ui.actionLiveUpdateExportRoute)),
+                (('plane', window.ui.actionTopView), ('spatial', window.ui.actionIsometricView),
+                 ('fit', window.ui.actionAutoscale), ('disabled_paths', window.ui.actionShowDisabledPaths),
+                 ('directions', window.ui.actionShowPathDirections), ('selected_paths', band.selected_paths_action),
+                 ('retracts', band.retracts_action), ('scale_bar', band.scale_bar_action),
+                 ('origin_axes', band.origin_axes_action), ('tools', band.tools_action)),
+                (('info', window.ui.actionAbout),),
+            )
+            topics = ('Program', 'Drawing', 'Machining', 'Output', 'View', 'Info')
+            if window.title_bar is None:
+                groups = (*groups[:3], (('undo', panel.buttons['undo']), ('redo', panel.buttons['redo'])),
+                          *groups[3:])
+                topics = (*topics[:3], 'History', *topics[3:])
+            else:
+                for name in ('undo', 'redo'):
+                    button = band.buttons[name]
+                    assert button.parent() is window.title_bar and button.defaultAction() is panel.buttons[name]
+                    assert button.toolTip()
+            parents = []
+            for group in groups:
+                parents.append(band.buttons[group[0][0]].parent())
+                for name, action in group:
+                    button = band.buttons[name]
+                    assert button.parent() is parents[-1]
+                    assert button.defaultAction() is action and not button.icon().isNull(), name
+                    large = name in ('open', 'new', 'export')
+                    assert button.toolButtonStyle() == (QtCore.Qt.ToolButtonStyle.ToolButtonTextUnderIcon
+                                                        if large else QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly)
+                    assert button.iconSize().width() == (28 if large else 18)
+                    assert button.toolTip() and button.accessibleName()
+                    assert button.isHidden() == (not vispy and name in ('plane', 'spatial', 'origin_axes', 'tools'))
+                    if not action.shortcut().isEmpty():
+                        assert action in window.actions()
+            assert len(set(parents)) == len(topics)
+            assert [parent.layout().itemAt(1).widget().text() for parent in parents] == [
+                band.tr(topic) for topic in topics]
+            toolbar_widgets = [band.band.widgetForAction(action) for action in band.band.actions()]
+            assert [widget for widget in toolbar_widgets if widget in parents] == parents
+            assert band.band.widgetForAction(band.band.actions()[-1]) is parents[-1]
+            assert panel.tab_placement.parent() is band.buttons['tabs'].parent()
+            assert not panel.tab_placement.isHidden()
+            assert all(not panel.tab_placement.itemIcon(i).isNull() for i in range(panel.tab_placement.count()))
+            for first, second in (('reload', 'save_project'), ('options', 'exit'),
+                                  ('optimize', 'optimize_export')):
+                grid = band.buttons[first].parent().layout().itemAt(0).layout()
+                top = grid.getItemPosition(grid.indexOf(band.buttons[first]))
+                bottom = grid.getItemPosition(grid.indexOf(band.buttons[second]))
+                assert top[0] == 0 and bottom[0] == 1 and top[1] == bottom[1]
+
+        check_view_band(False)
+        placement = panel.tab_placement
+        initial_placement = placement.currentIndex()
+        placement.setCurrentIndex(placement.findData('manual'))
+        assert panel.modifiers.drawing_mode() == 'manual'
+        assert placement.toolTip() == placement.currentText() and not panel.modifiers.mode
+        placement.setCurrentIndex(initial_placement)
+        assert window.menuWidget() is window.title_bar
+        options = window.ui.menuOptions
+        assert band.buttons['options'].menu() is options
+        assert band.buttons['info'].menu() is None
+        assert [action for action in options.actions() if action.menu() is not None] == [
+            window.menu_config_profile.menuAction(), window.ui.menuMachine_Type.menuAction(),
+            window.ui.menu_Measurement_units.menuAction()]
+        assert {window.ui.actionConfiguration, window.ui.actionConfigurationPostprocessor}.issubset(window.actions())
+        assert not {button.defaultAction() for button in band.buttons.values()}.intersection(
+            options.actions())
+        with patch.object(module, 'AboutDialog') as about:
+            band.buttons['info'].click()
+        about.assert_called_once()
+        document_buttons = ('reload', 'save_project', 'workpiece_zero', 'scale', 'rotate', 'mirror',
+                            'optimize', 'export', 'optimize_export')
+        assert band.buttons['open'].isEnabled() and band.buttons['exit'].isEnabled()
+        assert all(not band.buttons[name].isEnabled() for name in document_buttons)
+        with patch.object(window, 'OpenFileDialog') as open_dialog:
+            band.buttons['open'].click()
+        open_dialog.assert_called_once()
+        assert not band.buttons['new'].isEnabled()
+        assert not band.buttons['tabs'].isEnabled() and not band.buttons['undo'].isEnabled()
+        if gpu:
+            from PyQt6.QtTest import QTest
+            assert not window.isVisible()
+            show = window.show
+            def show_with_complete_ribbon():
+                assert band.renderer is not None and band.stack.currentWidget() is band.renderer
+                assert not band.buttons['spatial'].isHidden() and band.buttons['spatial'].isChecked()
+                show()
+            with patch.object(window, 'show', side_effect=show_with_complete_ribbon) as first_show:
+                window.show_at_startup()
+                first_show.assert_called_once()
+            app.processEvents()
+            assert window.isVisible()
+            if app.platformName() == 'windows':
+                assert window.isActiveWindow()
+            if app.platformName() == 'windows' and hasattr(QtCore.Qt.WindowType, 'ExpandedClientAreaHint'):
+                title_bar = window.title_bar
+                assert title_bar is not None
+                for show in (window.showNormal, window.showMaximized):
+                    show()
+                    app.processEvents()
+                    assert title_bar.y() == 0 and title_bar.height() == window.windowHandle().safeAreaMargins().top()
+                    assert band.band.y() >= title_bar.height()
+                    assert title_bar.icon.x() < band.buttons['undo'].x() < band.buttons['redo'].x() < title_bar.text.x()
+                    assert all(button.isVisible() for button in (band.buttons['undo'], band.buttons['redo']))
+                flags = window.windowHandle().flags()
+                assert flags & QtCore.Qt.WindowType.WindowCloseButtonHint
+                assert flags & QtCore.Qt.WindowType.WindowMinMaxButtonsHint == QtCore.Qt.WindowType.WindowMinMaxButtonsHint
+                assert not flags & QtCore.Qt.WindowType.WindowTitleHint
+            opened = []
+            def dismiss_options():
+                opened.append(True)
+                QtCore.QTimer.singleShot(0, options.close)
+            options.aboutToShow.connect(dismiss_options)
+            QTest.mouseClick(band.buttons['options'], QtCore.Qt.MouseButton.LeftButton)
+            options.aboutToShow.disconnect(dismiss_options)
+            assert opened == [True]
+            app.processEvents()
+            app.setActiveWindow(window)
+            with patch.object(window, 'OpenFileDialog') as open_dialog:
+                QTest.keyClick(window, QtCore.Qt.Key.Key_O, QtCore.Qt.KeyboardModifier.ControlModifier)
+            open_dialog.assert_called_once()
+            assert band.renderer is not None, 'VisPy startup unexpectedly fell back'
+            assert band.renderer.spatial
+            assert band.actions['spatial'].isChecked()
+            check_view_band(True)
+            assert band.buttons['spatial'].isChecked() and not band.buttons['plane'].isChecked()
         window.filename = str(appearance_project or ROOT / 'dxf/BreakExample_Circle.dxf')
         assert window.load()
-        band, panel = window.view_comparison, window.machining_panel
+        if window.title_bar is not None:
+            assert window.filename in window.title_bar.text.text()
+            assert not window.windowHandle().flags() & QtCore.Qt.WindowType.WindowTitleHint
+        assert all(band.buttons[name].isEnabled() for name in document_buttons)
+        assert band.buttons['tabs'].isEnabled()
+        assert band.buttons['new'].isEnabled()
+        with patch.object(panel, 'step_dialog', return_value=None) as dialog:
+            band.buttons['new'].click()
+        dialog.assert_called_once()
         if gpu and appearance_project is None:
             from copy import deepcopy
             from dataclasses import replace
@@ -671,258 +1143,129 @@ def worker(gpu=False, kind='vispy', interop=True, benchmark=False, tools_benchma
             faulthandler.cancel_dump_traceback_later()
             return
         if gpu:
-            plane_key = 'quickplane' if kind == 'quick3d' else 'plane'
-            spatial_key = 'quickspatial' if kind == 'quick3d' else 'spatial'
-            def capture(renderer):
-                if kind == 'vispy':
-                    return renderer.canvas.render()[..., :3].min() < 100
-                from PyQt6.QtGui import QImage
-                image = renderer.view.grabWindow().convertToFormat(QImage.Format.Format_RGBA8888)
-                assert not image.isNull()
-                pixels = image.bits().asstring(image.sizeInBytes())
-                return min(pixels[0::4]+pixels[1::4]+pixels[2::4]) < 100
-            assert band.actions['spatial'].isEnabled()
-            band.actions[plane_key].trigger()
-            app.processEvents()
-            assert band.renderer is not None, band.actions[plane_key].toolTip()
-            if kind == 'quick3d':
-                if not band.renderer.verified:
-                    loop = QtCore.QEventLoop()
-                    band.renderer.view.frameSwapped.connect(loop.quit)
-                    QtCore.QTimer.singleShot(1500, loop.quit)
-                    band.renderer.view.update()
-                    loop.exec()
-                    band.renderer.view.frameSwapped.disconnect(loop.quit)
-                assert band.renderer.verified, 'No native Qt Quick 3D frame'
-            assert capture(band.renderer), 'Initial top view is blank'
-            band.actions[spatial_key].trigger()
-            app.processEvents()
-            assert band.renderer is not None, band.actions['spatial'].toolTip()
             renderer = band.renderer
-            assert any(p.kind == 'operation' and p.plan for p in band.snapshot.paths)
-            assert any(p.kind == 'region' for p in band.snapshot.paths)
+            snapshot = renderer.snapshot
+            assert band.scale_bar_action.isChecked()
+            from dxf2gcode.presentation.qt.vispy_view import paint_origin_axes
+            with patch('dxf2gcode.presentation.qt.vispy_view.paint_origin_axes', wraps=paint_origin_axes) as axes, \
+                    patch('dxf2gcode.presentation.qt.vispy_view.paint_workpiece_zero') as zero, \
+                    patch.object(renderer.scale_bar, 'paint') as scale, \
+                    patch.object(renderer.spatial_scale_bar, 'paint_spatial',
+                                 wraps=renderer.spatial_scale_bar.paint_spatial) as spatial_scale:
+                renderer.labels.grab()
+                axes.assert_not_called()
+                zero.assert_not_called()
+                scale.assert_not_called()
+                assert [axis for axis, _, _ in spatial_scale.call_args.args[2]] == ['X', 'Y', 'Z']
+                first_axes = spatial_scale.call_args.args[2]
+                first_length = renderer.spatial_scale_bar.length
+                camera_state = renderer.camera.get_state()
+                renderer.camera.azimuth += 30
+                renderer.labels.grab()
+                assert spatial_scale.call_args.args[2] != first_axes
+                renderer.camera.scale_factor *= 4
+                renderer.labels.grab()
+                assert renderer.spatial_scale_bar.length > first_length
+                renderer.camera.set_state(camera_state)
+                band.buttons['origin_axes'].click()
+                renderer.labels.grab()
+                axes.assert_called()
+                assert axes.call_args.args[2] == renderer.project((0., 0., 0.))
+                band.activate('plane')
+                axes.reset_mock()
+                renderer.labels.grab()
+                axes.assert_not_called()
+                zero.assert_called()
+                band.activate('spatial')
+                scale.assert_called()
+                band.buttons['scale_bar'].click()
+                spatial_scale.reset_mock()
+                renderer.labels.grab()
+                spatial_scale.assert_not_called()
+                band.buttons['scale_bar'].click()
+            operation = next(path for path in snapshot.paths if path.kind == 'operation')
+            retracts = [(a, b) for a, b, role in operation.segments if role == 'retract']
+            assert retracts and all(a[:2] == b[:2] and a[2] < b[2] for a, b in retracts)
+            with patch.object(panel, 'refresh_preview', wraps=panel.refresh_preview) as refresh:
+                band.buttons['selected_paths'].click()
+                assert operation.identity not in renderer.selected
+                assert not renderer.path_visible(operation)
+                assert all(renderer.path_visible(path) for path in snapshot.paths if path.kind == 'geometry')
+                assert not any(role == 'cut' for _, paths in renderer._uploads.values()
+                               for _, role, _, _ in paths)
+                band.buttons['selected_paths'].click()
+                assert renderer.path_visible(operation)
+                band.buttons['retracts'].click()
+                assert not any(role == 'retract' for _, paths in renderer._uploads.values()
+                               for _, role, _, _ in paths)
+                band.buttons['retracts'].click()
+                assert any(role == 'retract' for _, paths in renderer._uploads.values()
+                           for _, role, _, _ in paths)
+                assert renderer.snapshot is snapshot
+                refresh.assert_not_called()
+            with patch.object(panel, 'refresh_preview', wraps=panel.refresh_preview) as refresh:
+                band.buttons['directions'].click()
+                assert window.ui.actionShowPathDirections.isChecked()
+                renderer.labels.grab()
+                assert renderer.snapshot is snapshot
+                band.buttons['directions'].click()
+                refresh.assert_not_called()
+            verify_vispy_mouse_controls(app, window)
+            renderer = band.renderer
+            assert renderer.canvas.render()[..., :3].min() < 100, 'Top view is blank'
+            verify_vispy_shared_drawing(app, renderer)
+            verify_vispy_selection_cache(window)
+            renderer = band.renderer
             snapshot = band.snapshot
-            operations = [p for p in snapshot.paths if p.kind == 'operation']
-            # Exercise a viewport hit, not only direct calls into tree selection.
-            middle = tuple((a+b)/2 for a, b in zip(operations[0].segments[5][0], operations[0].segments[5][1]))
-            position = renderer.project(middle)
-            assert operations[0].identity in hit_paths(snapshot, position, renderer.project)
-            if kind == 'quick3d':
-                from dxf2gcode.presentation.qt.quick3d_view import qt_point
-                mapped = QtCore.QMetaObject.invokeMethod(renderer.view.rootObject(), 'projectPoint',
-                    QtCore.Q_RETURN_ARG('QVariant'), QtCore.Q_ARG('QVariant', qt_point(middle)))
-                assert abs(mapped.x()-position[0]) < 1 and abs(mapped.y()-position[1]) < 1, (mapped, position)
-                from PyQt6.QtTest import QTest
-                from math import dist
-                target = operations[1]
-                a, b, _ = next(s for s in target.segments if s[2] == 'cut' and dist(s[0], s[1]) > 20)
-                x, y = renderer.project(tuple((a+b)/2 for a, b in zip(a, b)))
-                QTest.mouseClick(renderer.view, QtCore.Qt.MouseButton.LeftButton,
-                                 QtCore.Qt.KeyboardModifier.NoModifier, QtCore.QPoint(round(x), round(y)))
-                app.processEvents()
-                assert target.identity in renderer.selected, 'QML click did not select the operation'
-                yaw = renderer.state['yaw']
-                renderer.mousePress(200., 200., 1, 0)
-                renderer.mouseMove(240., 220.)
-                renderer.mouseRelease(240., 220., 0)
-                assert renderer.state['yaw'] != yaw
-                zoom = renderer.zoom
-                renderer.mouseWheel(120., 300., 300.)
-                assert renderer.zoom > zoom
-                renderer.redraw()
-                from PyQt6.QtGui import QVector3D
-                with patch.object(renderer._mesh, 'upload', wraps=renderer._mesh.upload) as upload:
-                    renderer.state['center'] += QVector3D(.1, 0, 0)
-                    renderer.redraw()
-                    assert upload.call_count == 0, 'Panning uploaded unchanged geometry'
-                    renderer.state['yaw'] += .1
-                    renderer.redraw()
-                    assert upload.call_count == 1, 'Rotation did not update camera-facing bands'
-                # A continuous input stream must still produce scheduled draws.
-                from PyQt6.QtTest import QSignalSpy
-                pulse = QtCore.QTimer()
-                pulse.setInterval(2)
-                pulse.timeout.connect(renderer.schedule)
-                draws = QSignalSpy(renderer.timer.timeout)
-                loop = QtCore.QEventLoop()
-                pulse.start()
-                QtCore.QTimer.singleShot(80, loop.quit)
-                loop.exec()
-                pulse.stop()
-                assert len(draws) > 0, 'Continuous input starved the redraw timer'
-            if len(hit_paths(snapshot, position, renderer.project)) == 1:
-                renderer.pick(QtCore.QPoint(round(position[0]), round(position[1])))
-            panel.select_canvas_operation(operations[0].identity)
-            assert band.snapshot is snapshot, 'Selection rebuilt the scene/plans'
-            assert operations[0].identity in renderer.selected
-            assert operations[0].geometry == operations[-1].geometry
-            if len(operations) > 1:
-                panel.select_canvas_operation(operations[1].identity, True)
-                assert {p.identity for p in operations[:2]} <= renderer.selected
-            # Editing a parameter invalidates data; pure selection did not.
-            entry = panel.binding.project.steps[0].entries[0]
-            original_overrides = dict(entry.overrides)
-            entry.overrides['axis3_mill_depth'] = -4.2
-            panel.refresh_preview()
-            assert band.snapshot is not snapshot
-            assert -4.2 in {p[2] for path in band.snapshot.paths if path.identity == entry.id
-                            for a, b, _ in path.segments for p in (a, b)}
-            entry.overrides = original_overrides
-            panel.refresh_preview()
-            app.processEvents()
-            if kind == 'vispy':
-                window.grab().save(str(ROOT / '.tox/view-prototype-spatial.png'))
-            else:
-                renderer.view.grabWindow().save(str(ROOT / '.tox/quick3d-prototype-spatial.png'))
-            band.actions[plane_key].trigger()
-            app.processEvents()
-            renderer.verify()
-            assert capture(renderer), 'Blank framebuffer'
-            # Native rendering evidence lives outside tracked source files.
-            if kind == 'vispy':
-                window.grab().save(str(ROOT / '.tox/view-prototype.png'))
-            else:
-                renderer.view.grabWindow().save(str(ROOT / '.tox/quick3d-prototype.png'))
-            band.actions['legacy'].trigger()
-            assert band.stack.currentWidget() is window.canvas
-            assert panel.binding.project.to_dict() == before
-            print('Native GPU, snapshot reuse, multi-selection, tabs, top view and 2D return OK')
-            if kind == 'vispy':
-                from vispy import gloo
-                print('OpenGL:', gloo.gl.glGetParameter(gloo.gl.GL_VERSION))
-            else:
-                print('Qt Quick 3D:', renderer.view.rendererInterface().graphicsApi())
-            # A native Quick window must coexist with the other renderer without
-            # forcing both engines onto the same graphics API.
-            if interop:
-                other = 'spatial' if kind == 'quick3d' else 'quickspatial'
-                band.actions[other].trigger()
-                app.processEvents()
-                assert band.renderer is not None, band.actions[other].toolTip()
-                assert band.snapshot is renderer.snapshot
-                band.actions[spatial_key].trigger()
-                app.processEvents()
-                assert band.renderer is renderer
-                assert capture(renderer)
-            # Same static transparent cylinders in either renderer; no project edit.
-            band.actions[spatial_key].trigger()
-            app.processEvents()
-            snapshot = band.snapshot
-            project_values = panel.binding.project.to_dict()
-            if kind == 'vispy':
-                baseline_image = renderer.canvas.render()
-                baseline_pixels = (baseline_image[..., :3] < 240).any(axis=2).sum()
-            band.tools_action.setChecked(True)
+            operation = next(path for path in snapshot.paths if path.kind == 'operation')
+            panel.select_canvas_operation(operation.identity)
+            assert band.snapshot is snapshot
+            band.buttons['selected_paths'].click()
+            visible = {path.identity for path in snapshot.paths
+                       if path.kind == 'operation' and renderer.path_visible(path)}
+            assert visible == {operation.identity}
+            band.buttons['selected_paths'].click()
+            band.buttons['tools'].click()
+            assert band.tools_action.isChecked()
             app.processEvents()
             expected = len(preview_tool_bodies(snapshot, renderer.selected))
             assert expected > 0
-            if kind == 'quick3d':
-                assert len(renderer.toolBodies) == expected
-                renderer.view.grabWindow().save(str(ROOT / '.tox/quick3d-transparent-tools.png'))
-            else:
-                assert sum(node.visible for node in renderer.tool_nodes.values()) == expected
-                from vispy import io
-                tool_image = renderer.canvas.render()
-                assert (tool_image[..., :3] < 240).any(axis=2).sum() > baseline_pixels*.75, 'Transparent pass lost contour lines'
-                io.write_png(str(ROOT / '.tox/vispy-transparent-tools.png'), tool_image)
-            assert band.snapshot is snapshot
-            assert panel.binding.project.to_dict() == project_values
-            band.tools_action.setChecked(False)
+            assert sum(node.visible for node in renderer.tool_nodes.values()) == expected
+            band.buttons['tools'].click()
+            assert not band.tools_action.isChecked()
             app.processEvents()
-            assert not renderer.toolBodies if kind == 'quick3d' else not any(n.visible for n in renderer.tool_nodes.values())
-            if benchmark:
-                from contextlib import ExitStack
-                band.actions[spatial_key].trigger()
-                app.processEvents()
-                assert renderer.isVisible()
-                from statistics import median
-                from time import perf_counter
-                from PyQt6.QtGui import QVector3D
-                timings = {}
-                update_timings = {}
-                uploads = {}
-                for action in ('pan', 'rotate', 'zoom'):
-                    samples = []
-                    update_samples = []
-                    with ExitStack() as stack:
-                        if kind == 'quick3d':
-                            observers = [stack.enter_context(patch.object(renderer._mesh, 'upload', wraps=renderer._mesh.upload))]
-                        else:
-                            observers = [stack.enter_context(patch.object(node, 'set_data', wraps=node.set_data))
-                                         for node in renderer.nodes.values()]
-                        for index in range(12):
-                            update_started = perf_counter()
-                            if kind == 'quick3d':
-                                if action == 'pan':
-                                    renderer.state['center'] += QVector3D(.1, 0, 0)
-                                elif action == 'rotate':
-                                    renderer.state['yaw'] += .1
-                                else:
-                                    renderer.state['zoom'] *= 1.001
-                            else:
-                                if action == 'pan':
-                                    x, y, z = renderer.camera.center
-                                    renderer.camera.center = (x+.1, y, z)
-                                elif action == 'rotate':
-                                    renderer.camera.azimuth += .1
-                                else:
-                                    renderer.camera.scale_factor /= 1.001
-                            started = perf_counter()
-                            renderer.redraw()
-                            samples.append((perf_counter()-started)*1000)
-                            update_samples.append((perf_counter()-update_started)*1000)
-                        uploads[action] = sum(observer.call_count for observer in observers)
-                    timings[action] = round(median(samples), 3)
-                    update_timings[action] = round(median(update_samples), 3)
-                print('CPU redraw medians in ms (12 updates each):', timings)
-                print('CPU update including camera mutation in ms:', update_timings)
-                print('Geometry update calls:', uploads)
-                if kind == 'quick3d':
-                    assert uploads == dict(pan=0, rotate=12, zoom=12)
-            if tools_benchmark:
-                from statistics import median
-                from time import perf_counter
-                timings = {}
-                for enabled in (False, True):
-                    band.tools_action.setChecked(enabled)
-                    app.processEvents()
-                    samples = []
-                    for index in range(7):
-                        started = perf_counter()
-                        if kind == 'quick3d':
-                            renderer.state['yaw'] += .5
-                        else:
-                            renderer.camera.azimuth += .5
-                        renderer.redraw()
-                        if kind == 'quick3d':
-                            image = renderer.view.grabWindow()
-                            pixels = (image.width(), image.height())
-                        else:
-                            image = renderer.canvas.render()
-                            pixels = (image.shape[1], image.shape[0])
-                        if index:
-                            samples.append((perf_counter()-started)*1000)
-                    timings['on' if enabled else 'off'] = round(median(samples), 3)
-                print('Rotating + render/readback median ms (6 samples, 1 warmup each):', timings,
-                      'tools:', expected, 'pixels:', pixels)
-                print('Readback APIs differ; use this as an on/off comparison, not FPS.')
-        else:
-            assert 'vispy' not in sys.modules
-            assert not band.actions['spatial'].isEnabled()
-            assert band.stack.currentWidget() is window.canvas
-            with patch('dxf2gcode.presentation.qt.vispy_view.VispyView', side_effect=RuntimeError('test context failure')):
-                band.activate('spatial')
-            assert band.stack.currentWidget() is window.canvas
+            assert not any(node.visible for node in renderer.tool_nodes.values())
             assert panel.binding.project.to_dict() == before
-            assert not band.actions['quickspatial'].isEnabled()
-            if PYQT_VERSION == 6:
-                band.actions['spatial'].setEnabled(True)
-                with patch('dxf2gcode.presentation.qt.quick3d_view.Quick3DView', side_effect=RuntimeError('test QML failure')):
-                    band.activate('quickspatial')
-                assert band.actions['spatial'].isEnabled(), 'Quick failure disabled VisPy'
-                assert not band.actions['quickspatial'].isEnabled()
-                assert band.stack.currentWidget() is window.canvas
-            print('Missing/failed renderer leaves 2D usable')
+        else:
+            method = 'dxf2gcode.presentation.qt.view_comparison'
+            assert window.canvas is band.stack.currentWidget()
+            with patch(method+'.PYQT_VERSION', 6), patch(method+'.importlib.util.find_spec', return_value=None):
+                band.start(True)
+            assert 'vispy' not in sys.modules
+            assert not band.actions['spatial'].isVisible()
+            check_view_band(False)
+            assert band.stack.currentWidget() is window.canvas
+            with patch(method+'.PYQT_VERSION', 6), patch(method+'.importlib.util.find_spec', return_value=True):
+                with patch('dxf2gcode.presentation.qt.vispy_view.VispyView', side_effect=RuntimeError('test context failure')):
+                    band.start(True)
+            assert band.stack.currentWidget() is window.canvas
+            assert g.config.vars.General['use_vispy']
+            assert panel.binding.project.to_dict() == before
+            band.buttons['directions'].click()
+            assert panel.canvas_preview.visible_records()
+            band.buttons['selected_paths'].click()
+            assert not panel.canvas_preview.visible_records()
+            entry = panel.canvas_preview.records[0]
+            panel.select_canvas_operation(entry.identity)
+            assert [record.identity for record in panel.canvas_preview.visible_records()] == [entry.identity]
+            band.buttons['selected_paths'].click()
+        window.saveWindowState()
+        assert settings.value('MainWindow/view/selectedPathsOnly', type=bool) is False
+        assert settings.value('MainWindow/view/showRetracts', type=bool) is True
+        assert settings.value('MainWindow/view/showOriginAxes', type=bool) == gpu
+        verify_machining_checkboxes(app, window)
+        if not gpu:
+            verify_tab_inline_parameters(app, window)
         window.close()
         app.processEvents()
         faulthandler.cancel_dump_traceback_later()
@@ -935,18 +1278,6 @@ if __name__ == '__main__':
         worker(True, editing=True)
     elif '--gpu-worker' in sys.argv:
         worker(True)
-    elif '--quick-worker' in sys.argv:
-        worker(True, 'quick3d')
-    elif '--quick-only-worker' in sys.argv:
-        worker(True, 'quick3d', False)
-    elif '--quick-benchmark' in sys.argv:
-        worker(True, 'quick3d', False, True)
-    elif '--vispy-benchmark' in sys.argv:
-        worker(True, 'vispy', False, True)
-    elif '--quick-tools-benchmark' in sys.argv:
-        worker(True, 'quick3d', False, False, True)
-    elif '--vispy-tools-benchmark' in sys.argv:
-        worker(True, 'vispy', False, False, True)
     elif '--fallback-worker' in sys.argv:
         worker()
     else:

@@ -36,7 +36,8 @@ def build_view_scene(panel, layers):
                 prepare_shape(view, build_preview=False)
             result = preview_result(view, panel.window.MyPostProcessor, layers)
             plan = result.plan if not result.has_errors else None
-            segments = tuple((s.start, s.end, s.role) for s in plan_preview_segments(plan))
+            segments = tuple((s.start, s.end, 'retract' if s.is_retract else s.role)
+                             for s in plan_preview_segments(plan))
             source = binding.sources[entry.geometry_id]
             tool = binding.project.tools[step.tool_id]
             title = '%s · %s · T%d' % (step.name, panel.tr('Contour {0}').format(source.nr), tool.tool_nr)

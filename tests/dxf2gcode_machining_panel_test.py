@@ -12,6 +12,13 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def machining_row_position(tree, item):
+    from dxf2gcode.presentation.qt.qt_compat.QtCore import QPoint
+    tree.scrollToItem(item)
+    return QPoint(tree.header().sectionViewportPosition(0) + 5,
+                  tree.visualItemRect(item).center().y())
+
+
 class TestMachiningPanel(unittest.TestCase):
     def test_all_panel_text_has_finished_translations(self):
         for module, name in (('machining_panel', 'MachiningPanel'), ('machining_parameters', 'MachiningParameters'), ('geometry_panel', 'GeometryPanel'), ('machining_preview', 'MachiningPreview'), ('tab_modifiers', 'TabModifiers')):
@@ -198,22 +205,9 @@ def exercise_panel(window, app, folder):
     app.processEvents()
     assert panel.context == copied_id, (panel.context, copied_id)
     assert item.font(0).bold()
-    # The optional holding-tab row must not leave its provenance button behind.
     from unittest.mock import patch
-    editor = panel.parameter_editor
-    before_break_visibility = panel.binding.project.to_dict()
-    for visible in (True, False):
-        with patch('dxf2gcode.presentation.qt.treehandling.break_geometries_present', return_value=visible):
-            window.TreeHandler.updateBreaksPassWidget()
-            editor.refresh()
-            app.processEvents()
-            for widget in (window.ui.breaksPassLabel, editor.fields['break_pass'], editor.origins['break_pass']):
-                assert widget.isVisibleTo(window.ui.shapeGroupBox) == visible
-    grid = window.ui.gridLayout
-    depth = editor.fields['axis3_mill_depth']
-    feed = editor.fields['f_g1_plane']
-    assert feed.mapTo(window.ui.shapeGroupBox, QtCore.QPoint()).y() >= depth.mapTo(window.ui.shapeGroupBox, QtCore.QPoint()).y()
-    assert panel.binding.project.to_dict() == before_break_visibility
+    assert 'break_pass' not in panel.parameter_editor.fields
+    assert not hasattr(window.ui, 'breaksPassComboBox')
     panel.reverse()
     assert [geo.save_v1() for geo in shape.geos] == original_geometry
     assert panel.binding.project.steps[0].entries[0].clockwise != panel.binding.project.steps[-1].entries[0].clockwise
@@ -462,16 +456,19 @@ def exercise_panel(window, app, folder):
     assert panel.binding.project.steps[0].id == original.id
     panel.redo()
     assert panel.binding.project.steps[0].id == target.id
-    # Explicit routing has detached, per-operation endpoints and no geometry copies in the scene.
+    # Visible routing has detached, per-operation endpoints and no geometry copies in the scene.
     count = len(window.canvas_scene.shapes)
-    panel.draw_route()
+    window.ui.actionLiveUpdateExportRoute.setChecked(True)
     assert len(window.canvas_scene.shapes) == count
     assert window.canvas_scene.routearrows
+    window.ui.actionLiveUpdateExportRoute.setChecked(False)
+    assert not window.canvas_scene.routearrows and not window.canvas_scene.routetext
     # The visible order is the emitted order, and persists through GUI/CLI roundtrip.
     path = folder / 'panel.d2g'
     path.write_text(window.d2g.export_current(), encoding='utf-8')
     output = folder / 'panel.ngc'
     assert window.exportShapes(saveas=str(output))
+    assert not window.canvas_scene.routearrows
     code = output.read_text()
     import re
     switches = re.findall(r'^T(\d+)\s+M6\s*$', code, re.MULTILINE)
@@ -756,7 +753,7 @@ def exercise_manual_regions(window, app, folder):
     tabs.set_mode(False)
     panel.buttons['tabs'].trigger()
     assert tabs.mode and tabs.drawing and tabs.pending is not None and tabs.context is None
-    assert panel.tab_placement_action.isVisible()
+    assert panel.tab_placement.isVisible()
     untouched = panel.binding.project.to_dict()
     panel.tab_placement.setCurrentIndex(panel.tab_placement.findData('snap'))
     assert tabs.pending.placement_mode == 'snap' and tabs.drawing_mode() == 'snap'
@@ -791,7 +788,7 @@ def exercise_manual_regions(window, app, folder):
         app.sendEvent(canvas.viewport(), event)
         item = tabs.nodes[manual.id]
         panel.tree.scrollToItem(item)
-        panel.menu(panel.tree.visualItemRect(item).center())
+        panel.menu(machining_row_position(panel.tree, item))
         context_menu.assert_not_called()
     assert tabs.catalog.contextMenuPolicy() == Qt.ContextMenuPolicy.PreventContextMenu
     # The continuing session can select a different original, and an empty
@@ -898,14 +895,12 @@ def exercise_manual_regions(window, app, folder):
     import re
     assert re.search(r'G1 Z\s+-0\.750', output.read_text())
     exercise_snap_regions(window, app)
-    tabs.set_mode(True)
-    tabs.open_2d_editor()
-    app.processEvents()
-    assert tabs.dialog_view is not None and tabs.dialog_view.scene().items()
-    tabs.editor_dialog.close()
-    app.processEvents()
-    assert not tabs.mode and tabs.editor_dialog is None
-    assert not panel.tab_placement_action.isVisible()
+    tabs.set_mode(False)
+    mode_button = window.view_comparison.buttons['tabs']
+    mode_button.click()
+    assert tabs.mode and panel.tab_placement.isVisible()
+    mode_button.click()
+    assert not tabs.mode and panel.tab_placement.isVisible()
 
 
 def exercise_snap_regions(window, app):
@@ -1181,7 +1176,7 @@ def exercise_region_dimensions(window, app, identity):
     vertices = world_vertices(panel.binding, tabs.records()[identity])
     assert len(alignment_candidates(panel.binding, vertices)) == 1
     corner = tabs.projection(vertices[0]).toPoint()
-    end = corner+QtCore.QPoint(-2, 1)
+    end = corner+QtCore.QPoint(-5, 1)
     QTest.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=corner)
     event = QMouseEvent(QtCore.QEvent.Type.MouseMove, QtCore.QPointF(end),
         QtCore.QPointF(canvas.viewport().mapToGlobal(end)), Qt.MouseButton.NoButton,
@@ -1264,7 +1259,7 @@ def exercise_region_selection(window, app):
         assert panel.canvas_preview.selected == expected_ops
         assert not panel.selected_entries() and panel.context is None
         assert panel.parameter_editor.frame.isHidden()
-        assert all(f.isReadOnly() for f in tabs.fields.values())
+        assert all(not f.isReadOnly() for f in tabs.fields.values())
         assert layer.data(REFERENCE_ROLE) == 2
     view.setExpanded(layer, True)
     view.scrollTo(leaf)
@@ -1359,6 +1354,7 @@ def exercise_operation_canvas(window, app, first_id, second_id):
     before = panel.binding.project.to_dict()
     panel.commands.update_entries([second_id], {'axis3_mill_depth': -7}, start=(20, 10))
     panel.refresh()
+    window.view_comparison.selected_paths_action.setChecked(False)
     window.resize(1700, 1100)
     window.ui.mytabWidget.setCurrentWidget(window.geometry_panel)
     source = panel.binding.sources[panel.commands.entries(panel.binding.project, [first_id])[0][1].geometry_id]
@@ -1430,7 +1426,8 @@ def exercise_operation_canvas(window, app, first_id, second_id):
     app.sendEvent(canvas.viewport(), hover)
     app.processEvents()
     assert preview.hovered == first_id
-    assert canvas.viewport().toolTip() == records[first_id].tooltip
+    tooltip = canvas.viewport().toolTip()
+    assert records[first_id].tooltip in tooltip, tooltip
     # Click an overlapping cutting path: a popup explicitly chooses the operation.
     hit = next(preview.project(tuple((a+b)/2 for a, b in zip(segment.start, segment.end)))
                for segment in records[first_id].segments if segment.role == 'cut'
@@ -1452,8 +1449,11 @@ def exercise_operation_canvas(window, app, first_id, second_id):
     assert painter.pen().style() == Qt.PenStyle.DotLine
     painter.end()
     labels = preview.label_rects()
-    QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier,
-                     pos=labels[first_id][0].center().toPoint())
+    def choose_first(menu, *args):
+        return next(action for action in menu.actions() if action.data() == first_id)
+    with patch.object(QMenu, 'exec', new=choose_first):
+        QTest.mouseClick(canvas.viewport(), Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier,
+                         pos=labels[first_id][0].center().toPoint())
     app.processEvents()
     assert set(panel.selected_entries()) == {first_id, second_id}
     assert panel.context == first_id and preview.counts[source.geometry_id] == (2, 2)
@@ -1499,7 +1499,8 @@ def exercise_saved_window_layout(window, app):
     parameters = window.machining_panel.splitter.sizes()[1]
     window.resize(window.width()+240, window.height()+180)
     app.processEvents()
-    assert abs(ui.splitter.sizes()[0]-sidebar) <= 1
+    assert abs(ui.splitter.sizes()[0]-sidebar) <= 1, (
+        ui.splitter.sizes(), sidebar, window.size(), ui.splitter.minimumSizeHint())
     assert abs(ui.messageSplitter.sizes()[1]-messages) <= 1
     assert ui.canvas.width() > canvas_size.width()+200
     assert ui.canvas.height() > canvas_size.height()+140
@@ -1563,7 +1564,7 @@ def exercise_machining_modes(window, app, shape, identity, other_identity):
         return None
     window.ui.mytabWidget.setCurrentWidget(panel)
     app.processEvents()
-    point = panel.tree.visualItemRect(item).center()
+    point = machining_row_position(panel.tree, item)
     with patch.object(QMenu, 'exec', new=capture):
         app.sendEvent(panel.tree.viewport(), QContextMenuEvent(QContextMenuEvent.Reason.Mouse,
                       point, panel.tree.viewport().mapToGlobal(point)))
@@ -2041,9 +2042,13 @@ def exercise_assignment_dialog(window, app, shape):
         dialog.assert_not_called()
     assert panel.binding.project.to_dict() == before
     select([a])
+    window.ui.mytabWidget.setCurrentWidget(panel)
+    item = panel.entry_items[a]
+    app.processEvents()
+    point = machining_row_position(panel.tree, item)
     menus = []
     with patch.object(QMenu, 'exec', new=lambda menu, point: menus.append(menu)):
-        panel.menu(panel.tree.visualItemRect(panel.entry_items[a]).center())
+        panel.menu(point)
     labels = [action.text() for action in menus[0].actions()]
     assert labels.count(panel.tr('Assign machining…')) == 1
     for removed in ('Edit step', 'Edit step defaults', 'Copy to step', 'Move to step', 'Create machining step…'):

@@ -7,8 +7,8 @@ The commands below are instructions, not builds executed for this chapter.
 
 ## Python distribution
 
-`requires-python` is >=3.9. Dependencies declare ConfigObj, PyQt5 and PyOpenGL;
-the `qt6` extra adds PyQt6. The installed console entry is
+`requires-python` is >=3.9. Dependencies declare ConfigObj and PyQt5. The `qt6` extra adds PyQt6,
+and `view-vispy` adds PyQt6 and VisPy (Python 3.10 or newer). The installed console entry is
 `dxf2gcode.bootstrap.launcher:main`. Source archives and wheels include the
 prepared resources/translation data specified by the build helpers and manifests.
 
@@ -16,7 +16,7 @@ For a release build, install build tooling, both PyQt bindings, Qt6 `rcc` and
 Qt Linguist `lrelease`. From the repository root on a POSIX shell:
 
 ```sh
-python -m pip install build PyQt5 PyQt6 configobj PyOpenGL
+python -m pip install build PyQt5 PyQt6 configobj
 DXF2GCODE_QT=5 python source/tools/build/qt_assets.py
 DXF2GCODE_QT=6 python source/tools/build/qt_assets.py
 DXF2GCODE_QT=5 python source/tools/build/translations.py --no-pylupdate
@@ -58,7 +58,7 @@ python source/tools/build/windows.py bdist_msi
 Install the required cx_Freeze version/environment first; see the source build
 README for platform prerequisites. CI's `tools/package_windows.py` stages the
 portable ZIP and MSI, startup checks and provenance. Initial published Windows
-packages use Python 3.11 / PyQt5 and are unsigned. Signing needs a separately
+packages use Python 3.11 / PyQt6 with VisPy and are unsigned. Signing needs a separately
 configured certificate workflow; no existing signature is implied.
 
 The portable ZIP must be extracted completely. MSI installation is per user;

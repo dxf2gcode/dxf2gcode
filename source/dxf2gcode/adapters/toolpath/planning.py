@@ -135,7 +135,6 @@ class ShapePlanningInputs:
             slice_depth=shape.axis3_slice_depth, final_depth=shape.axis3_mill_depth,
             feed_xy=shape.f_g1_plane, feed_depth=shape.f_g1_depth,
             safe_margin=layer.axis3_safe_margin, retract_depth=layer.axis3_retract,
-            break_pass=getattr(shape, "break_pass", -1),
             lead_in_mode=get_lead_in_mode(shape),
             lead_out_mode=get_lead_out_mode(shape),
             overcut_enabled=get_overcut_enabled(
@@ -238,8 +237,7 @@ class ShapePlanningInputs:
             has_break_layers=bool(getattr(breaks, "breakLayers", ())),
             skipped_tabs=skipped_tabs,
             start_error=getattr(shape.stmove, "start_move_error", ""),
-            initial_state=PlanningState(postprocessor.feed, postprocessor.ze,
-                                        postprocessor.lz,
+            initial_state=PlanningState(postprocessor.feed, postprocessor.lz,
                                         getattr(postprocessor, 'knife_heading', None)
                                         if (getattr(config.vars.Drag_Knife_Options, 'entry_mode', 'fixed') == 'previous'
                                             and getattr(postprocessor, 'knife_tool', None) == (tool.tool_nr, tool.getToolRadius()))

@@ -18,11 +18,28 @@ import dxf2gcode.bootstrap.runtime_state as g
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULTS = dict(show_disabled_paths=True, live_update_export_route=False,
-                split_line_segments=False, automatic_cutter_compensation=False,
+                split_line_segments=False, dxf_import_mode='without_compensation',
                 machine_type='milling')
 
 
 class TestConfigDefaults(unittest.TestCase):
+    def test_dxf_import_mode_migrates_old_profiles_and_persists(self):
+        for enabled, mode in ((True, 'with_compensation'), (False, 'without_compensation')):
+            with tempfile.TemporaryDirectory() as folder, patch.object(g, 'folder', folder):
+                config = MyConfig()
+                self.assertEqual(config.vars.General.dxf_import_mode, 'without_compensation')
+                general = config.var_dict['General']
+                del general['dxf_import_mode']
+                general['automatic_cutter_compensation'] = enabled
+                config.save_varspace()
+                loaded = MyConfig()
+                self.assertEqual(loaded.vars.General.dxf_import_mode, mode)
+                loaded.var_dict['General']['dxf_import_mode'] = 'geometry_only'
+                loaded.save_varspace()
+                loaded = MyConfig()
+                self.assertEqual(loaded.vars.General.dxf_import_mode, 'geometry_only')
+                self.assertEqual(loaded.vars.General.automatic_cutter_compensation, enabled)
+
     def test_tab_placement_defaults_and_persistence(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(g, 'folder', folder):
             config = MyConfig()
@@ -91,7 +108,9 @@ class TestConfigDefaults(unittest.TestCase):
                         fresh=MyConfig()
                         for key,value in DEFAULTS.items():
                             self.assertEqual(fresh.var_dict['General'][key],value)
-                        individual={key:(not value if isinstance(value,bool) else 'lathe') for key,value in DEFAULTS.items()}
+                        individual = {key: not value for key, value in DEFAULTS.items()
+                                      if isinstance(value, bool)}
+                        individual.update(machine_type='lathe', dxf_import_mode='geometry_only')
                         config.var_dict['General'].update(individual)
                         config.update_config()
                         config.save_varspace()
@@ -110,7 +129,7 @@ class TestConfigDefaults(unittest.TestCase):
                                 tooltip=control.checkbox.toolTip()
                                 self.assertNotIn('(default)',control.checkbox.text())
                             else:
-                                label=QCoreApplication.translate('MyConfig','Milling')
+                                label=control.item_labels[default]
                                 tooltip=control.combobox.toolTip()
                                 self.assertEqual(loaded.machine_type,'lathe')
                                 self.assertNotIn('(default)',control.label.text())

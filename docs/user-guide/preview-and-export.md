@@ -57,8 +57,8 @@ display of inter-operation order.
 1. Confirm the **Export** checkboxes and order in **Machining**, and the
    applicable settings. Geometry selection is not an export filter.
 2. Read warnings and resolve blocking conflicts.
-3. Choose **Export → Export Shapes without Optimization**, or deliberately use
-   **Optimize and Export Shapes** when you want reordering.
+3. Choose **Output → Export G-code...**, or deliberately use
+   **Optimize and export G-code...** when you want reordering.
 4. Select the postprocessor/output type in the export dialog and save the file.
 5. Inspect the generated program and operation sequence.
 

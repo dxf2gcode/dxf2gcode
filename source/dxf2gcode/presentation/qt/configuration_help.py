@@ -16,7 +16,7 @@ HELP_SOURCES = (
     QT_TRANSLATE_NOOP("ConfigurationHelp", "Defines comments' format. Comments are written at some places during the export in order to make the g-code better readable."),
     QT_TRANSLATE_NOOP("ConfigurationHelp", 'Different methods to initialize the population for the TSP optimizer.\n - Ordered will start with the defined one in the listbox\n - Random just random\n - Heuristic will search the nearest neighbors and starts with the resulting order.'),
     QT_TRANSLATE_NOOP("ConfigurationHelp", 'Divide the lines in 2 parts, in order to start the cutting in the middle of a line (usefull for cutter compensation)'),
-    QT_TRANSLATE_NOOP("ConfigurationHelp", 'Enable 3D representation of the piece (requires PyQt5 and OpenGL)'),
+    QT_TRANSLATE_NOOP("ConfigurationHelp", 'Use VisPy with PyQt6 and OpenGL when available; otherwise use the 2D canvas.'),
     QT_TRANSLATE_NOOP("ConfigurationHelp", 'Enables line numbers into the exported G-Code file.'),
     QT_TRANSLATE_NOOP("ConfigurationHelp", 'Export generated gcode by default to this directory.'),
     QT_TRANSLATE_NOOP("ConfigurationHelp", 'Generally set to G40%nl'),

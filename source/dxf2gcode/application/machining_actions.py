@@ -32,7 +32,7 @@ def default_step_values(project):
     config = project.configuration
     result = dict(config['Depth_Coordinates'], **config['Feed_Rates'],
                   **config['Lead_In_Out'])
-    result.update(cut_cor=40, milling_offset=0, break_pass=-1,
+    result.update(cut_cor=40, milling_offset=0,
                   drag_swivel_depth=config['Drag_Knife_Options']['swivel_depth'],
                   drag_angle=config['Drag_Knife_Options']['drag_angle'])
     return result
@@ -137,12 +137,16 @@ class MachiningCommands:
         return self.perform('create region', change)
 
     def update_region(self, identity, **values):
+        return self.update_regions({identity: values})
+
+    def update_regions(self, updates):
         def change(project):
-            region = project.regions[identity]
-            for key, value in values.items():
-                if key == 'id' or key not in region.__dataclass_fields__:
-                    raise ValueError('Unknown tab region value')
-                setattr(region, key, deepcopy(value))
+            for identity, values in updates.items():
+                region = project.regions[identity]
+                for key, value in values.items():
+                    if key == 'id' or key not in region.__dataclass_fields__:
+                        raise ValueError('Unknown tab region value')
+                    setattr(region, key, deepcopy(value))
             return MachiningChange('update region', selection=())
         return self.perform('update region', change)
 
@@ -492,7 +496,7 @@ class MachiningCommands:
             return MachiningChange('tool', tuple(differences), identities)
         return self.perform('tool', change)
 
-    def update_entries(self, identities, overrides=None, **state):
+    def update_entries(self, identities, overrides=None, *, keep_selection=False, **state):
         def change(project):
             for step, entry in self.entries(project, identities):
                 if overrides is not None and isinstance(entry, MachiningOperation):
@@ -512,7 +516,8 @@ class MachiningCommands:
                         compensation = project.resolve(step, entry)[0].get('cut_cor', 40)
                         entry.legacy_conflict = ((drill, pocket, compensation)
                             if machining_conflict(drill, pocket, compensation) else ())
-            return MachiningChange('parameters', selection=tuple(identities))
+            selection = self.selection if keep_selection else tuple(identities)
+            return MachiningChange('parameters', selection=selection)
         return self.perform('parameters', change)
 
     def update_selected_step_defaults(self, identities, values):

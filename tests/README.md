@@ -31,7 +31,7 @@ any working directory.
 ## Prerequisites
 
 * Python 3 (tested with 3.11).
-* The application dependencies: `PyQt5`, `PyOpenGL` and `configobj`
+* The application dependencies: `PyQt5` and `configobj`
   (install them with `python -m pip install -r requirements-test.txt`).
 * The GUI tests run headless; they set `QT_QPA_PLATFORM=offscreen`
   themselves, so no display is required.
@@ -141,7 +141,6 @@ The default discovery pattern `test*.py` does **not** match the module names
 | `dxf2gcode_import_contract_test.py` | integration | entity conversion, contour references, nested block contents and transforms |
 | `dxf2gcode_postpro_config_test.py` | unit/regression | postprocessor defaults, supported versions, save/reload and invalid-file recovery |
 | `dxf2gcode_canvas_mixed_test.py` | integration | 2D canvas / mixed selection |
-| `dxf2gcode_canvas3d_test.py` | unit | 3D canvas transforms, view state and generated geometry |
 | `dxf2gcode_canvas_warning_marker_test.py` | integration | canvas warning markers for invalid toolpaths |
 | `dxf2gcode_pocket_multiselect_test.py` | integration | multi-select pocket activation |
 | `dxf2gcode_tree_group_state_test.py` | integration | tree group state |

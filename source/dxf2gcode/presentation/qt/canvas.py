@@ -73,38 +73,15 @@ def mixedSelectionIcon():
     return _MIXED_SELECTION_ICON
 
 
-"""
-This Canvas function can be called as any class.
-Since it will pretend to be, depending on the settings,
-to be the canvas3d or canvas2d class
-"""
 def Canvas(parent=None):
-    if g.config.mode3d:
-        from dxf2gcode.presentation.qt.canvas3d import GLWidget
-        return GLWidget(parent)
-    else:
-        from dxf2gcode.presentation.qt.canvas2d import MyGraphicsView
-        return MyGraphicsView(parent)
+    from dxf2gcode.presentation.qt.canvas2d import MyGraphicsView
+    return MyGraphicsView(parent)
 
-def CanvasObject():
-    if g.config.mode3d:
-        QtVersion = QtCore.QT_VERSION_STR.split(".")
-        if not (int(QtVersion[0]) >= 5 and int(QtVersion[1]) >= 4):
-            raise Exception("For the 3d mode you need a PyQt version that includes a Qt version of at least 5.4.\n"
-                            "Set mode3d to False in the config file, or update your PyQt version.\n"
-                            "Current version found: PyQt%s (which includes Qt%s)"
-                            % (QtCore.PYQT_VERSION_STR, QtCore.QT_VERSION_STR))
-        from dxf2gcode.presentation.qt.qt_compat.QtOpenGLWidgets import QOpenGLWidget
-        return QOpenGLWidget
-    else:
-        return QGraphicsView
 
-class CanvasBase(CanvasObject()):
+class CanvasBase(QGraphicsView):
     def __init__(self, parent=None):
         super(CanvasBase, self).__init__(parent)
 
-        self.isPanning = False
-        self.isRotating = False
         self.isMultiSelect = False
 
         self.setMouseTracking (True)
@@ -116,47 +93,11 @@ class CanvasBase(CanvasObject()):
             preview.overlay.update()
 
 
-    def updateModifiers(self, event):
-        """
-        Handle all canvas keyboard modifiers in one place.
-        """
-
-        if type (event) == QMouseEvent:
-            buttons = event.buttons()
-        else:
-            buttons = QApplication.mouseButtons()
-
-        if type (event) == QKeyEvent:
-            modifiers = event.modifiers()
-        else:
-            modifiers = QApplication.keyboardModifiers()
-
-        # allow only clean modifiers, no combos
-        wantMultiSelect = (modifiers == Qt.KeyboardModifier.ControlModifier)
-        self.isMultiSelect = wantMultiSelect and ((buttons == Qt.MouseButton.NoButton) or (buttons == Qt.MouseButton.LeftButton))
-        wantPanning = (modifiers == Qt.KeyboardModifier.ShiftModifier)
-        self.isPanning = wantPanning and (buttons == Qt.MouseButton.LeftButton)
-        wantRotating = (modifiers == Qt.KeyboardModifier.AltModifier)
-        self.isRotating = wantRotating and (buttons == Qt.MouseButton.LeftButton)
-
-        if self.isPanning or self.isRotating:
-            self.setCursor(Qt.CursorShape.ClosedHandCursor)
-        elif wantPanning:
-            self.setCursor(Qt.CursorShape.OpenHandCursor)
-        elif wantRotating:
-            self.setCursor(Qt.CursorShape.PointingHandCursor)
-        elif wantMultiSelect:
-            self.setCursor(Qt.CursorShape.CrossCursor)
-        else:
-            self.unsetCursor()
-
-
 class MyDropDownMenu(QMenu):
-    def __init__(self, canvas_scene, position, clicked, offset=None):
+    def __init__(self, canvas_scene, position, clicked):
         QMenu.__init__(self)
 
         self.clicked = clicked
-        self.offset = offset
 
         self.canvas_scene = canvas_scene
 
@@ -166,6 +107,9 @@ class MyDropDownMenu(QMenu):
         zero_action.setToolTip(self.tr("Open the workpiece zero dialog for this point. Snapping is optional in the dialog."))
         zero_action.setEnabled(bool(canvas_scene.shapes))
         zero_action.triggered.connect(self.moveWorkpieceZeroHere)
+        if clicked is None:
+            self.setToolTipsVisible(True)
+        self.requireDrawingPoint(zero_action)
 
         panel = getattr(getattr(g, 'window', None), 'machining_panel', None)
         if panel is not None and panel.binding is not None:
@@ -187,6 +131,8 @@ class MyDropDownMenu(QMenu):
                                         ('Set Sharpest StartPoint', 'sharpest')):
                     action = self.addAction(self.tr(text))
                     action.setEnabled(enabled)
+                    if operation == 'nearest':
+                        self.requireDrawingPoint(action)
                     action.triggered.connect(lambda checked=False, operation=operation:
                                              self.editMachiningPaths(panel, identities, operation))
                 self.addSeparator()
@@ -195,7 +141,8 @@ class MyDropDownMenu(QMenu):
                 self.addAction(panel.tr('Assign machining…'), lambda checked=False:
                                panel.assign_machining(shapes=self.selectedItems, global_position=position))
             self.addSeparator()
-            self.addAction(panel.modifiers.tr('Draw new tab region…'), panel.modifiers.start_draw)
+            draw_action = self.addAction(panel.modifiers.tr('Draw new tab region…'), panel.modifiers.start_draw)
+            self.requireDrawingPoint(draw_action)
             self.exec(position)
             return
 
@@ -213,6 +160,7 @@ class MyDropDownMenu(QMenu):
 
         swdirectionAction = self.addAction(self.tr("Switch Direction"))
         SetNxtStPAction = self.addAction(self.tr("Set Nearest StartPoint"))
+        self.requireDrawingPoint(SetNxtStPAction)
         setSharStAction = self.addAction(self.tr("Set Sharpest StartPoint"))
 
         self.addSeparator()
@@ -277,6 +225,11 @@ class MyDropDownMenu(QMenu):
 
         self.exec(position)
 
+    def requireDrawingPoint(self, action):
+        if self.clicked is None:
+            action.setEnabled(False)
+            action.setToolTip(self.tr("Available in top view."))
+
     def tr(self, string_to_translate):
         """
         Translate a string using the QCoreApplication translation framework
@@ -289,19 +242,12 @@ class MyDropDownMenu(QMenu):
     def editMachiningPaths(self, panel, identities, operation):
         points = {}
         if operation == 'nearest':
-            for step, entry in panel.commands.entries(panel.binding.project, identities):
-                point = self.clicked
-                if self.offset is not None:
-                    depth = panel.binding.project.resolve(step, entry)[0]['axis3_start_mill_depth']
-                    point = self.canvas_scene.determineSelectedPosition(self.clicked, depth, self.offset)
-                points[entry.id] = (point.x, point.y)
+            for _, entry in panel.commands.entries(panel.binding.project, identities):
+                points[entry.id] = (self.clicked.x, self.clicked.y)
         panel.execute(lambda: panel.commands.edit_operation_paths(identities, operation, points))
 
     def moveWorkpieceZeroHere(self):
-        point = self.clicked
-        if self.offset is not None:
-            point = self.canvas_scene.determineSelectedPosition(self.clicked, 0.0, self.offset)
-        g.window.moveWorkpieceZero(point=point)
+        g.window.moveWorkpieceZero(point=self.clicked)
 
     def calcMenuDir(self):
         """
@@ -427,14 +373,8 @@ class MyDropDownMenu(QMenu):
         """
         Search the nearest StartPoint to the clicked position of all selected shapes.
         """
-        xyForZ = {}
         for shape in self.selectedItems:
-            clicked = self.clicked
-            if self.offset is not None:
-                z = shape.axis3_start_mill_depth
-                if z not in xyForZ:
-                    clicked = xyForZ[z] = self.canvas_scene.determineSelectedPosition(self.clicked, z, self.offset)
-            shape.setNearestStPoint(clicked)
+            shape.setNearestStPoint(self.clicked)
             self.canvas_scene.repaint_shape(shape)
         self.canvas_scene.update()
         g.window.TreeHandler.prepareExportOrderUpdate()

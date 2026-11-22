@@ -56,8 +56,8 @@
         <translation type="obsolete">Общие настройки</translation>
     </message>
     <message>
-        <source>3D mode (requires OpenGL - restart needed)</source>
-        <translation type="obsolete">Режим 3D (требует OpenGL - требуется перезапуск)</translation>
+        <source>3D view with VisPy (restart required)</source>
+        <translation>Трёхмерный вид с VisPy (требуется перезапуск)</translation>
     </message>
     <message>
         <source>Display disabled paths (default)</source>
@@ -1418,11 +1418,6 @@ returned error code: {1}</source>
         <translation type="obsolete">Файл</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1245"/>
-        <source>Export the current project to G-Code</source>
-        <translation>Экспорт проекта в G-коды</translation>
-    </message>
-    <message>
         <location filename="." line="3014757"/>
         <source>Export</source>
         <translation type="obsolete">Экспорт</translation>
@@ -1708,21 +1703,6 @@ returned error code: {1}</source>
         <translation type="obsolete">Ошибка при экспорте: %s</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1231"/>
-        <source>&amp;File</source>
-        <translation>&amp;Файл</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1248"/>
-        <source>&amp;Export</source>
-        <translation>&amp;Экспорт</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1256"/>
-        <source>&amp;View</source>
-        <translation>&amp;Вид</translation>
-    </message>
-    <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1270"/>
         <source>&amp;Options</source>
         <translation>&amp;Параметры</translation>
@@ -1736,11 +1716,6 @@ returned error code: {1}</source>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1288"/>
         <source>Measurement &amp;units</source>
         <translation>&amp;Единицы измерения</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1311"/>
-        <source>&amp;Help</source>
-        <translation>&amp;Справка</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1324"/>
@@ -1766,11 +1741,6 @@ returned error code: {1}</source>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1384"/>
         <source>&amp;Autoscale</source>
         <translation>&amp;Автомасштаб</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1395"/>
-        <source>&amp;Delete G0 Paths</source>
-        <translation>&amp;Удалить траектории G0</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1400"/>
@@ -1824,8 +1794,8 @@ returned error code: {1}</source>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1489"/>
-        <source>&amp;Live Update Export Route</source>
-        <translation>&amp;Отображать экспортируемые траектории</translation>
+        <source>Show export order</source>
+        <translation>?????????? ??????? ????????</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1497"/>
@@ -1881,16 +1851,6 @@ returned error code: {1}</source>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1598"/>
         <source>&amp;Inches</source>
         <translation>&amp;Дюймы</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="761"/>
-        <source>Process breaks from</source>
-        <translation>Обрабатывать перемычки с</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="776"/>
-        <source>Pass from which the break tabs are milled through. Earlier passes cut the unbroken contour. &quot;Last pass&quot; (default) processes the tabs in the final pass, provided it reaches them. &quot;0 - never&quot; keeps the unbroken contour for all passes.</source>
-        <translation>Проход, с которого прорезаются перемычки. Предыдущие проходы режут непрерывный контур. &quot;Последний проход&quot; (по умолчанию) обрабатывает перемычки в последнем проходе, если он их достигает. &quot;0 - никогда&quot; сохраняет непрерывный контур на всех проходах.</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1330"/>
@@ -2207,6 +2167,26 @@ After you close the configuration window, DXF2GCODE will restart with an empty w
 <context>
     <name>MyConfig</name>
     <message>
+        <source>When opening a new DXF:</source>
+        <translation>При открытии нового DXF:</translation>
+    </message>
+    <message>
+        <source>Create operations with automatic cutter compensation</source>
+        <translation>Создать операции с автоматической коррекцией радиуса фрезы</translation>
+    </message>
+    <message>
+        <source>Create operations without cutter compensation</source>
+        <translation>Создать операции без коррекции радиуса фрезы</translation>
+    </message>
+    <message>
+        <source>Import geometry only</source>
+        <translation>Импортировать только геометрию</translation>
+    </message>
+    <message>
+        <source>Applies when opening a new DXF. Saved projects restore their own operations.</source>
+        <translation>Применяется при открытии нового DXF. Сохранённые проекты восстанавливают свои операции.</translation>
+    </message>
+    <message>
         <source>errors reading %s:</source>
         <translation>ошибки чтения %s:</translation>
     </message>
@@ -2295,8 +2275,8 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <translation>Общие настройки</translation>
     </message>
     <message>
-        <source>3D mode (requires OpenGL - restart needed)</source>
-        <translation>Режим 3D (требует OpenGL - требуется перезапуск)</translation>
+        <source>3D view with VisPy (restart required)</source>
+        <translation>Трёхмерный вид с VisPy (требуется перезапуск)</translation>
     </message>
     <message>
         <source>Display disabled paths (default)</source>
@@ -2875,8 +2855,8 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <translation>Показывать отключённые контуры</translation>
     </message>
     <message>
-        <source>Update export route live</source>
-        <translation>Обновлять маршрут экспорта в реальном времени</translation>
+        <source>Show export order by default</source>
+        <translation>?????????? ??????? ???????? ?? ?????????</translation>
     </message>
     <message>
         <source>Split imported line segments</source>
@@ -2899,8 +2879,8 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
         <translation>Начальная видимость отключённых контуров. Её можно изменить для текущего сеанса в меню «Вид».</translation>
     </message>
     <message>
-        <source>Initial live display of export connections. Manual route display remains available when live updates are off.</source>
-        <translation>Начальное обновление связей экспорта в реальном времени. При отключённом обновлении маршрут можно показывать вручную.</translation>
+        <source>Show the export connections and keep them up to date after changes.</source>
+        <translation>?????????? ???????? ????? ?????????? ? ????????? ?? ????? ?????????.</translation>
     </message>
     <message>
         <source>Used when importing DXF line segments. Saved projects retain their own import settings.</source>
@@ -3001,6 +2981,10 @@ You have to delete (or carefully edit) the configuration file "{2}" to solve the
 </context>
 <context>
     <name>MyDropDownMenu</name>
+    <message>
+        <source>Available in top view.</source>
+        <translation>Доступно в виде сверху.</translation>
+    </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/canvas.py" line="181"/>
         <source>Invert Selection</source>
@@ -4028,26 +4012,6 @@ Skipped Geometries</source>
         <translation>Вращение</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="1877"/>
-        <source>Break pass selection reset to &apos;Last pass&apos;: the shape generates only %d passes</source>
-        <translation>Выбор прохода для перемычек сброшен на 'последний проход': контур создаёт только %d проходов</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="1884"/>
-        <source>Last pass (default)</source>
-        <translation>Последний проход (по умолчанию)</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="1885"/>
-        <source>0 - never</source>
-        <translation>0 - никогда</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="1887"/>
-        <source>Pass %d</source>
-        <translation>Проход %d</translation>
-    </message>
-    <message>
         <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="240"/>
         <source>Select all</source>
         <translation>Выбрать всё</translation>
@@ -4396,8 +4360,8 @@ Skipped Geometries</source>
         <translation>Делить линии пополам, чтобы начинать резание с середины линии, например при коррекции радиуса фрезы.</translation>
     </message>
     <message>
-        <source>Enable 3D representation of the piece (requires PyQt5 and OpenGL)</source>
-        <translation>Включить трёхмерное отображение детали (необходимы Qt и OpenGL).</translation>
+        <source>Use VisPy with PyQt6 and OpenGL when available; otherwise use the 2D canvas.</source>
+        <translation>Использовать VisPy с PyQt6 и OpenGL при их наличии. Иначе использовать двумерный вид.</translation>
     </message>
     <message>
         <source>Enables line numbers into the exported G-Code file.</source>
@@ -4836,6 +4800,22 @@ Skipped Geometries</source>
 <context>
     <name>MachiningPanel</name>
     <message>
+        <source>Enable export for all</source>
+        <translation>Включить экспорт для всех</translation>
+    </message>
+    <message>
+        <source>Disable export for all</source>
+        <translation>Отключить экспорт для всех</translation>
+    </message>
+    <message>
+        <source>Enable optimization for all</source>
+        <translation>Включить оптимизацию для всех</translation>
+    </message>
+    <message>
+        <source>Disable optimization for all</source>
+        <translation>Отключить оптимизацию для всех</translation>
+    </message>
+    <message>
         <source>New step</source>
         <translation>Новый этап</translation>
     </message>
@@ -5158,10 +5138,6 @@ Skipped Geometries</source>
     <message>
         <source>Cutter compensation</source>
         <translation>Коррекция радиуса инструмента</translation>
-    </message>
-    <message>
-        <source>Holding-tab first pass</source>
-        <translation>Первый проход с перемычками</translation>
     </message>
     <message>
         <source>Spindle speed</source>
@@ -5529,10 +5505,6 @@ Skipped Geometries</source>
         <translation>Определяет, продолжается ли траектория за концом контура.</translation>
     </message>
     <message>
-        <source>Pass from which holding-tab regions affect the contour.</source>
-        <translation>Проход, начиная с которого удерживающие перемычки влияют на контур.</translation>
-    </message>
-    <message>
         <source>Spindle speed for this machining operation.</source>
         <translation>Частота вращения шпинделя для этой операции.</translation>
     </message>
@@ -5581,10 +5553,6 @@ Skipped Geometries</source>
     <message>
         <source>Speed</source>
         <translation>Обороты</translation>
-    </message>
-    <message>
-        <source>Pass</source>
-        <translation>Проход</translation>
     </message>
     <message>
         <source>Z values</source>
@@ -5692,6 +5660,18 @@ Skipped Geometries</source>
 </context>
   <context>
     <name>TabModifiers</name>
+    <message>
+        <source>Different values</source>
+        <translation>Разные значения</translation>
+    </message>
+    <message>
+        <source>Apply assignment</source>
+        <translation>Применить назначение</translation>
+    </message>
+    <message>
+        <source>No common intersecting targets.</source>
+        <translation>Нет общих пересекающихся целей.</translation>
+    </message>
     <message>
       <source>Holding tabs</source>
       <translation>Перемычки</translation>
@@ -5849,10 +5829,6 @@ Skipped Geometries</source>
       <translation>Области перемычек</translation>
     </message>
     <message>
-      <source>Tab regions · 2D editor</source>
-      <translation>Области перемычек · 2D-редактор</translation>
-    </message>
-    <message>
       <source>{0} operations</source>
       <translation>Операций: {0}</translation>
     </message>
@@ -5928,60 +5904,100 @@ Skipped Geometries</source>
 <context>
     <name>ViewComparison</name>
     <message>
-        <source>View comparison</source>
-        <translation>Сравнение видов</translation>
+        <source>Show XYZ axes at workpiece zero</source>
+        <translation>Показывать оси XYZ в нуле заготовки</translation>
     </message>
     <message>
-        <source>2D canvas</source>
-        <translation>Холст 2D</translation>
+        <source>Toolpaths for selected contours only</source>
+        <translation>Траектории только для выбранных контуров</translation>
     </message>
     <message>
-        <source>VisPy: top view</source>
-        <translation>VisPy: вид сверху</translation>
+        <source>Show Z retracts</source>
+        <translation>Показывать отводы по Z</translation>
     </message>
     <message>
-        <source>VisPy: spatial view</source>
-        <translation>VisPy: пространственный вид</translation>
+        <source>Open</source>
+        <translation>Открыть</translation>
+    </message>
+    <message>
+        <source>Export G-code</source>
+        <translation>Экспортировать G-код</translation>
+    </message>
+    <message>
+        <source>Machining</source>
+        <translation>Обработка</translation>
+    </message>
+    <message>
+        <source>Program</source>
+        <translation>Программа</translation>
+    </message>
+    <message>
+        <source>Info</source>
+        <translation>Сведения</translation>
+    </message>
+    <message>
+        <source>Drawing</source>
+        <translation>Чертёж</translation>
+    </message>
+    <message>
+        <source>Output</source>
+        <translation>Вывод</translation>
+    </message>
+    <message>
+        <source>Open DXF or project...</source>
+        <translation>Открыть DXF или проект…</translation>
+    </message>
+    <message>
+        <source>Set workpiece zero...</source>
+        <translation>Задать ноль заготовки…</translation>
+    </message>
+    <message>
+        <source>Export G-code...</source>
+        <translation>Экспортировать G-код…</translation>
+    </message>
+    <message>
+        <source>Optimize and export G-code...</source>
+        <translation>Оптимизировать и экспортировать G-код…</translation>
+    </message>
+    <message>
+        <source>History</source>
+        <translation>История</translation>
     </message>
     <message>
         <source>Fit all</source>
-        <translation>Показать всё</translation>
+        <translation>Вписать всё</translation>
     </message>
     <message>
-        <source>The prototype requires PyQt6.</source>
-        <translation>Для прототипа требуется PyQt6.</translation>
+        <source>View</source>
+        <translation>Вид</translation>
     </message>
     <message>
-        <source>Start with the existing 2D canvas to use the comparison.</source>
-        <translation>Для сравнения запустите приложение с существующим холстом 2D.</translation>
+        <source>Top view</source>
+        <translation>Вид сверху</translation>
     </message>
     <message>
-        <source>VisPy is not installed. The 2D canvas remains available.</source>
-        <translation>VisPy не установлен. Холст 2D остаётся доступным.</translation>
+        <source>Spatial view</source>
+        <translation>Пространственный вид</translation>
     </message>
     <message>
-        <source>The 3D prototype is unavailable; using the 2D canvas.</source>
-        <translation>Прототип 3D недоступен; используется холст 2D.</translation>
+        <source>Transparent tools</source>
+        <translation>Прозрачные инструменты</translation>
     </message>
     <message>
-        <source>Qt Quick 3D: top view</source>
-        <translation>Qt Quick 3D: вид сверху</translation>
+        <source>Show selected tools at their diameter with a schematic length.</source>
+        <translation>Показать инструменты выбранных операций с их диаметром и условной длиной.</translation>
     </message>
     <message>
-        <source>Qt Quick 3D: spatial view</source>
-        <translation>Qt Quick 3D: пространственный вид</translation>
+        <source>PyQt6 is required.</source>
+        <translation>Требуется PyQt6.</translation>
     </message>
     <message>
-        <source>Qt Quick 3D is not installed. The 2D canvas remains available.</source>
-        <translation>Qt Quick 3D не установлен. Холст 2D остаётся доступным.</translation>
+        <source>VisPy is not installed.</source>
+        <translation>VisPy не установлен.</translation>
     </message>
     <message>
-        <source>Transparent tools (test)</source>
-        <translation>Прозрачные инструменты (тест)</translation>
-    </message>
-    <message>
-        <source>Selected operations: 25% opacity, actual diameter; test length = four diameters. No collision check.</source>
-        <translation>Выбранные операции: непрозрачность 25 %, фактический диаметр; тестовая длина = четыре диаметра. Без проверки столкновений.</translation>
+        <source>VisPy is unavailable. Using the 2D canvas.</source>
+        <translation>VisPy недоступен. Используется двумерный вид.</translation>
     </message>
 </context>
 </TS>

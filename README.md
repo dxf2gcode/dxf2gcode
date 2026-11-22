@@ -142,7 +142,7 @@ installed and available on `PATH` for translation compilation; see the
 [build documentation](source/README.md).
 
 ```sh
-python -m pip install "PyQt5>=5.15" "configobj>=5.0.6" "PyOpenGL>=3.1"
+python -m pip install "PyQt5>=5.15" "configobj>=5.0.6"
 python source/tools/build/qt_assets.py
 python source/tools/build/translations.py --no-pylupdate
 python source/dxf2gcode.py

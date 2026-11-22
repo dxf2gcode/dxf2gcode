@@ -59,7 +59,7 @@ second controls the generated output dialect.
 
 ## 2. Open and inspect the drawing
 
-1. Choose **File → Open...** and open `rectangle-20x10-mm.dxf`.
+1. Choose **Program → Open DXF or project...** and open `rectangle-20x10-mm.dxf`.
 2. Confirm that the dimension fields use **mm**, not inches. If necessary,
    select millimetres through **Options → Measurement units → Millimeters**.
 3. In **Geometry**, expand `Tutorial` in the **Layers** section to see the
@@ -137,7 +137,7 @@ are an aid to inspection, not a replacement for checking the exported program.
 
 ## 6. Export without optimization
 
-1. Choose **Export → Export Shapes without Optimization**.
+1. Choose **Output → Export G-code...**.
 2. In **Export to file**, select **G-CODE for LinuxCNC (*.ngc)** as the output
    type. This selects the demonstration postprocessor.
 3. Choose a destination and save as `rectangle-20x10-mm.ngc`.

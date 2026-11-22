@@ -31,7 +31,7 @@ DXF-layer membership does not change. When a selected contour already has
 several assignments, activate the intended source operation before using it
 for a new step.
 
-**Create…** in the toolbar retains the dedicated creation dialog, including
+**Create…** in the **Machining** group opens the dedicated creation dialog, including
 an empty step or an unused current selection. Without a selection it creates
 an empty step. Double-click a step, or press **F2** with the tree focused, to
 change its name, kind and tool. Selecting its row already exposes its defaults;
@@ -115,7 +115,7 @@ First select the intended original contours, machining steps or individual
 operations. Original-contour selection covers **all linked operations**. Selecting
 one or more operations covers **only those operations**; a step covers its
 contained operations. No prior selection means no new region can be created.
-Switch on **Tab edit mode** in the Machining toolbar to start drawing immediately.
+Switch on **Tab edit mode** in the **Machining** group in the view band to start drawing immediately.
 You can also use **Draw new tab region…** from the normal canvas context menu or
 the **+** in the Geometry region section. Always drag out a rectangle.
 The default is **Snap to contour**: on release, the rectangle becomes an aligned square.
@@ -375,7 +375,7 @@ manual. The workpiece zero action remains separate from contour-start actions.
   moving and new-step creation. It also assigns selected **Unassigned**
   contours. Mixed assigned/unassigned selections are one atomic action;
   an incompatible selection is rejected as a whole.
-- The top toolbar separates creation, ordering, history and tree-view actions.
+- The toolbar above the machining tree contains ordering and tree-view actions.
   Collapse/expand controls sit to the right; unavailable actions are disabled.
 - **Reverse** and **Remove** are in the tree context menu. Profile updates and
   custom G-code are grouped under **Advanced**; double-click edits the step.
@@ -383,8 +383,9 @@ manual. The workpiece zero action remains separate from contour-start actions.
   available with or without a selection. It changes the workpiece origin;
   it does not edit an individual contour’s machining start. **Delete** removes the selected entry while the tree has focus.
 - Use **Up/Down** or **Alt + Up/Down** to reorder entries or steps.
-- Use **Undo/Redo** in the tab, or **Ctrl + Z / Ctrl + Shift + Z** while it
-  has keyboard focus. A multi-selection action is one undo entry; redo restores
+- Use **Undo/Redo** in the title bar on supported Windows setups, or in the
+  ribbon's **History** group. **Ctrl + Z / Ctrl + Shift + Z** also work while the
+  Machining tab has keyboard focus. A multi-selection action is one undo entry; redo restores
   the same identities.
 
 Own depths, feeds and leads are retained when moving or copying. Inherited
@@ -434,7 +435,8 @@ or spindle-speed command. Check the chosen profile and the generated program.
 
 Route display is separate from preview and optimization. Its machining
 endpoints come from the planned approach and final position, including leads
-and overcut. Preview-only actions do not activate manual route display.
+and overcut. Start-point changes refresh the connections when **Show export
+order** is enabled.
 
 ## Saved values and changed drawings
 

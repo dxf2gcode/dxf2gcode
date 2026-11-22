@@ -2,7 +2,7 @@
 
 from dxf2gcode.presentation.qt.numeric_display import format_number, set_number
 from html import escape
-from math import ceil, isfinite
+from math import isfinite
 
 import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.domain.project.machining_project import MachiningOperation
@@ -139,8 +139,7 @@ class MachiningParameters:
             'axis3_mill_depth': 'zFinalMillDepthLineEdit', 'milling_offset': 'millingOffsetLineEdit',
             'f_g1_plane': 'g1FeedXYLineEdit', 'f_g1_depth': 'g1FeedZLineEdit',
             'drag_swivel_depth': 'knifeSwivelLineEdit', 'lead_in_mode': 'leadInComboBox',
-            'lead_out_mode': 'leadOutComboBox', 'overcut_enabled': 'overcutComboBox',
-            'break_pass': 'breaksPassComboBox'}
+            'lead_out_mode': 'leadOutComboBox', 'overcut_enabled': 'overcutComboBox'}
         # Reuse the original controls. Machining defaults become contour inputs;
         # changing them does not change the project's tool definition.
         for key, name in (('speed', 'toolSpeedLabel'), ('lead_radius', 'leadRadiusLabel'),
@@ -246,9 +245,6 @@ class MachiningParameters:
         origin.setMenu(menu)
         grid.addWidget(origin, row, 4 if grid is self.ui.toolValuesGrid else 3)
         self.origins[key], self.resets[key], self.origin_boxes[key] = origin, reset, origin
-        if key == 'break_pass':
-            self.ui.breaksPassOrigin = origin
-            origin.setVisible(not field.isHidden())
 
     def _align_forms(self):
         """One scrolling form with four groups and two values per row."""
@@ -284,7 +280,7 @@ class MachiningParameters:
             'tool': self.tr('Tool'), 'speed': self.tr('Speed'),
             'axis3_start_mill_depth': self.tr('Top'), 'axis3_safe_margin': self.tr('Safety'),
             'axis3_retract': self.tr('Retract'), 'axis3_slice_depth': self.tr('Infeed'),
-            'axis3_mill_depth': self.tr('Final'), 'break_pass': self.tr('Pass'),
+            'axis3_mill_depth': self.tr('Final'),
             'f_g1_plane': 'XY', 'f_g1_depth': 'Z',
             'lead_in_mode': self.tr('Entry'), 'lead_out_mode': self.tr('Exit'),
             'lead_radius': self.tr('Radius'), 'lead_length': self.tr('Straight'),
@@ -315,7 +311,7 @@ class MachiningParameters:
         ui.toolValuesGrid.addLayout(top, 0, 0)
         definitions = (
             ('z', self.tr('Z values'), (('axis3_start_mill_depth', 'axis3_safe_margin'),
-             ('axis3_retract', 'axis3_slice_depth'), ('axis3_mill_depth', 'drag_swivel_depth'), ('break_pass',))),
+             ('axis3_retract', 'axis3_slice_depth'), ('axis3_mill_depth', 'drag_swivel_depth'))),
             ('feeds', self.tr('Feeds'), (('f_g1_plane', 'f_g1_depth'),)),
             ('leads', self.tr('Lead in/out'), (('lead_in_mode', 'lead_out_mode'),
              ('lead_radius', 'lead_length'), ('overcut_enabled', 'overcut_length'), ('start_radius',))),
@@ -333,7 +329,6 @@ class MachiningParameters:
             ui.gridLayout.addWidget(group, index, 0)
         ui.gridLayout.setVerticalSpacing(6)
         # Existing visibility controllers keep addressing these labels.
-        ui.breaksPassLabel = self.labels['break_pass']
         ui.knifeSwivelLabel = self.labels['drag_swivel_depth']
         self.drag_angle_label = self.labels['drag_angle']
         self.cut_cor_label = self.labels['cut_cor']
@@ -449,17 +444,8 @@ class MachiningParameters:
                 field.clear()
                 if not same:
                     field.addItem(placeholder, None)
-                if key == 'break_pass':
-                    choices = [(-1, QtCore.QCoreApplication.translate('TreeHandler', 'Last pass (default)')),
-                               (0, QtCore.QCoreApplication.translate('TreeHandler', '0 - never'))]
-                    count = max((ceil(abs(v.get('axis3_mill_depth', 0)-v.get('axis3_start_mill_depth', 0))/abs(v['axis3_slice_depth']))
-                                 if v.get('axis3_slice_depth') else 0 for _, _, v, _ in resolved), default=0)
-                    choices += [(i, QtCore.QCoreApplication.translate('TreeHandler', 'Pass %d') % i) for i in range(1, count+1)]
-                    for value, label in choices:
-                        field.addItem(label, value)
-                else:
-                    for label, value in panel.value_choices(key):
-                        field.addItem(label, value)
+                for label, value in panel.value_choices(key):
+                    field.addItem(label, value)
                 if same:
                     if field.findData(values[0]) < 0:
                         field.addItem(str(values[0]), values[0])
@@ -594,19 +580,8 @@ class MachiningParameters:
                 field.setModified(False)
             else:
                 field.clear()
-                if key == 'break_pass':
-                    field.addItem(QtCore.QCoreApplication.translate('TreeHandler', 'Last pass (default)'), -1)
-                    field.addItem(QtCore.QCoreApplication.translate('TreeHandler', '0 - never'), 0)
-                    depth = abs(values.get('axis3_mill_depth', 0) - values.get('axis3_start_mill_depth', 0))
-                    slice_depth = abs(values.get('axis3_slice_depth', 0))
-                    count = ceil(depth / slice_depth) if slice_depth else 0
-                    for number in range(1, count+1):
-                        field.addItem(QtCore.QCoreApplication.translate('TreeHandler', 'Pass %d') % number, number)
-                    if value is not None and field.findData(value) < 0:
-                        field.addItem(str(value), value)
-                else:
-                    for label, data in panel.value_choices(key):
-                        field.addItem(label, data)
+                for label, data in panel.value_choices(key):
+                    field.addItem(label, data)
                 field.setCurrentIndex(field.findData(value))
             enabled = value is not None
             field.setEnabled(enabled)
@@ -685,7 +660,6 @@ class MachiningParameters:
             'lead_in_mode': self.tr('Movement used to approach the contour.'),
             'lead_out_mode': self.tr('Movement used to leave the contour.'),
             'overcut_enabled': self.tr('Whether the toolpath continues beyond the contour end.'),
-            'break_pass': self.tr('Pass from which holding-tab regions affect the contour.'),
             'speed': self.tr('Spindle speed for this machining operation.'),
             'lead_radius': self.tr('Radius of the approach or departure arc at the workpiece.'),
             'lead_length': self.tr('Length of the straight approach or departure segment.'),

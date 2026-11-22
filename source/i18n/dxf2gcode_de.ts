@@ -82,8 +82,8 @@
         <translation type="obsolete">Allgemeine Einstellungen</translation>
     </message>
     <message>
-        <source>3D mode (requires OpenGL - restart needed)</source>
-        <translation type="obsolete">3D-Modus (erfordert OpenGL - Neustart erforderlich)</translation>
+        <source>3D view with VisPy (restart required)</source>
+        <translation>3D-Ansicht mit VisPy (Neustart erforderlich)</translation>
     </message>
     <message>
         <source>Display disabled paths (default)</source>
@@ -1309,11 +1309,6 @@ zurückgegebener Fehlercode: {1}</translation>
         <translation type="obsolete">Datei</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1245"/>
-        <source>Export the current project to G-Code</source>
-        <translation>Aktuelles Projet exportieren</translation>
-    </message>
-    <message>
         <location filename="." line="6226036"/>
         <source>View</source>
         <translation type="obsolete">Ansicht</translation>
@@ -1564,21 +1559,6 @@ zurückgegebener Fehlercode: {1}</translation>
         <translation type="obsolete">Fehler beim Exportieren von Shapes: %s</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1231"/>
-        <source>&amp;File</source>
-        <translation>&amp;Datei</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1248"/>
-        <source>&amp;Export</source>
-        <translation>&amp;Exportieren</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1256"/>
-        <source>&amp;View</source>
-        <translation>&amp;Ansicht</translation>
-    </message>
-    <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1270"/>
         <source>&amp;Options</source>
         <translation>&amp;Optionen</translation>
@@ -1592,11 +1572,6 @@ zurückgegebener Fehlercode: {1}</translation>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1288"/>
         <source>Measurement &amp;units</source>
         <translation>&amp;Messeinheiten</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1311"/>
-        <source>&amp;Help</source>
-        <translation>&amp;Hilfe</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1324"/>
@@ -1622,11 +1597,6 @@ zurückgegebener Fehlercode: {1}</translation>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1384"/>
         <source>&amp;Autoscale</source>
         <translation>&amp;Auto Skalierung</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1395"/>
-        <source>&amp;Delete G0 Paths</source>
-        <translation>Lösche &amp;Eilgang Pfade</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1400"/>
@@ -1680,8 +1650,8 @@ zurückgegebener Fehlercode: {1}</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1489"/>
-        <source>&amp;Live Update Export Route</source>
-        <translation>&amp;Live update der optmierten Reihenfolge</translation>
+        <source>Show export order</source>
+        <translation>Exportreihenfolge anzeigen</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1497"/>
@@ -1747,16 +1717,6 @@ zurückgegebener Fehlercode: {1}</translation>
         <location filename="../dxf2gcode.ui" line="403"/>
         <source>start rad. (comp) </source>
         <translation type="obsolete">Startrad. (Komp) </translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="761"/>
-        <source>Process breaks from</source>
-        <translation>Haltebrücken bearbeiten ab</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="776"/>
-        <source>Pass from which the break tabs are milled through. Earlier passes cut the unbroken contour. &quot;Last pass&quot; (default) processes the tabs in the final pass, provided it reaches them. &quot;0 - never&quot; keeps the unbroken contour for all passes.</source>
-        <translation>Durchgang, ab dem die Haltebrücken durchgefräst werden. Frühere Durchgänge schneiden die ununterbrochene Kontur. &quot;Letzter Durchgang&quot; (Standard) bearbeitet die Haltebrücken im letzten Durchgang, sofern dieser sie erreicht. &quot;0 - nie&quot; behält die ununterbrochene Kontur für alle Durchgänge.</translation>
     </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/resources/dxf2gcode.ui" line="1606"/>
@@ -2008,6 +1968,26 @@ Nach dem Schließen des Konfigurationsfensters startet DXF2GCODE mit einem leere
 <context>
     <name>MyConfig</name>
     <message>
+        <source>When opening a new DXF:</source>
+        <translation>Beim Öffnen einer neuen DXF:</translation>
+    </message>
+    <message>
+        <source>Create operations with automatic cutter compensation</source>
+        <translation>Bearbeitungen mit automatischer Fräserradiuskorrektur anlegen</translation>
+    </message>
+    <message>
+        <source>Create operations without cutter compensation</source>
+        <translation>Bearbeitungen ohne Fräserradiuskorrektur anlegen</translation>
+    </message>
+    <message>
+        <source>Import geometry only</source>
+        <translation>Nur Geometrie importieren</translation>
+    </message>
+    <message>
+        <source>Applies when opening a new DXF. Saved projects restore their own operations.</source>
+        <translation>Gilt beim Öffnen einer neuen DXF. Gespeicherte Projekte stellen ihre eigenen Bearbeitungen wieder her.</translation>
+    </message>
+    <message>
         <source>errors reading %s:</source>
         <translation>Fehler während dem laden von %s:</translation>
     </message>
@@ -2098,8 +2078,8 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
         <translation>Allgemeine Einstellungen</translation>
     </message>
     <message>
-        <source>3D mode (requires OpenGL - restart needed)</source>
-        <translation>3D-Modus (erfordert OpenGL - Neustart erforderlich)</translation>
+        <source>3D view with VisPy (restart required)</source>
+        <translation>3D-Ansicht mit VisPy (Neustart erforderlich)</translation>
     </message>
     <message>
         <source>Display disabled paths (default)</source>
@@ -2674,8 +2654,8 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
         <translation>Deaktivierte Konturen anzeigen</translation>
     </message>
     <message>
-        <source>Update export route live</source>
-        <translation>Exportroute live aktualisieren</translation>
+        <source>Show export order by default</source>
+        <translation>Exportreihenfolge standardm??ig anzeigen</translation>
     </message>
     <message>
         <source>Split imported line segments</source>
@@ -2698,8 +2678,8 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
         <translation>Anfängliche Sichtbarkeit deaktivierter Konturen. Im Menü Ansicht lässt sie sich für die aktuelle Sitzung ändern.</translation>
     </message>
     <message>
-        <source>Initial live display of export connections. Manual route display remains available when live updates are off.</source>
-        <translation>Anfängliche Live-Anzeige der Exportverbindungen. Bei ausgeschaltetem Live-Update kann die Route weiterhin manuell angezeigt werden.</translation>
+        <source>Show the export connections and keep them up to date after changes.</source>
+        <translation>Exportverbindungen anzeigen und nach ?nderungen aktuell halten.</translation>
     </message>
     <message>
         <source>Used when importing DXF line segments. Saved projects retain their own import settings.</source>
@@ -2800,6 +2780,10 @@ Sie müssen die Konfigurationsdatei "{2}" löschen (oder sorgfältig bearbeiten)
 </context>
 <context>
     <name>MyDropDownMenu</name>
+    <message>
+        <source>Available in top view.</source>
+        <translation>In der Draufsicht verfügbar.</translation>
+    </message>
     <message>
         <location filename="../dxf2gcode/presentation/qt/canvas.py" line="181"/>
         <source>Invert Selection</source>
@@ -3822,26 +3806,6 @@ Die Länge muss größer der Toleranz sein.
         <translation>Drehung</translation>
     </message>
     <message>
-        <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="1877"/>
-        <source>Break pass selection reset to &apos;Last pass&apos;: the shape generates only %d passes</source>
-        <translation>Auswahl der Haltebrücken-Stufe auf 'Letzter Durchgang' zurückgesetzt: die Form erzeugt nur %d Durchgänge</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="1884"/>
-        <source>Last pass (default)</source>
-        <translation>Letzter Durchgang (Standard)</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="1885"/>
-        <source>0 - never</source>
-        <translation>0 - nie</translation>
-    </message>
-    <message>
-        <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="1887"/>
-        <source>Pass %d</source>
-        <translation>Durchgang %d</translation>
-    </message>
-    <message>
         <location filename="../dxf2gcode/presentation/qt/treehandling.py" line="240"/>
         <source>Select all</source>
         <translation>Alles auswählen</translation>
@@ -4177,8 +4141,8 @@ Die Länge muss größer der Toleranz sein.
         <translation>Linien halbieren, damit der Schnitt in der Linienmitte beginnen kann, etwa bei Fräsradiuskorrektur.</translation>
     </message>
     <message>
-        <source>Enable 3D representation of the piece (requires PyQt5 and OpenGL)</source>
-        <translation>3D-Darstellung des Werkstücks aktivieren (benötigt Qt und OpenGL).</translation>
+        <source>Use VisPy with PyQt6 and OpenGL when available; otherwise use the 2D canvas.</source>
+        <translation>VisPy mit PyQt6 und OpenGL verwenden, sofern verfügbar. Andernfalls den 2D-Canvas verwenden.</translation>
     </message>
     <message>
         <source>Enables line numbers into the exported G-Code file.</source>
@@ -4617,6 +4581,22 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
 <context>
     <name>MachiningPanel</name>
     <message>
+        <source>Enable export for all</source>
+        <translation>Export für alle aktivieren</translation>
+    </message>
+    <message>
+        <source>Disable export for all</source>
+        <translation>Export für alle deaktivieren</translation>
+    </message>
+    <message>
+        <source>Enable optimization for all</source>
+        <translation>Optimierung für alle aktivieren</translation>
+    </message>
+    <message>
+        <source>Disable optimization for all</source>
+        <translation>Optimierung für alle deaktivieren</translation>
+    </message>
+    <message>
         <source>New step</source>
         <translation>Neuer Schritt</translation>
     </message>
@@ -4939,10 +4919,6 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
     <message>
         <source>Cutter compensation</source>
         <translation>Werkzeugradiuskorrektur</translation>
-    </message>
-    <message>
-        <source>Holding-tab first pass</source>
-        <translation>Erster Haltestegdurchgang</translation>
     </message>
     <message>
         <source>Spindle speed</source>
@@ -5310,10 +5286,6 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
         <translation>Legt fest, ob der Werkzeugweg über das Konturende hinaus fortgesetzt wird.</translation>
     </message>
     <message>
-        <source>Pass from which holding-tab regions affect the contour.</source>
-        <translation>Durchgang, ab dem Haltestegbereiche bei der Konturbearbeitung berücksichtigt werden.</translation>
-    </message>
-    <message>
         <source>Spindle speed for this machining operation.</source>
         <translation>Spindeldrehzahl für diese Bearbeitung.</translation>
     </message>
@@ -5362,10 +5334,6 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
     <message>
         <source>Speed</source>
         <translation>Drehzahl</translation>
-    </message>
-    <message>
-        <source>Pass</source>
-        <translation>Durchgang</translation>
     </message>
     <message>
         <source>Z values</source>
@@ -5473,6 +5441,18 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
 </context>
   <context>
     <name>TabModifiers</name>
+    <message>
+        <source>Different values</source>
+        <translation>Unterschiedliche Werte</translation>
+    </message>
+    <message>
+        <source>Apply assignment</source>
+        <translation>Zuordnung übernehmen</translation>
+    </message>
+    <message>
+        <source>No common intersecting targets.</source>
+        <translation>Keine gemeinsamen Ziele mit Schnittpunkten.</translation>
+    </message>
     <message>
       <source>Holding tabs</source>
       <translation>Haltestege</translation>
@@ -5630,10 +5610,6 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
       <translation>Stegregionen</translation>
     </message>
     <message>
-      <source>Tab regions · 2D editor</source>
-      <translation>Stegregionen · 2D-Bearbeitung</translation>
-    </message>
-    <message>
       <source>{0} operations</source>
       <translation>{0} Bearbeitungen</translation>
     </message>
@@ -5709,60 +5685,100 @@ GitHub-Dokumentation: https://dxf2gcode.github.io/dxf2gcode/</translation>
 <context>
     <name>ViewComparison</name>
     <message>
-        <source>View comparison</source>
-        <translation>Ansichtsvergleich</translation>
+        <source>Show XYZ axes at workpiece zero</source>
+        <translation>XYZ-Achsen am Werkstücknullpunkt anzeigen</translation>
     </message>
     <message>
-        <source>2D canvas</source>
-        <translation>2D-Canvas</translation>
+        <source>Toolpaths for selected contours only</source>
+        <translation>Werkzeugwege nur für ausgewählte Konturen</translation>
     </message>
     <message>
-        <source>VisPy: top view</source>
-        <translation>VisPy: Draufsicht</translation>
+        <source>Show Z retracts</source>
+        <translation>Z-Rückzüge anzeigen</translation>
     </message>
     <message>
-        <source>VisPy: spatial view</source>
-        <translation>VisPy: räumliche Ansicht</translation>
+        <source>Open</source>
+        <translation>Öffnen</translation>
+    </message>
+    <message>
+        <source>Export G-code</source>
+        <translation>G-Code exportieren</translation>
+    </message>
+    <message>
+        <source>Machining</source>
+        <translation>Bearbeitung</translation>
+    </message>
+    <message>
+        <source>Program</source>
+        <translation>Programm</translation>
+    </message>
+    <message>
+        <source>Info</source>
+        <translation>Info</translation>
+    </message>
+    <message>
+        <source>Drawing</source>
+        <translation>Zeichnung</translation>
+    </message>
+    <message>
+        <source>Output</source>
+        <translation>Ausgabe</translation>
+    </message>
+    <message>
+        <source>Open DXF or project...</source>
+        <translation>DXF oder Projekt öffnen …</translation>
+    </message>
+    <message>
+        <source>Set workpiece zero...</source>
+        <translation>Werkstücknullpunkt setzen …</translation>
+    </message>
+    <message>
+        <source>Export G-code...</source>
+        <translation>G-Code exportieren …</translation>
+    </message>
+    <message>
+        <source>Optimize and export G-code...</source>
+        <translation>Optimieren und G-Code exportieren …</translation>
+    </message>
+    <message>
+        <source>History</source>
+        <translation>Verlauf</translation>
     </message>
     <message>
         <source>Fit all</source>
         <translation>Alles einpassen</translation>
     </message>
     <message>
-        <source>The prototype requires PyQt6.</source>
-        <translation>Der Prototyp benötigt PyQt6.</translation>
+        <source>View</source>
+        <translation>Ansicht</translation>
     </message>
     <message>
-        <source>Start with the existing 2D canvas to use the comparison.</source>
-        <translation>Für den Vergleich mit dem bestehenden 2D-Canvas starten.</translation>
+        <source>Top view</source>
+        <translation>Draufsicht</translation>
     </message>
     <message>
-        <source>VisPy is not installed. The 2D canvas remains available.</source>
-        <translation>VisPy ist nicht installiert. Der 2D-Canvas bleibt verfügbar.</translation>
+        <source>Spatial view</source>
+        <translation>Raumansicht</translation>
     </message>
     <message>
-        <source>The 3D prototype is unavailable; using the 2D canvas.</source>
-        <translation>Der 3D-Prototyp ist nicht verfügbar; der 2D-Canvas wird verwendet.</translation>
+        <source>Transparent tools</source>
+        <translation>Transparente Werkzeuge</translation>
     </message>
     <message>
-        <source>Qt Quick 3D: top view</source>
-        <translation>Qt Quick 3D: Draufsicht</translation>
+        <source>Show selected tools at their diameter with a schematic length.</source>
+        <translation>Werkzeuge der ausgewählten Bearbeitungen mit ihrem Durchmesser und schematischer Länge anzeigen.</translation>
     </message>
     <message>
-        <source>Qt Quick 3D: spatial view</source>
-        <translation>Qt Quick 3D: räumliche Ansicht</translation>
+        <source>PyQt6 is required.</source>
+        <translation>PyQt6 wird benötigt.</translation>
     </message>
     <message>
-        <source>Qt Quick 3D is not installed. The 2D canvas remains available.</source>
-        <translation>Qt Quick 3D ist nicht installiert. Der 2D-Canvas bleibt verfügbar.</translation>
+        <source>VisPy is not installed.</source>
+        <translation>VisPy ist nicht installiert.</translation>
     </message>
     <message>
-        <source>Transparent tools (test)</source>
-        <translation>Transparente Werkzeuge (Test)</translation>
-    </message>
-    <message>
-        <source>Selected operations: 25% opacity, actual diameter; test length = four diameters. No collision check.</source>
-        <translation>Ausgewählte Bearbeitungen: 25 % Deckkraft, tatsächlicher Durchmesser; Testlänge = vier Durchmesser. Keine Kollisionsprüfung.</translation>
+        <source>VisPy is unavailable. Using the 2D canvas.</source>
+        <translation>VisPy ist nicht verfügbar. Der 2D-Canvas wird verwendet.</translation>
     </message>
 </context>
 </TS>

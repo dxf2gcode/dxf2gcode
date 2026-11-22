@@ -1,15 +1,11 @@
 # GUI1 – Vergleich von VisPy und Qt Quick 3D
 
-Stand: **15.11.2026**. Geplante Abarbeitung auf `ribbon-2d-3d`.
-Statusführung: [Todo](../todo.md#gui1), [Aufgabendetails](open-task-details.md#gui1).
-Dieser Plan ist noch keine Rendererentscheidung oder Freigabe für alle Etappen.
-P1/P2 sind lokal umgesetzt und vom Nutzer am 15.11.2026 als soweit
-erwartungsgemäß funktionierend bestätigt. P3 ist lokal umgesetzt. Nach dem
-Vergleich wird VisPy vorläufig bevorzugt; der Nutzer hat den gezielten
-Bearbeitungsnachweis P5 für VisPy beauftragt. Qt Quick 3D bleibt als Vergleich
-erhalten. Nächster Prüfpunkt ist die Bedienungsabnahme von P5; offene P4-Vergleiche
-und die endgültige Rendererentscheidung bleiben separat.
-Nachweise und Grenzen stehen im [Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-p1-p2).
+Stand: **21.11.2026**. Arbeitszweig `ribbon-2d-3d`.
+[Todo](../todo.md#gui1) · [Aufgabendetails](open-task-details.md#gui1)
+
+VisPy ist als Standard übernommen. Die frühere Vergleichsphase unten
+dokumentiert die Auswahl. Der Stand für Nutzerprüfung und Paketabnahme ist in P6
+festgehalten.
 
 ## Ziel und Grenzen
 
@@ -56,8 +52,8 @@ und weitere Bearbeitungsfunktionen gehören nicht zum Vergleich.
 ## Geplante Schritte und Prüfpunkte
 
 Startweg und bekannte Grenzen: [Bediennotizen](../documentation-notes/view-renderer-comparison.md).
-Das größere Vergleichsprojekt für P4 ist `dxf/temple_noir_aplats_negatif.dxf`;
-dessen Messlauf ist noch offen und nicht Teil der bisherigen lokalen Nachweise.
+Das größere Vergleichsprojekt `dxf/temple_noir_aplats_negatif.dxf` war für P4
+vorgesehen. Es gehört nicht zu den durchgeführten Vergleichsmessungen.
 
 Die P3-Implementierung und der native Windows-Nachweis stehen im
 [Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-p3).
@@ -72,81 +68,36 @@ Der Nutzer hat anschließend GL für beide VisPy-Ansichten gewählt. Die lokale
 Umstellung und Cache-Optimierung ist umgesetzt und gezielt geprüft;
 [Vorher-/Nachher-Messung](../documentation-notes/vispy-line-benchmark.md#nachtrag-gl-optimierung).
 
-- [ ] Nutzer prüft die optimierte GL-Darstellung: Rippen-DXF verschieben/zoomen,
-  Einzel-/Mehrfachauswahl wechseln, Linienqualität und Rückkehr zum alten Canvas
-  beurteilen. Strichbreiten bleiben treiberabhängig; keine AGG-Übernahme vorgesehen.
-
-Nach der Rückmeldung zur ruckligen Qt-Quick-Navigation wurde deren Python-
-Aktualisierungspfad optimiert und lokal gemessen
-([Nachweis](../archive/toolpath-refactoring-completed.md#gui1-quick-navigation)).
-Den folgenden Nutzervergleich mit diesem Stand durchführen; eine Bewertung
-großer Projekte oder eine Bibliotheksentscheidung folgt daraus noch nicht.
-
-Nutzer-Rückmeldung nach dem transparenten Werkzeugtest: beide Kandidaten laufen
-aktuell relativ flüssig. Der anschließend beauftragte Debian-Teststand ist
-vorbereitet und gezielt technisch geprüft; die manuelle Nutzerprüfung auf dieser
-VM steht noch aus. Starter und Software-Rendering-Grenze stehen in den
-[Bediennotizen](../documentation-notes/view-renderer-comparison.md#isolierter-debian-teststand).
-
-- [ ] Ergebnisse mit identischen Projekten, Fenstergrößen und Einstellungen
-  erfassen: Ladezeit, Kamera-Reaktion, Auswahl und Aktualisierung nach Änderung.
-- [ ] Hardware, Betriebssystem, Python-/Qt-/Renderer-Version, Grafik-Backend,
-  Datenumfang und Wiederholungsbedingungen bei Messungen festhalten.
-- [ ] Linienqualität, Lesbarkeit, Auswahlpräzision und Integrationsaufwand
-  gegenüber dem bestehenden 2D-Canvas bewerten; keine pauschale FPS-Rangliste.
-- [ ] Nutzerprüfung: dieselbe Originalkontur mit mehreren Bearbeitungen wählen,
-  Mehrfachauswahl ändern, zoomen/drehen und Tiefen/Stege visuell vergleichen.
-  Dazu in derselben Sitzung zwischen VisPy und Qt Quick 3D wechseln, die
-  Draufsicht und die räumliche Ansicht jeweils prüfen und eine Frästiefe ändern.
-  `BreakExample_Circle.dxf` für Stege und mehrere Bearbeitungen derselben Kontur
-  sowie `1997.DXF` mit G40/G41/G42 und mehreren Tiefenpässen verwenden.
-  Den Schalter „Transparente Werkzeuge (Test)“ mit identischer Mehrfachauswahl
-  jeweils aus-/einschalten; Navigation, Durchsichtigkeit und Überlagerungen
-  beurteilen. Die Körper sind ein Last-/Darstellungstest mit angenommener Länge,
-  keine fachliche Werkzeug- oder Kollisionssimulation.
-- [ ] Gemeinsam entscheiden: Kandidat bevorzugen, einen Kandidaten verwerfen
-  oder beide für die noch offene Bearbeitungsfrage weiterführen.
-
-Keine Schwellenwerte erfinden: gewünschte Reaktionszeiten und akzeptable
-Darstellungsabweichungen anhand dieses Vergleichs gemeinsam festlegen.
+Der frühere [Debian-Vergleich](../documentation-notes/view-renderer-comparison.md#isolierter-debian-teststand)
+nutzte einen separaten Teststand. Die Vergleichsphase ist mit der Übernahme von
+VisPy beendet. Die Bedienungsabnahme der integrierten Ansicht erfolgt in P6.
 
 ### P5 – Gezielter Bearbeitungsnachweis
 
-Für VisPy lokal umgesetzt: gemeinsame Stegbearbeitung in fester XY-Draufsicht,
+Die feste VisPy-Draufsicht verwendet dieselbe Stegbearbeitung wie der 2D-Canvas,
 einschließlich Zeichnen, Auswahl, Verschieben, Maßfeld, Strg-Fang und Undo/Redo.
-Stegmodus wechselt aus der räumlichen VisPy-Ansicht zur Draufsicht; beim Wechsel
-zur räumlichen Ansicht endet der Modus. Projektbefehle, Zuordnung und
-automatische/manuelle Bemessung bleiben gemeinsam mit dem bisherigen Canvas.
+Der Stegmodus schaltet aus der Raumansicht in die Draufsicht. Der Wechsel zurück
+in die Raumansicht beendet den Modus.
 [Umsetzung und lokale Prüfung](../archive/toolpath-refactoring-completed.md#gui1-p5-vispy).
 
-- [ ] Nutzer prüft die Bedienung im Vergleich zum bewährten Canvas.
-- [ ] Nutzer beurteilt Maßfelder und Treffererkennung bei unterschiedlichen
-  Zoomstufen; weitere Plattformabnahme nur nach gesondertem Auftrag.
+Nutzerprüfung der Stegbedienung und Maßfelder bei verschiedenen Zoomstufen siehe P6.
 
 ### P6 – Auswahl und Übernahmeplan
 
-- [ ] Versuch mit gemeinsamen XYZ-Werkzeugwegen in VisPy beurteilen. In der
-  festen Draufsicht eine Kontur mit mehreren Tiefendurchgängen einpassen, zoomen,
-  auswählen und abwählen. Linienbild, Auswahl an Zustellpunkten und Reaktion
-  beurteilen. In der Raumansicht dieselben Tiefen kontrollieren. [Lokaler Nachweis](../archive/toolpath-refactoring-completed.md#gui1-shared-xyz).
-- [ ] Danach die für den Standardstart erforderlichen Canvas-Funktionen
-  festlegen und übernehmen. Prüfkandidaten sind Kontextmenü, Werkstücknullpunkt,
-  Rechteckauswahl, Maßstab, Pfadrichtungen und sichtbare Exportreihenfolge.
-- [ ] Die vorhandene 3D-Einstellung mit Neustart auf VisPy umstellen und die
-  Raumansicht zum Standard machen. Den bisherigen 2D-Canvas als wählbare Option
-  und automatischen Rückfall bei fehlendem PyQt6, VisPy oder nutzbarem OpenGL
-  erhalten. Grund melden und gespeicherte Präferenz beim Rückfall beibehalten.
-  Übernahme alter Profile und GUI-Paketierung festlegen.
-- [ ] Das Ansichtsband auf Aktionen der aktiven Ansicht zuschneiden. VisPy
-  bietet Draufsicht und Raumansicht innerhalb desselben Fensters. Die Wahl
-  zwischen VisPy und bisherigem 2D-Canvas erfolgt in der Konfiguration.
-- [ ] Entfernen von Qt-Quick-Vergleichsadapter, QML, Vergleichsschaltern und
-  Testwerkzeugen nach ihrer Abnahme entscheiden. Alten `canvas3d.py`-Pfad,
-  seine Startzweige, den zugehörigen Stegdialog, Tests und Paketbedarf prüfen.
-  Einstellungen, Übersetzungen, Dokumentation und Pakete gemeinsam nachziehen.
+Die gemeinsamen Zeichenregeln wurden am 21.11.2026 bestätigt.
+Die Übernahme in den Anwendungsstart, Konfiguration, Ansichtsband und
+Paketierung ist lokal umgesetzt. Die Entscheidungen und Prüfungen stehen im
+[Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-vispy-adoption).
 
-Der bisherige 2D-Canvas bleibt als Rückfall erhalten. Der Merge nach `develop`
-folgt nach der vereinbarten Prüfung.
+- [ ] Bedienung im Arbeitszweig prüfen. In der Raumansicht starten, zur
+  Draufsicht wechseln und dort Rechteckauswahl, Kontextmenü, Werkstücknullpunkt
+  und Stege prüfen. In beiden Ansichten Maßstab, Richtungen, Exportreihenfolge
+  und transparente Werkzeuge ansehen. Anschließend die VisPy-Einstellung
+  deaktivieren und nach Neustart das Ansichtsband im bisherigen Canvas prüfen.
+- [ ] Paket- und Plattformprüfung vereinbaren. Windows-ZIP/MSI mit gebündeltem
+  VisPy, Python-Paket mit `view-vispy` sowie Rückfall auf 2D auf den
+  vereinbarten Zielsystemen prüfen.
+- [ ] Nach Abnahme in `develop` übernehmen.
 
 ## Plattformen und Validierungsumfang
 

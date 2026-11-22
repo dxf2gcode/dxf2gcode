@@ -1,10 +1,8 @@
-"""Shared appearance and selection rules for experimental view adapters."""
+"""Line patterns and point selection for the VisPy viewport."""
 
 from math import dist
 from dxf2gcode.presentation.qt.qt_compat import QtCore
-from dxf2gcode.presentation.qt.qt_compat.QtGui import QPen
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMenu
-from dxf2gcode.application.view_scene import hit_paths
 
 def dash_segments(segments, unit, dotted=False, align_depth_passes=False):
     """Expand dashes for portable GL lines; preserve phase across short pieces."""
@@ -36,36 +34,10 @@ def dash_segments(segments, unit, dotted=False, align_depth_passes=False):
 
 
 class ViewInteraction:
-    def path_style(self, path, role):
-        from dxf2gcode.presentation.qt.canvas2d import ShapeGUI
-        selected = path.identity in self.selected
-        if path.kind == 'operation':
-            pen = self.panel.canvas_preview.path_pen(role, path.enabled,
-                path.identity == self.panel.context, selected)
-        elif path.kind == 'region':
-            pen = QPen(ShapeGUI.PEN_BREAK)
-            pen.setWidthF(2 if selected else .6)
-        else:
-            count, total = self.geometry_selection.get(path.identity, (0, 0))
-            source = self.panel.binding.sources.get(path.identity)
-            normal = {41: ShapeGUI.PEN_LEFT, 42: ShapeGUI.PEN_RIGHT}.get(
-                source.cut_cor if source is not None else 40, ShapeGUI.PEN_NORMAL)
-            selected_original = bool(count) or source is not None and source.isSelected()
-            if source is not None and source.isDisabled():
-                pen = QPen(ShapeGUI.PEN_SELECT_DISABLED if selected_original else ShapeGUI.PEN_NORMAL_DISABLED)
-            else:
-                pen = QPen(ShapeGUI.PEN_SELECT if selected_original else normal)
-            if 0 < count < total:
-                pen.setStyle(QtCore.Qt.PenStyle.DotLine)
-        return pen
-
-
-    def path_hits(self, point, kinds=('operation', 'region')):
-        return hit_paths(self.snapshot, (point.x(), point.y()), self.project,
-                         self.spatial, show_disabled=self.show_disabled, kinds=kinds)
-
     def pick(self, point, control=False):
-        hits = self.path_hits(point)
+        hits = self.path_hits(point, kinds=('region',)) if control else ()
+        if not hits:
+            hits = self.path_hits(point)
         if not hits:
             hits = self.path_hits(point, kinds=('geometry',))
         identity = hits[0] if len(hits) == 1 else None
@@ -80,7 +52,7 @@ class ViewInteraction:
         if identity:
             path = next(p for p in self.snapshot.paths if p.identity == identity)
             if path.kind == 'region':
-                self.panel.modifiers.select(identity)
+                self.panel.modifiers.select(identity, toggle=control)
             elif path.kind == 'geometry':
                 source = self.panel.binding.sources[identity]
                 for shape in self.panel.window.shapes:

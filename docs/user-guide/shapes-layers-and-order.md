@@ -31,7 +31,7 @@ Import changes can produce different numbers or contour structures.
    it before A. Moving or copying assignments between steps is also supported;
    see [Machining steps](machining-steps.md).
 3. Read the rows from top to bottom. The intended order is now C, A, B.
-4. Choose **Export → Export Shapes without Optimization** to retain this order.
+4. Choose **Output → Export G-code...** to retain this order.
 
 | Operation | Visible contour rows | Normal export sequence |
 | --- | --- | --- |
@@ -70,7 +70,7 @@ is not a point for the route optimizer.
 Custom rows are optimization barriers: contours stay on their respective
 sides in both modes. See the [mode comparison](route-optimization.md#constraints-and-custom-rows).
 
-Save the preparation with **File → Save Project As...** to preserve ordering
+Save the preparation with **Program → Save Project As...** to preserve ordering
 and settings. [Projects](import-and-projects.md) explains matching limitations
 when the source drawing changes.
 

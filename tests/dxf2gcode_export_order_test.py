@@ -120,8 +120,11 @@ class TestExportOrder(unittest.TestCase):
         parent.insertRow(0, parent.takeRow(3))
         scene = Mock(routearrows=[])
         window = SimpleNamespace(TreeHandler=self.h.th, canvas_scene=scene,
-                                 layerContents=self.layers)
+                                 layerContents=self.layers, view_comparison=Mock())
         starts = [shape.get_start_end_points() for shape in self.shapes]
+        MainWindow.updateExportRoute(window)
+        scene.addexproute.assert_not_called()
+        self.h.th.auto_update_export_order = True
         MainWindow.updateExportRoute(window)
         self.assertEqual(self.layers[0].exp_order, [2, 0, 1])
         self.assertEqual(scene.addexproute.call_args_list[0].args, ([2, 0, 1], 0))

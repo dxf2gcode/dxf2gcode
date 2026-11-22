@@ -57,9 +57,9 @@ def build_application_config_widgets(config):
         ("General", OrderedDict([
             ("__section_title__", tr(QT_TRANSLATE_NOOP('MyConfig', "General settings"))),
             ("__intro__", CfgNote(tr(QT_TRANSLATE_NOOP('MyConfig', "The controls show the loaded profile values. A new profile starts with factory defaults; it does not copy this profile.")))),
-            ("mode3d", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "3D mode (requires OpenGL - restart needed)")))),
+            ("use_vispy", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "3D view with VisPy (restart required)")))),
             ("show_disabled_paths", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show disabled paths")))),
-            ("live_update_export_route", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Update export route live")))),
+            ("live_update_export_route", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show export order by default")))),
             ("show_scale_bar", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show a scale bar in the canvas")))),
             ("show_tool_circle", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Show tool circle at entry (2D)"))).setDescription(tr(QT_TRANSLATE_NOOP('MyConfig', "Show the tool circle at the planned entry, even without a lead in. With machine compensation, the actual cutter position is approximate. This display does not change the toolpath.")))),
             ("expand_layers_on_load", CfgCheckBox(
@@ -67,7 +67,11 @@ def build_application_config_widgets(config):
                     "MyConfig", "Expand layers when loading a drawing"))),
             ("__subtitle2__", CfgSubtitle(tr(QT_TRANSLATE_NOOP('MyConfig', "Milling")))),
             ("split_line_segments", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Split imported line segments")))),
-            ("automatic_cutter_compensation", CfgCheckBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Automatic cutter compensation")))),
+            ("dxf_import_mode", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "When opening a new DXF:")), item_labels={
+                "with_compensation": tr(QT_TRANSLATE_NOOP('MyConfig', "Create operations with automatic cutter compensation")),
+                "without_compensation": tr(QT_TRANSLATE_NOOP('MyConfig', "Create operations without cutter compensation")),
+                "geometry_only": tr(QT_TRANSLATE_NOOP('MyConfig', "Import geometry only")),
+            })),
             ("machine_type", CfgComboBox(tr(QT_TRANSLATE_NOOP('MyConfig', "Machine type:")), item_labels={
                 "milling": tr(QT_TRANSLATE_NOOP('MyConfig', "Milling")), "lathe": tr(QT_TRANSLATE_NOOP('MyConfig', "Lathe")),
                 "drag_knife": tr(QT_TRANSLATE_NOOP('MyConfig', "Drag knife")),
@@ -225,9 +229,9 @@ def build_application_config_widgets(config):
     validator = Validator()
     explanations = {
         ('General', 'show_disabled_paths'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Initial visibility of disabled contours. The View menu can change visibility for the current session.')),
-        ('General', 'live_update_export_route'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Initial live display of export connections. Manual route display remains available when live updates are off.')),
+        ('General', 'live_update_export_route'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Show the export connections and keep them up to date after changes.')),
         ('General', 'split_line_segments'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Used when importing DXF line segments. Saved projects retain their own import settings.')),
-        ('General', 'automatic_cutter_compensation'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Controls automatic compensation selection for imported contours. Contour settings and saved projects are separate from this profile default.')),
+        ('General', 'dxf_import_mode'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Applies when opening a new DXF. Saved projects restore their own operations.')),
         ('General', 'machine_type'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Applies the machine type to the current drawing and saves it for new sessions. The drawing is rebuilt without restarting the application.')),
         ('Route_Optimisation', 'default_TSP'): tr(QT_TRANSLATE_NOOP('MyConfig', 'Initial optimization permission for new contours. Existing contour permissions are not reset by opening this dialog.')),
     }

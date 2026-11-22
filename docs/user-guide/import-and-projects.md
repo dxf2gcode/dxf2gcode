@@ -6,9 +6,9 @@ and share a reproducible example.
 
 | File | Contains | Open or create it with |
 | --- | --- | --- |
-| `.dxf` | Source drawing geometry and layers | **File → Open...** |
-| `.d2g` | Saved preparation settings and a reference to the source drawing | **File → Save Project As...**, then **File → Open...** to reopen |
-| `.ngc` or another postprocessor extension | Exported controller program | **Export** menu; inspect the output in a text editor or suitable controller preview |
+| `.dxf` | Source drawing geometry and layers | **Program → Open DXF or project...** |
+| `.d2g` | Saved preparation settings and a reference to the source drawing | **Program → Save Project As...**, then **Program → Open DXF or project...** to reopen |
+| `.ngc` or another postprocessor extension | Exported controller program | **Output** group in the ribbon; inspect the output in a text editor or suitable controller preview |
 
 A project does **not** embed the source drawing or replace the application
 configuration and postprocessor profiles. Keep the drawing and any relevant
@@ -17,7 +17,7 @@ exporting G-code does not save the project.
 
 ## Open a drawing
 
-1. Choose **File → Open...** (**Ctrl + O**).
+1. Choose **Program → Open DXF or project...** (**Ctrl + O**).
 2. Select a supported file and open it.
 3. Read the import messages. Check the displayed units, drawing size and origin.
 4. Expand the layer tree and inspect the resulting contours before assigning
@@ -77,10 +77,10 @@ and preparation from [First DXF to G-code](../getting-started/first-dxf-to-gcode
 
 1. Save the DXF in a permanent working folder and open it from there.
 2. Select `Contour 0` in **Machining** and enter the tutorial's tool, depth and feed settings.
-3. Choose **File → Save Project As...** (**Ctrl + S**).
+3. Choose **Program → Save Project As...** (**Ctrl + S**).
 4. Save as `rectangle-20x10-mm.d2g`, preferably beside the DXF. This command
    opens a destination chooser; choose the same project file to update it later.
-5. Choose **File → Open...** and select the `.d2g` project, rather than the DXF.
+5. Choose **Program → Open DXF or project...** and select the `.d2g` project, rather than the DXF.
 6. Select `Contour 0` again and compare its settings: G40, infeed `-0.5 mm`,
    final depth `-1 mm`, XY feed `200 mm/min` and Z feed `100 mm/min`.
 
@@ -120,7 +120,7 @@ before posting them publicly.
 
 ## Reload and changed drawings
 
-**File → Reload** (**Ctrl + R**) rereads the current source drawing. It is not
+**Program → Reload** (**Ctrl + R**) rereads the current source drawing. It is not
 an undo command and does not mean “restore my last saved D2G project”. Save
 your preparation first. To restore a saved preparation, explicitly open the
 `.d2g` file.

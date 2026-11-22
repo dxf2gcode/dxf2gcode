@@ -90,7 +90,7 @@ postprocessor profile, which controls the target controller's output dialect.
 
 `application.py` owns the Qt application and main window coordination.
 `treehandling.py` coordinates tree edits and UI actions; `canvas2d.py` and
-`canvas3d.py` render the drawing and toolpath views. Dialogs, configuration
+`vispy_view.py` render the drawing and toolpath views. Dialogs, configuration
 widgets, Qt compatibility wrappers, generated UI/resource modules, and image
 assets live alongside them. The editable `.ui` form and `.qrc` resource file
 are in `resources/`.
@@ -140,8 +140,8 @@ UI and resource modules are generated under
 `i18n/*.ts` and compiled to `.qm` files. `Makefile` provides `prepare`,
 `clean`, `trs`, and `trf` targets when GNU Make is available.
 
-The runtime dependencies are Python 3.9 or newer, ConfigObj, PyOpenGL, and either PyQt5 or
-PyQt6. PDF and PostScript import also needs the external `pdftops` and
+The runtime dependencies are Python 3.9 or newer, ConfigObj and either PyQt5 or PyQt6. The optional
+VisPy view requires Python 3.10 or newer, PyQt6 and OpenGL. PDF and PostScript import also needs the external `pdftops` and
 `pstoedit` programs. Application settings and postprocessor profiles are kept
 under `~/.config/dxf2gcode` on the current configuration path; named
 application profiles use sibling folders such as `~/.config/dxf2gcode.laser`.
@@ -186,7 +186,7 @@ The developer environment needs `build`, PyQt5 and PyQt6 plus Qt 6 `rcc`
 and Qt Linguist `lrelease` on PATH:
 
 ```sh
-python -m pip install build PyQt5 PyQt6 configobj PyOpenGL
+python -m pip install build PyQt5 PyQt6 configobj
 DXF2GCODE_QT=5 python tools/build/qt_assets.py
 DXF2GCODE_QT=6 python tools/build/qt_assets.py
 DXF2GCODE_QT=5 python tools/build/translations.py --no-pylupdate

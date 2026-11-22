@@ -2,6 +2,199 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## Drei Startoptionen beim Öffnen einer DXF (22.11.2026)
+
+Die Fräseinstellungen bieten das automatische Anlegen mit oder ohne
+Fräserradiuskorrektur sowie den reinen Geometrieimport. Im dritten Modus
+bleiben die Konturen sichtbar und können später zugeordnet werden. Importierte
+Stegregionen bleiben erhalten. Alte Profile übernehmen ihre bisherige Wahl
+für den GUI-Import. Gespeicherte Projekte und direkter CLI-Export verwenden
+weiterhin ihre jeweiligen Einstellungen.
+
+Geprüft mit Qt5 und Qt6 für DXF-Import, manuelle Zuordnung, Projektladen,
+Stegregionen und direkten CLI-Export. Die Profilübernahme und die kompilierten
+deutschen, französischen und russischen Menütexte wurden ebenfalls geprüft.
+
+## Canvas-Kontextmenü in der räumlichen VisPy-Ansicht (22.11.2026)
+
+Ein Rechtsklick öffnet das gemeinsame Canvas-Menü. Befehle mit
+Klickkoordinaten und das Zeichnen von Stegen sind in der räumlichen
+Ansicht mit Hinweis auf die Draufsicht deaktiviert. Rechtsziehen zoomt
+weiterhin. Native Qt6-Mausereignisse prüften beide Ansichten, die
+Verfügbarkeit der Befehle und den Zoom.
+
+## Gemeinsamer Schalter für die Exportreihenfolge (22.11.2026)
+
+„Exportreihenfolge anzeigen“ in der Gruppe „Ausgabe“ zeichnet die
+Exportverbindungen, hält sie bei Änderungen aktuell und blendet sie
+beim Ausschalten sofort aus. Die Exportreihenfolge im Baum und die
+Pfadrichtungen behalten ihre eigene Funktion.
+
+Geprüft wurden die Anzeige im nativen PyQt6-VisPy-Fenster, das Verhalten
+bei Startpunktänderungen und die Exportreihenfolge unter PyQt5 sowie
+die kompilierten deutschen, französischen und russischen Texte.
+
+## Strg-Mehrfachauswahl der Stegregionen im Canvas (22.11.2026)
+
+Strg-Klick fügt sichtbare Stegregionen zur Auswahl hinzu oder entfernt sie.
+Der linke Editor übernimmt dieselbe Mehrfachauswahl. Der Stegmodus
+unterscheidet Klick und Ziehen, sodass Strg-Ziehen weiter am Original
+ausrichtet. Native Mausereignisse prüften beide VisPy-Kameramodi und den
+Fang. Die fokussierten Qt5-Ansichtstests bestanden ebenfalls.
+
+## Stegregionen links einzeln und gemeinsam bearbeiten (22.11.2026)
+
+Der linke Stegeditor bietet Name, Platzierung, Stegoberkante, Vorschübe,
+Aktivierung und Zuordnung auch bei ausgeschaltetem Stegmodus. Strg-Auswahl
+im Baum bearbeitet mehrere Regionen gemeinsam, unterschiedliche Werte
+erscheinen als Platzhalter. Eine Feldänderung oder Zuordnung ist jeweils ein
+Undo-Schritt. Die Zielauswahl für mehrere Regionen zeigt die Schnittmenge
+der zulässigen Ziele.
+
+PyQt5 und natives PyQt6 prüften Strg-Auswahl, gemeinsame Höhe, Name,
+Aktivierung, Zuordnung und Undo. Die drei Sprachkataloge sind kompiliert und
+die neuen Texte verifiziert.
+
+## Werkzeugweg nach Stegoberkante je Zustellung (22.11.2026)
+
+Die Stegoberkante ist die absolute Z-Höhe des Stegs. Der gemeinsame
+Werkzeugwegplan hebt bei jeder Zustellung an, die tiefer liegt. Direkt
+benachbarte Stege können unterschiedliche Höhen haben. Das Durchgangsfeld
+und seine Menütexte wurden entfernt. Alte Projektwerte bleiben lesbar und
+steuern die Planung nicht mehr.
+
+Der native Windows-Lauf mit `1997.d2g` prüfte Werkzeugwegvorschau und
+G-Code bei Stegoberkante Z −2 mm (Anheben nur aus Z −3 mm) und Z 0
+(Anheben aus Z −1,5 und −3 mm). Die Projektdatei blieb unverändert.
+Fokussierte Prüfungen deckten benachbarte Stege, exakte Höhenübereinstimmung,
+Kompensation, Altprojekt-Lesen und den 2D-Rückfall ab.
+
+## Export- und Optimierungshäkchen im Bearbeitungsbaum (22.11.2026)
+
+Ein Checkbox-Klick ändert den Wert bei unveränderter Konturauswahl und
+unverändertem aktivem Baumeintrag. Das Kontextmenü in der Spalte und im
+Spaltenkopf bietet Sammelaktionen je Checkbox-Typ. Jede Sammelaktion ist
+ein Undo-Schritt. Mausereignisse, beide Spaltenmenüs und Undo wurden mit
+PyQt5 und nativem PyQt6/VisPy geprüft. Die Menütexte wurden in Deutsch,
+Französisch und Russisch in den kompilierten Katalogen verifiziert.
+
+## Werkzeugdurchmesser im Auswahl-Tooltip (22.11.2026)
+
+Der Tooltip im Werkzeug-Dropdown zeigt den vollständigen Durchmesser in
+Projekteinheiten. Eng benachbarte Durchmesser bleiben bei gleicher gerundeter
+Anzeige unterscheidbar. Mit Tabellen- und Projektwerkzeugen für mm und Zoll
+geprüft.
+
+## GUI1 – Windows-Fokusübergabe nach dem Start (22.11.2026)
+
+Nach dem normalen Qt-Aktivierungsversuch fordert DXF2GCODE einmalig die
+Windows-Aktivierung an, wenn das bei Programmstart aktive Fenster noch
+im Vordergrund ist. Bei Bedarf werden die Eingabewarteschlangen für den
+kurzen Fokuswechsel verbunden und sofort wieder getrennt. Der fokussierte
+Test prüfte den Wechsel und das Überspringen bei einem inzwischen anderen
+Vordergrundfenster. Der native Qt6-/VisPy-Start und die Qt6-Startfehlertests
+bestanden. Der Start über den Debugger in der Nutzersitzung bleibt zu prüfen.
+
+## GUI1 – Zoombasierte Beschriftung verknüpfter Bearbeitungen (22.11.2026)
+
+VisPy fasst die ausgewählten Bearbeitungen derselben Kontur bei kleiner
+Darstellung mit ihrer Anzahl zusammen. Beim Heranzoomen erscheinen die
+Namen einzeln und werden bei Kollision mit bereits platzierten Texten
+versetzt. Der native Lauf mit `1997.d2g` prüfte Zusammenfassung und
+Einzelbeschriftung bei identischem Textanker sowie beide Kameramodi.
+
+## GUI1 – Räumlicher Maßstab (22.11.2026)
+
+Die räumliche VisPy-Ansicht zeigt unten rechts gleich lange Maßlinien für
+X, Y und Z in den Farben des Nullpunktsymbols, ohne Rahmen oder Hintergrund.
+Die Kamera bestimmt ihre
+projizierte Richtung und Länge. Der gemeinsame Maßwert folgt dem Zoom.
+Das Linealsymbol schaltet den Maßstab in allen Ansichten. Der native
+Windows-Test prüfte Rotation, Zoom, Ansichtswechsel und Schalter.
+44 Qt5-Maßstabstests bestanden.
+
+## GUI1 – Fensterstart ohne sichtbaren OpenGL-Wechsel (22.11.2026)
+
+Die VisPy-Ansicht wird vor dem ersten Anzeigen in das Fenster eingehängt.
+Die 3D-Schalter stehen damit schon beim ersten Anzeigen im Ribbon. Nach
+dem Anzeigen prüft ein kleiner OpenGL-Renderdurchlauf die Grafikfähigkeit.
+Der 2D-Rückfall bleibt verfügbar.
+
+Der native Windows-Lauf mit `1997.DXF` protokollierte zuvor ein
+`Show → Hide → WinIdChange → Show`; die 3D-Schalter erschienen rund
+540 ms nach dem ersten Anzeigen. Nach der Änderung erschienen Fenster
+und fertiges Ribbon gemeinsam. Nach dem Anzeigen wurde das Fenster
+einmal aktiviert und blieb bis zum Testende sichtbar. Die Konstruktion
+des Ribbons selbst dauerte im Vergleichslauf 21 ms. Die nativen
+Ansichtstests, die Qt5-Rückfalltests und die Qt6-Startfehlertests bestanden.
+
+## GUI1 – Auswahlfilter für Stegregionen (22.11.2026)
+
+Der Werkzeugwegfilter begrenzt die sichtbaren Stegregionen und die
+Stegvorschau in der Bearbeitung auf die Auswahl. Die Zuordnung verwendet
+die Stegwirkung je Bearbeitung. Der native VisPy-Test prüfte den Wechsel
+zwischen verknüpfter und unverknüpfter Bearbeitung im Stegmodus und in der
+räumlichen Ansicht. Die fokussierten Qt5-Ansichtstests bestanden ebenfalls.
+
+## GUI1 – XYZ-Achsen am Werkstücknullpunkt (22.11.2026)
+
+Die räumliche VisPy-Ansicht zeigt am Werkstücknullpunkt die positiven
+Weltachsen X (rot), Y (grün) und Z (blau). Das Symbol folgt der Kamera und
+hat eine zoomunabhängige Maximalgröße. Sein Schalter im Ansichtsband wird
+mit den Fensteroptionen gespeichert. Die Draufsicht zeigt das runde
+Nullpunktsymbol. Der native Windows-Test prüfte Position, Schalter und
+Ansichtswechsel. Die Qt5-Ansichtstests prüften den 2D-Rückfall und die
+Übersetzungen.
+
+## GUI1 – Flüssigeres Ziehen von Stegen und Auswahlrahmen (22.11.2026)
+
+Der Auswahlrahmen in der VisPy-Draufsicht nutzt eine feste transparente
+Zeichenfläche und fasst Mausbewegungen für die Darstellung zusammen. Beim
+Loslassen werden Originalkonturen geprüft und bereits vorhandene Baumzeilen
+aktualisiert. Beim Stegziehen werden die Originalkonturen für den Strg-Fang
+zwischengespeichert und über ihre Begrenzungsrahmen vorgefiltert. Nach 120 ms
+Ziehpause plant die Vorschau die zugeordneten, vom Steg geschnittenen
+Bearbeitungen. Das Loslassen übernimmt die Region über den normalen
+Bearbeitungsbefehl.
+
+Lokale Windows-Messung mit PyQt6, VisPy und `AFluegel Rippen b2 0201.dxf`
+(63 Originalkonturen): bei 20 eingespeisten Mausbewegungen sank die mediane
+Verarbeitungszeit für den Rahmen von 38,3 auf 0,31 ms, die höchste Stichprobe
+von 109 auf 37 ms. Der Wechsel der Auswahl beim Loslassen dauerte 42 ms
+gegenüber 118 ms im vorigen Lauf. Der zwischengespeicherte Strg-Fang dauerte
+im Median 0,91 ms, die Stegvorschau für eine Bearbeitung 1,55 ms.
+Die nativen Ansichts- und Stegtests sowie 42 fokussierte Projekt- und
+Stegregionstests bestanden.
+
+## GUI1 – Fensterstart, Stegwahl und Orientierung in VisPy (22.11.2026)
+
+Das Hauptfenster wird nach dem Einlesen einer Startdatei angezeigt und nach
+Initialisierung der Ansicht aktiviert. Die Stegplatzierung bleibt im
+Bearbeitungsband als Symbol-Dropdown verfügbar. Seine Mindestbreite lässt
+unter Windows Platz für das vollständige Symbol und den Pfeil. Beim Öffnen
+passt sich nur die Liste an die Breite der übersetzten Texte an. Die
+Listenbreite wurde mit Qt6 für Deutsch, Französisch und Russisch geprüft.
+Beide VisPy-Kameramodi zeigen
+das 2D-Nullpunktsymbol am Weltursprung und den Maßstab für den aktuellen Zoom.
+Das Linealsymbol im Ansichtsband schaltet den Maßstab in beiden Renderern.
+Neue Profile aktivieren ihn, bestehende übernehmen ihre Konfiguration.
+
+Der native Windows-Test mit PyQt6 und VisPy prüfte das aktive Fenster, beide
+Overlays und die Stegbearbeitung. Die fokussierten Qt5-Ansichts- und
+Maßstabstests bestanden. Der breitere Qt5-Offscreen-Test scheiterte beim
+Tooltip über überlappenden Konturbeschriftungen.
+
+## GUI1 – Werkzeugwegfilter und gespeicherte Darstellung (22.11.2026)
+
+Das Ansichtsband bietet einen Filter für Werkzeugwege ausgewählter Konturen
+und einen Schalter für aufwärts gerichtete Z-Eilgangbewegungen. Die Filter
+greifen in der Vorschau und bei der Pfadauswahl. Qt speichert die Schalter
+gemeinsam mit dem Fensterzustand in den Benutzereinstellungen.
+Der lokale Windows-Test mit PyQt6 und VisPy prüft die sichtbaren Pfade,
+die Z-Rückzüge und unveränderte Projektdaten. Acht fokussierte PyQt5-Tests
+decken den 2D-Rückfall, das Laden der Einstellungen und die übersetzten
+Schaltflächen ab.
+
 ## Eigener Zweig für Ribbon und integrierte Ansichten vorbereitet (15.11.2026)
 
 Die vorherigen Dokumentations-/Planbereinigungen einschließlich der identischen
@@ -4457,6 +4650,97 @@ oder die eingepasste Zeichnung beim ersten Wechsel. Danach übernimmt die feste
 XY-Kamera. Der vorherige räumliche Blick wird beim Zurückschalten wiederhergestellt.
 Der native Test prüft einen Zwischenzustand, die Übereinstimmung der projizierten
 Punkte beim Kamerahandoff, Rückkehr und Abbruch. Der Stegmodus schaltet sofort um.
+
+<a id="gui1-shared-drawing"></a>
+## GUI1 – Gemeinsame VisPy-Zeichenregeln nach Zwischencommit (21.11.2026)
+
+Zwischenstand `e35c20f` sichert den Stand mit getrennten Zeichenregeln.
+Der neue Versuch verwendet in beiden Kameras denselben Tiefentest und dieselbe
+Linienbündelung und richtet wiederholte horizontale Strichmuster gleich aus.
+Der gemeinsame Bildschirmmaßstab lässt beim Kamerahandoff die Puffer bestehen.
+Die Sonderreihenfolge und der Überlagerungsfilter der Draufsicht entfallen.
+Regionsumrisse werden im Stegmodus von der Qt-Bearbeitungsauflage gezeichnet.
+
+Der native OpenGL-Test prüft dieselben GL-Objekte und Upload-Signaturen für
+durchgezogene und gestrichelte Linien am Übergang. Eine Überlagerungsprobe
+prüft die gleiche gerenderte Farbe vor und nach dem Wechsel. Die Prüfungen
+für Auswahl, Stege und mehrere Tiefendurchgänge laufen im selben Worker.
+
+Die Nachprüfung mit `1997.d2g` zeigte eine entgegengesetzte Z-Abbildung der
+beiden Kameras, obwohl der Tiefentest und die Linienpuffer bereits gemeinsam
+waren. Die feste `PanZoomCamera` verwendet jetzt `up='-z'`. Damit stimmen die
+Z-Reihenfolge und die Abstände der projizierten Tiefen mit der senkrechten
+Raumkamera überein. Der native Test prüft zusätzlich die Render-Tiefen für
+Z = 0, −1,5 und −3 mm. In derselben Überlagerungsprobe mit `1997.d2g` ging die
+Anzahl deutlich blauer Pixel in der festen Draufsicht von 6.815 auf 0 zurück
+und entspricht damit der senkrechten Raumansicht bei gleichem Ausschnitt.
+
+Der Nutzer bestätigte am 21.11.2026, dass der Versuch so bleiben kann.
+Gegenüber `e35c20f` entfallen im VisPy-Renderer netto 37 Zeilen
+(71 entfernt, 34 ergänzt). Mit der kurzen Anpassung der Stegauflage
+in `tab_modifiers.py` sind es netto 34 Zeilen Anwendungscode.
+
+<a id="gui1-vispy-adoption"></a>
+
+## GUI1 P6 – VisPy in die Anwendung übernommen (21.11.2026)
+
+- Die feste Draufsicht bietet Rechtsklickmenü mit Werkstücknullpunkt,
+  Rechteckauswahl der Originalkonturen und Verschieben per Umschalt+Ziehen.
+  Maßstab, Pfadrichtungen sowie Pfeile und Nummern der Exportreihenfolge sind
+  in beiden VisPy-Kameramodi verfügbar. Die Exportreihenfolge stammt aus
+  derselben Routenberechnung wie im 2D-Canvas.
+- VisPy startet in der Raumansicht. Bei fehlendem PyQt6, VisPy oder nutzbarem
+  OpenGL zeigt die Anwendung den 2D-Canvas und protokolliert den Grund.
+  Das alte `mode3d` wird einmalig durch `use_vispy` mit VisPy-Präferenz ersetzt.
+  Eine spätere bewusste 2D-Wahl bleibt nach dem Neustart erhalten.
+- Das Ribbon bündelt die Symbolbuttons von links nach rechts unter
+  **Programm**, **Zeichnung**, **Bearbeitung**, **Verlauf**, **Ausgabe** und
+  **Ansicht**. **Bearbeitung** vereint Schritterstellung und Stegmodus.
+  **Ausgabe** vereint Exportreihenfolge, Optimierung und Export. **Ansicht**
+  vereint Kamerawahl und Darstellungsoptionen.
+  Die Gruppenüberschriften stehen unten. **Öffnen**, **Erstellen …** und
+  **G-Code exportieren** erscheinen als große beschriftete Buttons neben
+  den zweizeilig angeordneten Nebenaktionen.
+  Unter Windows mit Qt ab 6.9 und unterstützter erweiterter Titelleiste liegen
+  Rückgängig und Wiederholen zwischen App-Symbol und Dateititel. Bei fehlender
+  Unterstützung bleiben beide unter **Verlauf** im Ribbon. Normales und
+  maximiertes Fenster sowie die 2D-Ausweichdarstellung sind lokal geprüft.
+  Das native QWindow unterdrückt den zweiten Fenstertitel und erhält die
+  Fensterbuttons. Nach dem Laden fordert DXF2GCODE einmal die Aktivierung des
+  Hauptfensters an. Der normale Windows-Launcher mit `1997.DXF` bestätigte
+  die Qt-Aktivierung und die Titelleisten-Flags. Die Win32-Abfrage des
+  Vordergrundfensters war auf dem isolierten Testdesktop nicht verfügbar.
+  **Programm**, **Zeichnung** und **Ausgabe** ergänzen die vorhandenen Menüaktionen
+  zum Öffnen, Neuladen, Speichern unter, Beenden, Nullpunktsetzen, Skalieren,
+  Drehen, Spiegeln, Optimieren und Exportieren. Die klassischen Menüs
+  **Datei**, **Exportieren** und **Ansicht** wurden nach dem Abgleich entfernt.
+  **Programm** enthält auch das vollständige Optionenmenü als Zahnrad-Dropdown.
+  **Info** steht am rechten Rand und öffnet **Über DXF2GCODE** direkt.
+  Die klassische Menüzeile entfällt vollständig.
+  Die zugehörigen Tastenkürzel sind weiterhin am Hauptfenster registriert.
+  Die Gruppen sind links
+  gebündelt. Der Stegmodus mit Platzierungswahl und der Bearbeitungsverlauf
+  verwenden dieselben Aktionen wie bisher in der Seitenleiste.
+  VisPy bietet den animierten Wechsel zur Draufsicht und den Schalter für
+  transparente Werkzeugzylinder.
+- VisPy projiziert für die Pfadrichtungsanzeige nur Markierungen und die ersten
+  beziehungsweise letzten in der Ansicht sichtbaren Bewegungssegmente, mit
+  einer Kameratransformation pro Auflage. Auf `1997.d2g` mit sieben
+  Bearbeitungen sank die Zahl der Projektionen einer Auflage von 5.074 auf 42.
+  Median über zehn Drehwinkel auf dem lokalen Windows-Stand: 598,1 ms allein
+  für die bisherige Segmentprojektion, 5,5 ms für die neue Auflage mit
+  Bildabgriff. Der Schalter aktualisiert in VisPy nur die Auflage.
+- Der Qt-Quick-3D-Adapter, die QML-Szene, der ältere OpenGL-Canvas und dessen
+  separater Stegdialog sind entfernt. Die Windows-Paketierung verwendet
+  PyQt6 und VisPy. Für das Python-Paket steht `view-vispy` zur Verfügung.
+  DE, FR und RU sind aktualisiert und kompiliert.
+
+**Lokal geprüft:** native Windows-/PyQt6-Worker für Standardstart,
+Kamerawechsel, Rechteckauswahl, Kontextmenüposition, Maßstab, Exportreihenfolge,
+Werkzeugkörper und Stegbearbeitung. Fokussierte Tests für Profilmigration,
+2D-Rückfall, Übersetzungen und Exportreihenfolge sowie die Hauptfenster-Abläufe
+unter PyQt5 und PyQt6. Der Paketumbau ist eingerichtet. Eine Abnahme von
+Windows-ZIP/MSI und von weiteren Plattformen steht separat aus.
 
 <a id="gui1-p5-vispy"></a>
 ## GUI1 P5 – VisPy-Stegbearbeitung (15.11.2026)

@@ -83,30 +83,16 @@ weitere Ribbon-Themen und die vollständige Ribbon-Bibliothekswahl später.
 angelegt. Bis zur stabilen, fachlich abgenommenen Lösung bleiben diese
 Änderungen auf dem eigenen Zweig; erst danach nach `develop` übernehmen.
 
-Die konkrete Reihenfolge und Nutzerprüfungen stehen im
-[Abarbeitungsplan](gui1-renderer-comparison-plan.md): gemeinsamer Vergleich
-einschließlich Nutzerprüfung (P4). VisPy ist vorläufig bevorzugt; der beauftragte
-Steg-Bearbeitungsnachweis (P5) ist lokal umgesetzt. Offen sind die Nutzerprüfung
-der Bearbeitung und die endgültige Rendererentscheidung; Qt Quick bleibt erhalten.
-PySide6 ist dafür nicht erforderlich; Q1 bleibt unabhängig zurückgestellt.
+VisPy startet standardmäßig in der Raumansicht. Draufsicht und Raumansicht
+teilen die Zeichenregeln. Der 2D-Canvas ist in der Konfiguration wählbar und
+dient als automatischer Rückfall. Qt Quick 3D und der ältere 3D-Canvas wurden
+bei der Übernahme entfernt; der historische Vergleich bleibt dokumentiert.
+SARibbon bleibt ein späterer Kandidat für das vollständige Menüband.
 
-Gemeinsame Datenanbindung, Auswahlkopplung und Projektbefehle sollen später
-übernommen werden. Bestehende Farben, Planungs-/Exportverhalten und der nutzbare
-2D-Weg bleiben erhalten. ModernGL wird vorerst nicht prototypisiert.
-
-Rendererwahl, Startansicht, geteilte Ansicht und spätere Ablösung des bisherigen
-Canvas sind offen. SARibbon bleibt ein späterer Kandidat für das vollständige
-Ribbon. Die lokale P1/P2-Umsetzung ist im
-[Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-p1-p2)
-festgehalten; die P3-Umsetzung unter
-[Qt Quick 3D](../archive/toolpath-refactoring-completed.md#gui1-p3).
-Längere Plattform-/Paketprüfungen folgen nur nach Auftrag.
-
-Der gesondert beauftragte GL-/AGG-Test für die VisPy-Draufsicht ist
-[dokumentiert](../documentation-notes/vispy-line-benchmark.md). Nach Nutzerentscheidung
-ist GL für beide VisPy-Ansichten umgesetzt, einschließlich Projektion-/Liniencache
-und verzögerter Aktualisierung des versteckten Canvas. Offen bleibt die optische
-und Bedienungsabnahme; AGG wird nicht als Produktionsweg verfolgt.
+Offen bleiben die Nutzerprüfung der integrierten Ansicht und des Rückfalls,
+die gesondert zu vereinbarenden Paket-/Plattformprüfungen und der Merge.
+[Abarbeitungsplan](gui1-renderer-comparison-plan.md#p6--auswahl-und-übernahmeplan) ·
+[Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-vispy-adoption).
 
 <a id="maschinenabnahme"></a>
 

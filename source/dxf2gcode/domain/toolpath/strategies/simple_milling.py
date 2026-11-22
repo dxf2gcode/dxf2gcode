@@ -12,7 +12,7 @@ class SimpleMillingStrategy:
                 request.pocket or request.drill or settings.slice_depth == 0 or
                 settings.lead_in_mode != "off" or
                 settings.lead_out_mode != "off" or settings.overcut_enabled or
-                settings.break_pass != -1 or request.has_break_layers or
+                request.has_break_layers or
                 request.lead_in or not request.contour or
                 len(request.prepared_path) != 1 or
                 request.prepared_path[0].kind != "rapid" or

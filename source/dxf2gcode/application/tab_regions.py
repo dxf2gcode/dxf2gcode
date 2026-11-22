@@ -156,20 +156,45 @@ def nominal_contour(source):
     return tuple(contour)
 
 
-def alignment_candidates(binding, vertices):
-    """One candidate per original contour, independent of repeated machining uses."""
+def alignment_contours(binding):
+    """Snapshot the nominal contours and conservative world-space bounds for a drag."""
     from dxf2gcode.domain.project.machining_project import MachiningOperation
-    from dxf2gcode.domain.toolpath.tabs import region_crossings
-    tolerance = binding.project.configuration['Import_Parameters']['point_tolerance']
     identities = dict.fromkeys(e.geometry_id for s in binding.project.steps if s.kind in ('contour', 'pocket')
                                for e in s.entries if isinstance(e, MachiningOperation))
     result = {}
     for identity in identities:
         source = binding.sources.get(identity)
-        if source is not None:
-            contacts = region_crossings(nominal_contour(source), vertices, tolerance)
-            if len(contacts) == 2:
-                result[identity] = contacts
+        contour = nominal_contour(source) if source is not None else ()
+        if not contour:
+            continue
+        # Use the enclosing circle for arcs, including extrema beyond their endpoints.
+        points = [p for geo in contour for p in (geo.start, geo.end)]
+        for geo in contour:
+            if geo.kind == 'arc':
+                x, y = geo.center
+                points.extend(((x-geo.radius, y-geo.radius), (x+geo.radius, y+geo.radius)))
+        xs, ys = zip(*points)
+        result[identity] = ((min(xs), min(ys), max(xs), max(ys)), contour)
+    return result
+
+
+def alignment_candidates(binding, vertices, contours=None):
+    """One candidate per original contour, independent of repeated machining uses."""
+    from dxf2gcode.domain.toolpath.tabs import region_crossings
+    if not vertices:
+        return {}
+    tolerance = binding.project.configuration['Import_Parameters']['point_tolerance']
+    if contours is None:
+        contours = alignment_contours(binding)
+    xs, ys = zip(*vertices)
+    left, bottom, right, top = min(xs)-tolerance, min(ys)-tolerance, max(xs)+tolerance, max(ys)+tolerance
+    result = {}
+    for identity, ((x1, y1, x2, y2), contour) in contours.items():
+        if x2 < left or y2 < bottom or x1 > right or y1 > top:
+            continue
+        contacts = region_crossings(contour, vertices, tolerance)
+        if len(contacts) == 2:
+            result[identity] = contacts
     return result
 
 
@@ -213,7 +238,7 @@ def square_on_contour(contour, position, side):
     return align_rectangle(vertices, contacts) if len(contacts) == 2 else vertices
 
 
-def overlapping_operations(binding, region):
+def overlapping_operations(binding, region, *, assigned_only=False):
     """Geometrically eligible assignments, including repeated machining uses."""
     from dxf2gcode.domain.project.machining_project import MachiningOperation
     from dxf2gcode.domain.toolpath.tabs import contour_crosses_region
@@ -225,6 +250,8 @@ def overlapping_operations(binding, region):
             continue
         for entry in step.entries:
             if not isinstance(entry, MachiningOperation):
+                continue
+            if assigned_only and (not entry.enabled or not region.applies(step.id, entry.id)):
                 continue
             source = binding.sources.get(entry.geometry_id)
             if source is None:

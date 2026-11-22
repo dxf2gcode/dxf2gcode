@@ -164,7 +164,7 @@ def main():
         g.folder = str(Path(folder)/'config')
         Path(g.folder).mkdir()
         g.config = MyConfig()
-        g.config.mode3d, g.quiet = False, True
+        g.quiet = True
         from dxf2gcode.presentation.qt import application as module
         from dxf2gcode.presentation.qt import vispy_view
         from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene
@@ -220,6 +220,7 @@ def main():
         renderer = None
         try:
             started = perf_counter()
+            band.start(True)
             band.activate('plane')
             renderer = band.renderer
             assert isinstance(renderer, BenchmarkView), 'Renderer failed or fell back'

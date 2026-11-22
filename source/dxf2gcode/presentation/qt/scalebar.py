@@ -44,11 +44,12 @@ from __future__ import absolute_import
 from __future__ import division
 
 import logging
+from math import hypot
 
 import dxf2gcode.bootstrap.runtime_state as g
 
 from dxf2gcode.presentation.qt.qt_compat import QtCore
-from dxf2gcode.presentation.qt.qt_compat.QtGui import (QColor, QFont, QPainterPath, QPen)
+from dxf2gcode.presentation.qt.qt_compat.QtGui import (QColor, QFont, QFontMetrics, QPainterPath, QPen)
 
 
 logger = logging.getLogger("Gui.ScaleBar")
@@ -380,12 +381,50 @@ class ScaleBar(object):
         finally:
             painter.restore()
 
+    def paint_spatial(self, painter, viewport_rect, axes):
+        """Anchor equal world lengths, projected by the camera, in the lower right."""
+        metrics = QFontMetrics(self.font)
+        origin = QtCore.QPointF()
+        bounds = QtCore.QRectF(-1, -1, 2, 2)
+        marks = []
+        for name, color, tip in axes:
+            distance = hypot(tip.x(), tip.y())
+            if distance < self.TICK_HEIGHT:
+                continue
+            tick = QtCore.QPointF(-tip.y(), tip.x()) * (self.TICK_HEIGHT / (2 * distance))
+            lines = QPainterPath(origin)
+            lines.lineTo(tip)
+            lines.moveTo(tip - tick)
+            lines.lineTo(tip + tick)
+            centre = tip + tip * (10. / distance)
+            width, height = metrics.horizontalAdvance(name) + 2, metrics.height()
+            label = QtCore.QRectF(centre.x() - width / 2, centre.y() - height / 2, width, height)
+            bounds = bounds.united(lines.boundingRect()).united(label)
+            marks.append((lines, label, name, color))
+        label_path = self.label_path()
+        size = label_path.boundingRect()
+        label_bottom = bounds.bottom() + self.LABEL_GAP + size.height()
+        painter.save()
+        try:
+            painter.translate(viewport_rect.right() - self.MARGIN - bounds.right(),
+                              viewport_rect.bottom() - self.MARGIN - label_bottom)
+            painter.setFont(self.font)
+            for lines, label, name, color in marks:
+                painter.setPen(QPen(QColor(color), 1.4))
+                painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+                painter.drawPath(lines)
+                painter.drawText(label, QtCore.Qt.AlignmentFlag.AlignCenter, name)
+            painter.translate(bounds.right() - size.right(), label_bottom - size.bottom())
+            painter.fillPath(label_path, self.pen.color())
+        finally:
+            painter.restore()
+
 
 def scale_bar_enabled(config=None):
     """
     Whether the scale bar shall be drawn.
     The state is taken from the configuration option 'show_scale_bar'
-    ([General] section), which is disabled by default.
+    ([General] section).
     @param config: the configuration to use, the global one by default
     @return: True if the scale bar shall be drawn
     """

@@ -390,7 +390,6 @@ class TestExportOrderAndTreeSync(unittest.TestCase):
     def test_canvas_disable_change_updates_shape_and_parent_checkbox(self):
         shape = self.h.shapes[0]
         item_index = self.h.th.findLayerItemIndexFromShape(shape)
-        self.h.th.updateBreaksPassWidget = lambda: None
         self.h.th.entity_item_model = QStandardItemModel()
         self.h.th.ui.entitiesTreeView = QTreeView()
         self.h.th.ui.entitiesTreeView.setModel(self.h.th.entity_item_model)

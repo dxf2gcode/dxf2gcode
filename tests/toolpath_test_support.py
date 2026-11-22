@@ -20,8 +20,7 @@ def serialize_geometry(geometry, postprocessor):
     from dxf2gcode.domain.toolpath.movements import MovementPlan
     request = ToolpathRequest(
         0, MachiningSettings(), snapshot_capabilities(postprocessor, g.config),
-        initial_state=PlanningState(
-            postprocessor.feed, postprocessor.ze, postprocessor.lz))
+        initial_state=PlanningState(postprocessor.feed, postprocessor.lz))
     plan = MovementPlan(request)
     plan.geometry(snapshot_geometry(geometry))
     return ToolpathGCodeExporter().export(plan.finish(), postprocessor)
