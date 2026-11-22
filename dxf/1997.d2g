@@ -1,0 +1,899 @@
+{
+  "format": "DXF2GCODE",
+  "version": 2.1,
+  "source": {
+    "file": "1997.DXF",
+    "point_tol": 0.001,
+    "fitting_tol": 0.001,
+    "scale": 1.0,
+    "rot": 0.0,
+    "wpzero_x": 0.0,
+    "wpzero_y": 0.0,
+    "mirrorx": false,
+    "mirrory": false,
+    "split_lines": true,
+    "aut_cut_com": false,
+    "machine_type": "milling",
+    "drag_knife": {
+      "drag_angle": 20.0,
+      "drag_start_angle": 0.0,
+      "ramp_in_length": 0.0,
+      "swivel_depth": -0.1,
+      "extra_pass": false,
+      "alternate": false,
+      "lead_out_length": 1.5,
+      "entry_mode": "fixed",
+      "alignment_length": 0.0,
+      "return_to_start": false,
+      "units": "mm",
+      "lead_defaults": {
+        "lead_in_mode": "startmove",
+        "lead_out_mode": "off",
+        "overcut_enabled": false
+      }
+    },
+    "layers": [
+      {
+        "name": "7",
+        "tool_nr": 1,
+        "diameter": 2.0,
+        "speed": 6000.0,
+        "lead_radius": 1.2,
+        "lead_length": 1.0,
+        "milling_offset": 0.0,
+        "lead_in_mode": "default",
+        "lead_out_mode": "default",
+        "overcut_enabled": "default",
+        "overcut_length": 0.0,
+        "lead_in_mode_overridden": false,
+        "lead_out_mode_overridden": false,
+        "lead_radius_overridden": false,
+        "lead_length_overridden": false,
+        "overcut_length_overridden": false,
+        "overcut_enabled_overridden": false,
+        "retract": 15.0,
+        "safe_margin": 3.0,
+        "shapes": [
+          {
+            "hash_": "11dddb1a32728d49e82ab6e1780b3960dd339b58",
+            "cut_cor": 40,
+            "Pocket_Mill": false,
+            "Drill": false,
+            "cw": true,
+            "send_to_TSP": false,
+            "disabled": false,
+            "start_mill_depth": 0.0,
+            "slice_depth": -1.5,
+            "drag_swivel_depth": -0.1,
+            "mill_depth": -3.0,
+            "milling_offset": 0.0,
+            "f_g1_plane": 400.0,
+            "f_g1_depth": 150.0,
+            "break_pass": -1,
+            "overcut_enabled": false,
+            "overcut_enabled_overridden": false,
+            "lead_in_mode": "startmove",
+            "lead_out_mode": "off",
+            "lead_in_mode_overridden": false,
+            "lead_out_mode_overridden": false,
+            "start_x": -15.627,
+            "start_y": -6.403,
+            "tool_override": {
+              "tool_nr": 5,
+              "tool_diameter": 0.5,
+              "speed": 10000.0,
+              "start_radius": null,
+              "lead_radius": 0.3,
+              "lead_length": 0.2,
+              "overcut_length": 0.0
+            }
+          },
+          {
+            "hash_": "2097a74bb09df51274058c81a3157f5c05aa7399",
+            "cut_cor": 40,
+            "Pocket_Mill": false,
+            "Drill": false,
+            "cw": true,
+            "send_to_TSP": false,
+            "disabled": false,
+            "start_mill_depth": 0.0,
+            "slice_depth": -1.5,
+            "drag_swivel_depth": -0.1,
+            "mill_depth": -3.0,
+            "milling_offset": 0.0,
+            "f_g1_plane": 400.0,
+            "f_g1_depth": 150.0,
+            "break_pass": -1,
+            "overcut_enabled": false,
+            "overcut_enabled_overridden": false,
+            "lead_in_mode": "startmove",
+            "lead_out_mode": "off",
+            "lead_in_mode_overridden": false,
+            "lead_out_mode_overridden": false,
+            "start_x": -2.032,
+            "start_y": 0.4825000000000008,
+            "tool_override": {
+              "tool_nr": 1,
+              "tool_diameter": 2.0,
+              "speed": 6000.0,
+              "start_radius": null,
+              "lead_radius": 1.2,
+              "lead_length": 1.0,
+              "overcut_length": 0.0
+            }
+          },
+          {
+            "hash_": "7de217a7b82426190bc024a8b73042eccc981a10",
+            "cut_cor": 40,
+            "Pocket_Mill": false,
+            "Drill": false,
+            "cw": true,
+            "send_to_TSP": false,
+            "disabled": false,
+            "start_mill_depth": 0.0,
+            "slice_depth": -1.5,
+            "drag_swivel_depth": -0.1,
+            "mill_depth": -3.0,
+            "milling_offset": 0.0,
+            "f_g1_plane": 400.0,
+            "f_g1_depth": 150.0,
+            "break_pass": -1,
+            "overcut_enabled": false,
+            "overcut_enabled_overridden": false,
+            "lead_in_mode": "startmove",
+            "lead_out_mode": "off",
+            "lead_in_mode_overridden": false,
+            "lead_out_mode_overridden": false,
+            "start_x": -4.522,
+            "start_y": 1.702,
+            "tool_override": {
+              "tool_nr": 1,
+              "tool_diameter": 2.0,
+              "speed": 6000.0,
+              "start_radius": null,
+              "lead_radius": 1.2,
+              "lead_length": 1.0,
+              "overcut_length": 0.0
+            }
+          },
+          {
+            "hash_": "ddb3e09c91102dd1591b51a9494a1659efefde13",
+            "cut_cor": 40,
+            "Pocket_Mill": false,
+            "Drill": false,
+            "cw": true,
+            "send_to_TSP": false,
+            "disabled": false,
+            "start_mill_depth": 0.0,
+            "slice_depth": -1.5,
+            "drag_swivel_depth": -0.1,
+            "mill_depth": -3.0,
+            "milling_offset": 0.0,
+            "f_g1_plane": 400.0,
+            "f_g1_depth": 150.0,
+            "break_pass": -1,
+            "overcut_enabled": false,
+            "overcut_enabled_overridden": false,
+            "lead_in_mode": "startmove",
+            "lead_out_mode": "off",
+            "lead_in_mode_overridden": false,
+            "lead_out_mode_overridden": false,
+            "start_x": 1.118,
+            "start_y": -1.397,
+            "tool_override": {
+              "tool_nr": 1,
+              "tool_diameter": 2.0,
+              "speed": 6000.0,
+              "start_radius": null,
+              "lead_radius": 1.2,
+              "lead_length": 1.0,
+              "overcut_length": 0.0
+            }
+          },
+          {
+            "hash_": "0bbbb19094bc328e96944960a3ebf2df20c333f4",
+            "cut_cor": 40,
+            "Pocket_Mill": false,
+            "Drill": false,
+            "cw": true,
+            "send_to_TSP": false,
+            "disabled": false,
+            "start_mill_depth": 0.0,
+            "slice_depth": -1.5,
+            "drag_swivel_depth": -0.1,
+            "mill_depth": -3.0,
+            "milling_offset": 0.0,
+            "f_g1_plane": 400.0,
+            "f_g1_depth": 150.0,
+            "break_pass": -1,
+            "overcut_enabled": false,
+            "overcut_enabled_overridden": false,
+            "lead_in_mode": "startmove",
+            "lead_out_mode": "off",
+            "lead_in_mode_overridden": false,
+            "lead_out_mode_overridden": false,
+            "start_x": 5.183,
+            "start_y": 0.686,
+            "tool_override": {
+              "tool_nr": 1,
+              "tool_diameter": 2.0,
+              "speed": 6000.0,
+              "start_radius": null,
+              "lead_radius": 1.2,
+              "lead_length": 1.0,
+              "overcut_length": 0.0
+            }
+          },
+          {
+            "hash_": "3aebac0d37d777826ebdee91172c82d11e15e2a8",
+            "cut_cor": 42,
+            "Pocket_Mill": false,
+            "Drill": false,
+            "cw": true,
+            "send_to_TSP": false,
+            "disabled": false,
+            "start_mill_depth": 0.0,
+            "slice_depth": -1.5,
+            "drag_swivel_depth": -0.1,
+            "mill_depth": -3.0,
+            "milling_offset": 0.1,
+            "f_g1_plane": 400.0,
+            "f_g1_depth": 150.0,
+            "break_pass": -1,
+            "overcut_enabled": false,
+            "overcut_enabled_overridden": false,
+            "lead_in_mode": "startmove",
+            "lead_out_mode": "straight",
+            "lead_in_mode_overridden": false,
+            "lead_out_mode_overridden": false,
+            "start_x": 15.728,
+            "start_y": 4.726,
+            "tool_override": {
+              "tool_nr": 5,
+              "tool_diameter": 0.5,
+              "speed": 10000.0,
+              "start_radius": null,
+              "lead_radius": 0.3,
+              "lead_length": 0.2,
+              "overcut_length": 0.0
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "machining": {
+    "geometries": [
+      {
+        "id": "e3cdeb77-d929-4b40-ab41-f7b6c11f3e2d",
+        "source_layer": "7",
+        "source_instance": "[]",
+        "fingerprint": "aa44d168d823425314c0333c634657d3be9bf505cc0eb1093811bdfa9dc1823e"
+      },
+      {
+        "id": "2775c61d-3de3-45d6-8f22-8705864c335a",
+        "source_layer": "7",
+        "source_instance": "[]",
+        "fingerprint": "2d795eb2c7a7686c2d5fc5ce5203a1ca445e862d2f839f2cac8e15adff9354a9"
+      },
+      {
+        "id": "25889f5f-5563-40e1-9b1f-b941ebc9ee45",
+        "source_layer": "7",
+        "source_instance": "[]",
+        "fingerprint": "4f5b694afea984c6992db6f385728268774601446c5d0be51bde994c3e8ee7c1"
+      },
+      {
+        "id": "e7d54003-242c-4448-b646-93a0321f7578",
+        "source_layer": "7",
+        "source_instance": "[]",
+        "fingerprint": "98566569a30b0001c6011b5b68f5ff3b00174e3dbc4776f554840593009f8c67"
+      },
+      {
+        "id": "62bd13e7-42de-4f3d-ab7a-0f5702170042",
+        "source_layer": "7",
+        "source_instance": "[]",
+        "fingerprint": "42e97eadb14a8a43f006e5c284212e5bdc9aa2c336bcbabf2810178d104883b8"
+      },
+      {
+        "id": "3f13a704-ad09-4ac7-b102-5cd70f5d9888",
+        "source_layer": "7",
+        "source_instance": "[]",
+        "fingerprint": "259a9f05f995849945f1efcf18862ea042f4bbad11218a8671a77ca1c9e208c5"
+      }
+    ],
+    "tools": {
+      "c0b298f5-5898-4936-b1c0-23a738a051e3": {
+        "tool_nr": 1,
+        "tool_diameter": 2.0,
+        "speed": 6000.0,
+        "start_radius": null,
+        "lead_radius": 1.2,
+        "lead_length": 1.0,
+        "overcut_length": 0.0
+      },
+      "cab73dbf-8e0a-43a1-9c0c-02d34a92b10c": {
+        "tool_nr": 5,
+        "tool_diameter": 0.5,
+        "speed": 10000.0,
+        "start_radius": null,
+        "lead_radius": 0.3,
+        "lead_length": 0.2,
+        "overcut_length": 0.0
+      }
+    },
+    "defaults": {},
+    "configuration": {
+      "Cutter_Compensation": {
+        "done_by_machine": false
+      },
+      "Pocketing": {
+        "pocket_edge_clearance": 21.4286
+      },
+      "Drag_Knife_Options": {
+        "drag_angle": 20.0,
+        "drag_start_angle": 0.0,
+        "ramp_in_length": 0.0,
+        "swivel_depth": -0.1,
+        "extra_pass": false,
+        "alternate": false,
+        "lead_out_length": 1.5,
+        "entry_mode": "fixed",
+        "alignment_length": 0.0,
+        "return_to_start": false
+      },
+      "Lead_In_Out": {
+        "lead_in_mode": "startmove",
+        "lead_out_mode": "off",
+        "overcut_enabled": false
+      },
+      "Depth_Coordinates": {
+        "axis3_retract": 15.0,
+        "axis3_safe_margin": 3.0,
+        "axis3_start_mill_depth": 0.0,
+        "axis3_slice_depth": -1.5,
+        "axis3_mill_depth": -3.0
+      },
+      "Feed_Rates": {
+        "f_g1_plane": 400.0,
+        "f_g1_depth": 150.0
+      },
+      "Plane_Coordinates": {
+        "axis1_start_end": 0.0,
+        "axis2_start_end": 0.0,
+        "std_scale": 1.0
+      },
+      "Route_Optimisation": {
+        "default_TSP": false,
+        "TSP_shape_order": "CONSTRAIN_ORDER_ONLY",
+        "mutation_rate": 0.95,
+        "max_population": 20,
+        "max_iterations": 300,
+        "begin_art": "heuristic"
+      },
+      "Import_Parameters": {
+        "point_tolerance": 0.001,
+        "spline_check": 3,
+        "fitting_tolerance": 0.001,
+        "insert_at_block_layer": false,
+        "exclude_ignore_layers": false,
+        "exclude_layer_zero": false
+      },
+      "Layer_Options": {
+        "id_float_separator": ":",
+        "mill_depth_identifiers": [
+          "MillDepth",
+          "Md",
+          "TiefeGesamt",
+          "Tg"
+        ],
+        "slice_depth_identifiers": [
+          "SliceDepth",
+          "Sd",
+          "TiefeZustellung",
+          "Tz"
+        ],
+        "start_mill_depth_identifiers": [
+          "StartMillDepth",
+          "SMd",
+          "StartTiefe",
+          "St"
+        ],
+        "retract_identifiers": [
+          "RetractHeight",
+          "Rh",
+          "Freifahrthoehe",
+          "FFh"
+        ],
+        "safe_margin_identifiers": [
+          "SafeMargin",
+          "Sm",
+          "Sicherheitshoehe",
+          "Sh"
+        ],
+        "f_g1_plane_identifiers": [
+          "FeedXY",
+          "Fxy",
+          "VorschubXY",
+          "Vxy",
+          "F"
+        ],
+        "f_g1_depth_identifiers": [
+          "FeedZ",
+          "Fz",
+          "VorschubZ",
+          "Vz"
+        ],
+        "tool_nr_identifiers": [
+          "ToolNr",
+          "Tn",
+          "T",
+          "WerkzeugNummer",
+          "Wn"
+        ],
+        "tool_diameter_identifiers": [
+          "ToolDiameter",
+          "Td",
+          "WerkzeugDurchmesser",
+          "Wd"
+        ],
+        "spindle_speed_identifiers": [
+          "SpindleSpeed",
+          "Drehzahl",
+          "RPM",
+          "UPM",
+          "S"
+        ],
+        "start_radius_identifiers": [
+          "StartRadius",
+          "Sr"
+        ],
+        "milling_offset_identifiers": [
+          "MillingOffset",
+          "Mo"
+        ],
+        "lead_in_mode_identifiers": [
+          "LeadInMode",
+          "Lim"
+        ],
+        "lead_out_mode_identifiers": [
+          "LeadOutMode",
+          "Lom"
+        ],
+        "lead_radius_identifiers": [
+          "LeadRadius",
+          "Lr"
+        ],
+        "lead_length_identifiers": [
+          "LeadLength",
+          "Ll"
+        ],
+        "overcut_length_identifiers": [
+          "OvercutLength",
+          "Ol"
+        ]
+      },
+      "Tool_Parameters": {
+        "1": {
+          "diameter": 2.0,
+          "speed": 6000.0,
+          "lead_radius": 1.2,
+          "lead_length": 1.0,
+          "milling_offset": 0.0,
+          "overcut_length": 0.0,
+          "start_radius": null
+        },
+        "2": {
+          "diameter": 2.0,
+          "speed": 6000.0,
+          "lead_radius": 2.0,
+          "lead_length": 1.0,
+          "milling_offset": 0.0,
+          "overcut_length": 0.0,
+          "start_radius": null
+        },
+        "5": {
+          "diameter": 0.5,
+          "speed": 10000.0,
+          "lead_radius": 0.3,
+          "lead_length": 0.2,
+          "milling_offset": 0.0,
+          "overcut_length": 0.0,
+          "start_radius": null
+        },
+        "10": {
+          "diameter": 10.0,
+          "speed": 6000.0,
+          "lead_radius": 7.0,
+          "lead_length": 5.0,
+          "milling_offset": 0.0,
+          "overcut_length": 0.0,
+          "start_radius": null
+        }
+      },
+      "General": {
+        "machine_type": "milling",
+        "split_line_segments": true,
+        "automatic_cutter_compensation": false
+      }
+    },
+    "units": "mm",
+    "regions": [
+      {
+        "id": "473c99f8-7f5a-4b76-b68a-4dfb6d37f029",
+        "name": "Steg 1",
+        "geometry_id": "",
+        "vertices": [
+          [
+            -19.773,
+            2.5171733867276886
+          ],
+          [
+            -19.773,
+            0.017173386727688422
+          ],
+          [
+            -17.273,
+            0.017173386727688422
+          ],
+          [
+            -17.273,
+            2.5171733867276886
+          ]
+        ],
+        "height": -0.5,
+        "xy_feed": 400.0,
+        "z_feed": 150.0,
+        "enabled": true,
+        "scope": "operations",
+        "targets": [
+          "178e6d71-7323-4363-ae1a-be1e253368f3"
+        ],
+        "excluded": [],
+        "placement_mode": "snap"
+      },
+      {
+        "id": "6e718528-4d8b-4d6a-bf35-8411d02cc0c5",
+        "name": "Steg 2",
+        "geometry_id": "",
+        "vertices": [
+          [
+            -19.738,
+            0.15281375286041143
+          ],
+          [
+            -19.738,
+            2.6528137528604114
+          ],
+          [
+            -22.238,
+            2.6528137528604114
+          ],
+          [
+            -22.238,
+            0.15281375286041143
+          ]
+        ],
+        "height": -2.0,
+        "xy_feed": 400.0,
+        "z_feed": 150.0,
+        "enabled": true,
+        "scope": "operations",
+        "targets": [
+          "178e6d71-7323-4363-ae1a-be1e253368f3"
+        ],
+        "excluded": [],
+        "placement_mode": "snap"
+      },
+      {
+        "id": "3cbf1fcf-a899-4d21-8bef-7f1e216532ad",
+        "name": "Steg 3",
+        "geometry_id": "",
+        "vertices": [
+          [
+            -17.94186193134812,
+            -7.855049645390604
+          ],
+          [
+            -20.44178034985562,
+            -7.834853091056786
+          ],
+          [
+            -20.461976904189434,
+            -10.334771509564288
+          ],
+          [
+            -17.962058485681936,
+            -10.354968063898106
+          ]
+        ],
+        "height": -1.0,
+        "xy_feed": 400.0,
+        "z_feed": 150.0,
+        "enabled": true,
+        "scope": "operations",
+        "targets": [
+          "178e6d71-7323-4363-ae1a-be1e253368f3"
+        ],
+        "excluded": [],
+        "placement_mode": "snap"
+      },
+      {
+        "id": "b6195b40-506b-4357-bf82-76382daa4d46",
+        "name": "Steg 4",
+        "geometry_id": "",
+        "vertices": [
+          [
+            -21.68436436011243,
+            7.860691231641658
+          ],
+          [
+            -19.185691243890407,
+            7.942132365409092
+          ],
+          [
+            -19.26713237765784,
+            10.440805481631115
+          ],
+          [
+            -21.765805493879864,
+            10.35936434786368
+          ]
+        ],
+        "height": -2.0,
+        "xy_feed": 400.0,
+        "z_feed": 150.0,
+        "enabled": true,
+        "scope": "operations",
+        "targets": [
+          "178e6d71-7323-4363-ae1a-be1e253368f3"
+        ],
+        "excluded": [],
+        "placement_mode": "snap"
+      }
+    ],
+    "steps": [
+      {
+        "id": "498a4598-fa25-49db-bdb2-ca3b4c7dba66",
+        "name": "7",
+        "kind": "contour",
+        "tool_id": "c0b298f5-5898-4936-b1c0-23a738a051e3",
+        "defaults": {
+          "axis3_retract": 15.0,
+          "axis3_safe_margin": 3.0,
+          "axis3_start_mill_depth": 0.0,
+          "axis3_slice_depth": -1.5,
+          "axis3_mill_depth": -3.0,
+          "f_g1_plane": 400.0,
+          "f_g1_depth": 150.0,
+          "lead_in_mode": "startmove",
+          "lead_out_mode": "off",
+          "overcut_enabled": false,
+          "milling_offset": 0.0,
+          "drag_swivel_depth": -0.1,
+          "cut_cor": 40,
+          "break_pass": -1
+        },
+        "entries": [
+          {
+            "type": "operation",
+            "id": "0697a185-91bb-40fc-975a-cab9bb0c0209",
+            "geometry_id": "2775c61d-3de3-45d6-8f22-8705864c335a",
+            "overrides": {
+              "axis3_slice_depth": -1.5,
+              "drag_angle": 0.3490658503988659,
+              "break_pass": -1,
+              "f_g1_depth": 150.0,
+              "axis3_mill_depth": -3.0,
+              "axis3_start_mill_depth": 0.0,
+              "milling_offset": 0.0,
+              "f_g1_plane": 400.0,
+              "cut_cor": 40
+            },
+            "enabled": true,
+            "optimize": false,
+            "clockwise": true,
+            "start": [
+              -2.032,
+              0.4825000000000008
+            ],
+            "legacy_conflict": []
+          },
+          {
+            "type": "operation",
+            "id": "95148ddb-3d3e-4e7b-9b25-e4b69bbe81e8",
+            "geometry_id": "25889f5f-5563-40e1-9b1f-b941ebc9ee45",
+            "overrides": {
+              "axis3_slice_depth": -1.5,
+              "drag_angle": 0.3490658503988659,
+              "break_pass": -1,
+              "f_g1_depth": 150.0,
+              "axis3_mill_depth": -3.0,
+              "axis3_start_mill_depth": 0.0,
+              "milling_offset": 0.0,
+              "f_g1_plane": 400.0,
+              "cut_cor": 40
+            },
+            "enabled": true,
+            "optimize": false,
+            "clockwise": true,
+            "start": [
+              -4.522,
+              1.702
+            ],
+            "legacy_conflict": []
+          },
+          {
+            "type": "operation",
+            "id": "aad895ff-5337-49fc-bb76-d840468aa24a",
+            "geometry_id": "e7d54003-242c-4448-b646-93a0321f7578",
+            "overrides": {
+              "axis3_slice_depth": -1.5,
+              "drag_angle": 0.3490658503988659,
+              "break_pass": -1,
+              "f_g1_depth": 150.0,
+              "axis3_mill_depth": -3.0,
+              "axis3_start_mill_depth": 0.0,
+              "milling_offset": 0.0,
+              "f_g1_plane": 400.0,
+              "cut_cor": 40
+            },
+            "enabled": true,
+            "optimize": false,
+            "clockwise": true,
+            "start": [
+              1.118,
+              -1.397
+            ],
+            "legacy_conflict": []
+          },
+          {
+            "type": "operation",
+            "id": "f889ccef-3e66-4d8c-b5f9-063777ac865a",
+            "geometry_id": "62bd13e7-42de-4f3d-ab7a-0f5702170042",
+            "overrides": {
+              "axis3_slice_depth": -1.5,
+              "drag_angle": 0.3490658503988659,
+              "break_pass": -1,
+              "f_g1_depth": 150.0,
+              "axis3_mill_depth": -3.0,
+              "axis3_start_mill_depth": 0.0,
+              "milling_offset": 0.0,
+              "f_g1_plane": 400.0,
+              "cut_cor": 40
+            },
+            "enabled": true,
+            "optimize": false,
+            "clockwise": true,
+            "start": [
+              5.183,
+              0.686
+            ],
+            "legacy_conflict": []
+          }
+        ]
+      },
+      {
+        "id": "c373c26f-68ba-4dfc-aa64-81e16dd3ddb0",
+        "name": "7 · T5",
+        "kind": "contour",
+        "tool_id": "cab73dbf-8e0a-43a1-9c0c-02d34a92b10c",
+        "defaults": {
+          "axis3_retract": 15.0,
+          "axis3_safe_margin": 3.0,
+          "axis3_start_mill_depth": 0.0,
+          "axis3_slice_depth": -1.5,
+          "axis3_mill_depth": -3.0,
+          "f_g1_plane": 400.0,
+          "f_g1_depth": 150.0,
+          "lead_in_mode": "startmove",
+          "lead_out_mode": "off",
+          "overcut_enabled": false,
+          "milling_offset": 0.0,
+          "drag_swivel_depth": -0.1,
+          "cut_cor": 40,
+          "break_pass": -1
+        },
+        "entries": [
+          {
+            "type": "operation",
+            "id": "178e6d71-7323-4363-ae1a-be1e253368f3",
+            "geometry_id": "e3cdeb77-d929-4b40-ab41-f7b6c11f3e2d",
+            "overrides": {
+              "axis3_slice_depth": -1.5,
+              "drag_angle": 0.3490658503988659,
+              "break_pass": -1,
+              "f_g1_depth": 150.0,
+              "axis3_mill_depth": -3.0,
+              "axis3_start_mill_depth": 0.0,
+              "milling_offset": 0.0,
+              "f_g1_plane": 400.0,
+              "cut_cor": 40
+            },
+            "enabled": true,
+            "optimize": false,
+            "clockwise": true,
+            "start": [
+              -15.627,
+              -6.403
+            ],
+            "legacy_conflict": []
+          }
+        ]
+      },
+      {
+        "id": "54a9afd3-ea01-45d4-b4c9-b0e3646ae7b7",
+        "name": "Neuer Schritt",
+        "kind": "contour",
+        "tool_id": "cab73dbf-8e0a-43a1-9c0c-02d34a92b10c",
+        "defaults": {
+          "axis3_retract": 15.0,
+          "axis3_safe_margin": 3.0,
+          "axis3_start_mill_depth": 0.0,
+          "axis3_slice_depth": -1.5,
+          "axis3_mill_depth": -3.0,
+          "f_g1_plane": 400.0,
+          "f_g1_depth": 150.0,
+          "lead_in_mode": "startmove",
+          "lead_out_mode": "off",
+          "overcut_enabled": false,
+          "cut_cor": 40,
+          "milling_offset": 0,
+          "break_pass": -1,
+          "drag_swivel_depth": -0.1,
+          "drag_angle": 20.0
+        },
+        "entries": [
+          {
+            "type": "operation",
+            "id": "eb24d92f-96d5-4483-b94c-f3975e41a2e5",
+            "geometry_id": "3f13a704-ad09-4ac7-b102-5cd70f5d9888",
+            "overrides": {
+              "axis3_slice_depth": -1.5,
+              "drag_angle": 0.3490658503988659,
+              "break_pass": -1,
+              "f_g1_depth": 150.0,
+              "axis3_mill_depth": -3.0,
+              "axis3_start_mill_depth": 0.0,
+              "milling_offset": 0.0,
+              "f_g1_plane": 400.0,
+              "cut_cor": 42
+            },
+            "enabled": true,
+            "optimize": false,
+            "clockwise": true,
+            "start": [
+              15.728,
+              4.726
+            ],
+            "legacy_conflict": []
+          },
+          {
+            "type": "operation",
+            "id": "ac9b68ee-8610-472e-a005-39f7c38380e4",
+            "geometry_id": "3f13a704-ad09-4ac7-b102-5cd70f5d9888",
+            "overrides": {
+              "axis3_slice_depth": -1.5,
+              "drag_angle": 0.3490658503988659,
+              "break_pass": -1,
+              "f_g1_depth": 150.0,
+              "axis3_mill_depth": -3.0,
+              "axis3_start_mill_depth": 0.0,
+              "milling_offset": 0.1,
+              "f_g1_plane": 400.0,
+              "cut_cor": 42,
+              "lead_out_mode": "straight"
+            },
+            "enabled": true,
+            "optimize": false,
+            "clockwise": true,
+            "start": [
+              15.728,
+              4.726
+            ],
+            "legacy_conflict": []
+          }
+        ]
+      }
+    ]
+  }
+}
