@@ -14,11 +14,9 @@ with configurable postprocessors for output.
 
 See the documentation for installation, startup and an introduction to the workflow.
 
-**Development status:** the machining-project workflow is now integrated into
-`develop` and available in
-[2.0.0.dev13](https://github.com/dxf2gcode/dxf2gcode/releases/tag/develop-ci-43608298632)
-and subsequent Develop versions. This development line does not automatically
-represent a stable release.
+**Current Develop prerelease:** [2.0.0.dev14](https://github.com/dxf2gcode/dxf2gcode/releases/tag/develop-ci-45044541606).
+It adds the ribbon, integrated VisPy top and spatial views with a 2D fallback,
+and expanded holding-tab editing to the machining-project workflow.
 [Develop downloads](https://github.com/dxf2gcode/dxf2gcode/releases?q=develop-ci-&include_prereleases=1)
 are published after tests and package checks pass. For historical releases, visit the
 [SourceForge downloads](https://sourceforge.net/projects/dxf2gcode/files/).

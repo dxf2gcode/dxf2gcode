@@ -1,6 +1,6 @@
 # DXF2GCODE: offene Aufgaben – Kurzliste
 
-Stand: **15.11.2026**. Ausschließlich offene Arbeit; keine erledigten Checklisten.
+Stand: **22.11.2026**. Ausschließlich offene Arbeit; keine erledigten Checklisten.
 Dies ist die führende Statusliste. Dieselben Kennungen mit Umfang und
 Abnahmekriterien stehen in den [Details](planning/open-task-details.md).
 Ein Eintrag ist kein pauschaler Umsetzungs- oder Prüfauftrag.
@@ -24,10 +24,6 @@ Ein Eintrag ist kein pauschaler Umsetzungs- oder Prüfauftrag.
 <a id="q1"></a>
 
 - [ ] **Q1 – PySide6:** zusätzliche Qt-Bindung nur bei konkretem Bedarf.
-
-<a id="gui1"></a>
-
-- [ ] **GUI1 – Ribbon und 2D/3D:** VisPy-Standardstart, Draufsicht und 2D-Rückfall im Arbeitszweig abnehmen. Paket-/Plattformprüfung vereinbaren, danach nach `develop` übernehmen. [Abarbeitungsplan](planning/gui1-renderer-comparison-plan.md#p6--auswahl-und-übernahmeplan).
 
 <a id="maschinenabnahme"></a>
 

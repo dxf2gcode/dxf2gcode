@@ -154,6 +154,6 @@ enthält diese später ergänzte Bearbeitung noch nicht.
 - [Qt Quick 3D: eigene Geometrie](https://doc.qt.io/qt-6/qquick3dgeometry.html)
 - [Qt: native Quick-Einbettung und Alternative QQuickWidget](https://doc.qt.io/qt-6/qquickwidget.html)
 - [Qt Quick 3D: Grafik-Backends](https://doc.qt.io/qt-6/qtquick3d-requirements.html)
-- [Offener Vergleichsplan](../planning/gui1-renderer-comparison-plan.md)
+- [Vergleichs- und Übernahmeplan](../planning/gui1-renderer-comparison-plan.md)
 - [Lokale Nachweise](../archive/toolpath-refactoring-completed.md#gui1-p1-p2)
 - [Qt-Quick-3D-Nachweis](../archive/toolpath-refactoring-completed.md#gui1-p3)

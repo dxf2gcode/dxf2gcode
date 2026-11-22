@@ -2,6 +2,22 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+<a id="gui1-dev14"></a>
+
+## GUI1 – Ribbon und VisPy in Develop 2.0.0.dev14 (22.11.2026)
+
+Der Nutzer gab den Stand für das Dev-Release frei. Das Menüband und die
+integrierten VisPy-Ansichten mit 2D-Rückfall wurden über [PR #6](https://github.com/dxf2gcode/dxf2gcode/pull/6)
+nach `develop` übernommen. Der [Dev-Prerelease](https://github.com/dxf2gcode/dxf2gcode/releases/tag/develop-ci-45044541606)
+stammt aus `135b3dbbd3fbcd5dd893a65feea9ffa05d84b199`.
+
+Die Fast-Suite bestand mit 332 Tests. Der [PR-Prüflauf](https://github.com/dxf2gcode/dxf2gcode/actions/runs/45043884982)
+und der [Veröffentlichungslauf](https://github.com/dxf2gcode/dxf2gcode/actions/runs/45044541606)
+prüften Qt5 und Qt6, frische Wheel-Installationen sowie Windows-ZIP und MSI
+mit GUI-Start und DXF-Export. Die öffentlichen Release-Dateien wurden anhand
+von Manifest und Prüfsummen geprüft. Das Windows-Paket ist unsigniert.
+Eine physische Maschinenabnahme war nicht Teil dieses Releases.
+
 ## Drei Startoptionen beim Öffnen einer DXF (22.11.2026)
 
 Die Fräseinstellungen bieten das automatische Anlegen mit oder ohne

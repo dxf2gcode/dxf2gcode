@@ -1,11 +1,8 @@
 # GUI1 – Vergleich von VisPy und Qt Quick 3D
 
-Stand: **21.11.2026**. Arbeitszweig `ribbon-2d-3d`.
-[Todo](../todo.md#gui1) · [Aufgabendetails](open-task-details.md#gui1)
-
-VisPy ist als Standard übernommen. Die frühere Vergleichsphase unten
-dokumentiert die Auswahl. Der Stand für Nutzerprüfung und Paketabnahme ist in P6
-festgehalten.
+Stand: **22.11.2026**. Der Arbeitszweig `ribbon-2d-3d` ist in `develop`
+integriert. Die Vergleichsphase dokumentiert die Auswahl von VisPy.
+[Abschlussnachweis und Dev-Release](../archive/toolpath-refactoring-completed.md#gui1-dev14).
 
 ## Ziel und Grenzen
 
@@ -57,7 +54,6 @@ vorgesehen. Es gehört nicht zu den durchgeführten Vergleichsmessungen.
 
 Die P3-Implementierung und der native Windows-Nachweis stehen im
 [Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-p3).
-Die endgültige Ribbon-Gestaltung bleibt offen.
 
 ### P4 – Vergleich und erste Nutzerprüfung
 
@@ -89,15 +85,11 @@ Die Übernahme in den Anwendungsstart, Konfiguration, Ansichtsband und
 Paketierung ist lokal umgesetzt. Die Entscheidungen und Prüfungen stehen im
 [Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-vispy-adoption).
 
-- [ ] Bedienung im Arbeitszweig prüfen. In der Raumansicht starten, zur
-  Draufsicht wechseln und dort Rechteckauswahl, Kontextmenü, Werkstücknullpunkt
-  und Stege prüfen. In beiden Ansichten Maßstab, Richtungen, Exportreihenfolge
-  und transparente Werkzeuge ansehen. Anschließend die VisPy-Einstellung
-  deaktivieren und nach Neustart das Ansichtsband im bisherigen Canvas prüfen.
-- [ ] Paket- und Plattformprüfung vereinbaren. Windows-ZIP/MSI mit gebündeltem
-  VisPy, Python-Paket mit `view-vispy` sowie Rückfall auf 2D auf den
-  vereinbarten Zielsystemen prüfen.
-- [ ] Nach Abnahme in `develop` übernehmen.
+Der Nutzer hat den Stand für das Dev-Release freigegeben. Die GitHub-CI
+prüfte die Qt5- und Qt6-Suite, frische Wheel-Installationen sowie den
+Windows-Start und DXF-Export aus ZIP und installiertem MSI. Nach dem Merge
+wurden die Release-Pakete aus dem `develop`-Commit erneut gebaut und geprüft.
+[Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-dev14).
 
 ## Plattformen und Validierungsumfang
 
