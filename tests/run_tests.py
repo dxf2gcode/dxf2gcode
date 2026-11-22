@@ -13,6 +13,7 @@ REPO_DIR = os.path.dirname(TEST_DIR)
 sys.path[:0] = [TEST_DIR, os.path.join(REPO_DIR, "source")]
 
 FAST_MODULES = (
+    "dxf2gcode_view_scene_test",
     "dxf2gcode_architecture_boundary_test",
     "dxf2gcode_machining_modes_test",
     "dxf2gcode_machining_project_test",

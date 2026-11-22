@@ -71,7 +71,7 @@ from dxf2gcode.adapters.postprocessor.postprocessorconfig import MyPostProConfig
 
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMainWindow, QGraphicsView, QFileDialog, QApplication, QMenu, QMessageBox
 from dxf2gcode.presentation.qt.qt_compat.QtGui import QActionGroup
-from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon, QSurfaceFormat
+from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
 
@@ -294,13 +294,12 @@ class MainWindow(QMainWindow):
         self.ui.messageSplitter.setSizes([600, 100])
         # pyuic turns the UI's ICO into a single QPixmap; retain all ICO sizes.
         self.setWindowIcon(QIcon(":images/dxf2gcode.ico"))
-        self.showMaximized()
+        from dxf2gcode.presentation.qt.title_bar import install_title_bar
+        self.title_bar = install_title_bar(self)
+        self.setWindowState(self.windowState() | QtCore.Qt.WindowState.WindowMaximized)
 
         self.canvas = self.ui.canvas
-        if g.config.mode3d:
-            self.canvas_scene = self.canvas
-        else:
-            self.canvas_scene = None
+        self.canvas_scene = None
 
         self.TreeHandler = TreeHandler(self.ui)
         from dxf2gcode.presentation.qt.machining_panel import MachiningPanel
@@ -350,6 +349,27 @@ class MainWindow(QMainWindow):
         self.cont_mirrory = False
 
         self.restoreWindowState()
+        from dxf2gcode.presentation.qt.view_comparison import ViewComparison
+        self.view_comparison = ViewComparison(self)
+
+    def show_at_startup(self, startup_activation=None):
+        self.view_comparison.start(self.application_context.config.use_vispy)
+        self.show()
+        self.view_comparison.finish_renderer_startup()
+        if self.canvas_scene is not None and self.view_comparison.renderer is None:
+            self.canvas.autoscale()
+        QtCore.QTimer.singleShot(0, self.activate_on_startup)
+        if startup_activation is not None and self.app.platformName() == 'windows':
+            QtCore.QTimer.singleShot(150, lambda: self.complete_startup_activation(startup_activation))
+
+    def activate_on_startup(self):
+        if self.isVisible() and not self.isMinimized():
+            self.raise_()
+            self.windowHandle().requestActivate()
+
+    def complete_startup_activation(self, activation):
+        if self.isVisible() and not self.isMinimized():
+            activation.activate(int(self.winId()))
 
     def tr(self, string_to_translate):
         """
@@ -383,11 +403,7 @@ class MainWindow(QMainWindow):
         # emitted when state is changed programmatically
         self.ui.actionShowDisabledPaths.toggled.connect(self.setShowDisabledPaths)
         self.ui.actionLiveUpdateExportRoute.toggled.connect(self.liveUpdateExportRoute)
-        self.ui.actionDeleteG0Paths.triggered.connect(self.deleteG0Paths)
-        self.ui.actionAutoscale.triggered.connect(self.canvas.autoscale)
-        if g.config.mode3d:
-            self.ui.actionTopView.triggered.connect(self.canvas.topView)
-            self.ui.actionIsometricView.triggered.connect(self.canvas.isometricView)
+        self.ui.actionAutoscale.triggered.connect(lambda: self.view_comparison.fit())
 
         # Options
         self.ui.actionConfiguration.triggered.connect(self.config_window.show)
@@ -406,7 +422,7 @@ class MainWindow(QMainWindow):
         self.ui.actionMillimeters.triggered.connect(self.setMeasurementUnitsToMillimeters)
         self.ui.actionInches.triggered.connect(self.setMeasurementUnitsToInches)
 
-        # Help
+        # About
         self.ui.actionAbout.triggered.connect(self.about)
 
     def createConfigProfileMenu(self):
@@ -570,9 +586,12 @@ class MainWindow(QMainWindow):
     def connectToolbarToConfig(self, project=False, block_signals=True):
         # View
         if not project:
-            self.ui.actionShowDisabledPaths.blockSignals(block_signals)  # Don't emit any signal when changing state of the menu entries
-            self.ui.actionShowDisabledPaths.setChecked(g.config.vars.General['show_disabled_paths'])
-            self.ui.actionShowDisabledPaths.blockSignals(False)
+            configured = g.config.vars.General['show_disabled_paths']
+            if configured != getattr(self, '_configured_show_disabled_paths', None):
+                self._configured_show_disabled_paths = configured
+                self.ui.actionShowDisabledPaths.blockSignals(block_signals)
+                self.ui.actionShowDisabledPaths.setChecked(configured)
+                self.ui.actionShowDisabledPaths.blockSignals(False)
             self.ui.actionLiveUpdateExportRoute.blockSignals(block_signals)
             self.ui.actionLiveUpdateExportRoute.setChecked(g.config.vars.General['live_update_export_route'])
             self.ui.actionLiveUpdateExportRoute.blockSignals(False)
@@ -594,9 +613,7 @@ class MainWindow(QMainWindow):
         """
         if event.isAutoRepeat():
             return
-        if g.config.mode3d:
-            self.canvas.updateModifiers(event)
-        elif event.key() == QtCore.Qt.Key.Key_Control:
+        if event.key() == QtCore.Qt.Key.Key_Control:
             self.canvas.isMultiSelect = True
         elif event.key() == QtCore.Qt.Key.Key_Shift:
             self.canvas.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
@@ -607,9 +624,7 @@ class MainWindow(QMainWindow):
         @purpose: Changes to RubberBandDrag while Control released
         @param event:    Event Parameters passed to function
         """
-        if g.config.mode3d:
-            self.canvas.updateModifiers(event)
-        elif event.key() == QtCore.Qt.Key.Key_Control:
+        if event.key() == QtCore.Qt.Key.Key_Control:
             self.canvas.isMultiSelect = False
         elif event.key() == QtCore.Qt.Key.Key_Shift:
             self.canvas.setDragMode(QGraphicsView.DragMode.NoDrag)
@@ -629,9 +644,6 @@ class MainWindow(QMainWindow):
         self.ui.actionShowDisabledPaths.setEnabled(status)
         self.ui.actionLiveUpdateExportRoute.setEnabled(status)
         self.ui.actionAutoscale.setEnabled(status)
-        if g.config.mode3d:
-            self.ui.actionTopView.setEnabled(status)
-            self.ui.actionIsometricView.setEnabled(status)
 
         # Options
         self.ui.actionTolerances.setEnabled(status)
@@ -639,19 +651,6 @@ class MainWindow(QMainWindow):
         self.ui.actionScaleAll.setEnabled(status)
         self.ui.actionMirrorAll.setEnabled(status)
         self.ui.actionMoveWorkpieceZero.setEnabled(status)
-
-    def deleteG0Paths(self):
-        """
-        Deletes the optimisation paths from the scene.
-        """
-        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
-        self.app.processEvents()
-
-        self.canvas_scene.delete_opt_paths()
-        self.ui.actionDeleteG0Paths.setEnabled(False)
-        self.canvas_scene.update()
-
-        self.unsetCursor()
 
     def isToolpathError(self, message):
         """
@@ -829,8 +828,10 @@ class MainWindow(QMainWindow):
 
     def updateExportRoute(self):
         """
-        Update the drawing of the export route
+        Refresh the visible export connections.
         """
+        if self.canvas_scene is None or not self.TreeHandler.auto_update_export_order:
+            return
         panel = getattr(self, 'machining_panel', None)
         if panel is not None and panel.binding is not None:
             panel.draw_route()
@@ -843,9 +844,9 @@ class MainWindow(QMainWindow):
             if len(layer.exp_order) > 0:
                 self.canvas_scene.addexproute(layer.exp_order, layer.nr)
         if len(self.canvas_scene.routearrows) > 0:
-            self.ui.actionDeleteG0Paths.setEnabled(True)
             self.canvas_scene.addexprouteen()
         self.canvas_scene.update()
+        self.view_comparison.repaint_overlay()
 
     def optimizeTSP(self):
         """
@@ -855,18 +856,14 @@ class MainWindow(QMainWindow):
         panel = getattr(self, 'machining_panel', None)
         if panel is not None and panel.binding is not None:
             panel.execute(lambda: panel.commands.optimize(TspOptimization))
-            panel.draw_route()
             return
         self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.app.processEvents()
 
         logger.debug(self.tr('Optimize order of enabled shapes per layer'))
-        self.canvas_scene.delete_opt_paths()
-
         # Get the export order from the QTreeView
         logger.debug(self.tr('Updating order according to TreeView'))
         self.TreeHandler.updateExportOrder()
-        self.canvas_scene.addexproutest()
 
         x_st = g.config.vars.Plane_Coordinates['axis1_start_end']
         y_st = g.config.vars.Plane_Coordinates['axis2_start_end']
@@ -874,8 +871,6 @@ class MainWindow(QMainWindow):
         def update_layer_route(layer_content):
             logger.debug(self.tr("New Export Order after TSP: %s")
                          % layer_content.exp_order)
-            self.canvas_scene.addexproute(layer_content.exp_order,
-                                          layer_content.nr)
             self.app.processEvents()
 
         OptimizeRoutes(
@@ -886,19 +881,17 @@ class MainWindow(QMainWindow):
         ).execute(self.layerContents.non_break_layer_iter(), self.shapes,
                   after_layer=update_layer_route)
 
-        if len(self.canvas_scene.routearrows) > 0:
-            self.ui.actionDeleteG0Paths.setEnabled(True)
-            self.canvas_scene.addexprouteen()
-
         # Update order in the treeView, according to path calculation done by the TSP
         self.TreeHandler.updateTreeViewOrder()
+        self.TreeHandler.updateExportOrder()
         self.updateExportRoute()
 
         self.unsetCursor()
 
-    def automaticCutterCompensation(self):
-        enabled = (self.ui.actionAutomaticCutterCompensation.isEnabled() and
-                   self.ui.actionAutomaticCutterCompensation.isChecked())
+    def automaticCutterCompensation(self, enabled=None):
+        if enabled is None:
+            enabled = self.ui.actionAutomaticCutterCompensation.isChecked()
+        enabled = enabled and self.ui.actionAutomaticCutterCompensation.isEnabled()
         changed_shapes = AutomaticCutterCompensation().execute(
             self.layerContents.non_break_layer_iter(), enabled,
             g.config.machine_type)
@@ -938,10 +931,7 @@ class MainWindow(QMainWindow):
             return False
 
     def about(self):
-        """
-        This function is called by the menu "Help/About" of the main toolbar and
-        creates the About Window
-        """
+        """Open the About dialog from the ribbon."""
 
         message = self.tr("<html>"
                           "<h2>Version:</h2>"
@@ -969,6 +959,9 @@ class MainWindow(QMainWindow):
         """
         flag = self.ui.actionShowPathDirections.isChecked()
         self.canvas.setShowPathDirections(flag)
+        view = getattr(self, 'view_comparison', None)
+        if view is not None and view.refresh_path_directions():
+            return
         self.machining_panel.refresh_preview()
         self.canvas_scene.update()
 
@@ -983,12 +976,13 @@ class MainWindow(QMainWindow):
         self.canvas_scene.update()
 
     def liveUpdateExportRoute(self):
-        """
-        This function is called by the menu "Live update tool path" of the
-        main and forwards the call to TreeHandler.setUpdateExportRoute()
-        """
+        """Show export connections live, or clear them immediately."""
         flag = self.ui.actionLiveUpdateExportRoute.isChecked()
         self.TreeHandler.setLiveUpdateExportRoute(flag)
+        if not flag and self.canvas_scene is not None:
+            self.canvas_scene.delete_opt_paths()
+            self.canvas_scene.update()
+            self.view_comparison.repaint_overlay()
 
     def setTolerances(self):
         title = self.tr('Contour tolerances')
@@ -1381,37 +1375,38 @@ class MainWindow(QMainWindow):
 
         self.makeShapes()
         if plot:
-            self.plot()
+            mode = g.config.vars.General['dxf_import_mode'] if ext.lower() == '.dxf' else None
+            self.plot(dxf_import_mode=mode)
         return True
 
-    def plot(self):
+    def plot(self, *, dxf_import_mode=None):
         # Populate the treeViews
         self.TreeHandler.buildEntitiesTree(self.entityRoot)
         self.TreeHandler.buildLayerTree(self.layerContents)
 
         # Paint the canvas
-        if not g.config.mode3d:
-            self.canvas_scene = MyGraphicsScene()
-            self.canvas.setScene(self.canvas_scene)
+        from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene
+        self.canvas_scene = MyGraphicsScene()
+        self.canvas.setScene(self.canvas_scene)
 
         self.canvas_scene.plotAll(self.shapes)
         self.setShowPathDirections()
         self.setShowDisabledPaths()
         self.liveUpdateExportRoute()
 
-        if not g.config.mode3d:
-            self.canvas.show()
-            self.canvas.setFocus()
+        self.view_comparison.stack.currentWidget().setFocus()
         self.canvas.autoscale()
 
         # After all is plotted enable the Menu entities
         self.enableToolbarButtons()
 
-        if self.d2g.machining_drawing is None:
-            self.automaticCutterCompensation()
+        geometry_only = dxf_import_mode == 'geometry_only'
+        if self.d2g.machining_drawing is None and not geometry_only:
+            self.automaticCutterCompensation(
+                enabled=None if dxf_import_mode is None else dxf_import_mode == 'with_compensation')
         panel = getattr(self, 'machining_panel', None)
         if panel is not None:
-            panel.attach()
+            panel.attach(geometry_only=geometry_only)
             panel.refresh_preview()
 
         self.unsetCursor()
@@ -1437,11 +1432,8 @@ class MainWindow(QMainWindow):
         from dxf2gcode.domain.project.shape import Shape as DomainShape
 
         def connect_shape_callbacks(shape):
-            if not g.config.mode3d:
-                shape.setSelectionChangedCallback(
-                    self.TreeHandler.updateShapeSelection)
-                shape.setEnableDisableCallback(
-                    self.TreeHandler.updateShapeEnabling)
+            shape.setSelectionChangedCallback(self.TreeHandler.updateShapeSelection)
+            shape.setEnableDisableCallback(self.TreeHandler.updateShapeEnabling)
 
         model_config = g.config
         if getattr(self.d2g, 'loading_machining_project', None) is not None:
@@ -1484,6 +1476,9 @@ class MainWindow(QMainWindow):
         update = getattr(canvas, 'updateScaleBar', None)
         if callable(update):
             update()
+        view_band = getattr(self, 'view_comparison', None)
+        if view_band is not None:
+            view_band.repaint_overlay()
 
         refresh = getattr(getattr(self, 'canvas_scene', None), 'updateToolCircleVisibility', None)
         if callable(refresh):
@@ -1563,7 +1558,7 @@ class MainWindow(QMainWindow):
     @staticmethod
     def _restart_settings():
         keys = {
-            'General': ('mode3d',),
+            'General': ('use_vispy',),
             'Logging': ('logfile', 'console_loglevel', 'file_loglevel', 'window_loglevel'),
         }
         return {(section, key): g.config.var_dict[section][key]
@@ -1580,7 +1575,7 @@ class MainWindow(QMainWindow):
         if current == self._restart_notified:
             return
         labels = {
-            ('General', 'mode3d'): self.tr('3D display'),
+            ('General', 'use_vispy'): self.tr('3D display'),
             'Logging': self.tr('Logging'),
         }
         names = list(dict.fromkeys(labels.get(key, labels.get(key[0])) for key in changed))
@@ -1742,6 +1737,9 @@ class MainWindow(QMainWindow):
             logger.error("G-code filter cancelled without export")
         logger.debug(self.tr("Closing"))
         self.saveWindowState()
+        comparison = getattr(self, 'view_comparison', None)
+        if comparison is not None:
+            comparison.shutdown()
         # Detach Qt-bound StreamHandler so logging.shutdown() won't crash
         # on a deleted QTextBrowser at exit. See messagebox.py / logger.py
         for handler in logger.handlers[:]:
@@ -1765,6 +1763,9 @@ class MainWindow(QMainWindow):
         self.settings.setValue("state", self.saveState())
         self.layout_state.save(self.settings)
         self.settings.endGroup()
+        view = getattr(self, 'view_comparison', None)
+        if view is not None:
+            view.save_display_settings()
 
 
 if __name__ == "__main__":
@@ -1796,6 +1797,8 @@ if __name__ == "__main__":
     #    parser.add_option("-v", "--verbose",
     #                      action = "store_true", dest = "verbose")
     options = parser.parse_args()
+    from dxf2gcode.presentation.qt.startup_activation import capture_startup_activation
+    startup_activation = capture_startup_activation() if not options.quiet else None
 
     # Resolve the configuration profile. An explicit command line suffix has
     # priority; otherwise the profile selected in the GUI is used (it is
@@ -1885,13 +1888,6 @@ if __name__ == "__main__":
 
     from dxf2gcode.domain.project.shape import Shape
 
-    if g.config.mode3d:
-        # multi-sampling has been introduced in PyQt5
-        fmt = QSurfaceFormat()
-        fmt.setSamples(4)
-        QSurfaceFormat.setDefaultFormat(fmt)
-    else:
-        from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene
     application_context = create_application_context(
         config=g.config, logger=logger, quiet=options.quiet)
     window = MainWindow(app, application_context)
@@ -1905,9 +1901,6 @@ if __name__ == "__main__":
 
     # (options, args) = parser.parse_args()
     logger.debug("Started with following options:\n%s" % parser)
-
-    if not options.quiet:
-        window.show()
 
     if options.filename is not None:
         window.filename = str_decode(options.filename)
@@ -1931,6 +1924,7 @@ if __name__ == "__main__":
             sys.exit(window.stdout_exit_code)
 
     if not options.quiet:
+        window.show_at_startup(startup_activation)
         # exec is no longer a reserved word in Python
         exit_code = app.exec()
         sys.exit((exit_code or window.stdout_exit_code) if stdout_filter else exit_code)

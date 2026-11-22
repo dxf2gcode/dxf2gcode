@@ -11,6 +11,7 @@ class PreviewSegment:
     end: tuple
     role: str
     space: str
+    is_retract: bool = False
 
 
 def plan_route_endpoints(plan):
@@ -33,7 +34,7 @@ def plan_preview_segments(plan, dimensions=3):
     xy, z = plan.approach_xy, plan.workpiece_top
     segments, seen = [], set()
 
-    def add(start, end, role):
+    def add(start, end, role, is_retract=False):
         if dimensions == 2:
             start, end = start[:2], end[:2]
             if start == end:
@@ -43,7 +44,7 @@ def plan_preview_segments(plan, dimensions=3):
             if key in seen:
                 return
             seen.add(key)
-        segments.append(PreviewSegment(start, end, role, plan.compensation_space))
+        segments.append(PreviewSegment(start, end, role, plan.compensation_space, is_retract))
 
     for action in plan.actions:
         kind, args = action.kind, action.args
@@ -51,8 +52,9 @@ def plan_preview_segments(plan, dimensions=3):
             add((*xy, z), (*args[0], z), "rapid")
             xy = args[0]
         elif kind in ("rapid_z", "linear_z", "drill", "drill_retract"):
+            rapid = kind in ("rapid_z", "drill_retract")
             add((*xy, z), (*xy, args[0]),
-                "rapid" if kind in ("rapid_z", "drill_retract") else action.role)
+                "rapid" if rapid else action.role, is_retract=rapid and args[0] > z)
             z = args[0]
         elif kind == "linear_xyz":
             add((*args[0], args[2]), (*args[1], args[3]), action.role)

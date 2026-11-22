@@ -14,7 +14,6 @@ class MovementPlan:
         self.request = request
         self.actions = []
         self.feed = request.initial_state.feed
-        self.z_word = request.initial_state.z_word
         self.last_z = request.initial_state.last_absolute_z
 
     def add(self, kind, *args, role="cut", modifier_id=''):
@@ -22,16 +21,9 @@ class MovementPlan:
         if kind == "feed":
             self.feed = args[0]
         elif kind in ("rapid_z", "linear_z", "drill", "drill_retract"):
-            z = args[0]
-            if self.request.capabilities.absolute_coordinates:
-                self.z_word = z
-            else:
-                self.z_word = z - self.last_z
-                self.last_z = z
+            self.last_z = args[0]
         elif kind == "linear_xyz":
-            z = args[3]
-            self.z_word = z if self.request.capabilities.absolute_coordinates else z - self.last_z
-            self.last_z = z
+            self.last_z = args[3]
 
     def geometry(self, geo, role="cut"):
         if geo.kind == "rapid":
@@ -56,27 +48,29 @@ class MovementPlan:
         else:
             raise ValueError("unsupported planning geometry: %s" % geo.kind)
 
-    def tab_chain(self, geometries, depth=None, restore=True, feed=None):
+    def tab_chain(self, geometries, depth=None, restore=True, feed=None, role='cut'):
         """Traverse adjacent tab pieces without a plunge at their shared corner."""
         first = geometries[0]
-        old_z = self.z_word if depth is None else depth
+        old_z = self.last_z if depth is None else depth
         old_feed = self.feed if feed is None else feed
+        target_z = max(first.height, old_z)
         raised = first.height > old_z
-        if raised:
+        if self.last_z != target_z:
             self.add('feed', first.z_feed, role='tab')
-            self.add('linear_z', first.height, role='tab')
-            self.add('feed', first.xy_feed, role='tab')
+            self.add('linear_z', target_z, role='tab')
+        if self.feed != (first.xy_feed if raised else old_feed):
+            self.add('feed', first.xy_feed if raised else old_feed, role='tab')
         for geo in geometries:
             path = geo.tab_geometry or replace(geo, kind='line', tab_geometry=None)
             start = len(self.actions)
-            self.geometry(path, role='tab')
+            self.geometry(path, role='tab' if raised else role)
             if raised:
                 for index in range(start, len(self.actions)):
                     self.actions[index] = replace(self.actions[index], modifier_id=geo.modifier_id)
-        if raised:
-            if restore:
-                self.add('feed', first.z_feed, role='tab')
-                self.add('linear_z', old_z, role='tab')
+        if raised and restore:
+            self.add('feed', first.z_feed, role='tab')
+            self.add('linear_z', old_z, role='tab')
+        if self.feed != old_feed:
             self.add('feed', old_feed, role='tab')
 
     def cut_geometry(self, geo, drill=False, role="cut"):

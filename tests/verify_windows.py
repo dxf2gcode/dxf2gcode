@@ -25,10 +25,13 @@ def check_executable(executable, manifest, fixture, directory):
     for language in ('de', 'fr', 'ru'):
         assert (root / 'i18n' / ('dxf2gcode_'+language+'.qm')).is_file()
     assert list(root.rglob('qwindows.dll')), 'Qt Windows platform plugin missing'
+    assert (root / 'lib/vispy').is_dir(), 'VisPy package missing'
+    assert list((root / 'lib/vispy/glsl').rglob('*.glsl')), 'VisPy shader resources missing'
+    assert list(root.rglob('Qt6OpenGLWidgets.dll')), 'Qt OpenGL widget runtime missing'
     environment = os.environ.copy()
     environment.pop('PYTHONPATH', None)
     environment.update(HOME=str(directory), USERPROFILE=str(directory), APPDATA=str(directory),
-                       LOCALAPPDATA=str(directory), DXF2GCODE_QT='5')
+                       LOCALAPPDATA=str(directory), DXF2GCODE_QT='6')
     environment.pop('QT_QPA_PLATFORM', None)
     output = directory / 'export.ngc'
     subprocess.run([str(executable), '--quiet', '--cfg', 'package_test', '--export', str(output),

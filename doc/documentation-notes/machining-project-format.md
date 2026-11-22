@@ -35,7 +35,8 @@ speziellere Ebene gewinnt. `parameter_origins` benennt `tool`, `project`,
 | `axis3_start_mill_depth`, `axis3_slice_depth`, `axis3_mill_depth` | Unklare Altwerte als eigene Bearbeitungswerte, auch bei Gleichheit mit Vorgaben | Projekteinheit; Tiefenplan neu erstellen |
 | `axis3_retract`, `axis3_safe_margin` | Schrittvorgaben aus Layer; keine Overrides pro Bearbeitung im Format 2.0 | Projekteinheit; Plan neu erstellen |
 | `f_g1_plane`, `f_g1_depth` | Unklare Altwerte als eigene Bearbeitungswerte | Projekteinheit/min; Plan neu erstellen |
-| `milling_offset`, `cut_cor`, `break_pass`, `drag_angle` | Effektive Altwerte als eigene Bearbeitungswerte | Offset als Länge, Winkel in Grad, übrige Werte dimensionslos; neu planen |
+| `milling_offset`, `cut_cor`, `drag_angle` | Effektive Altwerte als eigene Bearbeitungswerte | Offset als Länge, Winkel in Grad, Korrekturcode dimensionslos |
+| `break_pass` | Feld älterer Projektdateien | Die Stegoberkante bestimmt den Z-Werkzeugweg je Durchgang. Gespeicherte Durchgangsnummern haben keine Wirkung auf die Planung. |
 | `lead_in_mode`, `lead_out_mode`, `overcut_enabled` | Bestehendes `default` beweist Vererbung vom gespeicherten Schritt; explizite Werte bleiben eigene Werte | Zustände; neu planen |
 | `drag_swivel_depth` | Vorhandener eigener Wert bleibt; `None` erbt gespeicherte Schrittvorgabe | Projekteinheit; Messerplan neu erstellen |
 | `Drill`, `Pocket`, Layerart | Einheitliche Schrittart `contour`, `pocket`, `drill`, `break` oder `ignored`; widersprüchliche Altzustände zusätzlich erhalten und diagnostizieren | Zustände; neu planen |

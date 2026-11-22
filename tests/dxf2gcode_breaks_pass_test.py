@@ -1,20 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Regression tests for ticket #150: the BREAKS (tab) contour is only split for
-the milling passes selected with the "Process breaks from" setting
-(shape.break_pass: -1 = last pass, 0 = never, 1..n = pass number).
-
-They check the actual emitted movements (pass plunges, XY blocks, tab lift /
-dip Z lines) instead of only counting geometry objects. The GUI part uses the
-real TreeHandler with a real QComboBox/QTreeView headless (offscreen); the
-full MainWindow cannot be instantiated offscreen (it crashes, like the other
-existing GUI tests) so the widget position is verified against the generated
-UI module and the layout collapse is verified with a plain QGridLayout.
-
-Run from the repository root:
-
-    python -m unittest discover -s tests -t tests -p "dxf2gcode_breaks_pass_test.py" -v
-"""
+"""Check automatic tab heights in emitted G-code and legacy project reads."""
 from __future__ import absolute_import
 
 import ast
@@ -71,14 +56,6 @@ from dxf2gcode.domain.toolpath.leadmove import LEAD_OFF  # noqa: E402
 
 from dxf2gcode_stmove_gcode_test import (  # noqa: E402
     make_postpro, make_shape, build_stmove, square_geos, norm)
-
-from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (  # noqa: E402
-    QApplication, QComboBox, QLabel, QTreeView, QWidget, QGridLayout, QLineEdit)
-from dxf2gcode.presentation.qt.qt_compat import QtCore  # noqa: E402
-from dxf2gcode.presentation.qt.treehandling import TreeHandler  # noqa: E402
-
-_APP = None  # keep the QApplication alive (otherwise all widgets are deleted)
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -195,21 +172,20 @@ def geo_snapshot(geos):
 # ---------------------------------------------------------------------------
 class TestBreakPassGCode(unittest.TestCase):
 
-    def test_auto_processes_tabs_in_last_pass_only(self):
+    def test_auto_lifts_every_pass_below_tab_top(self):
         """Ticket #150 example: 8 mm depth, 1 mm slice, tab top at -6.5."""
         layer = make_break_layer("BREAKS: 1 MillDepth: -6.5")
         _, code = export_shape(break_pass=-1, break_layers=[layer])
         passes = split_passes(code)
         self.assertEqual(len(passes), 8)
-        for k, pass_lines in enumerate(passes[:-1]):
+        for k, pass_lines in enumerate(passes[:6]):
             self.assertEqual(len(xy_blocks(pass_lines)), 4,
                              "pass %d must use the unbroken contour" % (k + 1))
             self.assertEqual(len(tab_lifts(pass_lines, -6.5)), 0,
                              "pass %d must not touch the tabs" % (k + 1))
-        self.assertEqual(len(xy_blocks(passes[-1])), 6,
-                         "last pass must use the broken contour")
-        self.assertEqual(len(tab_lifts(passes[-1], -6.5)), 1,
-                         "last pass must lift the cutter to the tab top")
+        for pass_lines in passes[6:]:
+            self.assertEqual(len(xy_blocks(pass_lines)), 6)
+            self.assertEqual(len(tab_lifts(pass_lines, -6.5)), 1)
 
     def test_get_pass_depths_mirrors_write_gcode(self):
         from dxf2gcode.domain.project.shape import Shape as _S
@@ -226,44 +202,12 @@ class TestBreakPassGCode(unittest.TestCase):
         sh.axis3_slice_depth = 0.0
         self.assertEqual(sh.get_pass_depths(), [0.0])
 
-    def test_explicit_first_pass(self):
+    def test_saved_legacy_pass_values_do_not_override_tab_height(self):
         layer = make_break_layer("BREAKS: 1 MillDepth: -6.5")
-        _, code = export_shape(break_pass=1, break_layers=[layer])
-        passes = split_passes(code)
-        self.assertEqual(len(passes), 8)
-        for k, pass_lines in enumerate(passes):
-            self.assertEqual(len(xy_blocks(pass_lines)), 6,
-                             "pass %d must use the broken contour" % (k + 1))
-            expected_lifts = 1 if k >= 6 else 0
-            self.assertEqual(len(tab_lifts(pass_lines, -6.5)), expected_lifts)
-
-    def test_explicit_middle_pass(self):
-        layer = make_break_layer("BREAKS: 1 MillDepth: -6.5")
-        _, code = export_shape(break_pass=4, break_layers=[layer])
-        passes = split_passes(code)
-        self.assertEqual(len(passes), 8)
-        for k, pass_lines in enumerate(passes):
-            expected_blocks = 6 if k >= 3 else 4
-            self.assertEqual(len(xy_blocks(pass_lines)), expected_blocks,
-                             "pass %d has wrong contour variant" % (k + 1))
-            expected_lifts = 1 if k >= 6 else 0
-            self.assertEqual(len(tab_lifts(pass_lines, -6.5)), expected_lifts)
-
-    def test_explicit_last_pass_equals_auto(self):
-        layer = make_break_layer("BREAKS: 1 MillDepth: -6.5")
-        _, code_auto = export_shape(break_pass=-1, break_layers=[layer])
-        _, code_last = export_shape(break_pass=8, break_layers=[layer])
-        self.assertEqual(code_auto, code_last)
-
-    def test_pass_zero_never_processes_tabs(self):
-        layer = make_break_layer("BREAKS: 1 MillDepth: -6.5")
-        _, code = export_shape(break_pass=0, break_layers=[layer])
-        passes = split_passes(code)
-        self.assertEqual(len(passes), 8)
-        for k, pass_lines in enumerate(passes):
-            self.assertEqual(len(xy_blocks(pass_lines)), 4,
-                             "pass %d must use the unbroken contour" % (k + 1))
-        self.assertNotIn("Z -6.500", code)
+        expected = export_shape(break_layers=[layer])[1]
+        for value in (0, 1, 4, 8):
+            with self.subTest(value=value):
+                self.assertEqual(export_shape(break_pass=value, break_layers=[layer])[1], expected)
 
     def test_variable_last_slice(self):
         # slices of 3 mm give passes at -3, -6 and the clamped -8
@@ -277,16 +221,6 @@ class TestBreakPassGCode(unittest.TestCase):
         self.assertEqual(len(xy_blocks(passes[2])), 6)
         self.assertEqual(len(tab_lifts(passes[2], -6.5)), 1)
 
-        # explicit pass 2: passes 1 plain, passes 2-3 split
-        _, code = export_shape(break_pass=2, depths=(0.0, -8.0, -3.0),
-                               break_layers=[layer])
-        passes = split_passes(code)
-        self.assertEqual(len(passes), 3)
-        self.assertEqual(len(xy_blocks(passes[0])), 4)
-        self.assertEqual(len(xy_blocks(passes[1])), 6)
-        self.assertEqual(len(xy_blocks(passes[2])), 6)
-        self.assertEqual(len(tab_lifts(passes[1], -6.5)), 0)
-        self.assertEqual(len(tab_lifts(passes[2], -6.5)), 1)
 
     def test_tab_top_on_pass_depth(self):
         # tab top exactly at the 7th pass depth: the 7th pass must not lift
@@ -310,24 +244,9 @@ class TestBreakPassGCode(unittest.TestCase):
                                break_layers=[layer1, layer2])
         passes = split_passes(code)
         self.assertEqual(len(passes), 8)
-        for k, pass_lines in enumerate(passes[:-1]):
-            self.assertEqual(len(xy_blocks(pass_lines)), 4)
-            self.assertEqual(len(tab_lifts(pass_lines, -2.5)), 0)
-            self.assertEqual(len(tab_lifts(pass_lines, -6.5)), 0)
-        self.assertEqual(len(xy_blocks(passes[-1])), 8)
-        self.assertEqual(len(tab_lifts(passes[-1], -2.5)), 1)
-        self.assertEqual(len(tab_lifts(passes[-1], -6.5)), 1)
-
-        # explicit pass 4: passes 4-8 split; the -2.5 tab lifts from pass 4
-        # on (Z semantics unchanged), the -6.5 tab only in the deep passes
-        _, code = export_shape(break_pass=4,
-                               break_layers=[layer1, layer2])
-        passes = split_passes(code)
-        self.assertEqual(len(xy_blocks(passes[3])), 8)
-        self.assertEqual(len(tab_lifts(passes[3], -2.5)), 1)
-        self.assertEqual(len(tab_lifts(passes[3], -6.5)), 0)
-        self.assertEqual(len(tab_lifts(passes[7], -2.5)), 1)
-        self.assertEqual(len(tab_lifts(passes[7], -6.5)), 1)
+        for depth, pass_lines in enumerate(passes, start=1):
+            self.assertEqual(len(tab_lifts(pass_lines, -2.5)), int(depth >= 3))
+            self.assertEqual(len(tab_lifts(pass_lines, -6.5)), int(depth >= 7))
 
     def test_tab_top_between_pass_depths(self):
         # tab top -6.5 lies between pass 6 (-6.0) and pass 7 (-7.0)
@@ -339,6 +258,26 @@ class TestBreakPassGCode(unittest.TestCase):
         self.assertEqual(len(xy_blocks(passes[6])), 6)
         self.assertEqual(len(tab_lifts(passes[6], -6.5)), 1)
         self.assertEqual(len(tab_lifts(passes[6], -7.0)), 1)  # re-entry dip
+
+    def test_adjacent_tabs_use_each_regions_own_height(self):
+        high = make_break_layer("BREAKS: 1 MillDepth: 0", a=3., b=4.)
+        low = make_break_layer("BREAKS: 2 MillDepth: -2", a=4., b=5.)
+        _, code = export_shape(depths=(0., -3., -1.5), break_layers=[high, low])
+        traversals = {(3., 4.): [], (4., 5.): []}
+        depth = None
+        point = None
+        for line in code.splitlines():
+            words = line.split()
+            if words[:2] == ['G1', 'Z']:
+                depth = float(words[2])
+            if words[:2] in (['G0', 'X'], ['G1', 'X']):
+                end = float(words[2]), float(words[4])
+                if point is not None and point[1] == end[1] == 0.:
+                    interval = tuple(sorted((point[0], end[0])))
+                    if interval in traversals:
+                        traversals[interval].append(depth)
+                point = end
+        self.assertEqual(traversals, {(3., 4.): [0., 0.], (4., 5.): [-1.5, -2.]}, code)
 
     def test_closed_contour_geometry_unchanged(self):
         layer = make_break_layer("BREAKS: 1 MillDepth: -6.5")
@@ -369,7 +308,7 @@ class TestBreakPassGCode(unittest.TestCase):
         # The first pass contains the nominal lead in (line + arc) and the
         # unbroken contour; the following passes contain the contour only.
         self.assertEqual(len(xy_blocks(passes[0])), 6)
-        for k, pass_lines in enumerate(passes[1:-1], start=2):
+        for k, pass_lines in enumerate(passes[1:6], start=2):
             self.assertEqual(len(xy_blocks(pass_lines)), 4,
                              "pass %d must use the unbroken contour" % k)
         self.assertEqual(len(xy_blocks(passes[-1])), 6)
@@ -383,7 +322,7 @@ class TestBreakPassGCode(unittest.TestCase):
         self.assertNotIn("G42", code)
         passes = split_passes(code)
         self.assertEqual(len(passes), 8)
-        for k, pass_lines in enumerate(passes[:-1]):
+        for k, pass_lines in enumerate(passes[:6]):
             # the inward offset of the square has rounded corners:
             # 4 lines + 4 arcs = 8 blocks
             self.assertEqual(len(xy_blocks(pass_lines)), 8)
@@ -403,11 +342,11 @@ class TestBreakPassGCode(unittest.TestCase):
         self.assertEqual(len(passes), 8)
         # plain pass: 2 blocks; split pass: 4 blocks (line 2 broken in 3)
         for k, pass_lines in enumerate(passes):
-            expected_blocks = 4 if k >= 1 else 2
+            expected_blocks = 4 if k >= 6 else 2
             self.assertEqual(len(xy_blocks(pass_lines)), expected_blocks)
 
         # direction alternates: pass 1 ends at the contour end, pass 2 (the
-        # first split pass) runs backwards and ends at the contour start
+        # also unbroken) runs backwards and ends at the contour start
         last_xy_1 = norm(xy_blocks(passes[0])[-1])
         last_xy_2 = norm(xy_blocks(passes[1])[-1])
         self.assertIn("X 0.000 Y 0.000", last_xy_1)
@@ -432,11 +371,11 @@ class TestBreakPassGCode(unittest.TestCase):
                                break_layers=[layer], geos=geos)
         passes = split_passes(code)
         self.assertEqual(len(passes), 8)
-        for pass_lines in passes:
+        for k, pass_lines in enumerate(passes):
             blocks = xy_blocks(pass_lines)
             # plain contour: 2 blocks (line + arc); broken: 4 (2 lines,
             # BreakGeo, arc) and the arc move (G2/G3) must still be an arc
-            self.assertEqual(len(blocks), 4)
+            self.assertEqual(len(blocks), 4 if k >= 6 else 2)
             self.assertTrue(any(ln.startswith(("G2", "G3")) for ln in blocks),
                             "arc must stay an arc in the broken contour")
 
@@ -450,20 +389,6 @@ class TestBreakPassGCode(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-class _Scene(object):
-    def update(self):
-        pass
-
-
-class _FakeWin(object):
-    canvas_scene = _Scene()
-    layerContents = None
-
-
-class _FakeUI(object):
-    pass
-
-
 class _FakeAction(object):
     def isChecked(self):
         return False
@@ -505,212 +430,17 @@ class _FakeParent(object):
         pass
 
 
-class _Harness(object):
-    """Real TreeHandler with a fake UI holding the new combobox."""
-
-    def __init__(self, layers):
-        global _APP
-        _APP = QApplication.instance() or QApplication([])
-        g.window = _FakeWin()
-        g.window.layerContents = layers
-        self.th = TreeHandler.__new__(TreeHandler)
-        QWidget.__init__(self.th)
-        self.th.auto_update_export_order = False
-        self.th.layer_item_model = None
-        self.th.entity_item_model = None
-        self.th.ui = _FakeUI()
-        self.th.ui.breaksPassLabel = QLabel(self.th)
-        self.th.ui.breaksPassComboBox = QComboBox(self.th)
-        self.view = QTreeView()
-        self.th.ui.layersShapesTreeView = self.view
-        self.th.layers_list = list(layers)
-        self.th.buildLayerTree(list(layers))
-        self.model = self.th.layer_item_model
-
-    def select_shape(self, shape):
-        sel = self.view.selectionModel()
-        sel.clearSelection()
-        idx = self.th.findLayerItemIndexFromShape(shape)
-        sel.select(idx, QtCore.QItemSelectionModel.SelectionFlag.Select |
-                   QtCore.QItemSelectionModel.SelectionFlag.Rows)
-        self.th.display_tool_layer = shape.parentLayer
-        self.th.display_tool_shape = shape
-
-
-def _mill_shape(depths=(0.0, -8.0, -1.0), nr=0):
-    sh = make_shape(square_geos(), cut_cor=40, cw=True, nr=nr)
-    build_stmove(sh)
-    sh.axis3_start_mill_depth, sh.axis3_mill_depth, sh.axis3_slice_depth = depths
-    return sh
-
-
-class TestBreakPassGUI(unittest.TestCase):
-
-    def setUp(self):
-        self.mill = _mill_shape()
-
-    def _layers(self, with_breaks=True, enabled=True):
-        if with_breaks:
-            return Layers([self.mill.parentLayer,
-                           make_break_layer("BREAKS: 1 MillDepth: -6.5",
-                                            enabled=enabled)])
-        return Layers([self.mill.parentLayer])
-
-    def test_hidden_without_breaks(self):
-        h = _Harness(self._layers(with_breaks=False))
-        self.assertFalse(h.th.ui.breaksPassComboBox.isVisibleTo(h.th))
-        self.assertFalse(h.th.ui.breaksPassLabel.isVisibleTo(h.th))
-
-    def test_shown_with_breaks_and_hidden_when_disabled(self):
-        h = _Harness(self._layers())
-        self.assertTrue(h.th.ui.breaksPassComboBox.isVisibleTo(h.th))
-        # disable the only break shape -> no break geometries -> hidden
-        h.th.layers_list[1].shapes[0].setDisable(True)
-        h.th.updateBreaksPassWidget()
-        self.assertFalse(h.th.ui.breaksPassComboBox.isVisibleTo(h.th))
-        # re-enable -> visible again
-        h.th.layers_list[1].shapes[0].setDisable(False)
-        h.th.updateBreaksPassWidget()
-        self.assertTrue(h.th.ui.breaksPassComboBox.isVisibleTo(h.th))
-
-    def test_items_follow_shape_passes_and_selection(self):
-        h = _Harness(self._layers())
-        h.select_shape(self.mill)
-        h.th.updateBreaksPassWidget()
-        combo = h.th.ui.breaksPassComboBox
-        # 2 fixed entries + 8 passes
-        self.assertEqual(combo.count(), 10)
-        self.assertEqual(combo.currentData(), -1)
-
-        self.mill.break_pass = 3
-        h.th.updateBreaksPassWidget()
-        self.assertEqual(combo.currentData(), 3)
-
-        # out of range selection is reset visibly to the default
-        self.mill.break_pass = 20
-        h.th.updateBreaksPassWidget()
-        self.assertEqual(self.mill.break_pass, -1)
-        self.assertEqual(combo.currentData(), -1)
-
-        # shorter depths reduce the number of entries
-        self.mill.axis3_mill_depth = -4.0
-        h.th.updateBreaksPassWidget()
-        self.assertEqual(combo.count(), 6)
-
-    def test_no_shape_selected_leaves_combo_disabled(self):
-        h = _Harness(self._layers())
-        h.th.display_tool_shape = None
-        h.th.updateBreaksPassWidget()
-        self.assertTrue(h.th.ui.breaksPassComboBox.isVisibleTo(h.th))
-        self.assertFalse(h.th.ui.breaksPassComboBox.isEnabled())
-
-    def test_slot_applies_selection_to_selected_shapes(self):
-        sh2 = _mill_shape(nr=1)
-        self.mill.parentLayer.shapes.append(sh2)
-        sh2.parentLayer = self.mill.parentLayer
-        layers = Layers([self.mill.parentLayer,
-                         make_break_layer("BREAKS: 1 MillDepth: -6.5")])
-        h = _Harness(layers)
-        h.select_shape(self.mill)
-        h.th.updateBreaksPassWidget()
-        combo = h.th.ui.breaksPassComboBox
-        idx = combo.findData(5)
-        self.assertGreaterEqual(idx, 0)
-        h.th.breaksPassUpdate(idx)
-        self.assertEqual(self.mill.break_pass, 5)
-        self.assertEqual(sh2.break_pass, -1)  # unselected shape untouched
-
-        idx0 = combo.findData(0)
-        h.th.breaksPassUpdate(idx0)
-        self.assertEqual(self.mill.break_pass, 0)
-
-
-class TestBreakPassGUILayout(unittest.TestCase):
-    """Widget position and layout collapse.
-
-    The full MainWindow crashes offscreen (as in the other existing GUI
-    tests), so the position is verified against the generated UI module and
-    the collapse behaviour of the used QGridLayout with plain widgets.
-    """
-
-    @staticmethod
-    def _generated_ui_path():
-        from dxf2gcode.presentation.qt.qt_compat import PYQT_VERSION
-        base = os.path.dirname(os.path.abspath(__file__))
-        filename = "dxf2gcode_ui%d.py" % PYQT_VERSION
-        path = os.path.join(base, "dxf2gcode", "presentation", "qt", "generated", filename)
-        if not os.path.isfile(path):  # source tree variant
-            path = os.path.join(os.path.dirname(base), "source", "dxf2gcode", "presentation", "qt", "generated", filename)
-        return path
-
-    def _ui_add_items(self):
-        with open(self._generated_ui_path(), "r", encoding="utf-8") as f:
-            tree = ast.parse(f.read())
-        rows = {}
-        for node in ast.walk(tree):
-            if (isinstance(node, ast.Call)
-                    and isinstance(node.func, ast.Attribute)
-                    and node.func.attr == "addWidget"
-                    and len(node.args) >= 2
-                    and isinstance(node.args[0], ast.Attribute)
-                    and isinstance(node.args[1], ast.Constant)):
-                rows[node.args[0].attr] = node.args[1].value
-        return rows
-
-    def test_combobox_is_below_infeed_and_final_depth(self):
-        rows = self._ui_add_items()
-        self.assertEqual(rows["zInfeedDepthLineEdit"], 5)
-        self.assertEqual(rows["zFinalMillDepthLineEdit"], 6)
-        self.assertEqual(rows["breaksPassComboBox"], 7)
-        self.assertEqual(rows["g1FeedXYLineEdit"], 8)
-        self.assertEqual(rows["g1FeedZLineEdit"], 9)
-
-    def test_combobox_is_child_of_mill_settings_frame(self):
-        with open(self._generated_ui_path(), "r", encoding="utf-8") as f:
-            tree = ast.parse(f.read())
-        parents = {}
-        for node in ast.walk(tree):
-            if not (isinstance(node, ast.Assign)
-                    and isinstance(node.value, ast.Call)):
-                continue
-            call = node.value
-            parent = call.args[0] if call.args else next(
-                (keyword.value for keyword in call.keywords
-                 if keyword.arg == "parent"), None)
-            if isinstance(parent, ast.Attribute):
-                for target in node.targets:
-                    if isinstance(target, ast.Attribute):
-                        parents[target.attr] = parent.attr
-        # The breaks-pass combobox lives in the "Shape parameters" group box,
-        # which is itself a child of the mill settings frame, so disabling the
-        # frame (no selection) disables it as before.
-        self.assertEqual(parents["breaksPassComboBox"], "shapeGroupBox")
-        self.assertEqual(parents["shapeGroupBox"], "millSettingsFrame")
-
-    def test_hidden_widget_collapses_in_grid_layout(self):
-        global _APP
-        _APP = QApplication.instance() or QApplication([])
-        frame = QWidget()
-        grid = QGridLayout(frame)
-        top = QLineEdit()
-        middle = QLineEdit()
-        bottom = QLineEdit()
-        grid.addWidget(top, 0, 1)
-        grid.addWidget(middle, 1, 1)
-        grid.addWidget(bottom, 2, 1)
-        frame.show()
-        _APP.processEvents()
-        y_before = bottom.mapTo(frame, QtCore.QPoint(0, 0)).y()
-        middle.hide()
-        _APP.processEvents()
-        y_after = bottom.mapTo(frame, QtCore.QPoint(0, 0)).y()
-        self.assertLess(y_after, y_before)
+def _mill_shape():
+    shape = make_shape(square_geos(), cut_cor=40, cw=True, nr=0)
+    build_stmove(shape)
+    shape.axis3_start_mill_depth, shape.axis3_mill_depth, shape.axis3_slice_depth = 0., -8., -1.
+    return shape
 
 
 class TestBreakPassProject(unittest.TestCase):
 
     def _shape_with_break_pass(self, value):
-        sh = _mill_shape(nr=0)
+        sh = _mill_shape()
         sh.break_pass = value
         return sh
 
@@ -739,7 +469,7 @@ class TestBreakPassProject(unittest.TestCase):
         self.assertIn('break_pass', shape_entry)
         self.assertEqual(shape_entry['break_pass'], 4)
 
-    def test_load_old_project_defaults_to_last_pass(self):
+    def test_load_legacy_project_without_a_saved_pass(self):
         # a project file from a version without break_pass: same geometry,
         # no break_pass key in the shape dict
         sh = _mill_shape()

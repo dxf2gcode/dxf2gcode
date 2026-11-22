@@ -1,0 +1,170 @@
+{
+  "method": "gl",
+  "drawing": "AFluegel Rippen b2 0201.dxf",
+  "drawing_sha256": "0de8b721cbfa626b1ab186c3fd2493a42c67adadacdb2cb88e1c2d3f80262924",
+  "python": "3.11.1 (tags/v3.11.1:a7a450f, Dec  6 2022, 19:58:39) [MSC v.1934 64 bit (AMD64)]",
+  "vispy": "0.17.0",
+  "samples": 12,
+  "measurements": {
+    "idle": {
+      "update_median_ms": 0.0,
+      "frame_median_ms": 7.15,
+      "frame_p95_ms": 8.91,
+      "frame_max_ms": 9.25,
+      "count": 12,
+      "visuals": 3
+    },
+    "pan_unselected": {
+      "update_median_ms": 136.24,
+      "frame_median_ms": 144.1,
+      "frame_p95_ms": 157.79,
+      "frame_max_ms": 157.94,
+      "count": 12,
+      "visuals": 3
+    },
+    "zoom_unselected": {
+      "update_median_ms": 119.04,
+      "frame_median_ms": 127.88,
+      "frame_p95_ms": 160.52,
+      "frame_max_ms": 169.33,
+      "count": 12,
+      "visuals": 3
+    },
+    "selection_single": {
+      "update_median_ms": 401.05,
+      "frame_median_ms": 409.21,
+      "frame_p95_ms": 538.38,
+      "frame_max_ms": 563.27,
+      "count": 8,
+      "visuals": 6
+    },
+    "selection_multiple": {
+      "update_median_ms": 417.92,
+      "frame_median_ms": 426.88,
+      "frame_p95_ms": 664.4,
+      "frame_max_ms": 682.82,
+      "count": 8,
+      "visuals": 8
+    },
+    "pan_multiple": {
+      "update_median_ms": 113.55,
+      "frame_median_ms": 123.84,
+      "frame_p95_ms": 150.27,
+      "frame_max_ms": 156.79,
+      "count": 12,
+      "visuals": 8
+    },
+    "zoom_multiple": {
+      "update_median_ms": 121.2,
+      "frame_median_ms": 130.8,
+      "frame_p95_ms": 147.24,
+      "frame_max_ms": 148.55,
+      "count": 12,
+      "visuals": 8
+    },
+    "pan_all_selected": {
+      "update_median_ms": 94.23,
+      "frame_median_ms": 102.72,
+      "frame_p95_ms": 108.21,
+      "frame_max_ms": 111.53,
+      "count": 12,
+      "visuals": 5
+    }
+  },
+  "checkpoints": {
+    "before_load": {
+      "working_mib": 152.7,
+      "private_mib": 440.29,
+      "peak_working_mib": 152.7,
+      "peak_commit_mib": 440.29
+    },
+    "after_load": {
+      "working_mib": 170.16,
+      "private_mib": 456.44,
+      "peak_working_mib": 170.16,
+      "peak_commit_mib": 456.44
+    },
+    "first_view": {
+      "working_mib": 328.81,
+      "private_mib": 740.72,
+      "peak_working_mib": 335.57,
+      "peak_commit_mib": 747.51
+    },
+    "idle": {
+      "working_mib": 328.95,
+      "private_mib": 740.72,
+      "peak_working_mib": 335.67,
+      "peak_commit_mib": 747.56
+    },
+    "pan_unselected": {
+      "working_mib": 338.77,
+      "private_mib": 742.23,
+      "peak_working_mib": 345.54,
+      "peak_commit_mib": 749.07
+    },
+    "zoom_unselected": {
+      "working_mib": 346.8,
+      "private_mib": 729.04,
+      "peak_working_mib": 353.57,
+      "peak_commit_mib": 749.36
+    },
+    "selection_single": {
+      "working_mib": 389.17,
+      "private_mib": 771.71,
+      "peak_working_mib": 395.93,
+      "peak_commit_mib": 778.54
+    },
+    "selection_multiple": {
+      "working_mib": 437.18,
+      "private_mib": 819.42,
+      "peak_working_mib": 443.95,
+      "peak_commit_mib": 826.21
+    },
+    "pan_multiple": {
+      "working_mib": 438.29,
+      "private_mib": 820.99,
+      "peak_working_mib": 445.05,
+      "peak_commit_mib": 827.83
+    },
+    "zoom_multiple": {
+      "working_mib": 430.2,
+      "private_mib": 811.99,
+      "peak_working_mib": 445.93,
+      "peak_commit_mib": 827.96
+    },
+    "pan_all_selected": {
+      "working_mib": 437.74,
+      "private_mib": 818.79,
+      "peak_working_mib": 445.93,
+      "peak_commit_mib": 827.96
+    },
+    "end": {
+      "working_mib": 441.24,
+      "private_mib": 820.71,
+      "peak_working_mib": 447.94,
+      "peak_commit_mib": 830.2
+    }
+  },
+  "status": "passed",
+  "qt": "6.12.0",
+  "pyqt": "6.12.0",
+  "load_ms": 787.05,
+  "first_view_ms": 1318.0,
+  "gl_renderer": "AMD Radeon RX 6700 XT",
+  "gl_version": "4.6.0 Compatibility Profile Context 26.2.2.260218",
+  "logical_canvas": [
+    805,
+    705
+  ],
+  "framebuffer": [
+    881,
+    1006,
+    4
+  ],
+  "dpr": 1.25,
+  "geometries": 63,
+  "operations": 63,
+  "segments": 21647,
+  "initial_visuals": 3,
+  "project_unchanged": true
+}

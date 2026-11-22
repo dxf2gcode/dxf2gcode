@@ -18,7 +18,7 @@ class ContourStrategy:
         settings, caps = request.settings, request.capabilities
         output = MovementPlan(request)
         diagnostics = []
-        if request.skipped_tabs and settings.break_pass != 0:
+        if request.skipped_tabs:
             diagnostics.append(diagnostic(request, 'tabs.unmapped', TAB_UNMAPPED,
                 request.shape_number, request.skipped_tabs, severity='warning'))
         compensation = request.compensation
@@ -54,21 +54,13 @@ class ContourStrategy:
                     request, code, source, *args, severity="warning"))
 
         split = request.split_contour
-        heights = [geo.height for geo in split if geo.kind == "break"]
-        if request.drill:
-            start_pass = 1
-        elif settings.break_pass == -1:
-            start_pass = len(depths) if any(h > depths[-1] for h in heights) else 0
-        elif settings.break_pass == 0:
-            start_pass = 0
-        else:
-            start_pass = min(int(settings.break_pass), len(depths))
+        highest_tab = max((geo.height for geo in split if geo.kind == "break"), default=float('-inf'))
         variants = {False: tuple(geos), True: tuple(split)}
         flipped = {False: False, True: False}
 
-        def pass_geometries(number, remove_last=False):
+        def pass_geometries(number, depth, remove_last=False):
             nonlocal compensation
-            use_split = 0 < start_pass <= number
+            use_split = depth < highest_tab
             current = variants[use_split]
             if remove_last:
                 current = current[:-1]
@@ -89,12 +81,12 @@ class ContourStrategy:
                 geo = geo.resolved
                 if geo.kind == 'break':
                     if pending and (geo.height, geo.xy_feed, geo.z_feed) != (pending[0].height, pending[0].xy_feed, pending[0].z_feed):
-                        output.tab_chain(pending, depth, restore=False, feed=settings.feed_xy)
+                        output.tab_chain(pending, depth, restore=False, feed=settings.feed_xy, role=role)
                         pending = []
                     pending.append(geo)
                     continue
                 if pending:
-                    output.tab_chain(pending, depth, feed=settings.feed_xy)
+                    output.tab_chain(pending, depth, feed=settings.feed_xy, role=role)
                     pending = []
                 if geo.kind == "pocket":
                     geo = replace(
@@ -105,7 +97,7 @@ class ContourStrategy:
                 else:
                     output.cut_geometry(geo, drill=request.drill, role=role)
             if pending:
-                output.tab_chain(pending, depth, restore=False, feed=settings.feed_xy)
+                output.tab_chain(pending, depth, restore=False, feed=settings.feed_xy, role=role)
 
         def entry_depth(chain, depth):
             first = chain[0].resolved if chain else None
@@ -121,7 +113,7 @@ class ContourStrategy:
                 output.geometry(geo, role="lead_in")
         output.add("rapid_z", safe, role="approach")
         output.add("feed", settings.feed_depth)
-        first_geos = pass_geometries(1) if not request.drill else ()
+        first_geos = pass_geometries(1, depths[0]) if not request.drill else ()
         output.add("drill" if request.drill else "linear_z", entry_depth(first_geos, depths[0]), role="plunge")
         last_geos = ()
         if not request.drill:
@@ -145,7 +137,7 @@ class ContourStrategy:
 
         for number, depth in enumerate(depths[1:], start=2):
             current = pass_geometries(
-                number, depth == settings.final_depth and request.pocket)
+                number, depth, depth == settings.final_depth and request.pocket)
             if request.drill:
                 output.add("drill_retract", safe, role="drill")
                 output.add("drill", depth, role="drill")

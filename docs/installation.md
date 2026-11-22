@@ -72,9 +72,9 @@ installation steps for the bundled Windows MSI or ZIP packages above.
 | --- | --- |
 | Python | Application metadata: **3.9 or newer** |
 | ConfigObj | `configobj>=5.0.6`, configuration files |
-| PyOpenGL | `PyOpenGL>=3.1`, rendering support |
 | PyQt5 | `PyQt5>=5.15`, the simplest starting point and a required package dependency |
 | PyQt6 | Optional alternative; the package's `qt6` extra adds it without removing PyQt5 |
+| VisPy | Optional 3D view; requires Python 3.10+, PyQt6 and working OpenGL |
 | Git | Obtaining a checkout |
 | Qt build tools | Prepare UI/resources and compiled translations in a fresh checkout; see below |
 
@@ -127,7 +127,7 @@ git clone --branch develop --single-branch https://github.com/dxf2gcode/dxf2gcod
 Set-Location .\dxf2gcode-sourcecode
 
 py -3.11 -m venv .venv
-& .\.venv\Scripts\python.exe -m pip install "PyQt5>=5.15" "configobj>=5.0.6" "PyOpenGL>=3.1"
+& .\.venv\Scripts\python.exe -m pip install "PyQt5>=5.15" "configobj>=5.0.6"
 
 $env:DXF2GCODE_QT = "5"
 & .\.venv\Scripts\python.exe source\tools\build\qt_assets.py
@@ -156,7 +156,7 @@ cd dxf2gcode-sourcecode
 python3 -m venv .venv
 . .venv/bin/activate
 
-python -m pip install "PyQt5>=5.15" "configobj>=5.0.6" "PyOpenGL>=3.1"
+python -m pip install "PyQt5>=5.15" "configobj>=5.0.6"
 export DXF2GCODE_QT=5
 python source/tools/build/qt_assets.py
 python source/tools/build/translations.py --no-pylupdate
@@ -227,6 +227,16 @@ print(PYQT_VERSION, QtCore.PYQT_VERSION_STR, QtCore.QT_VERSION_STR)
 This can be entered in an interactive Python session; exit it before running
 further shell commands. Check that the printed major version matches the
 modules you generated.
+
+## Enable the VisPy view
+
+For an installed wheel, install the `view-vispy` extra. In a prepared source
+checkout, install `PyQt6` and `vispy>=0.17,<0.18` in the same virtual
+environment. Start with PyQt6 selected. If VisPy or working OpenGL is
+unavailable, the application opens its 2D canvas and reports the reason in
+the message pane. Windows ZIP and MSI builds from this branch bundle PyQt6
+and VisPy. See [Interface and navigation](user-guide/interface-and-navigation.md)
+for the view controls.
 
 ## Generated files and translations
 

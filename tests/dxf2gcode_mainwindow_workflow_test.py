@@ -71,7 +71,7 @@ class TestMainWindowWorkflow(unittest.TestCase):
                              result.stdout.decode("utf-8", errors="replace") +
                              result.stderr.decode("utf-8", errors="replace"))
 
-    def test_startpoint_actions_respect_manual_route_display(self):
+    def test_startpoint_actions_respect_export_order_visibility(self):
         with tempfile.TemporaryDirectory(prefix="d2g_startpoint_route_") as temp_dir:
             env = os.environ.copy()
             env.update(QT_QPA_PLATFORM="offscreen", D2G_WORKFLOW_TEMP=temp_dir)
@@ -127,71 +127,37 @@ def _check_startpoint_route_display(window, app):
     order = [(layer.nr, list(layer.exp_order_complete)) for layer in window.layerContents]
 
     panel = getattr(window, 'machining_panel', None)
-    if panel is not None and panel.binding is not None:
-        from dxf2gcode.presentation.qt import machining_panel as panel_module
+    bound = panel is not None and panel.binding is not None
+    if bound:
         entry = panel.binding.operations_by_geometry()[shape.geometry_id][0][1]
         panel.context = entry.id
         panel.binding.activate_operation(entry.id)
-        original_start = shape.get_start_end_points(True)
-        for live in (False, True):
-            window.ui.actionLiveUpdateExportRoute.setChecked(live)
-            for source in ('Set Nearest StartPoint', 'Set Sharpest StartPoint'):
-                for visible in ((False, True) if not live else (True,)):
-                    window.deleteG0Paths()
-                    if visible:
-                        window.updateExportRoute()
-                    routes = tuple(scene.routearrows)
-                    point = shape.start_point_candidates()[len(shape.geos)//2]
-                    with patch.object(QMenu, 'exec', return_value=None):
-                        menu = MyDropDownMenu(scene, QPoint(), point)
-                    action = next(a for a in menu.actions() if a.text() == menu.tr(source))
-                    assert action.isEnabled()
-                    action.trigger()
-                    app.processEvents()
-                    assert shape.get_start_end_points(True) == original_start
-                    if live:
-                        assert scene.routearrows and tuple(scene.routearrows) != routes
-                    else:
-                        assert tuple(scene.routearrows) == routes
-                    assert [(layer.nr, list(layer.exp_order_complete)) for layer in window.layerContents] == order
-                    window.updateExportRoute()
-                    assert scene.routearrows and scene.routetext
-        return
 
-    for live in (False, True):
-        window.ui.actionLiveUpdateExportRoute.setChecked(live)
-        assert window.TreeHandler.auto_update_export_order == live
-        for source in ("Set Nearest StartPoint", "Set Sharpest StartPoint"):
-            for visible in ((False, True) if not live else (True,)):
-                window.deleteG0Paths()
-                if visible:
-                    window.updateExportRoute()
-                previous_routes = tuple(scene.routearrows)
-                previous_preview = shape.stmove
-                old_start = shape.get_start_end_points(True)
-                clicked = shape.geos[len(shape.geos) // 2].Ps
-                with patch.object(QMenu, "exec", return_value=None):
-                    menu = MyDropDownMenu(scene, QPoint(), clicked)
-                assert menu.selectedItems == [shape]
-                action = next(action for action in menu.actions()
-                              if action.text() == menu.tr(source))
-                action.trigger()
-                app.processEvents()
-                assert shape.stmove is not previous_preview
-                if source == "Set Nearest StartPoint":
-                    assert shape.get_start_end_points(True) != old_start
-                if live:
-                    assert scene.routearrows and tuple(scene.routearrows) != previous_routes
-                else:
-                    assert tuple(scene.routearrows) == previous_routes, (source, visible)
-                    assert bool(scene.routetext) == visible
-                    assert window.ui.actionDeleteG0Paths.isEnabled() == visible
-                assert [(layer.nr, list(layer.exp_order_complete))
-                        for layer in window.layerContents] == order
-                # Explicitly requesting the route must still work afterwards.
+    toggle = window.ui.actionLiveUpdateExportRoute
+    for visible in (True, False, True):
+        toggle.setChecked(visible)
+        assert window.TreeHandler.auto_update_export_order == visible
+        assert bool(scene.routearrows) == bool(scene.routetext) == visible
+        for source in ('Set Nearest StartPoint', 'Set Sharpest StartPoint'):
+            routes = tuple(scene.routearrows)
+            old_start = shape.get_start_end_points(True)
+            point = (shape.start_point_candidates()[len(shape.geos)//2] if bound
+                     else shape.geos[len(shape.geos)//2].Ps)
+            with patch.object(QMenu, 'exec', return_value=None):
+                menu = MyDropDownMenu(scene, QPoint(), point)
+            action = next(a for a in menu.actions() if a.text() == menu.tr(source))
+            assert action.isEnabled()
+            action.trigger()
+            app.processEvents()
+            if bound:
+                assert shape.get_start_end_points(True) == old_start
+            if visible:
+                assert scene.routearrows and tuple(scene.routearrows) != routes
+            else:
+                assert not scene.routearrows and not scene.routetext
                 window.updateExportRoute()
-                assert scene.routearrows and scene.routetext
-                assert window.ui.actionDeleteG0Paths.isEnabled()
+                assert not scene.routearrows and not scene.routetext
+            assert [(layer.nr, list(layer.exp_order_complete)) for layer in window.layerContents] == order
 
 
 def _run_mainwindow_workflow():
@@ -222,7 +188,8 @@ def _run_mainwindow_workflow():
     g.folder = os.path.join(temp_dir, "config")
     os.makedirs(g.folder, exist_ok=True)
     g.config = MyConfig()
-    g.config.mode3d = False
+    g.config.var_dict['General']['use_vispy'] = False
+    g.config.use_vispy = False
     g.quiet = True
 
     from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication
@@ -244,7 +211,10 @@ def _run_mainwindow_workflow():
     QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat,
                              QtCore.QSettings.Scope.UserScope, temp_dir)
     app = QApplication([])
-    window = app_module.MainWindow(app)
+    from unittest.mock import patch as patch_settings
+    settings = QtCore.QSettings(os.path.join(temp_dir, 'window.ini'), QtCore.QSettings.Format.IniFormat)
+    with patch_settings.object(QtCore, 'QSettings', return_value=settings):
+        window = app_module.MainWindow(app)
     g.window = window
     if '--pocket-worker' in sys.argv:
         from unittest.mock import patch
@@ -445,10 +415,10 @@ def _run_mainwindow_workflow():
                 patch.object(app_module.QMessageBox, 'critical') as error, \
                 patch.object(QtCore.QProcess, 'startDetached', return_value=(False, 0)) as launch:
             form.show()
-            fields['General']['mode3d'].setValue(True)
+            fields['General']['use_vispy'].setValue(True)
             form.applyChanges()
             assert window._restart_pending
-            assert g.config.mode3d is False
+            assert g.config.use_vispy is False
             assert info.call_count == 1
             assert 'empty window' in info.call_args.args[2]
             assert launch.call_count == 0
@@ -468,7 +438,7 @@ def _run_mainwindow_workflow():
             assert Path(arguments[0]).name == 'dxf2gcode.py'
             # Reverting saved restart changes cancels the pending restart.
             form.show()
-            fields['General']['mode3d'].setValue(False)
+            fields['General']['use_vispy'].setValue(False)
             form.applyChanges()
             assert not window._restart_pending
             form.close()
@@ -485,19 +455,19 @@ def _run_mainwindow_workflow():
                 assert g.config.tool_units == units
                 assert info.call_count == 1
                 assert not window._restart_pending
-            fields['General']['mode3d'].setValue(True)
+            fields['General']['use_vispy'].setValue(True)
             form.discardChanges()
             form.close()
             app.processEvents()
             assert launch.call_count == 1
             form.show()
-            fields['General']['mode3d'].setValue(True)
+            fields['General']['use_vispy'].setValue(True)
             fields['Logging']['console_loglevel'].setValue('DEBUG')
             form.applyChanges()
             assert info.call_count == 2
             notice = info.call_args.args[2]
             assert all(name in notice for name in ('3D display', 'Logging'))
-            assert g.config.mode3d is False
+            assert g.config.use_vispy is False
             assert launch.call_count == 1
             # Packaged applications relaunch their executable, retain the
             # profile and only close the current process after launch succeeds.
@@ -519,7 +489,7 @@ def _run_mainwindow_workflow():
         from pathlib import Path
         defaults=dict(show_disabled_paths=True,live_update_export_route=False,
                       split_line_segments=False,automatic_cutter_compensation=False,
-                      machine_type='milling')
+                      machine_type='milling', dxf_import_mode='without_compensation')
         actions=dict(show_disabled_paths=window.ui.actionShowDisabledPaths,
                      live_update_export_route=window.ui.actionLiveUpdateExportRoute,
                      split_line_segments=window.ui.actionSplitLineSegments,
@@ -528,6 +498,7 @@ def _run_mainwindow_workflow():
             assert action.isChecked() is defaults[key],key
         assert window.ui.actionMilling.isChecked()
         individual={key:(not value if isinstance(value,bool) else 'lathe') for key,value in defaults.items()}
+        individual['dxf_import_mode'] = 'geometry_only'
         g.config.var_dict['General'].update(individual)
         g.config.update_config()
         g.config.save_varspace()
@@ -551,7 +522,8 @@ def _run_mainwindow_workflow():
         window.config_window.setValuesFromConfig(window.config_window.cfg_window_def,
                                                 g.config.var_dict,g.config.var_dict.configspec)
         for key,value in individual.items():
-            assert window.config_window.cfg_window_def['General'][key].getValue()==value,key
+            if key != 'automatic_cutter_compensation':
+                assert window.config_window.cfg_window_def['General'][key].getValue()==value,key
         window.close()
         return
     assert window.windowTitle() == "Dxf2gcode"

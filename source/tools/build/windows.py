@@ -7,7 +7,6 @@ Inputs and output paths are anchored to source/, independent of the working dire
 
 import os
 import sys
-from importlib.util import find_spec
 from pathlib import Path
 
 from cx_Freeze import Executable, setup
@@ -29,22 +28,6 @@ from tools.build.release_metadata import msi_version
 VERSION = __version__
 VERSION_DOTTED = msi_version(VERSION)
 DEVELOPMENT = '.dev' in VERSION
-
-
-def include_opengl():
-    """Include OpenGL modules from the active interpreter environment."""
-    spec = find_spec("OpenGL")
-    if spec is None or not spec.submodule_search_locations:
-        raise RuntimeError(
-            "PyOpenGL is not installed in the Python environment used to "
-            "run tools/build/windows.py.")
-
-    package_dir = Path(next(iter(spec.submodule_search_locations))).resolve()
-    site_packages = package_dir.parent
-    return [
-        (str(path), path.relative_to(site_packages).as_posix())
-        for path in package_dir.rglob("*") if path.is_file()
-    ]
 
 
 translation_files = sorted((PROJECT_DIR / "i18n").glob("*.qm"))
@@ -83,10 +66,10 @@ setup(
         "build_exe": {
             # The launcher enters the GUI through runpy, so these imports are
             # not visible to cx_Freeze's static module scanner.
-            "packages": ["dxf2gcode", "PyQt5", "OpenGL", "configobj"],
+            "packages": ["dxf2gcode", "PyQt6", "vispy", "configobj"],
             "include_msvcr": True,
             "include_files": include_files,
-            "zip_includes": include_opengl(),
+            "excludes": ["PyQt5", "PySide2", "PySide6", "OpenGL"],
         }
     },
     executables=[

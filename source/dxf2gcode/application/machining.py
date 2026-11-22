@@ -135,8 +135,7 @@ def _step_defaults(layer, config):
     values.update(axis3_retract=layer.axis3_retract, axis3_safe_margin=layer.axis3_safe_margin,
                   lead_in_mode=layer.get_lead_in_mode(), lead_out_mode=layer.get_lead_out_mode(),
                   overcut_enabled=layer.get_overcut_enabled(), milling_offset=layer.milling_offset,
-                  drag_swivel_depth=config.vars.Drag_Knife_Options['swivel_depth'], cut_cor=40,
-                  break_pass=-1)
+                  drag_swivel_depth=config.vars.Drag_Knife_Options['swivel_depth'], cut_cor=40)
     return values
 
 
@@ -153,7 +152,7 @@ class MachiningDrawing:
         self.bind()
 
     @classmethod
-    def capture(cls, layers, config):
+    def capture(cls, layers, config, *, geometry_only=False):
         """Migrate effective legacy state, preserving order and uncertain values."""
         project = MachiningProject(configuration=snapshot_configuration(config),
                                    units='mm' if config.metric else 'in')
@@ -165,7 +164,7 @@ class MachiningDrawing:
             for index in order:
                 shape = layer.shapes[index]
                 if isinstance(shape, CustomGCode):
-                    if layer.should_ignore():
+                    if geometry_only or layer.should_ignore():
                         continue
                     if step is None:
                         tool = effective_tool(layer.shapes[next((i for i in order if not
@@ -182,7 +181,8 @@ class MachiningDrawing:
                 geometry_id = getattr(shape, 'geometry_id', None) or new_id()
                 shape.geometry_id = geometry_id
                 project.geometries[geometry_id] = GeometryReference(geometry_id, *key)
-                if layer.should_ignore():
+                # BREAKS layers still supply the region migration on binding.
+                if layer.should_ignore() or (geometry_only and not layer.isBreakLayer()):
                     continue
                 tool = effective_tool(shape)
                 tool = ToolSettings(**{key: getattr(tool, key) for key in ToolSettings.__dataclass_fields__})
@@ -197,6 +197,7 @@ class MachiningDrawing:
                 values = parameter_snapshot(shape)
                 values.pop('axis3_retract', None)
                 values.pop('axis3_safe_margin', None)
+                values.pop('break_pass', None)
                 # These values are known to come from the effective tool
                 # definition (including a legacy shape tool override).
                 for key in TOOL_PARAMETERS:
@@ -238,7 +239,7 @@ class MachiningDrawing:
         self.unassigned = tuple(shape for matches in candidates.values() for shape in matches
                                 if shape not in known)
 
-    def materialize(self, allow_unresolved=False):
+    def materialize(self, allow_unresolved=False, *, operation_ids=None):
         """Create detached Shape/Layer projections for the existing planner."""
         if not allow_unresolved:
             self.project.assert_exportable()
@@ -247,6 +248,8 @@ class MachiningDrawing:
         layers.machining_config = configuration
         layers.machining_project = self.project
         for step in self.project.steps:
+            if operation_ids is not None and not any(entry.id in operation_ids for entry in step.entries):
+                continue
             source_layer = next((self.sources[e.geometry_id].parentLayer for e in step.entries
                 if isinstance(e, MachiningOperation) and e.geometry_id in self.sources), None)
             if source_layer is None:
@@ -269,12 +272,21 @@ class MachiningDrawing:
                 setattr(layer, key, value)
             for entry in step.entries:
                 if isinstance(entry, LiteralAction):
+                    if operation_ids is not None:
+                        continue
                     shape = CustomGCode(entry.name, sum(len(l.shapes) for l in layers) + len(layer.shapes),
                                         entry.gcode, layer)
                     shape.disabled = not entry.enabled
                 elif entry.geometry_id not in self.sources:
                     continue  # disabled unresolved entries are retained in the document
                 else:
+                    values, origins, tool = self.project.resolve(step, entry)
+                    # These settings are layer-wide even in a partial preview.
+                    for key in ('axis3_retract', 'axis3_safe_margin'):
+                        if key in values:
+                            setattr(layer, key, values[key])
+                    if operation_ids is not None and entry.id not in operation_ids:
+                        continue
                     source = self.sources[entry.geometry_id]
                     shape = copy(source)
                     shape.__dict__.pop('machining_binding', None)
@@ -292,11 +304,8 @@ class MachiningDrawing:
                     shape.machining_config = configuration
                     shape.operation_id = entry.id
                     shape.geometry_id = entry.geometry_id
-                    values, origins, tool = self.project.resolve(step, entry)
                     for key, value in values.items():
-                        if key in ('axis3_retract', 'axis3_safe_margin'):
-                            setattr(layer, key, value)
-                        else:
+                        if key not in ('axis3_retract', 'axis3_safe_margin'):
                             setattr(shape, key, value)
                     shape.tool_override = replace(tool, **{key: values.get(key, getattr(tool, key))
                         for key in ('lead_radius', 'lead_length', 'overcut_length', 'speed', 'start_radius')})
@@ -362,11 +371,13 @@ class MachiningDrawing:
                     source.Drill, source.Pocket, source.cut_cor = entry.legacy_conflict
                 source.send_to_TSP = entry.optimize
                 source.operation_id = entry.id
+            source.machining_unassigned = not operations
             source.disabled = not any(entry.enabled for step, entry in operations)
             self._baseline[identity] = self._editor_state(source)
         for source in self.unassigned:
             source.machining_binding = self
             source.machining_config = configuration
+            source.machining_unassigned = True
             source.disabled = True
 
     def operations_by_geometry(self):

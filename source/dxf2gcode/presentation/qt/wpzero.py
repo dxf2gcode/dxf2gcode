@@ -43,9 +43,6 @@ class WpZero(QGraphicsItem):
         self.center = center
         self.allwaysshow = False
         self.color = color
-        self.pen = QPen(QtCore.Qt.GlobalColor.darkGray, 1, QtCore.Qt.PenStyle.SolidLine)
-        self.pen.setCosmetic(True)
-
         self.diameter = 23.0
 
     def contains_point(self, point):
@@ -64,25 +61,11 @@ class WpZero(QGraphicsItem):
         """
         paint()
         """
-        painter.setPen(self.pen)
         demat = painter.deviceTransform()
         self.sc = demat.m11()
 
-        diameter1 = self.diameter / self.sc
-        diameter2 = (self.diameter - 4) / self.sc
+        paint_workpiece_zero(painter, QtCore.QPointF(0, 0), 1 / self.sc, self.diameter, self.color)
 
-        rectangle1 = QtCore.QRectF(-diameter1 / 2, -diameter1 / 2, diameter1, diameter1)
-        rectangle2 = QtCore.QRectF(-diameter2 / 2, -diameter2 / 2, diameter2, diameter2)
-        startAngle1 = 90 * 16
-        spanAngle = 90 * 16
-        startAngle2 = 270 * 16
-
-        painter.drawEllipse(rectangle1)
-        painter.drawEllipse(rectangle2)
-        painter.drawPie(rectangle2, startAngle1, spanAngle)
-
-        painter.setBrush(self.color)
-        painter.drawPie(rectangle2, startAngle2, spanAngle)
 
     def boundingRect(self):
         """
@@ -94,3 +77,20 @@ class WpZero(QGraphicsItem):
 
         diameter = self.diameter / self.sc
         return QtCore.QRectF(-diameter / 2, -diameter / 2, diameter, diameter)
+
+
+def paint_workpiece_zero(painter, center, unit=1., diameter=23., color=QtCore.Qt.GlobalColor.gray):
+    outer = diameter * unit / 2
+    inner = (diameter - 4) * unit / 2
+    rectangle = QtCore.QRectF(center.x() - inner, center.y() - inner, 2 * inner, 2 * inner)
+    pen = QPen(QtCore.Qt.GlobalColor.darkGray, 1)
+    pen.setCosmetic(True)
+    painter.save()
+    painter.setPen(pen)
+    painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+    painter.drawEllipse(center, outer, outer)
+    painter.drawEllipse(rectangle)
+    painter.drawPie(rectangle, 90 * 16, 90 * 16)
+    painter.setBrush(color)
+    painter.drawPie(rectangle, 270 * 16, 90 * 16)
+    painter.restore()

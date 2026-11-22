@@ -27,7 +27,7 @@ Ein Eintrag ist kein pauschaler Umsetzungs- oder Prüfauftrag.
 
 <a id="gui1"></a>
 
-- [ ] **GUI1 – Ribbon:** Menüband, Bibliothek und Windows-/Linux-Verhalten abstimmen.
+- [ ] **GUI1 – Ribbon und 2D/3D:** VisPy-Standardstart, Draufsicht und 2D-Rückfall im Arbeitszweig abnehmen. Paket-/Plattformprüfung vereinbaren, danach nach `develop` übernehmen. [Abarbeitungsplan](planning/gui1-renderer-comparison-plan.md#p6--auswahl-und-übernahmeplan).
 
 <a id="maschinenabnahme"></a>
 

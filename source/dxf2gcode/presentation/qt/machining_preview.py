@@ -122,15 +122,30 @@ class MachiningPreview(QtCore.QObject):
                     tip += '\n' + self.tr('No toolpath: {0}').format('; '.join(translate_message(d.message) for d in result.diagnostics))
                 self.records.append(OperationPreview(entry.id, entry.geometry_id, title,
                     entry.enabled, plan, segments, start, end, self.path_pen('cut', entry.enabled).color(), tip))
+        self.update_visibility()
+
+    def visible_records(self):
+        view = getattr(self.panel.window, 'view_comparison', None)
+        if view is not None and view.selected_paths_action.isChecked():
+            return [record for record in self.records if record.identity in self.selected]
+        return self.records
+
+    def update_visibility(self):
+        binding, scene = self.panel.binding, self.panel.window.canvas_scene
+        if binding is None or scene is None:
+            return
+        view = getattr(self.panel.window, 'view_comparison', None)
+        selected_only = view is not None and view.selected_paths_action.isChecked()
         # One overlay owns the visible plans; legacy active-operation objects
         # remain available for existing editor/preview clients.
         graphics = getattr(scene, 'graphics_items', {})
-        visible_geometry = {record.geometry for record in self.records}
+        visible_geometry = {record.geometry for record in self.visible_records()}
         for source in binding.sources.values():
             item = graphics.get(id(source))
             if item is not None:
                 for child in (item.stmove_item, item.starrow, item.enarrow):
-                    child.setOpacity(0 if source.parentLayer.isBreakLayer() or source.geometry_id in visible_geometry else 1)
+                    child.setOpacity(0 if selected_only or source.parentLayer.isBreakLayer()
+                                     or source.geometry_id in visible_geometry else 1)
                 item.update()
         scene.machining_overlay_geometries = visible_geometry
         self.overlay.raise_()
@@ -148,7 +163,11 @@ class MachiningPreview(QtCore.QObject):
 
     def projected_paths(self, record):
         paths = {}
+        view = getattr(self.panel.window, 'view_comparison', None)
+        show_retracts = view is None or view.retracts_action.isChecked()
         for segment in record.segments:
+            if segment.is_retract and not show_retracts:
+                continue
             path = paths.setdefault(segment.role, QPainterPath())
             path.moveTo(self.project(segment.start))
             path.lineTo(self.project(segment.end))
@@ -157,7 +176,7 @@ class MachiningPreview(QtCore.QObject):
     def label_rects(self):
         counts, result = {}, {}
         fm = self.overlay.fontMetrics()
-        for record in self.records:
+        for record in self.visible_records():
             source = self.panel.binding.sources.get(record.geometry)
             if source is None or not source.isSelected():
                 continue
@@ -174,21 +193,22 @@ class MachiningPreview(QtCore.QObject):
     def hit_records(self, point):
         point = QtCore.QPointF(point)
         labels = self.label_rects()
-        label_hits = [r for r in self.records if r.identity in labels and labels[r.identity][0].contains(point)]
+        records = self.visible_records()
+        label_hits = [r for r in records if r.identity in labels and labels[r.identity][0].contains(point)]
         if label_hits:
             return label_hits
         stroker = QPainterPathStroker()
         stroker.setWidth(12)
         result = []
-        for record in self.records:
+        for record in records:
             marker = any((self.project(p)-point).manhattanLength() <= 9 for p in (record.start, record.end))
             if marker or any(stroker.createStroke(path).contains(point) for path in self.projected_paths(record).values()):
                 result.append(record)
         return result
 
     def try_select(self, point, control=False):
-        if self.panel.modifiers.mode:
-            return self.panel.modifiers.hit(point)
+        if (self.panel.modifiers.mode or control) and self.panel.modifiers.hit(point, toggle=control):
+            return True
         records = self.hit_records(point)
         if not records:
             return False
@@ -244,7 +264,7 @@ class MachiningPreview(QtCore.QObject):
 
     def paint(self, painter):
         labels = self.label_rects()
-        for record in self.records:
+        for record in self.visible_records():
             active = record.identity == self.panel.context or record.identity == self.hovered
             selected = record.identity in self.selected
             color = self.path_pen('cut', record.enabled).color()

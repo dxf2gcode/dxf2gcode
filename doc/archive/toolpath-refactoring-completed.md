@@ -2,6 +2,209 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## Drei Startoptionen beim Öffnen einer DXF (22.11.2026)
+
+Die Fräseinstellungen bieten das automatische Anlegen mit oder ohne
+Fräserradiuskorrektur sowie den reinen Geometrieimport. Im dritten Modus
+bleiben die Konturen sichtbar und können später zugeordnet werden. Importierte
+Stegregionen bleiben erhalten. Alte Profile übernehmen ihre bisherige Wahl
+für den GUI-Import. Gespeicherte Projekte und direkter CLI-Export verwenden
+weiterhin ihre jeweiligen Einstellungen.
+
+Geprüft mit Qt5 und Qt6 für DXF-Import, manuelle Zuordnung, Projektladen,
+Stegregionen und direkten CLI-Export. Die Profilübernahme und die kompilierten
+deutschen, französischen und russischen Menütexte wurden ebenfalls geprüft.
+
+## Canvas-Kontextmenü in der räumlichen VisPy-Ansicht (22.11.2026)
+
+Ein Rechtsklick öffnet das gemeinsame Canvas-Menü. Befehle mit
+Klickkoordinaten und das Zeichnen von Stegen sind in der räumlichen
+Ansicht mit Hinweis auf die Draufsicht deaktiviert. Rechtsziehen zoomt
+weiterhin. Native Qt6-Mausereignisse prüften beide Ansichten, die
+Verfügbarkeit der Befehle und den Zoom.
+
+## Gemeinsamer Schalter für die Exportreihenfolge (22.11.2026)
+
+„Exportreihenfolge anzeigen“ in der Gruppe „Ausgabe“ zeichnet die
+Exportverbindungen, hält sie bei Änderungen aktuell und blendet sie
+beim Ausschalten sofort aus. Die Exportreihenfolge im Baum und die
+Pfadrichtungen behalten ihre eigene Funktion.
+
+Geprüft wurden die Anzeige im nativen PyQt6-VisPy-Fenster, das Verhalten
+bei Startpunktänderungen und die Exportreihenfolge unter PyQt5 sowie
+die kompilierten deutschen, französischen und russischen Texte.
+
+## Strg-Mehrfachauswahl der Stegregionen im Canvas (22.11.2026)
+
+Strg-Klick fügt sichtbare Stegregionen zur Auswahl hinzu oder entfernt sie.
+Der linke Editor übernimmt dieselbe Mehrfachauswahl. Der Stegmodus
+unterscheidet Klick und Ziehen, sodass Strg-Ziehen weiter am Original
+ausrichtet. Native Mausereignisse prüften beide VisPy-Kameramodi und den
+Fang. Die fokussierten Qt5-Ansichtstests bestanden ebenfalls.
+
+## Stegregionen links einzeln und gemeinsam bearbeiten (22.11.2026)
+
+Der linke Stegeditor bietet Name, Platzierung, Stegoberkante, Vorschübe,
+Aktivierung und Zuordnung auch bei ausgeschaltetem Stegmodus. Strg-Auswahl
+im Baum bearbeitet mehrere Regionen gemeinsam, unterschiedliche Werte
+erscheinen als Platzhalter. Eine Feldänderung oder Zuordnung ist jeweils ein
+Undo-Schritt. Die Zielauswahl für mehrere Regionen zeigt die Schnittmenge
+der zulässigen Ziele.
+
+PyQt5 und natives PyQt6 prüften Strg-Auswahl, gemeinsame Höhe, Name,
+Aktivierung, Zuordnung und Undo. Die drei Sprachkataloge sind kompiliert und
+die neuen Texte verifiziert.
+
+## Werkzeugweg nach Stegoberkante je Zustellung (22.11.2026)
+
+Die Stegoberkante ist die absolute Z-Höhe des Stegs. Der gemeinsame
+Werkzeugwegplan hebt bei jeder Zustellung an, die tiefer liegt. Direkt
+benachbarte Stege können unterschiedliche Höhen haben. Das Durchgangsfeld
+und seine Menütexte wurden entfernt. Alte Projektwerte bleiben lesbar und
+steuern die Planung nicht mehr.
+
+Der native Windows-Lauf mit `1997.d2g` prüfte Werkzeugwegvorschau und
+G-Code bei Stegoberkante Z −2 mm (Anheben nur aus Z −3 mm) und Z 0
+(Anheben aus Z −1,5 und −3 mm). Die Projektdatei blieb unverändert.
+Fokussierte Prüfungen deckten benachbarte Stege, exakte Höhenübereinstimmung,
+Kompensation, Altprojekt-Lesen und den 2D-Rückfall ab.
+
+## Export- und Optimierungshäkchen im Bearbeitungsbaum (22.11.2026)
+
+Ein Checkbox-Klick ändert den Wert bei unveränderter Konturauswahl und
+unverändertem aktivem Baumeintrag. Das Kontextmenü in der Spalte und im
+Spaltenkopf bietet Sammelaktionen je Checkbox-Typ. Jede Sammelaktion ist
+ein Undo-Schritt. Mausereignisse, beide Spaltenmenüs und Undo wurden mit
+PyQt5 und nativem PyQt6/VisPy geprüft. Die Menütexte wurden in Deutsch,
+Französisch und Russisch in den kompilierten Katalogen verifiziert.
+
+## Werkzeugdurchmesser im Auswahl-Tooltip (22.11.2026)
+
+Der Tooltip im Werkzeug-Dropdown zeigt den vollständigen Durchmesser in
+Projekteinheiten. Eng benachbarte Durchmesser bleiben bei gleicher gerundeter
+Anzeige unterscheidbar. Mit Tabellen- und Projektwerkzeugen für mm und Zoll
+geprüft.
+
+## GUI1 – Windows-Fokusübergabe nach dem Start (22.11.2026)
+
+Nach dem normalen Qt-Aktivierungsversuch fordert DXF2GCODE einmalig die
+Windows-Aktivierung an, wenn das bei Programmstart aktive Fenster noch
+im Vordergrund ist. Bei Bedarf werden die Eingabewarteschlangen für den
+kurzen Fokuswechsel verbunden und sofort wieder getrennt. Der fokussierte
+Test prüfte den Wechsel und das Überspringen bei einem inzwischen anderen
+Vordergrundfenster. Der native Qt6-/VisPy-Start und die Qt6-Startfehlertests
+bestanden. Der Start über den Debugger in der Nutzersitzung bleibt zu prüfen.
+
+## GUI1 – Zoombasierte Beschriftung verknüpfter Bearbeitungen (22.11.2026)
+
+VisPy fasst die ausgewählten Bearbeitungen derselben Kontur bei kleiner
+Darstellung mit ihrer Anzahl zusammen. Beim Heranzoomen erscheinen die
+Namen einzeln und werden bei Kollision mit bereits platzierten Texten
+versetzt. Der native Lauf mit `1997.d2g` prüfte Zusammenfassung und
+Einzelbeschriftung bei identischem Textanker sowie beide Kameramodi.
+
+## GUI1 – Räumlicher Maßstab (22.11.2026)
+
+Die räumliche VisPy-Ansicht zeigt unten rechts gleich lange Maßlinien für
+X, Y und Z in den Farben des Nullpunktsymbols, ohne Rahmen oder Hintergrund.
+Die Kamera bestimmt ihre
+projizierte Richtung und Länge. Der gemeinsame Maßwert folgt dem Zoom.
+Das Linealsymbol schaltet den Maßstab in allen Ansichten. Der native
+Windows-Test prüfte Rotation, Zoom, Ansichtswechsel und Schalter.
+44 Qt5-Maßstabstests bestanden.
+
+## GUI1 – Fensterstart ohne sichtbaren OpenGL-Wechsel (22.11.2026)
+
+Die VisPy-Ansicht wird vor dem ersten Anzeigen in das Fenster eingehängt.
+Die 3D-Schalter stehen damit schon beim ersten Anzeigen im Ribbon. Nach
+dem Anzeigen prüft ein kleiner OpenGL-Renderdurchlauf die Grafikfähigkeit.
+Der 2D-Rückfall bleibt verfügbar.
+
+Der native Windows-Lauf mit `1997.DXF` protokollierte zuvor ein
+`Show → Hide → WinIdChange → Show`; die 3D-Schalter erschienen rund
+540 ms nach dem ersten Anzeigen. Nach der Änderung erschienen Fenster
+und fertiges Ribbon gemeinsam. Nach dem Anzeigen wurde das Fenster
+einmal aktiviert und blieb bis zum Testende sichtbar. Die Konstruktion
+des Ribbons selbst dauerte im Vergleichslauf 21 ms. Die nativen
+Ansichtstests, die Qt5-Rückfalltests und die Qt6-Startfehlertests bestanden.
+
+## GUI1 – Auswahlfilter für Stegregionen (22.11.2026)
+
+Der Werkzeugwegfilter begrenzt die sichtbaren Stegregionen und die
+Stegvorschau in der Bearbeitung auf die Auswahl. Die Zuordnung verwendet
+die Stegwirkung je Bearbeitung. Der native VisPy-Test prüfte den Wechsel
+zwischen verknüpfter und unverknüpfter Bearbeitung im Stegmodus und in der
+räumlichen Ansicht. Die fokussierten Qt5-Ansichtstests bestanden ebenfalls.
+
+## GUI1 – XYZ-Achsen am Werkstücknullpunkt (22.11.2026)
+
+Die räumliche VisPy-Ansicht zeigt am Werkstücknullpunkt die positiven
+Weltachsen X (rot), Y (grün) und Z (blau). Das Symbol folgt der Kamera und
+hat eine zoomunabhängige Maximalgröße. Sein Schalter im Ansichtsband wird
+mit den Fensteroptionen gespeichert. Die Draufsicht zeigt das runde
+Nullpunktsymbol. Der native Windows-Test prüfte Position, Schalter und
+Ansichtswechsel. Die Qt5-Ansichtstests prüften den 2D-Rückfall und die
+Übersetzungen.
+
+## GUI1 – Flüssigeres Ziehen von Stegen und Auswahlrahmen (22.11.2026)
+
+Der Auswahlrahmen in der VisPy-Draufsicht nutzt eine feste transparente
+Zeichenfläche und fasst Mausbewegungen für die Darstellung zusammen. Beim
+Loslassen werden Originalkonturen geprüft und bereits vorhandene Baumzeilen
+aktualisiert. Beim Stegziehen werden die Originalkonturen für den Strg-Fang
+zwischengespeichert und über ihre Begrenzungsrahmen vorgefiltert. Nach 120 ms
+Ziehpause plant die Vorschau die zugeordneten, vom Steg geschnittenen
+Bearbeitungen. Das Loslassen übernimmt die Region über den normalen
+Bearbeitungsbefehl.
+
+Lokale Windows-Messung mit PyQt6, VisPy und `AFluegel Rippen b2 0201.dxf`
+(63 Originalkonturen): bei 20 eingespeisten Mausbewegungen sank die mediane
+Verarbeitungszeit für den Rahmen von 38,3 auf 0,31 ms, die höchste Stichprobe
+von 109 auf 37 ms. Der Wechsel der Auswahl beim Loslassen dauerte 42 ms
+gegenüber 118 ms im vorigen Lauf. Der zwischengespeicherte Strg-Fang dauerte
+im Median 0,91 ms, die Stegvorschau für eine Bearbeitung 1,55 ms.
+Die nativen Ansichts- und Stegtests sowie 42 fokussierte Projekt- und
+Stegregionstests bestanden.
+
+## GUI1 – Fensterstart, Stegwahl und Orientierung in VisPy (22.11.2026)
+
+Das Hauptfenster wird nach dem Einlesen einer Startdatei angezeigt und nach
+Initialisierung der Ansicht aktiviert. Die Stegplatzierung bleibt im
+Bearbeitungsband als Symbol-Dropdown verfügbar. Seine Mindestbreite lässt
+unter Windows Platz für das vollständige Symbol und den Pfeil. Beim Öffnen
+passt sich nur die Liste an die Breite der übersetzten Texte an. Die
+Listenbreite wurde mit Qt6 für Deutsch, Französisch und Russisch geprüft.
+Beide VisPy-Kameramodi zeigen
+das 2D-Nullpunktsymbol am Weltursprung und den Maßstab für den aktuellen Zoom.
+Das Linealsymbol im Ansichtsband schaltet den Maßstab in beiden Renderern.
+Neue Profile aktivieren ihn, bestehende übernehmen ihre Konfiguration.
+
+Der native Windows-Test mit PyQt6 und VisPy prüfte das aktive Fenster, beide
+Overlays und die Stegbearbeitung. Die fokussierten Qt5-Ansichts- und
+Maßstabstests bestanden. Der breitere Qt5-Offscreen-Test scheiterte beim
+Tooltip über überlappenden Konturbeschriftungen.
+
+## GUI1 – Werkzeugwegfilter und gespeicherte Darstellung (22.11.2026)
+
+Das Ansichtsband bietet einen Filter für Werkzeugwege ausgewählter Konturen
+und einen Schalter für aufwärts gerichtete Z-Eilgangbewegungen. Die Filter
+greifen in der Vorschau und bei der Pfadauswahl. Qt speichert die Schalter
+gemeinsam mit dem Fensterzustand in den Benutzereinstellungen.
+Der lokale Windows-Test mit PyQt6 und VisPy prüft die sichtbaren Pfade,
+die Z-Rückzüge und unveränderte Projektdaten. Acht fokussierte PyQt5-Tests
+decken den 2D-Rückfall, das Laden der Einstellungen und die übersetzten
+Schaltflächen ab.
+
+## Eigener Zweig für Ribbon und integrierte Ansichten vorbereitet (15.11.2026)
+
+Die vorherigen Dokumentations-/Planbereinigungen einschließlich der identischen
+Vergleichs-DXF im gewünschten `dxf`-Ordner sind mit `3da5a15` auf `develop`
+gesichert und gepusht. Darauf den neuen Arbeitszweig `ribbon-2d-3d` angelegt.
+Das Nutzerziel ist unter GUI1 in beiden offenen Listen festgehalten: 2D primär
+zur Bearbeitung, 3D primär zur Darstellung, gemeinsame Bedienung über Ribbon.
+Umsetzung und Abnahme erfolgen zunächst auf diesem Zweig. Noch keine GUI-
+Änderung, Bibliotheksfestlegung oder Funktionsabnahme durch das Anlegen des Zweigs.
+
 ## Nutzerentscheidung zu DOC1, M1, LC1 und CAMotics (15.11.2026)
 
 <a id="doc1-accepted"></a>
@@ -4071,3 +4274,667 @@ Laufzeitkonfiguration explizit an Anwendungsfälle übergeben, Importdaten
 normalisieren, den Werkzeugwegplan auf alle Maschinenarten ausweiten und
 schließlich die Start- und UI-Koordination trennen. Erst danach sind die
 Abhängigkeitsregeln der Zielstruktur vollständig erfüllt.
+
+<a id="gui1-p1-p2"></a>
+
+## GUI1 P1/P2 – gemeinsame Darstellung und optionaler VisPy-Prototyp
+
+Stand: **15.11.2026**, Arbeitszweig `ribbon-2d-3d`. Lokal umgesetzt;
+Nutzerprüfung bestätigt: „Ist geprüft und funktioniert soweit wie erwartet.“
+Damit ist der vorgesehene Nutzerprüfpunkt für P1/P2 abgeschlossen. Die Rückmeldung
+enthält keine separate Aufschlüsselung nach Dateien oder Einzelfällen und ist
+keine zusätzliche Plattform-/Paketabnahme. Nicht nach `develop` übernommen und
+nicht veröffentlicht; die Rendererentscheidung bleibt offen.
+
+- `application/view_scene.py`: renderer-unabhängige IDs, Pfade, 2D-/3D-Projektion
+  und Trefferprüfung; kein Qt-/VisPy-Import und keine separate Planung.
+- Adapter aus bestehenden Projekt-/Planungsdaten, mit Originalkonturen,
+  Operationen, Diagnosen und Stegregionen. Auswahländerungen nutzen denselben
+  Snapshot; Tiefenänderungen aktualisieren ihn.
+- Zusätzliche Ansichtsleiste und optionaler VisPy-Viewport: fester Draufblick,
+  räumliche Kamera, Einpassen, bestehende Farben/Linienrollen, Beschriftungen,
+  Start-/Endmarkierungen, Einzel-/Mehrfachauswahl und Baumkopplung. Mehrere
+  Treffer verlangen eine ausdrückliche Auswahl. Der alte Canvas bleibt erhalten.
+- PyQt6/VisPy erst bei Verwendung initialisieren; fehlende Abhängigkeiten
+  deaktivieren die Aktionen. Erkannte Fehler führen zum bisherigen Canvas zurück.
+  VisPy bleibt ein optionales Extra; CLI-/2D-Start importieren VisPy nicht.
+- DE/FR/RU-Texte ergänzt; QM-Dateien kompiliert, ihre neuen Einträge geladen und
+  gegen die TS-Texte geprüft. Bestehende unvollständige andere Katalogeinträge
+  wurden nicht als Teil dieser Änderung überarbeitet.
+
+**Gezielte Nachweise:**
+
+- Neue `dxf2gcode_view_scene_test.py`: **4 Tests unter PyQt5 und PyQt6 bestanden**.
+  Projektion ohne doppelte Tiefenpasslinien, räumliche Z-Werte, stabile getrennte
+  Treffer-IDs, fehlender Renderer/Initialisierungsfehler mit nutzbarem 2D-Canvas,
+  vollständige neue Übersetzungen einschließlich QM-Lookup.
+- Vorhandene `dxf2gcode_machining_panel_test.py`: **2 Tests je Qt-Bindung bestanden**
+  (bestehende reale Qt-Auswahl-/Projekt-/Bearbeitungsabläufe).
+- Nativer Windows-Grafiklauf `--gpu-worker` mit PyQt **6.12.0**, VisPy **0.17.0**,
+  NumPy **1.26.4**, OpenGL **4.6.0 Compatibility Profile Context 26.2.2.260218**.
+  `BreakExample_Circle.dxf` plus zweite Bearbeitung derselben Originalkontur:
+  reale Framebuffer-Ausgabe, räumlicher/Draufblick, Projektion für Treffer,
+  Mehrfachauswahl, Stegregionen, Snapshot-Wiederverwendung und Tiefenänderung
+  geprüft; Rückkehr zu 2D und unveränderte Projektdaten bestätigt.
+  Screenshots unter `.tox/view-prototype-spatial.png` und
+  `.tox/view-prototype.png` visuell geprüft (lokale, nicht versionierte Artefakte).
+
+**Grenzen:** Keine Vollsuite, Paket-/MSI-/Releaseprüfung oder Debian-/SSH-/macOS-
+Abnahme. Keine vergleichenden Geschwindigkeitsaussagen aus dem kleinen Grafiklauf.
+Manuelles Zeichnen/Verschieben/Bemaßen von Stegen bleibt P5; produktive Ablösung
+des bisherigen Canvas ist nicht freigegeben. Ein nativer Treiberabsturz ist kein
+durch Python generell abfangbarer Initialisierungsfehler.
+
+Weitere Etappen: [Vergleichsplan](../planning/gui1-renderer-comparison-plan.md).
+Startweg und bekannte Einschränkungen: [Bediennotizen](../documentation-notes/view-renderer-comparison.md).
+
+<a id="gui1-p3"></a>
+
+## GUI1 P3 – Qt Quick 3D mit gemeinsamer Projektanbindung
+
+Stand: **15.11.2026**, lokal auf `ribbon-2d-3d`. Keine Nutzerabnahme des neuen
+Kandidaten, kein Commit/Push, kein Merge oder Release aus dieser Etappe.
+
+- `quick3d_view.py` und `resources/view_comparison.qml`: native Qt-Quick-Ansicht
+  mit orthografischer Draufsicht und frei drehbarer räumlicher Kamera, Zoom,
+  Verschieben, Einpassen, Konturen, Operationen, Stegen und Beschriftungen.
+- Derselbe Snapshot wie VisPy; gleiche stabile IDs und Projektbefehle.
+  Gemeinsame Auswahl-/Trefferregeln und Stile nach `view_interaction.py`
+  verlagert. Auswahl verändert keine Projektdaten und plant nicht erneut.
+- Qt-Quick-Linien als kamerazugewandte Dreiecksbänder mit Vertexfarben und
+  Bildschirmbreiten, gemeinsame Strichelung, QML-Auflage für Texte und S/E.
+  Projektion entspricht `View3D.mapFrom3DScene`, ohne künstliche XY-Verschiebung.
+- Native `QQuickView`-Einbettung statt gemeinsamem `QQuickWidget`-Compositor:
+  VisPy/OpenGL und Qt Quick/Direct3D 11 im selben Hauptfenster geprüft.
+  Fehler deaktivieren nur den betroffenen Kandidaten und führen zu 2D zurück.
+- Erster nativer Frame vor Readback abwarten, QML-/Grafikfehler und Frame-Timeout
+  behandeln. Ein zu früher Readback ließ die geprüfte Qt-6.12-/D3D11-Kombination
+  leer bleiben; mit verzögerter Prüfung reale Geometrie sichtbar.
+- Renderer beim Schließen explizit freigeben und den ursprünglichen Qt-Message-
+  Handler nach VisPy-Initialisierung erhalten. Eine während der Erprobung
+  beobachtete Ressourcen-/Loggingwarnung beim Beenden des Mischbetriebs trat in
+  den abschließenden nativen Läufen beider Aktivierungsreihenfolgen nicht auf.
+- QML in Paketdaten und Source-Manifest aufgenommen; optionales Extra
+  `view-quick3d`. Drei neue UI-Texte DE/FR/RU übersetzt, QM-Dateien regeneriert.
+
+**Gezielte Nachweise:**
+
+- `dxf2gcode_view_scene_test.py`: **5 Tests unter PyQt6 bestanden**, unter
+  PyQt5 **4 bestanden / 1 passend übersprungen**. Einschließlich Pixelbreite und
+  unveränderter Mittellinie der Dreiecksgeometrie, Fehlerisolierung je Renderer
+  sowie neuer TS-/QM-Übersetzungen.
+- `dxf2gcode_machining_panel_test.py`: **2 Tests je Bindung bestanden**;
+  vorhandene Auswahl-, Parameter-, Projekt- und History-Abläufe unverändert.
+- Windows/PyQt **6.12.0**: native Worker `--quick-worker`, `--gpu-worker` und
+  isoliert `--quick-only-worker` mit echten Framebuffer-Ausgaben. Qt Quick:
+  **Direct3D11Rhi**; VisPy: **OpenGL 4.6 Compatibility Profile**.
+  `BreakExample_Circle.dxf` plus zweiter Bearbeitung derselben Originalkontur:
+  Bildinhalt, Start in Draufsicht, räumliche Ansicht, Qt-Projektionsvergleich
+  mit weniger als einem Pixel Abweichung, echter QML-Mausklick, Kamera/Zoom,
+  Mehrfachauswahl, Tiefenänderung, Snapshot-Wiederverwendung und Rückkehr zu 2D.
+  Beide Aktivierungsreihenfolgen nutzten denselben Snapshot; Projektdaten nach
+  Ansicht/Auswahl unverändert. Screenshots `.tox/quick3d-prototype*.png` lokal
+  erzeugt; räumliche Ausgabe visuell geprüft.
+
+**Grenzen:** Keine Vollsuite, MSI-/Paket-/Releaseprüfung oder Debian-/Linux-/macOS-
+Abnahme; keine Aussage zur schnelleren Bibliothek. Vergleich großer Projekte,
+Linienqualität und Bediengefühl bleiben P4, geometrische Stegbearbeitung P5.
+Die produktive Ablösung des bisherigen Canvas ist nicht freigegeben.
+
+Offene Schritte: [P4–P6](../planning/gui1-renderer-comparison-plan.md).
+Bedienung und Quellen: [Renderer-Vergleich](../documentation-notes/view-renderer-comparison.md).
+
+<a id="gui1-quick-navigation"></a>
+
+## GUI1 – Qt-Quick-3D-Navigation ohne unnötigen Geometrieaufbau
+
+Stand: **15.11.2026**, lokal auf `ribbon-2d-3d`. Nutzer meldete rucklige
+Navigation; der vereinbarte begrenzte Optimierungsschritt ist umgesetzt.
+
+- 16-ms-Aktualisierung ohne Neustart eines bereits laufenden Timers. Fortlaufende
+  Mausereignisse verhindern damit nicht mehr die nächste Aktualisierung.
+- Projektionen und vorbereitete Endpunkte/Grenzen wiederverwenden. Linienrollen
+  und Strichelung werden bei reiner Rotation nicht erneut aufbereitet.
+- Reines Verschieben aktualisiert nur Kamera und gegebenenfalls Beschriftungen;
+  kein neuer Vertexpuffer. Rotation/Zoom aktualisieren die kamerazugewandten
+  Bänder weiterhin, mit vereinfachter numerischer Aufbereitung statt vieler
+  temporärer Qt-Vektoren und Grenzberechnungen je Dreiecksvertex.
+- Kamera-/Beschriftungssignale getrennt; unveränderte Beschriftungen lösen kein
+  erneutes Zeichnen der QML-Auflage aus. Farben, Auswahl und Projektbefehle
+  bleiben erhalten; keine neuen GUI-Texte oder Übersetzungseinträge.
+
+**Begrenzte Messung:** gleiche lokale Windows-/Python-3.11-/PyQt-6.12-/D3D11-
+Umgebung, `BreakExample_Circle.dxf` mit zweiter Bearbeitung einer Originalkontur,
+ausgewählte Operationen und sichtbare räumliche Ansicht. Median von je zwölf
+direkt ausgeführten Python-`redraw()`-Aufrufen; keine GPU-/FPS-Messung und kein
+Vergleich mit VisPy. Vorherige Implementierung vor dem Umbau lokal gesichert.
+
+| Aktion | Vorher CPU ms | Nachher CPU ms |
+| --- | ---: | ---: |
+| Verschieben | 44,346 | 0,047 |
+| Drehen | 47,405 | 13,854 |
+| Zoomen | 40,566 | 19,032 |
+
+Nachher: **0 Geometrieübertragungen bei zwölf Verschiebungen**, jeweils zwölf
+bei Rotation und Zoom. Der Worker `--quick-benchmark` erzeugt die Messung aus dem
+aktuellen Stand; frühere Implementierung ist nicht Teil des Produktcodes.
+
+**Gezielte Prüfung:** `dxf2gcode_view_scene_test.py`: fünf Tests unter PyQt6
+bestanden; unter PyQt5 vier bestanden, ein Qt-Quick-spezifischer Test passend
+übersprungen. Nativer Direct3D11-Worker einschließlich Bildausgabe, QML-Klick,
+Projektion, Kamera/Zoom, Auswahl, Tiefenänderung und Rückkehr zum bisherigen
+Canvas bestanden. Zusätzliche native Regression: keine Geometrieübertragung
+beim Verschieben, Übertragung beim Drehen, laufende Draw-Timer trotz eines
+2-ms-Ereignisstroms. Bildschirmbreite/Mittellinie der Bänder weiter geprüft;
+aktuelle räumliche Ausgabe lokal visuell kontrolliert.
+
+**Grenzen:** keine Vollsuite, Paket-/Release- oder weitere Plattformabnahme.
+Große Datenmengen können bei Rotation/Zoom weiterhin Aufwand verursachen.
+Erneute Nutzerbeurteilung und vergleichende Bewertung bleiben
+[P4](../planning/gui1-renderer-comparison-plan.md).
+
+<a id="gui1-vispy-lines-benchmark"></a>
+## GUI1 – GL-/AGG-Performance und RAM an Rippen-DXF (16.11.2026)
+
+Auf ausdrücklichen Nutzerauftrag `AFluegel Rippen b2 0201.dxf` nativ unter
+Windows/AMD RX 6700 XT geprüft: 63 Konturen, 63 Bearbeitungen, 21.647 projizierte
+Segmente, Qt 6.12/VisPy 0.17. Separates Werkzeug
+`tools/benchmark_vispy_lines.py` mit frischen Prozessen, temporärer Konfiguration,
+einer Methode pro Adapter und unverändertem Projekt. Produktionsansicht und
+Einstellungen nicht umgestellt.
+
+Die einfache AGG-Variante hätte nach Einpassen 4.962 Visuals benötigt und wurde
+an der Vorabgrenze von 1.500 gestoppt; keine tatsächliche Laufzeit-/RAM-Abnahme
+für diesen Ansatz. GL und gebündeltes AGG wurden vollständig durchlaufen,
+einschließlich Pan, Zoom, Einzel-/Mehrfachauswahl und Prozessspeicherzählern.
+Das gebündelte Experiment verwendet VisPys privaten Strip-Baker; dessen
+Produktivübernahme ist ausdrücklich nicht freigegeben.
+
+Beispielmediane einschließlich GPU-Readback: Pan/Mehrfachauswahl mit Neuaufbau
+124 ms GL / 317 ms AGG, Zoom 131 / 303 ms, Auswahlwechsel 427 / 630 ms.
+Isolierter Kamera-Pan ohne Upload bei 24 ausgewählten Bearbeitungen dagegen
+8,23 / 11,22 ms (je 30 Proben, keine Uploads beobachtet). Peak-Working-Set im
+vollständigen Ablauf 448 / 497 MiB; Private-Commit-Spitze 830 / 884 MiB.
+Keine VRAM-, Langzeit-Leck- oder Bildschirm-FPS-Messung.
+
+Die zugrunde liegende Darstellungsleistung ist damit für weitere AGG-Erprobung
+plausibel; vor einer Umstellung sind Bündelung und Cache für Navigation und
+Auswahl nötig. Zoomen und Auswahl sind durch die Kamera-Gegenprobe nicht
+optimiert. Die vollständigen Methoden, Hardware-/Skalierungsbedingungen,
+Streuwerte, Schutzgrenzen und fünf JSON-Rohdaten stehen im
+[Messbericht](../documentation-notes/vispy-line-benchmark.md).
+Erzeugte AGG-Aufnahme visuell geprüft; CLI-Hilfe und Python-Syntax geprüft.
+Keine Vollsuite, Debian-/3D-/Paket-/Releaseabnahme oder abschließende Rendererwahl.
+
+<a id="gui1-vispy-gl-cache"></a>
+## GUI1 – Einheitliche VisPy-GL-Linien und Cache (16.11.2026)
+
+Nach ausdrücklicher Nutzerentscheidung für GL anstelle des 2D-beschränkten
+AGG-LineVisual den VisPy-Prototyp für Modell-/Werkzeugweglinien in beiden
+Ansichten auf `method='gl'` umgestellt. Kein AGG-Produktionspfad und keine
+Übernahme seiner internen Muster. Die vorhandene Strich-/Punktaufteilung bleibt
+als gebündelte GL-Segmentdarstellung erhalten; Qt-Auflagen für Stege/Maße bleiben.
+
+Projektionen/semantische Arrays pro Snapshot und Ansicht speichern, Strichdaten
+pro Maßstab zwischenspeichern und Gruppen nur bei tatsächlicher Änderung
+hochladen. Pan lädt keine Linien, Zoom nur geänderte Strichgruppen; Auswahl
+berechnet keine Planprojektionen. Veraltete Stilobjekte entfernen und vor dem
+ersten Upload einpassen. Reine Auswahl baut den versteckten Legacy-Canvas bei
+unverändertem Projekt/Transform/Konfiguration/Postprozessor nicht mehr auf;
+Rückkehr und Grafikfehler aktualisieren ihn. Parameteränderungen und automatische
+Exportreihenfolge behalten den vollständigen Aktualisierungspfad. Diagnosen
+aller Operationen aus dem aktuellen Snapshot in den Baum übernehmen.
+
+Exakt deckungsgleiche nicht ausgewählte Schnittsegmente in der Draufsicht unter
+der Originalkontur aussparen, damit dünne AA-Ränder keine blauen Fragmente
+erzeugen. Plan, Export und räumliche Bahnen bleiben erhalten. Alpha-Blending
+explizit gesetzt; AGG-Breitenfaktor entfernt. GL-Strichstärken/Ecken bleiben
+treiberabhängig und bedürfen optischer Nutzerprüfung.
+
+**Prüfung:** sieben fokussierte Tests unter Qt6, sechs unter Qt5 und ein
+Qt-Quick-Test übersprungen. Bestehende Bearbeitungs-/Übersetzungsprüfungen je
+zweimal unter Qt5 und Qt6 bestanden. Native GPU- und Stegbearbeitungsworker
+bestanden: Raum-/Draufsicht, Auswahl, Planänderung, transparente Körper,
+Rückkehr zum alten Canvas, Maße/Zeichnen/Fang/Undo, Cache-Invalidierung,
+ausbleibende Pan-Uploads, unveränderte Schnittarrays bei Zoom, begrenzte
+Stilobjekte und Timer unter fortlaufenden Ereignissen. GL-Aufnahme visuell geprüft.
+
+**Rippen-DXF nach Optimierung:** gleiche Umgebung/Größe wie im vorherigen
+Vergleich, aktueller Produktionspfad über `--method current`. Mediane inklusive
+Readback: Pan/Mehrfachauswahl 9,98 statt 123,84 ms, Zoom 20,99 statt 130,80 ms,
+Mehrfachauswahlwechsel 26,21 statt 426,88 ms. Peak-Working-Set 356 statt 448 MiB,
+Peak-Private-Commit 755 statt 830 MiB. Projektinhalt unverändert geprüft.
+[Nachtrag und JSON-Rohdaten](../documentation-notes/vispy-line-benchmark.md#nachtrag-gl-optimierung).
+Keine neue Debian-, Paket-, Vollsuite-, Release- oder physische Maschinenabnahme.
+
+## GUI1 – Verzögerte Canvas-Auswahl durch Trefferprüfung (16.11.2026)
+
+Auf Nutzerhinweis den zuvor nicht gemessenen Maus-/Picking-Pfad geprüft.
+Die Rippen-DXF benötigte ca. 2,49 s pro Auswahlklick und 8,10 s für Auswahl
+plus Leerraum-Abwahl: jede Segmentkoordinate wurde einzeln projiziert und bei
+Leerraum zusätzlich die gesamte Originalgeometrie durchsucht. Die vorherigen
+Auswahlmessungen begannen bei Baum-Auswahl und deckten diese Ursache nicht ab.
+
+VisPy verwendet jetzt Snapshot-/Ansichtsdaten, eine gebündelte Transformation,
+vektorisierte Abstände und einen invalidierbaren Bildschirmcache. Nearest-
+Trefferliste, Toleranz und Mehrfachtreffer-Menü bleiben erhalten. Leerraum-
+Abwahl wird als eine logische Auswahländerung statt mehrerer Repaints behandelt.
+
+Echte Qt-Klickmessung mit gleichem Eingabepunkt, zwei Aufwärmabläufen und je drei
+Proben: Auswahl ca. 71 ms, Auswahl plus Leerraum ca. 93 ms, jeweils inklusive
+Bildabruf und automatischer erster Menüwahl bei Mehrfachtreffern. Prozess-
+Working-Set-Spitze ca. 356 statt 350 MiB im kurzen Klicktest. Keine FPS- oder
+Langzeit-/Leck-Aussage. [Rohdaten und Grenzen](../documentation-notes/vispy-line-benchmark.md#canvas-klickpfad).
+
+Native Stegbearbeitungs-/Pickingprüfung bestanden: Trefferlisten stimmen in
+geprüften Fällen mit der bisherigen Referenz überein, einschließlich Kamera-,
+Ansichts- und Sichtbarkeitswechsel, Nullsegmenten und leerem Snapshot. Keine
+per-Endpunkt-Projektion im neuen Picking; Cache-Wiederverwendung nachgewiesen.
+Leerraum erzeugt einen Auswahlwechsel und leert den Kontext. Sieben Tests unter
+Qt6, sechs unter Qt5 plus ein übersprungener Qt-Quick-Test bestanden. Nativer
+Qt-Quick-/VisPy-Interoperabilitätsworker bestanden. Keine Vollsuite, Debian-,
+Paket- oder Releaseprüfung; Nutzerprüfung am eigenen Klickablauf bleibt offen.
+
+## GUI1 – GL-`connect='strip'` zum Vergleich (16.11.2026)
+
+Auf ausdrücklichen Nutzerwunsch durchgezogene, zusammenhängende Pfadstücke
+als native GL-Line-Strips umgesetzt. Unabhängige Stücke/Konturen/Rollen nicht
+verbinden; Strich-/Punktlinien weiter als GL-Segmente bündeln. Der aktive
+Prototyp-Schalter `VispyView.SOLID_CONNECT = 'strip'` kann für den bisherigen
+Weg auf `'segments'` zurückgesetzt werden. Keine AGG-Rückkehr oder Exportänderung.
+Strip-Objekte je Snapshot/Ansicht/Pfadstück wiederverwenden, statt bei jeder
+Auswahl neue GL-Objekte zu erzeugen; neuen Snapshot mit leerem Pool beginnen.
+
+Native Steg-/Cache-/Picking-/Lückenprüfungen und GPU-Worker bestanden.
+Framebuffer-Zwischenräume getrennter Stücke bleiben weiß, Muster bleiben
+unterbrochen, Rückwechsel funktioniert und Pool-Objekte werden wiederverwendet.
+Sieben Tests unter Qt6, sechs unter Qt5 und ein übersprungener Qt-Quick-Test
+bestanden. Strip-Aufnahme visuell geprüft; tatsächlicher Eckvorteil bedarf
+Nutzerbeurteilung auf dem eigenen Grafiktreiber.
+
+Rippen-DXF, gleiche Messbedingungen: 260–462 aktive LineVisuals statt 3–8.
+Pan/Mehrfachauswahl ca. 88 statt 10 ms, Zoom ca. 104 statt 21 ms,
+Baum-Mehrfachauswahlwechsel ca. 103 statt 26 ms. Peak-Working-Set ca. 447 statt
+356 MiB. Der Versuch bleibt wie beauftragt aktiv, ist aber keine Performance-
+Freigabe für die endgültige Ansicht. [Messung/Rohdaten](../documentation-notes/vispy-line-benchmark.md#strip-versuch).
+Keine Vollsuite, neue Plattform-, Paket- oder Releaseabnahme.
+
+## GUI1 – Strip-Versuch nach Nutzerprüfung zurückgenommen (16.11.2026)
+
+Der Nutzer erkennt keinen optischen Vorteil und hat die Rückkehr zur vorherigen
+Umsetzung beauftragt. Gebündelte GL-Segmente in Drauf- und Raumansicht wieder
+hergestellt; Strip-Schalter, Strip-Objektpool und experimentelle Cache-Zweige
+entfernt. Projektions-/Strich-/Upload-Caches, schnelle vektorisierte Trefferprüfung,
+gesammelte Leerraum-Abwahl und verzögerte Aktualisierung des versteckten Canvas
+bleiben erhalten. Keine Geometrie-/Planungs-/Exportänderung.
+
+Native Cache-, Steg-, Picking-, Überlagerungs- und Segment-Lückenprüfungen
+bestanden. Wenige nach Stil gebündelte Visuals, getrennte Konturen und
+Strichlücken geprüft. Der historische Strip-Vergleich bleibt als Nachweis;
+Entscheidung ist aus dem offenen Plan entfernt. Kein erneuter langer Benchmark
+für die Rücknahme erforderlich; keine Paket-/Plattform-/Releaseabnahme.
+
+## GUI1 – Standard-AGG-LineVisual: direkte XYZ-Daten geprüft (16.11.2026)
+
+Auf Nachfrage die bisher zu pauschal formulierte 2D-Grenze präzisiert.
+Öffentliche `scene.visuals.Line`-API, VisPy 0.17.0, `method='agg'`,
+`connect='strip'`, native Turntable-Szene und synchroner Renderaufruf:
+XY-Punktarray erfolgreich, XYZ-Punktarray scheitert mit
+`ValueError: cannot reshape array of size 6 into shape (2,2)`.
+Direkter Baker-Gegentest zeigt dasselbe Ergebnis. Bestätigt ist die Grenze
+dieses Standardelements für direkte XYZ-Daten, keine allgemeine Unmöglichkeit
+von AGG in 3D oder eines angepassten Adapters. Aktive GL-Implementierung nicht
+geändert. [Präzisierung und externer Fehlerbericht](../documentation-notes/vispy-line-benchmark.md).
+
+## GUI1 – VisPy-Originalfarben und Auswahlumfang (21.11.2026)
+
+Auf Nutzerhinweis `1997.d2g` geprüft: rechte 7 besitzt zwei G42-Bearbeitungen
+mit T5, eine mit 0,1 mm Aufmaß. Die frühere Originalfarbe wurde aus der aktiven
+Legacy-Korrektur abgeleitet und war daher dunkelmagenta. VisPy verwendet für
+nicht ausgewählte aktive Originalkonturen jetzt Schwarz unabhängig von G40/41/42.
+Die bestehende Statuspalette für deaktivierte Geometrie bleibt erhalten.
+
+Auswahlumfang bestimmt die Hervorhebung: vollständige Auswahl → Original rot
+mit Stiftbreite 3, alle zugehörigen Bearbeitungen dünn 0,6; Teilauswahl → Original
+rot gepunktet mit Breite 1, gewählte Schnittbahn 3, andere Bearbeitungen 0,6
+gestrichelt. Semantische Farben/Muster bleiben erhalten; andere gewählte Rollen
+bei Teilauswahl erhalten Basisbreite +1. Der aktive Parameterkontext hebt diese
+Regel nicht auf. Bei genau einer zugehörigen Bearbeitung ist deren Auswahl
+vollständig. Änderung auf VisPy beschränkt; keine Planungs-/Exportänderung.
+
+**Prüfung:** acht fokussierte Tests unter Qt6, sieben unter Qt5 und ein
+Qt-Quick-Test übersprungen. Unit-Nachweis für G40/G41/G42, keine/vollständige/
+teilweise Auswahl sowie Einzelfall mit einer Verknüpfung. Nativer GPU- und
+Steg-/Cache-/Picking-Worker bestanden; auch die selbst erzeugte Mehrfachbearbeitung
+prüft jetzt beide Ansichten und unveränderten Projektinhalt.
+
+Die vom Nutzer bereitgestellte lokale `dxf/1997.d2g` zusätzlich mit
+`--appearance-project` nativ geladen: keine/alle/eine Bearbeitung der rechten 7
+in Drauf- und Raumansicht geprüft, Projekt unverändert. Drei Draufsicht-Aufnahmen
+`.tox/vispy-1997-plane-{none,all,partial}.png` visuell geprüft. Projektdatei nicht
+verändert oder zum Commit hinzugefügt. Keine Vollsuite oder neue Plattform-/
+Paket-/Releaseabnahme; optische Nutzerprüfung am eigenen Fenster bleibt offen.
+
+<a id="gui1-shared-xyz"></a>
+## GUI1 – Gemeinsame XYZ-Werkzeugwege im VisPy-Versuch (21.11.2026)
+
+Drauf- und Raumansicht verwenden dieselben XYZ-Segmente, dieselben vorbereiteten
+Positionsarrays und dieselben räumlichen Daten für die Trefferprüfung. Die
+Bildschirmkoordinaten der Trefferprüfung hängen von der aktiven Kamera ab.
+Die feste XY-Kamera bietet Verschieben und Zoomen. Die Raumkamera bleibt drehbar.
+Zeichenreihenfolge und Stegauflage der Draufsicht bleiben für den Versuch erhalten.
+
+Der lokale native OpenGL-Worker hat zwei deckungsgleiche Schnitte auf Z −1,5
+und −3 mm samt Zustellung geprüft. Beide Durchgänge sind im gemeinsamen
+Datenbestand vorhanden, werden von oben auf denselben Bildbereich projiziert
+und sind in der Raumansicht getrennt. Trefferprüfung, Auswahl und Stegeditor
+sind im selben Lauf geprüft. Optische Nutzerprüfung und Performancebewertung
+in der üblichen Bedienung bleiben offen. Die Start- und Aufräumarbeiten stehen
+im [Übernahmeplan](../planning/gui1-renderer-comparison-plan.md#p6--auswahl-und-übernahmeplan).
+
+Nach Rückmeldung zum Zoomen die Strichmuster der Draufsicht korrigiert. Zuvor
+lief die Strichfolge über die wiederholten XYZ-Segmente weiter, sodass derselbe
+XY-Abschnitt pro Tiefe an einer anderen Stelle im Muster beginnen konnte.
+Für Strichmuster werden deckungsgleiche XY-Segmente je Bearbeitung und Rolle
+einmal berücksichtigt. Senkrechte Bewegungen zählen dabei nicht zur sichtbaren
+Länge. Die XY-Abschnitte werden pro Szene gespeichert und beim Zoomen wird
+das Muster in der passenden Bildschirmgröße erzeugt. Native Prüfung mit zwei
+Tiefendurchgängen bei zwei Zoomstufen gegen den einzelnen XY-Durchgang bestanden.
+In der Raumansicht verwenden deckungsgleiche horizontale Abschnitte derselben
+Bewegungsart denselben Musterbeginn auf ihrer jeweiligen Tiefe, auch bei
+umgekehrter Fahrtrichtung. Beide Tiefen sind bei zwei Zoomstufen geprüft.
+
+Der VisPy-Draufsichtknopf animiert aus der Raumansicht in 400 ms Winkel,
+Mittelpunkt und Zoom. Ziel ist der zuletzt verwendete Draufsicht-Ausschnitt
+oder die eingepasste Zeichnung beim ersten Wechsel. Danach übernimmt die feste
+XY-Kamera. Der vorherige räumliche Blick wird beim Zurückschalten wiederhergestellt.
+Der native Test prüft einen Zwischenzustand, die Übereinstimmung der projizierten
+Punkte beim Kamerahandoff, Rückkehr und Abbruch. Der Stegmodus schaltet sofort um.
+
+<a id="gui1-shared-drawing"></a>
+## GUI1 – Gemeinsame VisPy-Zeichenregeln nach Zwischencommit (21.11.2026)
+
+Zwischenstand `e35c20f` sichert den Stand mit getrennten Zeichenregeln.
+Der neue Versuch verwendet in beiden Kameras denselben Tiefentest und dieselbe
+Linienbündelung und richtet wiederholte horizontale Strichmuster gleich aus.
+Der gemeinsame Bildschirmmaßstab lässt beim Kamerahandoff die Puffer bestehen.
+Die Sonderreihenfolge und der Überlagerungsfilter der Draufsicht entfallen.
+Regionsumrisse werden im Stegmodus von der Qt-Bearbeitungsauflage gezeichnet.
+
+Der native OpenGL-Test prüft dieselben GL-Objekte und Upload-Signaturen für
+durchgezogene und gestrichelte Linien am Übergang. Eine Überlagerungsprobe
+prüft die gleiche gerenderte Farbe vor und nach dem Wechsel. Die Prüfungen
+für Auswahl, Stege und mehrere Tiefendurchgänge laufen im selben Worker.
+
+Die Nachprüfung mit `1997.d2g` zeigte eine entgegengesetzte Z-Abbildung der
+beiden Kameras, obwohl der Tiefentest und die Linienpuffer bereits gemeinsam
+waren. Die feste `PanZoomCamera` verwendet jetzt `up='-z'`. Damit stimmen die
+Z-Reihenfolge und die Abstände der projizierten Tiefen mit der senkrechten
+Raumkamera überein. Der native Test prüft zusätzlich die Render-Tiefen für
+Z = 0, −1,5 und −3 mm. In derselben Überlagerungsprobe mit `1997.d2g` ging die
+Anzahl deutlich blauer Pixel in der festen Draufsicht von 6.815 auf 0 zurück
+und entspricht damit der senkrechten Raumansicht bei gleichem Ausschnitt.
+
+Der Nutzer bestätigte am 21.11.2026, dass der Versuch so bleiben kann.
+Gegenüber `e35c20f` entfallen im VisPy-Renderer netto 37 Zeilen
+(71 entfernt, 34 ergänzt). Mit der kurzen Anpassung der Stegauflage
+in `tab_modifiers.py` sind es netto 34 Zeilen Anwendungscode.
+
+<a id="gui1-vispy-adoption"></a>
+
+## GUI1 P6 – VisPy in die Anwendung übernommen (21.11.2026)
+
+- Die feste Draufsicht bietet Rechtsklickmenü mit Werkstücknullpunkt,
+  Rechteckauswahl der Originalkonturen und Verschieben per Umschalt+Ziehen.
+  Maßstab, Pfadrichtungen sowie Pfeile und Nummern der Exportreihenfolge sind
+  in beiden VisPy-Kameramodi verfügbar. Die Exportreihenfolge stammt aus
+  derselben Routenberechnung wie im 2D-Canvas.
+- VisPy startet in der Raumansicht. Bei fehlendem PyQt6, VisPy oder nutzbarem
+  OpenGL zeigt die Anwendung den 2D-Canvas und protokolliert den Grund.
+  Das alte `mode3d` wird einmalig durch `use_vispy` mit VisPy-Präferenz ersetzt.
+  Eine spätere bewusste 2D-Wahl bleibt nach dem Neustart erhalten.
+- Das Ribbon bündelt die Symbolbuttons von links nach rechts unter
+  **Programm**, **Zeichnung**, **Bearbeitung**, **Verlauf**, **Ausgabe** und
+  **Ansicht**. **Bearbeitung** vereint Schritterstellung und Stegmodus.
+  **Ausgabe** vereint Exportreihenfolge, Optimierung und Export. **Ansicht**
+  vereint Kamerawahl und Darstellungsoptionen.
+  Die Gruppenüberschriften stehen unten. **Öffnen**, **Erstellen …** und
+  **G-Code exportieren** erscheinen als große beschriftete Buttons neben
+  den zweizeilig angeordneten Nebenaktionen.
+  Unter Windows mit Qt ab 6.9 und unterstützter erweiterter Titelleiste liegen
+  Rückgängig und Wiederholen zwischen App-Symbol und Dateititel. Bei fehlender
+  Unterstützung bleiben beide unter **Verlauf** im Ribbon. Normales und
+  maximiertes Fenster sowie die 2D-Ausweichdarstellung sind lokal geprüft.
+  Das native QWindow unterdrückt den zweiten Fenstertitel und erhält die
+  Fensterbuttons. Nach dem Laden fordert DXF2GCODE einmal die Aktivierung des
+  Hauptfensters an. Der normale Windows-Launcher mit `1997.DXF` bestätigte
+  die Qt-Aktivierung und die Titelleisten-Flags. Die Win32-Abfrage des
+  Vordergrundfensters war auf dem isolierten Testdesktop nicht verfügbar.
+  **Programm**, **Zeichnung** und **Ausgabe** ergänzen die vorhandenen Menüaktionen
+  zum Öffnen, Neuladen, Speichern unter, Beenden, Nullpunktsetzen, Skalieren,
+  Drehen, Spiegeln, Optimieren und Exportieren. Die klassischen Menüs
+  **Datei**, **Exportieren** und **Ansicht** wurden nach dem Abgleich entfernt.
+  **Programm** enthält auch das vollständige Optionenmenü als Zahnrad-Dropdown.
+  **Info** steht am rechten Rand und öffnet **Über DXF2GCODE** direkt.
+  Die klassische Menüzeile entfällt vollständig.
+  Die zugehörigen Tastenkürzel sind weiterhin am Hauptfenster registriert.
+  Die Gruppen sind links
+  gebündelt. Der Stegmodus mit Platzierungswahl und der Bearbeitungsverlauf
+  verwenden dieselben Aktionen wie bisher in der Seitenleiste.
+  VisPy bietet den animierten Wechsel zur Draufsicht und den Schalter für
+  transparente Werkzeugzylinder.
+- VisPy projiziert für die Pfadrichtungsanzeige nur Markierungen und die ersten
+  beziehungsweise letzten in der Ansicht sichtbaren Bewegungssegmente, mit
+  einer Kameratransformation pro Auflage. Auf `1997.d2g` mit sieben
+  Bearbeitungen sank die Zahl der Projektionen einer Auflage von 5.074 auf 42.
+  Median über zehn Drehwinkel auf dem lokalen Windows-Stand: 598,1 ms allein
+  für die bisherige Segmentprojektion, 5,5 ms für die neue Auflage mit
+  Bildabgriff. Der Schalter aktualisiert in VisPy nur die Auflage.
+- Der Qt-Quick-3D-Adapter, die QML-Szene, der ältere OpenGL-Canvas und dessen
+  separater Stegdialog sind entfernt. Die Windows-Paketierung verwendet
+  PyQt6 und VisPy. Für das Python-Paket steht `view-vispy` zur Verfügung.
+  DE, FR und RU sind aktualisiert und kompiliert.
+
+**Lokal geprüft:** native Windows-/PyQt6-Worker für Standardstart,
+Kamerawechsel, Rechteckauswahl, Kontextmenüposition, Maßstab, Exportreihenfolge,
+Werkzeugkörper und Stegbearbeitung. Fokussierte Tests für Profilmigration,
+2D-Rückfall, Übersetzungen und Exportreihenfolge sowie die Hauptfenster-Abläufe
+unter PyQt5 und PyQt6. Der Paketumbau ist eingerichtet. Eine Abnahme von
+Windows-ZIP/MSI und von weiteren Plattformen steht separat aus.
+
+<a id="gui1-p5-vispy"></a>
+## GUI1 P5 – VisPy-Stegbearbeitung (15.11.2026)
+
+Nach dem Vergleich vorläufig VisPy bevorzugt und den Bearbeitungsnachweis
+beauftragt; Qt Quick 3D bleibt erhalten. Die feste VisPy-Draufsicht nutzt nun
+die vorhandenen `TabModifiers`: Projektion und inverse XY-Abbildung im Adapter,
+Qt-Auflage für Regionen, Griffe und Maßfelder, native Qt-Ereignisse für Auswahl,
+Verschieben, Zeichnen, Strg-Fang und Doppelklick. Die VisPy-Kamera erhält keine
+vom Stegeditor verbrauchten Mausereignisse. NumPy-Koordinaten werden vor einer
+Projektänderung in Python-`float` umgewandelt.
+
+Projektbefehle, Undo/Redo, Zuordnung und automatische/manuelle Bemessung werden
+vom bisherigen Canvas wiederverwendet. Bestätigte Maßeingabe behält den
+Mittelpunkt bei und wechselt zur manuellen Bemessung; beim Ziehen werden keine
+Maßfelder dargestellt. Aus der räumlichen VisPy-Ansicht schaltet der Stegmodus
+zur Draufsicht; ein Wechsel zur räumlichen Ansicht beendet den Modus.
+
+**Lokale Prüfung:** sechs Renderer-Vertragstests unter PyQt6 bestanden.
+`--vispy-editing-worker` bestand im nativen Windows-/OpenGL-Fenster: inverse
+Projektion bei gezoomter Ansicht, Auswahl, Verschieben mit einem Undo-Eintrag,
+Undo/Redo einschließlich Projektvergleich, Maßfeld über der nativen Ansicht,
+Mittelpunkt und automatisch/manuell, Strg-Aufruf des gemeinsamen Fangs,
+Zeichnen bei weiterhin aktivem Modus und Doppelklick. Die erzeugte Aufnahme
+`.tox/vispy-tab-editing.png` zeigt ausgerichtete Region, Griffe und beide Maße;
+visuell geprüft. Je zwei Bearbeitungs-/Übersetzungstests unter PyQt5 und PyQt6
+bestanden, einschließlich der bestehenden Canvas-Ereignistests.
+
+Offen bleibt die Nutzerprüfung bei unterschiedlichen Zoomstufen im Vergleich
+zum bisherigen Canvas. Keine neue Debian-, Paket-, Vollsuite- oder Releaseabnahme;
+der zuvor bereitgestellte Debian-Teststand enthält diese Ergänzung noch nicht.
+Keine vollständige Übernahme aller Canvas-Aktionen oder endgültige Rendererwahl.
+
+**Korrektur nach Nutzerprüfung (15.11.2026):** Der Editor zeigte zuvor den
+vollständigen Float-Wert, etwa `3.999999999…`; im schmalen Feld war nur das Ende
+sichtbar. Er verwendet jetzt die konfigurierte Anzeigepräzision. Unverändertes
+Bestätigen erhält den ungerundeten Wert, den automatischen Bemessungsmodus und
+den Undo-Stand. Eigene Eingaben behalten ihre Eingabegenauigkeit. Der native
+VisPy-Worker besteht mit gezielt erzeugter Float-Abweichung, formatiertem
+Editorwert und unverändertem Projekt nach Enter; anschließendes Ändern und
+Undo funktionieren weiterhin. Die je zwei bestehenden Bearbeitungs- und
+Übersetzungstests bestanden unter Qt5 und Qt6; der Canvas-Test prüft nun
+ebenfalls unverändertes Bestätigen und weiterhin präzise eigene Eingaben.
+
+**Korrektur der VisPy-Draufsicht (15.11.2026):** Linientiefentest dort deaktiviert
+und Zeichenreihenfolge nach Originalgeometrie, nicht ausgewählter und ausgewählter
+Bearbeitung festgelegt. Die Batch-Schlüssel enthalten die Zeichenebene; gleiche
+Farben/Breiten aus unterschiedlichen Ebenen werden nicht mehr zusammengefasst.
+Auch wiederverwendete Linienobjekte erhalten beim Ansichtswechsel den passenden
+Tiefentest. Räumliche Darstellung, bestehende Farben und Projekt-/Planungsdaten
+bleiben erhalten. Der native Stegbearbeitungs-Worker bestand einschließlich
+Framebuffer-Gegenprobe mit drei exakt deckungsgleichen Pfaden, Auswahlwechsel
+und Draufsicht–Raumansicht–Draufsicht. Sechs Renderer-Vertragstests bestanden.
+Nutzerprüfung des zuvor gezeigten Beispiels bleibt offen; keine neue
+Plattform- oder Paketabnahme.
+
+**Nachkorrektur nach Bildprüfung (15.11.2026):** Unverbundene GL-Einzelsegmente
+ließen Ecken offen; nicht ausgewählte Bearbeitungen lagen weiterhin über der
+Originalkontur. Durchgezogene Linien der VisPy-Draufsicht verwenden jetzt
+verbundene AGG-Pfade mit Eckverbindungen, Endkappen und Kantenglättung.
+Räumliche Linien und gestrichelte Pfade behalten ihre bisherige Methode.
+Getrennte Stücke, Nullsegmente und Lücken werden nicht künstlich verbunden.
+Die korrigierte Reihenfolge ist: nicht ausgewählte Bearbeitungen,
+Originalgeometrie, ausgewählte Bearbeitungen. Der kosmetische Qt-Stift mit
+Breite 0 wird als ein Pixel dargestellt.
+
+Sieben fokussierte Renderer-Tests und der native Stegbearbeitungs-Worker
+bestanden. Die erweiterte Framebuffer-Gegenprobe zeigt ein ausgewähltes Rechteck
+mit geschlossenen Ecken und einen nicht ausgewählten schwarzen Kreis ohne
+ausgeprägt blaue Pixel trotz deckungsgleicher Bearbeitung. Aufnahme
+`.tox/vispy-line-joins.png` visuell geprüft; Auswahl- und Ansichtswechsel sowie
+Stegbearbeitung bleiben im nativen Nachweis enthalten. Keine neue Plattform-,
+Paket- oder Performanceabnahme; Nutzerprüfung des eigenen Beispiels bleibt offen.
+
+**Strichstärke nach Nutzerprüfung (15.11.2026):** Die AGG-Hervorhebung in der
+Draufsicht reduziert: normale Konturen weiterhin 1 Pixel, ausgewählte
+durchgezogene Linien 1,5 statt 2 Pixel, aktive 2 statt 3 Pixel. Farben,
+Eckverbindungen, gestrichelte und räumliche Linien bleiben erhalten.
+Sieben Renderer-Tests und der native Stegbearbeitungs-/Framebuffer-Worker
+bestanden; Sollbreiten im Worker geprüft, aktualisierte Aufnahme
+`.tox/vispy-line-joins.png` visuell geprüft. Keine Behauptung einer pixelgenauen
+Übereinstimmung unterschiedlicher Renderer; optische Nutzerabnahme bleibt offen.
+
+## GUI1 P4 – isolierter Debian-Vergleich vorbereitet und technisch geprüft
+
+Stand: **15.11.2026**, ausdrücklicher neuer Nutzerauftrag nach Rückmeldung:
+„Beide laufen aktuell relativ flüssig“, Vergleich zusätzlich auf Debian gewünscht.
+Keine daraus abgeleitete allgemeine Freigabe für spätere Debian-/Vollsuitenläufe.
+
+- Debian-Test-VM: **Debian 13.7, Python 3.13.5, X11/Xfce**, eigene venv mit
+  **PyQt6/Qt 6.12.0, VisPy 0.17.0, NumPy 2.5.4, PyOpenGL 3.1.10**.
+- Uncommittierten Arbeitsstand als getrennten Snapshot übertragen, SHA256
+  `a311d08854a71100c076e89703328adfd66943489bed3ab84c9696041c255f04`
+  auf dem Ziel verifiziert. Archiv enthält den Quellstand mit generierten
+  Qt-/Sprachressourcen, Vergleichsworker und zwei DXF-Beispielen, kein Releasepaket.
+- Testbasis `~/dxf2gcode-test-work/runs/view-comparison-20261115/`, eigene
+  HOME-/XDG-Verzeichnisse und Starter `start-view-comparison.sh`; zusätzlicher
+  Desktop-Starter „DXF2GCODE Ansichtsvergleich“. Bestehende Anwendungseinstellungen
+  und Installation unverändert. Fehlende XCB-Cursor-Bibliothek aus Debian-Quellen
+  lokal entpackt und nur im Starter über `LD_LIBRARY_PATH` eingebunden.
+- Echte vorhandene X11-Sitzung verwendet, kein Xvfb. Native Worker
+  `--quick-worker` und `--gpu-worker` beide Status 0: Bildausgabe, Qt-Projektion,
+  Auswahl, Kameras, Tiefenänderung, Snapshot-/Projektinvarianz, transparente
+  Körper, Rückkehr zum bisherigen Canvas und beide Aktivierungsreihenfolgen.
+  Qt Quick: **OpenGL**; VisPy: **OpenGL 4.5 Compatibility Profile**.
+- Virtuelles Grafikgerät Virtio, tatsächlicher Renderer **llvmpipe / LLVM 19.1.7,
+  Mesa 25.0.7**, `Accelerated: no`. Dies ist Software-Rendering auf der CPU,
+  kein Nachweis beschleunigter Linux-Grafik oder deren Leistungsfähigkeit.
+- Prüfprotokolle und Bilder auf der VM gespeichert; lokal `.tox/quick-smoke.log`,
+  `.tox/vispy-smoke.log` sowie `.tox/debian-*-transparent-tools.png` gesichert.
+  Beide Debian-Bilder visuell kontrolliert. Anwendung anschließend mit der
+  Steg-Beispieldatei in der Benutzersitzung geöffnet; laufender Prozess und
+  sichtbarer X11-Fenstertitel mit `BreakExample_Circle.dxf` bestätigt.
+
+**Grenzen:** Manuelle Debian-Nutzerprüfung noch offen. Keine Vollsuite, keine
+Debian-Paket-/Releaseabnahme, kein Performance-Benchmark oder Hardware-GPU-Test.
+Die Anwendung bleibt für den Nutzer geöffnet. Kein Commit/Push oder Merge.
+
+## GUI1 P4 – begrenzte CPU-Gegenprobe mit VisPy
+
+Stand: **15.11.2026**, auf Nutzerfrage nach vergleichbaren VisPy-Messwerten.
+Keine Änderung der Renderer; Mess-Worker für beide Kandidaten verwendbar gemacht.
+`--vispy-benchmark` und `--quick-benchmark` liefen nacheinander auf derselben
+lokalen Windows-/PyQt-6.12-Umgebung mit `BreakExample_Circle.dxf` und zusätzlicher
+Bearbeitung derselben Originalkontur. Je Aktion zwölf Aktualisierungen,
+ausgewählte Operationen, sichtbare räumliche Ansicht, gleiche Fensterumgebung.
+
+Neben `redraw()` wird die gesamte synchrone CPU-Aktualisierung **einschließlich
+Kamerazuweisung** erfasst: VisPy führt bereits im Kamera-Setter Arbeit aus,
+während Qt Quick zunächst nur seinen Kamerazustand ändert.
+
+| Aktion | VisPy CPU ms inkl. Kamera | Qt Quick 3D CPU ms inkl. Kamera |
+| --- | ---: | ---: |
+| Verschieben | 6,331 | 0,049 |
+| Drehen | 6,133 | 21,061 |
+| Zoomen | 7,118 | 25,710 |
+
+Im selben Durchlauf reine `redraw()`-Mediane: VisPy 5,425 / 5,040 / 5,821 ms;
+Qt Quick 0,047 / 21,058 / 25,708 ms. Vorangegangene kurze Läufe schwankten
+(VisPy ca. 7 ms; Qt Quick Rotation ca. 13–14 ms, Zoom ca. 19–22 ms).
+Diese kleinen Stichproben sind keine allgemeine Geschwindigkeitsrangliste.
+
+VisPy setzt je Aktualisierung Daten von 13 Liniengruppen neu (156 `set_data`-
+Aufrufe über zwölf Aktualisierungen); Qt Quick aktualisiert beim Verschieben
+keine Geometrie, beim Drehen/Zoomen je einmal seine gemeinsame Bandgeometrie.
+Das sind API-Aufrufe, keine gemessenen physischen GPU-Übertragungen oder Bytes.
+Qt Quick erzeugt dafür Dreiecke für Bildschirmbreiten, VisPy nutzt native Linien;
+Darstellungsqualität und Arbeitsumfang sind damit nicht pixelgenau gleichgesetzt.
+
+Beide nativen Worker einschließlich Bild-/Auswahl-/Projektprüfungen bestanden.
+Kein Warten auf GPU-Abschluss pro Messprobe, keine FPS-/Latenzmessung, keine
+großen Projekte, weiteren Plattformen oder Releasebuilds geprüft. Die vollständige
+vergleichende Bewertung und Rendererentscheidung bleiben [P4](../planning/gui1-renderer-comparison-plan.md).
+
+## GUI1 P4 – zuschaltbare transparente Werkzeugkörper in beiden Prototypen
+
+Stand: **15.11.2026**, lokal auf `ribbon-2d-3d`, vom Nutzer als Darstellungstest
+beauftragt. Gemeinsamer Schalter **„Transparente Werkzeuge (Test)“**, anfangs aus.
+Je ausgewählter aktivierter Bearbeitung mit gültigem Plan ein Zylinder am
+Startpunkt; Radius aus dem Plan, Testlänge vier Durchmesser, Deckkraft 25 %.
+Keine Projekt-/Exportänderung, Werkzeuganimation oder Kollisionsprüfung.
+
+- Qt-freie gemeinsame Körperbeschreibung und Zylindernetz mit 48 Seiten,
+  194 Vertices und 192 Dreiecken. Beide Renderer verwenden diese Tessellierung;
+  Qt Quick nutzt explizite Normalen, VisPy seine Mesh-Normalen und Beleuchtung.
+- VisPy: transparente Mesh-Objekte mit Transformationen und Alpha-Blending.
+  Tiefenschreibmaske nach dem Zeichnen wiederherstellen: andernfalls unterblieb
+  das Leeren des Tiefenpuffers im Folgeframe und Konturen verschwanden.
+  Neue Snapshot-Daten entfernen veraltete Körperobjekte.
+- Qt Quick: gemeinsames statisches `QQuick3DGeometry` mit Positionen/Normalen/
+  Indizes; Modelle über `Repeater3D`, ohne Tiefenschreiben und ohne Picking.
+  Kameraänderungen erzeugen die Zylindergeometrie nicht erneut.
+- Auswahl, Parameteränderungen und Ansicht synchronisieren die Körper;
+  Einpassen berücksichtigt deren Grenzen. Schalter-/Tooltiptexte DE/FR/RU
+  übersetzt, QM-Dateien kompiliert und neue Einträge geladen/geprüft.
+
+**Prüfung:** sechs fokussierte Tests unter PyQt6 bestanden; unter PyQt5 fünf
+bestanden und ein Qt-Quick-Test übersprungen. Gemeinsamer Körperfilter,
+Abmessungen und Mesh-Zahlen geprüft. Native Windows-Worker für Qt Quick/D3D11
+und VisPy/OpenGL mit zwei Körpern bestanden, einschließlich unverändertem
+Snapshot/Projekt, Ein-/Ausschalten und weiterhin sichtbaren Konturen im VisPy-
+Folgeframe. Beide Bilder `.tox/quick3d-transparent-tools.png` und
+`.tox/vispy-transparent-tools.png` visuell geprüft; gemeinsamer Rendererwechsel
+abschließend nativ geprüft.
+
+**Kurze Render-Gegenprobe:** Median aus sechs Rotationen nach je einer
+Aufwärmprobe, einschließlich Render/Readback, zwei Körper, gleicher lokaler
+Windows-/PyQt6-Stand und Beispiel wie zuvor. Qt Quick ca. 39,4 ms aus / 59,6 ms
+ein (2846×1108 Pixel); VisPy ca. 37,2 ms aus / 29,9 ms ein (2846×1107 Pixel).
+Dass VisPy hier mit zusätzlichen Körpern schneller gemessen wurde, zeigt die
+Streuung/Anlauf- und Synchronisierungseinflüsse dieser kleinen Probe; daraus
+keinen Vorteil durch Transparenz ableiten. Die Readback-APIs und Auflagen sind
+verschieden. Dies ist keine FPS-Messung oder belastbare Bibliotheksrangliste.
+
+Keine Vollsuite, Plattform-/Paket-/Releaseabnahme. Nutzerprüfung mit größerer
+Auswahl und überlagerten transparenten Körpern bleibt Teil von
+[P4](../planning/gui1-renderer-comparison-plan.md).

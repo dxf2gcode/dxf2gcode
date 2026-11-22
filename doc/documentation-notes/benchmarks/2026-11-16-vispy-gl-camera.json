@@ -1,0 +1,101 @@
+{
+  "method": "gl",
+  "drawing": "AFluegel Rippen b2 0201.dxf",
+  "drawing_sha256": "0de8b721cbfa626b1ab186c3fd2493a42c67adadacdb2cb88e1c2d3f80262924",
+  "python": "3.11.1 (tags/v3.11.1:a7a450f, Dec  6 2022, 19:58:39) [MSC v.1934 64 bit (AMD64)]",
+  "vispy": "0.17.0",
+  "samples": 30,
+  "camera_only": true,
+  "measurements": {
+    "idle": {
+      "update_median_ms": 0.0,
+      "frame_median_ms": 6.53,
+      "frame_p95_ms": 6.97,
+      "frame_max_ms": 7.49,
+      "count": 30,
+      "visuals": 3
+    },
+    "pan_camera_only_unselected": {
+      "update_median_ms": 0.95,
+      "frame_median_ms": 7.52,
+      "frame_p95_ms": 9.93,
+      "frame_max_ms": 10.08,
+      "count": 30,
+      "visuals": 3
+    },
+    "pan_camera_only_multiple": {
+      "update_median_ms": 0.84,
+      "frame_median_ms": 8.23,
+      "frame_p95_ms": 8.47,
+      "frame_max_ms": 8.55,
+      "count": 30,
+      "visuals": 8
+    }
+  },
+  "checkpoints": {
+    "before_load": {
+      "working_mib": 152.64,
+      "private_mib": 440.28,
+      "peak_working_mib": 152.64,
+      "peak_commit_mib": 440.28
+    },
+    "after_load": {
+      "working_mib": 170.07,
+      "private_mib": 456.41,
+      "peak_working_mib": 170.07,
+      "peak_commit_mib": 456.41
+    },
+    "first_view": {
+      "working_mib": 329.3,
+      "private_mib": 740.62,
+      "peak_working_mib": 336.07,
+      "peak_commit_mib": 747.43
+    },
+    "idle": {
+      "working_mib": 329.61,
+      "private_mib": 740.62,
+      "peak_working_mib": 336.32,
+      "peak_commit_mib": 747.46
+    },
+    "pan_camera_only_unselected": {
+      "working_mib": 337.52,
+      "private_mib": 748.15,
+      "peak_working_mib": 344.29,
+      "peak_commit_mib": 754.99
+    },
+    "pan_camera_only_multiple": {
+      "working_mib": 346.78,
+      "private_mib": 755.61,
+      "peak_working_mib": 353.54,
+      "peak_commit_mib": 762.44
+    },
+    "end": {
+      "working_mib": 347.73,
+      "private_mib": 756.11,
+      "peak_working_mib": 354.43,
+      "peak_commit_mib": 764.9
+    }
+  },
+  "status": "passed",
+  "qt": "6.12.0",
+  "pyqt": "6.12.0",
+  "load_ms": 644.75,
+  "first_view_ms": 1120.86,
+  "gl_renderer": "AMD Radeon RX 6700 XT",
+  "gl_version": "4.6.0 Compatibility Profile Context 26.2.2.260218",
+  "logical_canvas": [
+    805,
+    705
+  ],
+  "framebuffer": [
+    881,
+    1006,
+    4
+  ],
+  "dpr": 1.25,
+  "geometries": 63,
+  "operations": 63,
+  "segments": 21647,
+  "initial_visuals": 3,
+  "project_unchanged": true
+}

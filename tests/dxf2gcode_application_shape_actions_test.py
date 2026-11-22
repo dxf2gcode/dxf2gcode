@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(_REPO_DIR, "source"))
 
 from dxf2gcode.application.shapes import (
     ApplyLayerOvercutDefaults, AutomaticCutterCompensation,
-    SetShapeBreakPass, SetShapeLeadMode, SetShapeOvercut,
+    SetShapeLeadMode, SetShapeOvercut,
     UpdateLayerParameters, UpdateShapeParameters)
 from dxf2gcode.domain.toolpath.leadmove import (
     LEAD_DEFAULT, LEAD_OFF, OVERCUT_DEFAULT, OVERCUT_ON)
@@ -22,7 +22,6 @@ class Shape(object):
         self.closed = closed
         self.overcut_enabled = OVERCUT_DEFAULT
         self.overcut_enabled_overridden = False
-        self.break_pass = -1
         self.lead_in_mode = LEAD_DEFAULT
         self.lead_in_mode_overridden = False
         self.axis3_mill_depth = -1.0
@@ -40,16 +39,6 @@ class TestShapeActions(unittest.TestCase):
 
         SetShapeOvercut().execute([closed], OVERCUT_DEFAULT, use_default=True)
         self.assertFalse(closed.overcut_enabled_overridden)
-
-    def test_break_pass_action_updates_shapes_and_rejects_invalid_values(self):
-        first, second = Shape(), Shape()
-        updated = SetShapeBreakPass().execute([first, second], 2)
-
-        self.assertEqual(updated, (first, second))
-        self.assertEqual((first.break_pass, second.break_pass), (2, 2))
-        with self.assertRaises(ValueError):
-            SetShapeBreakPass().execute([first], -2)
-        self.assertEqual(first.break_pass, 2)
 
     def test_lead_mode_action_sets_or_clears_shape_override(self):
         shape = Shape()

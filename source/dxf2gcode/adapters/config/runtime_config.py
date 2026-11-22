@@ -163,8 +163,8 @@ CONFIG_SPEC = str('''
     f_g1_depth = float(default = 150)
     
     [General]
-    # Enable 3D representation of the piece (requires PyQt5 and OpenGL)
-    mode3d = boolean(default = False)
+    # Use VisPy with PyQt6 and OpenGL when available; otherwise use the 2D canvas.
+    use_vispy = boolean(default = True)
     # Write output to stdout (console), instead of a file. May be used to interface directly with Linux CNC, for example.
     write_to_stdout = boolean(default = False)
     # When enabled, the shapes that are disabled are still shown on the graphic view.
@@ -172,7 +172,7 @@ CONFIG_SPEC = str('''
     # When enabled, export path is live updated on the graphic view.
     live_update_export_route = boolean(default = False)
     # When enabled, a scale bar is drawn in the bottom right corner of the canvas. It shows the physical size of the imported geometry.
-    show_scale_bar = boolean(default = False)
+    show_scale_bar = boolean(default = True)
     show_tool_circle = boolean(default = True)
 
     expand_layers_on_load = boolean(default = True)
@@ -180,6 +180,7 @@ CONFIG_SPEC = str('''
     split_line_segments = boolean(default = False)
     # Automatically enable cutter compensation for all the shapes (G41 & G42)
     automatic_cutter_compensation = boolean(default = False)
+    dxf_import_mode = option('with_compensation', 'without_compensation', 'geometry_only', default = 'without_compensation')
     # Machine types supported: milling; lathe; drag_knife
     machine_type = option('milling', 'lathe', 'drag_knife', default = 'milling')
     # The unit used for all values in this file
@@ -493,7 +494,7 @@ class MyConfig(object):
         # The canvas backend is fixed at startup. Machine type and tolerances
         # describe the active drawing; explicit configuration edits are applied
         # by MainWindow through the corresponding drawing reload workflows.
-        self.mode3d = self.vars.General['mode3d']
+        self.use_vispy = self.vars.General['use_vispy']
 
         self.machine_type = self.vars.General['machine_type']
         self.fitting_tolerance = self.vars.Import_Parameters['fitting_tolerance']
@@ -604,6 +605,16 @@ class MyConfig(object):
                 # defined per tool (see the tools table). The old options of
                 # the [Lead_In_Out] section are removed.
                 self._migrate_lead_in_out()
+                general = self.var_dict.get('General', {})
+                # Keep the legacy flag for direct CLI exports and project restoration.
+                if 'dxf_import_mode' not in general and 'automatic_cutter_compensation' in general:
+                    old_compensation = Validator().check('boolean', general['automatic_cutter_compensation'])
+                    general['dxf_import_mode'] = 'with_compensation' if old_compensation else 'without_compensation'
+                    migrated = True
+                if 'mode3d' in general:
+                    general.pop('mode3d')
+                    general.setdefault('use_vispy', True)
+                    migrated = True
                 old_knife = self.var_dict.get('Drag_Knife_Options', {})
                 old_planned = Validator().check('boolean', old_knife.pop('planned_passes', False))
                 _vdt = Validator()

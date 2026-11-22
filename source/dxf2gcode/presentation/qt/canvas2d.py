@@ -648,16 +648,10 @@ class MyGraphicsScene(QGraphicsScene):
         """
         This function deletes all the plotted export routes.
         """
-        # removeItem might let it crash, hence we rely on the garbage collector
-        while self.routearrows:
-            item = self.routearrows.pop()
-            item.hide()
-            del item
-
-        while self.routetext:
-            item = self.routetext.pop()
-            item.hide()
-            del item
+        # Leave ownership with the scene while Qt processes pending paints.
+        for items in (self.routearrows, self.routetext):
+            while items:
+                items.pop().hide()
 
     def addexproutest(self, config=None):
         config = config or g.config
@@ -724,7 +718,7 @@ class MyGraphicsScene(QGraphicsScene):
             if flag and shape.isDisabled():
                 self.graphics_items[id(shape)].show()
             elif not flag and shape.isDisabled():
-                self.graphics_items[id(shape)].hide()
+                self.graphics_items[id(shape)].setVisible(getattr(shape, 'machining_unassigned', False))
 
     def set_shape_selected(self, model, selected):
         graphics = self.graphics_items.get(id(model))
@@ -919,7 +913,7 @@ class ShapeGUI(QGraphicsItem):
         scene = self.scene()
 
         if scene is not None:
-            if not scene.showDisabledPaths and flag:
+            if not scene.showDisabledPaths and flag and not getattr(self.model, 'machining_unassigned', False):
                 self.hide()
                 self.starrow.setSelected(False)
                 self.enarrow.setSelected(False)

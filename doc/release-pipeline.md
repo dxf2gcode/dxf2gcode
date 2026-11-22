@@ -24,7 +24,7 @@ Checkouts bereitgestellt; nur dort wird die Paketversion eingesetzt. Das
 Wheel entsteht aus dem Quellarchiv ohne Git und wird in frischen Qt5- und
 Qt6-Umgebungen einschließlich DXF-Export geprüft.
 
-Windows x64 verwendet Python 3.11, PyQt5 und cx_Freeze. Die fixierte
+Windows x64 verwendet Python 3.11, PyQt6, VisPy und cx_Freeze. Die fixierte
 Build-Basis steht in `requirements-release.txt` und dem Workflow. Das geprüfte
 Quellarchiv liefert die EXE samt Laufzeitdateien als ZIP sowie einen
 benutzerbezogenen MSI-Installer. Der Windows-Runner prüft Herkunft,

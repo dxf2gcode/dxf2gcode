@@ -30,9 +30,10 @@ different machining steps.
 1. Select the target original contours, machining steps or operations.
    Original contours cover **all linked operations**; explicit machining
    selection covers only those operations. A step covers its operations.
-2. Switch on **Tab edit mode** beside **Create** in the Machining toolbar.
-   Drawing is available immediately. Choose **Snap to contour** or **Draw
-   manually** beside the mode button for the next region.
+2. Switch on **Tab edit mode** in the **Machining** group in the view band.
+   Drawing is available immediately. The icon dropdown below the mode button
+   is always available. Choose **Snap to contour** or **Draw manually** there
+   for the next region.
 3. Drag out a rectangle across the intended original contour. On release the
    region is created; no confirmation dialog interrupts successive drawing.
    Only eligible selected operations whose original contours pass through the
@@ -92,9 +93,18 @@ a separate 2D editing window. Regions follow whole-drawing transformations.
 
 ![Region dialog with name, placement mode, tab top, feeds and eligible assignments](../assets/images/machining/tab-dialog.png)
 
-The parameter area provides activation, editing, **Change assignment…**,
-**Remove assignment** and **Delete region…**. Removing one assignment preserves
-other uses; deleting the region removes all its links after confirmation.
+Select a tab region in **Machining** to edit its name, placement mode, tab-top
+Z, feeds and activation directly in the left pane. Ctrl-click several regions
+in the tree or drawing to edit them together. In the drawing, Ctrl-click
+again to remove a region from the selection. Each field change applies to the selected regions in
+one undo step, and values in other fields are kept. Fields with different
+values show a placeholder.
+
+Choose the assignment type and targets in the same pane and use
+**Apply assignment**. For several selected regions, the list offers targets
+that intersect every selected region. **Remove assignment** excludes a
+single linked operation. **Delete region…** removes the region and its links
+after confirmation.
 Original DXF geometry remains. Global scope covers eligible operations, step
 scope also covers future eligible operations in that step, and selected-operation
 scope follows stable operation identities. Local exclusions can be cleared
@@ -118,13 +128,15 @@ cut lies 0.5 mm below the tab top. This difference is not a measured stock thick
 
 ![Three depth passes, with the last path lifting over a tab](../assets/images/tabs/pass-depths.svg)
 
-**Pass** in the Z values group controls when to process breaks for the machining
-contour: **Last pass (default)** is the
-default, **0 - never** disables processing, and a numbered pass starts it earlier.
-A pass number invalidated by a depth change resets to Last pass with a message.
-Earlier passes remain unbroken. **A late start cannot restore material already
-removed.** In this example the first two passes reach -0.5 and -1 mm, so applying
-the tab during the -1.5 mm final pass retains the -1 mm top.
+The **Tab top** field sets the absolute Z level of the material left behind.
+Every pass below that level lifts to the tab top at the contour intersection.
+Passes ending at or above the tab top stay at their normal depth. Here the
+first two passes reach -0.5 and -1 mm, so only the final pass at -1.5 mm lifts
+to -1 mm over the tab.
+
+Older projects may contain a saved pass number. Planning uses the tab top and
+the current region assignments. To skip a tab, deactivate it or remove its
+assignment to the operation.
 
 ## Original-contour reference and compensation
 

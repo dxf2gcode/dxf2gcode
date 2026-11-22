@@ -120,8 +120,8 @@ class TestConfigurationTranslations(unittest.TestCase):
                             self.assertEqual(button.text(), translator.translate('ConfigWindow', name))
                     self.app.processEvents()
                     for form, context, section, key, source in (
-                        (application, 'MyConfig', 'General', 'mode3d',
-                         '3D mode (requires OpenGL - restart needed)'),
+                        (application, 'MyConfig', 'General', 'use_vispy',
+                         '3D view with VisPy (restart required)'),
                         (postprocessor, 'MyPostProConfig', 'General', 'abs_export',
                          'Export absolute coordinates'),
                     ):
@@ -140,6 +140,24 @@ class TestConfigurationTranslations(unittest.TestCase):
                         self.assertEqual(machines.getValue(), value)
                         self.assertEqual(machines.combobox.currentText(),
                                          translator.translate('MyConfig', source))
+                    imports = application.cfg_window_def['General']['dxf_import_mode']
+                    caption = translator.translate('MyConfig', 'When opening a new DXF:')
+                    self.assertTrue(caption)
+                    self.assertEqual(imports.label.text(), caption)
+                    for value, source in (
+                        ('with_compensation', 'Create operations with automatic cutter compensation'),
+                        ('without_compensation', 'Create operations without cutter compensation'),
+                        ('geometry_only', 'Import geometry only'),
+                    ):
+                        imports.setValue(value)
+                        self.assertEqual(imports.getValue(), value)
+                        expected = translator.translate('MyConfig', source)
+                        self.assertTrue(expected)
+                        self.assertEqual(imports.combobox.currentText(), expected)
+                    hint = translator.translate(
+                        'MyConfig', 'Applies when opening a new DXF. Saved projects restore their own operations.')
+                    self.assertTrue(hint)
+                    self.assertIn(hint, imports.combobox.toolTip())
                     macro = postprocessor.cfg_window_def['Tool_Change']['return_state']
                     macro.setValue('next_start_at_retract')
                     self.assertEqual(macro.getValue(), 'next_start_at_retract')

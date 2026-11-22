@@ -16,11 +16,11 @@ authors = [
 dependencies = [
     "configobj>=5.0.6",
     "PyQt5>=5.15",
-    "PyOpenGL>=3.1",
 ]
 
 [project.optional-dependencies]
 qt6 = ["PyQt6"]
+view-vispy = ["PyQt6", "vispy>=0.17,<0.18"]
 
 [project.urls]
 Homepage = "https://dxf2gcode.github.io/dxf2gcode/"

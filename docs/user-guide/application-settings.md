@@ -1,6 +1,7 @@
 # Application settings
 
-Open **Options → Configuration** to edit the active application profile.
+Open the gear menu under **Program** and choose **Configuration**
+to edit the active application profile.
 Postprocessor configuration is separate: it defines controller output syntax
 and is selected for export. A D2G project saves drawing preparation, not every
 application or postprocessor setting.
@@ -67,8 +68,8 @@ profiles and loaded projects can have different values.
 | --- | --- |
 | `General.machine_type`, `tool_units` | `milling`, `mm` |
 | Show disabled paths / entry tool circle | On / On |
-| Live export-route display / split imported lines | Off / Off |
-| Automatic cutter compensation | Off |
+| Show export order by default / split imported lines | Off / Off |
+| When opening a new DXF | Create operations without cutter compensation |
 | `Cutter_Compensation.done_by_machine` | `True` |
 | Retraction / safety margin / workpiece top | `15 / 3 / 0 mm` |
 | Infeed / final depth | `-1.5 / -3 mm` |
@@ -83,6 +84,14 @@ Defaults are initialization values, not material or controller recommendations.
 Tool 1 supplies the initial tool values; imported layer identifiers and saved
 project/contour settings can override them. See
 [Machining parameters](machining-parameters.md) for selection scope and reset rules.
+
+Under **Milling → When opening a new DXF**, choose whether to create
+operations with automatic cutter compensation, create them without
+compensation, or import geometry only. In geometry-only mode, contours appear
+under **Unassigned** in the machining tree and can be added to a step using
+**Create…**. Imported `BREAKS:` regions are retained. Saved projects restore
+their stored operations, and direct command-line exports use the existing
+command-line import behavior.
 
 ## Tool table and project snapshots
 

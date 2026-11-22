@@ -17,7 +17,7 @@ for example `linuxcnc`, for this workflow. In
 ```ini
 [General]
 write_to_stdout = True
-mode3d = False
+use_vispy = False
 ```
 
 Change these entries in the existing profile, preserving its other sections.
@@ -50,7 +50,7 @@ can replace the interpreter/source pair, provided that installation contains
 the filter corrections; the acceptance described below used a source checkout.
 
 Open the DXF in AXIS, check units, tool, depths and machining choices in
-DXF2GCODE, then choose **Export → Export Shapes without Optimization**
+DXF2GCODE, then choose **Output → Export G-code...**
 (`Ctrl+Shift+E`). AXIS receives the program and builds its preview.
 
 ## Results and errors

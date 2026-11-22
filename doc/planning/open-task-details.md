@@ -72,14 +72,27 @@ Bedarf und dauerhaften zusätzlichen Prüfaufwand vor Umsetzung entscheiden.
 
 <a id="gui1"></a>
 
-### GUI1 – Optionales Ribbon-Menüband
+### GUI1 – Ribbon und integrierte 2D-/3D-Ansichten
 
-- [ ] Bedienentwurf und Bibliothekswahl abstimmen; vorhandene Aktionen und
-  Tastenkürzel weiterverwenden.
-- [ ] SARibbon als bisherigen Kandidaten hinsichtlich Python-/PyQt5-/PyQt6-
-  Anbindung, Paketierung sowie Windows-/Linux-Verhalten bewerten.
+**Nutzerziel vom 15.11.2026:** Den geprüften 2D-Canvas erhalten und eine
+integrierte räumliche Ansicht entwickeln, die langfristig auch die präzise
+Bearbeitung übernehmen kann. Zunächst nur ein kleines Ansichts-Menüband;
+weitere Ribbon-Themen und die vollständige Ribbon-Bibliothekswahl später.
 
-Kein aktueller Implementierungsauftrag; keine Bibliotheksfreigabe vorweggenommen.
+**Arbeitszweig:** `ribbon-2d-3d`, aus dem bereinigten `develop`-Stand `3da5a15`
+angelegt. Bis zur stabilen, fachlich abgenommenen Lösung bleiben diese
+Änderungen auf dem eigenen Zweig; erst danach nach `develop` übernehmen.
+
+VisPy startet standardmäßig in der Raumansicht. Draufsicht und Raumansicht
+teilen die Zeichenregeln. Der 2D-Canvas ist in der Konfiguration wählbar und
+dient als automatischer Rückfall. Qt Quick 3D und der ältere 3D-Canvas wurden
+bei der Übernahme entfernt; der historische Vergleich bleibt dokumentiert.
+SARibbon bleibt ein späterer Kandidat für das vollständige Menüband.
+
+Offen bleiben die Nutzerprüfung der integrierten Ansicht und des Rückfalls,
+die gesondert zu vereinbarenden Paket-/Plattformprüfungen und der Merge.
+[Abarbeitungsplan](gui1-renderer-comparison-plan.md#p6--auswahl-und-übernahmeplan) ·
+[Abschlussnachweis](../archive/toolpath-refactoring-completed.md#gui1-vispy-adoption).
 
 <a id="maschinenabnahme"></a>
 

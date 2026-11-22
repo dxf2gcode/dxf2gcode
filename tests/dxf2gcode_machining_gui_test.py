@@ -40,7 +40,7 @@ def worker():
     g.config.mode3d = False
     g.quiet = True
     from dxf2gcode.presentation.qt.qt_compat import QtCore, PYQT_VERSION
-    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QApplication, QComboBox, QDialog
     from dxf2gcode.presentation.qt import application as app_module
     from dxf2gcode.presentation.qt.canvas2d import MyGraphicsScene, ShapeGUI
     if PYQT_VERSION == 5:
@@ -54,9 +54,10 @@ def worker():
     QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
     QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, str(folder))
     app = QApplication([])
-    window = app_module.MainWindow(app)
-    # Explicit file settings keep persistence tests out of the Windows registry.
-    window.settings = QtCore.QSettings(str(folder / 'window.ini'), QtCore.QSettings.Format.IniFormat)
+    settings = QtCore.QSettings(str(folder / 'window.ini'), QtCore.QSettings.Format.IniFormat)
+    with patch.object(QtCore, 'QSettings', return_value=settings):
+        window = app_module.MainWindow(app)
+    window.show()
     app_module.options = SimpleNamespace(post_pro=window.MyPostProcessor.output_text[0])
     g.window = window
     from dxf2gcode.adapters.project.machining_d2g import decode_project
@@ -127,7 +128,62 @@ def worker():
         window.filename = str(path)
         assert window.load()
         assert window.d2g.machining_drawing is not binding
+        panel = window.machining_panel
+        for mode in ('with_compensation', 'without_compensation', 'geometry_only'):
+            g.config.var_dict['General']['dxf_import_mode'] = mode
+            g.config.update_config()
+            window.filename = str(path)
+            assert window.load()
+            project = panel.binding.project
+            if mode == 'geometry_only':
+                assert not project.steps and len(panel.unassigned) == 2
+                window.ui.actionShowDisabledPaths.setChecked(False)
+                assert all(window.canvas_scene.graphics_items[id(shape)].isVisible()
+                           for shape in panel.unassigned)
+                empty_project = folder / 'geometry-only.d2g'
+                empty_project.write_text(window.d2g.export_current(), encoding='utf-8')
+                def accept_step(dialog):
+                    assert any(hasattr(combo.currentData(), 'tool_nr')
+                               for combo in dialog.findChildren(QComboBox))
+                    return QDialog.DialogCode.Accepted
+                with patch.object(QDialog, 'exec', new=accept_step):
+                    panel.from_selection(shapes=[panel.unassigned[0]])
+                assert len(panel.binding.project.steps[0].entries) == 1
+                assert len(panel.unassigned) == 1
+            else:
+                codes = {project.resolve(step, entry)[0]['cut_cor']
+                         for step in project.steps for entry in step.entries}
+                if mode == 'with_compensation':
+                    assert codes and codes <= {41, 42}
+                else:
+                    assert codes == {40}
+        window.loadProject(str(project_path))
+        assert panel.binding.project.steps[0].entries[0].id == operation_id
+        g.config.var_dict['General']['dxf_import_mode'] = 'with_compensation'
+        g.config.update_config()
+        window.loadProject(str(empty_project))
+        assert not panel.binding.project.steps and len(panel.unassigned) == 2
+        g.config.var_dict['General']['dxf_import_mode'] = 'geometry_only'
+        g.config.update_config()
+        window.filename = str(ROOT / 'dxf/BreakExample_Circle.dxf')
+        assert window.load()
+        assert not panel.binding.project.steps and panel.binding.project.regions
+
+        profile = folder / '.config/dxf2gcode.r3'
+        profile.mkdir(parents=True, exist_ok=True)
+        g.config.save_varspace()
+        (profile / 'config.cfg').write_bytes(Path(g.config.filename).read_bytes())
+        cli = subprocess.run([sys.executable, str(ROOT / 'source/dxf2gcode.py'), '--cfg', 'r3',
+                              '--quiet', '--export', str(cli_output), str(path)],
+                             env=dict(os.environ, HOME=str(folder), USERPROFILE=str(folder)),
+                             cwd=folder, capture_output=True, timeout=30)
+        assert cli.returncode == 0, cli.stderr.decode(errors='replace')
+        assert cli_output.read_text().count('* SHAPE Nr:') == 2
         if os.environ.get('D2G_TEST_MACHINING_PANEL'):
+            g.config.var_dict['General']['dxf_import_mode'] = 'without_compensation'
+            g.config.update_config()
+            window.filename = str(path)
+            assert window.load()
             from dxf2gcode_machining_panel_test import exercise_panel
             exercise_panel(window, app, folder)
         app.processEvents()

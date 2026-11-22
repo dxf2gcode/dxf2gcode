@@ -16,7 +16,7 @@ from dxf2gcode.adapters.toolpath.planning import ShapePlanningInputs
 from dxf2gcode.adapters.toolpath.gcode_exporter import ToolpathGCodeExporter
 from dxf2gcode.adapters.postprocessor.breaks import Breaks
 from dxf2gcode.adapters.postprocessor.dialect import ProfileDialect
-from dxf2gcode.application.toolpath.projections import plan_xy_segments, plan_xyz_segments
+from dxf2gcode.application.toolpath.projections import plan_preview_segments, plan_xy_segments, plan_xyz_segments
 from dxf2gcode.domain.geometry.arcgeo import ArcGeo
 from dxf2gcode.domain.geometry.holegeo import HoleGeo
 from dxf2gcode.domain.geometry.point import Point
@@ -248,17 +248,15 @@ class TestToolpathSlices(GoldenTestBase):
         self.assertIsNone(result.plan)
         self.assertEqual(result.diagnostics[-1].code, "lead.invalid_exit")
 
-    def test_tabs_are_projected_only_at_the_selected_depths(self):
+    def test_tabs_are_projected_only_when_a_pass_is_below_the_tab_top(self):
         from dxf2gcode_breaks_pass_test import make_break_layer
-        for first_pass, expected in ((-1, [-5]), (0, []), (1, [-2, -4, -5]),
-                                     (2, [-4, -5])):
-            with self.subTest(first_pass=first_pass):
+        for height, expected in ((0, [-2, -4, -5]), (-2, [-4, -5]), (-5, [])):
+            with self.subTest(height=height):
                 shape, _ = build_shape(cut_cor=40, layer_settings=dict(
                     lead_in_mode="off", lead_out_mode="off"))
-                shape.break_pass = first_pass
                 pp = make_postpro()
                 pp.breaks = Breaks(Layers([
-                    shape.parentLayer, make_break_layer("BREAKS: 1 MillDepth: -1.5")]))
+                    shape.parentLayer, make_break_layer(f"BREAKS: 1 MillDepth: {height}")]))
                 plan, code = self.plan_and_export(shape, pp)
                 depth, selected = None, []
                 for action in plan.actions:
@@ -268,10 +266,12 @@ class TestToolpathSlices(GoldenTestBase):
                         if depth not in selected:
                             selected.append(depth)
                 self.assertEqual(selected, expected)
-                xyz = plan_xyz_segments(plan)
-                self.assertEqual(any(p[2] == -1.5 for s in xyz for p in s), bool(expected))
-                if first_pass == 2:
-                    self.check_golden("slices_tabs_from_second_pass", code)
+                horizontal_tabs = [s for s in plan_preview_segments(plan) if s.role == 'tab'
+                                   and s.start[:2] != s.end[:2]]
+                self.assertEqual(len(horizontal_tabs), len(expected))
+                self.assertTrue(all(s.start[2] == s.end[2] == height for s in horizontal_tabs))
+                if height == 0:
+                    self.check_golden("slices_tabs_at_stock_top", code)
 
     def test_pocket_directions_keep_initial_approach_and_safe_connections(self):
         for side in (40, 41, 42):

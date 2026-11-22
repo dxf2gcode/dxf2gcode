@@ -1,0 +1,35 @@
+{
+  "method": "agg",
+  "drawing": "AFluegel Rippen b2 0201.dxf",
+  "drawing_sha256": "0de8b721cbfa626b1ab186c3fd2493a42c67adadacdb2cb88e1c2d3f80262924",
+  "python": "3.11.1 (tags/v3.11.1:a7a450f, Dec  6 2022, 19:58:39) [MSC v.1934 64 bit (AMD64)]",
+  "vispy": "0.17.0",
+  "samples": 12,
+  "measurements": {},
+  "checkpoints": {
+    "before_load": {
+      "working_mib": 152.59,
+      "private_mib": 440.15,
+      "peak_working_mib": 152.59,
+      "peak_commit_mib": 440.15
+    },
+    "after_load": {
+      "working_mib": 170.11,
+      "private_mib": 456.46,
+      "peak_working_mib": 170.11,
+      "peak_commit_mib": 456.46
+    },
+    "end": {
+      "working_mib": 307.76,
+      "private_mib": 689.29,
+      "peak_working_mib": 307.76,
+      "peak_commit_mib": 689.77
+    }
+  },
+  "status": "stopped",
+  "qt": "6.12.0",
+  "pyqt": "6.12.0",
+  "load_ms": 700.99,
+  "required_nodes": 4962,
+  "error": "Renderer failed or fell back"
+}
