@@ -150,6 +150,20 @@ These commands generate Qt modules and compiled translations locally without
 updating the maintained translation catalogs. They do not build a release.
 PDF/PostScript import additionally requires `pdftops` and `pstoedit`.
 
+### Refresh the documentation screenshots
+
+With PyQt6, ConfigObj and the generated Qt6 UI modules, run the capture script
+from the repository root. It opens the bundled examples in a temporary
+profile and saves images from the application.
+
+```sh
+python tools/documentation/capture_screenshots.py
+```
+
+Use `--spatial` to also refresh the VisPy image of `1997.d2g` on a desktop
+with VisPy and working OpenGL. Use `--output <directory>` to review the
+captures before replacing the documentation images.
+
 ## Help and development tasks
 
 - **User questions and discussions:** use the existing

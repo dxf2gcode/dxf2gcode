@@ -2,6 +2,15 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## Reproduzierbare Doku-Screenshots für das Menüband (22.11.2026)
+
+Das [Aufnahmeskript](../../tools/documentation/capture_screenshots.py) erstellt
+die Bilder aus der Qt6-Oberfläche mit einem temporären Profil und den
+Beispielen aus dem Repository. Die 16 vorhandenen Doku-Aufnahmen sind
+aktualisiert. Die optionale VisPy-Aufnahme zeigt das Projekt `1997.d2g` mit
+Menüband, Bearbeitungsbaum und räumlichen Fräsbahnen. Beide Aufnahmemodi wurden
+unter Windows ausgeführt.
+
 <a id="gui1-dev14"></a>
 
 ## GUI1 – Ribbon und VisPy in Develop 2.0.0.dev14 (22.11.2026)

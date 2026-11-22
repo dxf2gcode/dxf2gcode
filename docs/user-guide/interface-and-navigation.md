@@ -1,7 +1,7 @@
 # Interface and navigation
 
 This chapter explains the main window in the current development version.
-The screenshot uses English labels and shows the 2D canvas.
+The screenshots use English labels.
 
 The **Geometry** tab contains collapsible Entities and Layers sections.
 The **Machining** tab owns tools, parameters, export activation and order.
@@ -12,7 +12,7 @@ if you want a complete example, or download its
 [20 × 10 mm rectangle](../assets/examples/first-dxf/rectangle-20x10-mm.dxf)
 and open it through **Program → Open DXF or project...**.
 
-![Main window with the rectangle selected, machining tree and grouped operation parameters](../assets/images/first-dxf/02-parameters.png)
+![Ribbon, machining tree and spatial toolpaths for the 1997 project](../assets/images/interface/1997-spatial.png)
 
 ## Find your way around
 
@@ -151,6 +151,8 @@ sections are remembered across restarts. The minimum window size protects the
 canvas from being squeezed away.
 
 ## Read the preview and parameters together
+
+![Rectangle selected in the 2D canvas with grouped machining parameters](../assets/images/first-dxf/02-parameters.png)
 
 The screenshot shows the rectangle in **G40 No Compensation**. Its tool-centre
 path follows the drawing, and the tool-entry circle represents the tool
