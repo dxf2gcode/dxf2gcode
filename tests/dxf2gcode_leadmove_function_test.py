@@ -1098,10 +1098,9 @@ class TestCanvasPreviewBreaks(LeadMoveTestBase):
         postpro.vars = config.vars
         postpro.initialize_export_vars()
         gcode = serialize_gcode(shape, postpro)
-        # The tab is not cut: the tool hops over it (in the contour and in
-        # the overcut).
-        self.assertIn("G1 Z  -1.000", gcode)
-        self.assertEqual(gcode.count("G1 Z  -1.000"), 2)
+        # Both depth passes are below the tab top. Each crosses it once in
+        # the contour and once in the overcut.
+        self.assertEqual(gcode.count("G1 Z  -1.000"), 4)
 
 
 class TestPreviewMatchesExport(LeadMoveTestBase):

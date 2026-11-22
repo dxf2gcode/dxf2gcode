@@ -15,8 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 def machining_row_position(tree, item):
     from dxf2gcode.presentation.qt.qt_compat.QtCore import QPoint
     tree.scrollToItem(item)
-    return QPoint(tree.header().sectionViewportPosition(0) + 5,
-                  tree.visualItemRect(item).center().y())
+    header = tree.header()
+    x = header.sectionViewportPosition(0) + header.sectionSize(0) // 2
+    return QPoint(x, tree.visualItemRect(item).center().y())
 
 
 class TestMachiningPanel(unittest.TestCase):
@@ -1277,7 +1278,7 @@ def exercise_region_selection(window, app):
     root.setExpanded(True)
     app.processEvents()
     QTest.mouseClick(panel.tree.viewport(), Qt.MouseButton.LeftButton,
-                     pos=panel.tree.visualItemRect(root).center())
+                     pos=machining_row_position(panel.tree, root))
     expected_step = {e.id for e in panel.binding.project.steps[0].entries}
     assert set(panel.selected_entries()) == expected_step
     assert panel.canvas_preview.selected == expected_step
@@ -1292,7 +1293,7 @@ def exercise_region_selection(window, app):
     group.setExpanded(True)
     panel.tree.scrollToItem(group)
     app.processEvents()
-    point = panel.tree.visualItemRect(group).center()
+    point = machining_row_position(panel.tree, group)
     group_regions = {group.child(i).data(0, ROLE)[1] for i in range(group.childCount())}
     for double in (False, True, True):
         QTest.mouseDClick(panel.tree.viewport(), Qt.MouseButton.LeftButton, pos=point) if double else QTest.mouseClick(
@@ -1310,7 +1311,8 @@ def exercise_region_selection(window, app):
                 if other_group.child(i).data(0, ROLE) == ('modifier', region.id))
     panel.tree.scrollToItem(node)
     app.processEvents()
-    QTest.mouseClick(panel.tree.viewport(), Qt.MouseButton.LeftButton, pos=panel.tree.visualItemRect(node).center())
+    QTest.mouseClick(panel.tree.viewport(), Qt.MouseButton.LeftButton,
+                     pos=machining_row_position(panel.tree, node))
     assert panel.tree.currentItem() is node  # Never jump to the first reference.
     assert tabs.link_operation == copied_id
     assert panel.canvas_preview.selected == tabs.affected(region.id)
