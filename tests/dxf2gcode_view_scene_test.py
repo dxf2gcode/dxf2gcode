@@ -765,6 +765,47 @@ def verify_tab_inline_parameters(app, window):
     print('Inline tab editor: Ctrl selection, batch height, assignment and undo passed')
 
 
+def verify_tab_context_menu(app, window):
+    from dataclasses import replace
+    from uuid import uuid4
+    from unittest.mock import patch
+    from dxf2gcode.presentation.qt.qt_compat import QtCore
+    from dxf2gcode.presentation.qt.qt_compat.QtGui import QContextMenuEvent
+    from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMenu
+
+    panel, band = window.machining_panel, window.view_comparison.band
+    tabs = panel.modifiers
+    before = panel.binding.project.to_dict()
+    region = replace(next(iter(tabs.records().values())), id=str(uuid4()))
+    tabs.start_draw()
+    panel.execute(lambda: panel.commands.create_region(region))
+    surface = window.canvas.viewport()
+    point = surface.rect().center()
+    calls = []
+
+    def inspect(menu, position):
+        calls.append(position)
+        assert band.toggleViewAction() not in menu.actions()
+        assert any(action.text() == 'Move workpiece zero here ...' for action in menu.actions())
+
+    with patch.object(QMenu, 'exec', new=inspect):
+        for undo in (False, True):
+            if undo:
+                panel.undo()
+                assert panel.binding.project.to_dict() == before
+            assert tabs.mode
+            app.sendEvent(surface, QContextMenuEvent(QContextMenuEvent.Reason.Mouse,
+                          point, surface.mapToGlobal(point)))
+            assert not band.isHidden()
+        assert len(calls) == 2
+    tabs.set_mode(False)
+    assert window.createPopupMenu() is None
+    band.hide()
+    window.saveWindowState()
+    window.restoreWindowState()
+    assert not band.isHidden()
+
+
 def verify_vispy_mouse_controls(app, window):
     from unittest.mock import patch
     from PyQt6.QtCore import QEvent, QPoint, QPointF, Qt
@@ -964,8 +1005,19 @@ def worker(gpu=False, editing=False, appearance_project=None):
         settings.setValue('MainWindow/view/selectedPathsOnly', True)
         settings.setValue('MainWindow/view/showRetracts', False)
         settings.setValue('MainWindow/view/showOriginAxes', False)
+        if not gpu:
+            from dxf2gcode.presentation.qt.qt_compat.QtWidgets import QMainWindow, QToolBar
+            old_window = QMainWindow()
+            old_band = QToolBar(old_window)
+            old_band.setObjectName('viewBand')
+            old_window.addToolBar(old_band)
+            old_band.hide()
+            settings.setValue('MainWindow/geometry', old_window.saveGeometry())
+            settings.setValue('MainWindow/state', old_window.saveState())
+            old_window.deleteLater()
         with patch.object(QtCore, 'QSettings', return_value=settings):
             window = module.MainWindow(app)
+        assert not window.view_comparison.band.isHidden()
         g.window = window
         module.options = SimpleNamespace(post_pro=window.MyPostProcessor.output_text[0])
         band, panel = window.view_comparison, window.machining_panel
@@ -1266,6 +1318,7 @@ def worker(gpu=False, editing=False, appearance_project=None):
         verify_machining_checkboxes(app, window)
         if not gpu:
             verify_tab_inline_parameters(app, window)
+            verify_tab_context_menu(app, window)
         window.close()
         app.processEvents()
         faulthandler.cancel_dump_traceback_later()

@@ -787,6 +787,8 @@ def exercise_manual_regions(window, app, folder):
     with patch.object(QMenu, 'exec') as context_menu:
         event = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, pos, canvas.viewport().mapToGlobal(pos))
         app.sendEvent(canvas.viewport(), event)
+        context_menu.assert_called_once()
+        context_menu.reset_mock()
         item = tabs.nodes[manual.id]
         panel.tree.scrollToItem(item)
         panel.menu(machining_row_position(panel.tree, item))

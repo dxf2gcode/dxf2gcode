@@ -2,6 +2,30 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## Kontextmenü im Stegmodus und feste Werkzeugleiste (24.11.2026)
+
+Der persistente Stegmodus unterdrückt das Zeichnungs-Kontextmenü nicht mehr;
+Undo muss den Modus dafür nicht verlassen. Die zunächst am 23.11. ergänzte
+Wiederherstellungsaktion entfällt zugunsten einer festen Werkzeugleiste:
+Das Hauptfenster unterbindet das Qt-Standardmenü zum Ausblenden, das
+Zeichnungsmenü enthält keinen Sichtbarkeitsschalter. Alte ausgeblendete
+Fensterzustände werden beim Anlegen der Leiste und beim Wiederherstellen
+korrigiert. Keine neuen GUI-Texte.
+Bedienhinweise und Quellen stehen unter
+[Oberfläche](../documentation-notes/interface-import-projects.md).
+
+**Prüfung:** der fokussierte GUI-Worker
+`dxf2gcode_view_scene_test.py TestViewScene.test_qt_missing_and_failed_renderer_preserve_canvas`
+bestand unter lokalem PyQt5 und unter PyQt6 in `.tox/package-build`.
+Die ergänzte Regression sendet echte Qt-Kontextmenüereignisse nach Erstellung
+einer Region und nach Undo bei weiterhin aktivem Zeichen-/Stegmodus und
+prüft das Fehlen des Sichtbarkeitsschalters. Zusätzlich prüft sie ein
+gesperrtes Standardmenü sowie alte ausgeblendete Fensterzustände beim Start
+und beim erneuten Wiederherstellen.
+`git diff --check` bestanden. Keine Vollsuite, kein nativer GPU-Test,
+kein Paketbau und keine Veröffentlichung. Linux Mint 22.3 MATE wurde nicht
+direkt geprüft.
+
 ## Reproduzierbare Doku-Screenshots für das Menüband (22.11.2026)
 
 Das [Aufnahmeskript](../../tools/documentation/capture_screenshots.py) erstellt

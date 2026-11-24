@@ -128,6 +128,8 @@ class ViewComparison(QtCore.QObject):
         self.band.setObjectName('viewBand')
         self.band.setMovable(False)
         window.addToolBar(self.band)
+        # Override a hidden toolbar restored from an older window state.
+        self.band.show()
         self.group = QActionGroup(self)
         self.actions = {}
         self.buttons = {}

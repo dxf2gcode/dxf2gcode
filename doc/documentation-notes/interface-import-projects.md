@@ -30,6 +30,28 @@ eine D2G-Datei mit einem rechnergebundenen Autorenpfad zum Download anzubieten.
 
 ## Für spätere Kapitel erhalten
 
+### Ansicht und feste Werkzeugleiste (24.11.2026)
+
+Im aktuellen Quellstand schaltet das Würfelsymbol **Raumansicht** in der
+Gruppe **Ansicht** auf 3D. Fehlt es, unter Optionen/Konfiguration in den
+allgemeinen Einstellungen **3D-Ansicht mit VisPy (Neustart erforderlich)**
+aktivieren und neu starten. Der Renderer benötigt PyQt6 und VisPy; bei einem
+Startfehler bleibt die 2D-Ansicht erhalten. Quellen:
+[Ansichtsleiste](../../source/dxf2gcode/presentation/qt/view_comparison.py),
+[Konfigurationsfelder](../../source/dxf2gcode/presentation/qt/configuration_widgets.py).
+
+Der Stegmodus bleibt nach dem Zeichnen und nach Undo aktiv; Escape beendet
+zunächst eine laufende Zeichenaktion, ein weiteres Escape den Modus.
+Das Rechtsklickmenü bleibt auch im Stegmodus erreichbar. Die obere
+Werkzeugleiste bleibt sichtbar: Das Qt-Standardmenü zum Ausblenden ist
+gesperrt; das Zeichnungsmenü bietet ebenfalls keinen Sichtbarkeitsschalter.
+Ein früher gespeicherter ausgeblendeter Zustand wird beim Start korrigiert.
+Unter Windows mit PyQt5/PyQt6 lokal geprüft; Linux Mint 22.3 MATE und
+veröffentlichte Pakete sind noch nicht geprüft. Quellen:
+[Hauptfenster](../../source/dxf2gcode/presentation/qt/application.py),
+[Kontextmenü](../../source/dxf2gcode/presentation/qt/canvas.py),
+[Steginteraktion](../../source/dxf2gcode/presentation/qt/tab_modifiers.py).
+
 Datei/Reload liest die Zeichnung erneut; das interne `Project.reload` für
 bestimmte Transformationen ist ein anderer Pfad. Beide nicht als generelle
 Einstellungserhaltung bei beliebigen CAD-Änderungen beschreiben. Konfiguration,

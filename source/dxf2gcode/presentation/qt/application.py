@@ -1747,6 +1747,10 @@ class MainWindow(QMainWindow):
                 handler.stream = None
         e.accept()
 
+    def createPopupMenu(self):
+        # The view band contains essential controls and must stay available.
+        return None
+
     def restoreWindowState(self):
         self.settings.beginGroup("MainWindow")
         geometry = self.settings.value("geometry")
@@ -1756,6 +1760,9 @@ class MainWindow(QMainWindow):
         if (geometry is not None) and (state is not None):
             self.restoreGeometry(geometry)
             self.restoreState(state)
+        comparison = getattr(self, 'view_comparison', None)
+        if comparison is not None:
+            comparison.band.show()
 
     def saveWindowState(self):
         self.settings.beginGroup("MainWindow")

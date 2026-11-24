@@ -113,9 +113,6 @@ class MyDropDownMenu(QMenu):
 
         panel = getattr(getattr(g, 'window', None), 'machining_panel', None)
         if panel is not None and panel.binding is not None:
-            if panel.modifiers.mode:
-                self.clear()
-                return
             if self.selectedItems:
                 identities = panel.canvas_operation_ids(self.selectedItems)
                 enabled = bool(identities)

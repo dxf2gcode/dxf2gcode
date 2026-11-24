@@ -1252,7 +1252,7 @@ class TabModifiers(QtCore.QObject):
         if view is None or not self.mode:
             return False
         if kind == QtCore.QEvent.Type.ContextMenu:
-            return True
+            return False
         if kind == QtCore.QEvent.Type.KeyPress:
             if event.key() == Qt.Key.Key_Escape:
                 self.cancel() if self.gesture or self.drawing else self.set_mode(False)
