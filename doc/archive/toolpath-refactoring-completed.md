@@ -2,6 +2,19 @@
 
 Stand: **15.11.2026** (ältere Prüfergebnisse behalten ihren jeweiligen Stand).
 
+## Früher Hinweis zum An-/Abfahrtradius (26.11.2026)
+
+Die Bearbeitungsmaske prüft den wirksamen An-/Abfahrtradius bei Bogenmodi
+und zeigt den Hinweis am Radiusfeld an. Die Vorschau markiert die fehlerhafte
+Bahn weiterhin. Die Meldung nennt beide Radien und die erforderliche
+Korrektur. Deutsch, Französisch und Russisch sind kompiliert und geprüft.
+[Bedienhinweis](../documentation-notes/order-machining-and-preview.md)
+
+**Prüfung:** 223 fokussierte Lead-Move-Tests bestanden. GUI-Test mit
+Kontur 55 der Frontplatte unter PyQt5 und PyQt6 bestanden. Die kompilierten
+Übersetzungen wurden für den Feldhinweis und die Planungsdiagnose geladen.
+Keine Paket- oder Maschinenabnahme.
+
 ## Kontextmenü im Stegmodus und feste Werkzeugleiste (24.11.2026)
 
 Der persistente Stegmodus unterdrückt das Zeichnungs-Kontextmenü nicht mehr;

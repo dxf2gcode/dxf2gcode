@@ -118,8 +118,8 @@ class MachiningPreview(QtCore.QObject):
                     tip += '\n' + self.tr('End: X {0} · Y {1} · Z {2} {3}').format(*point_text(end), units)
                 tip += '\n' + self.tr('Final depth: {0} {1}').format(format_number(view.axis3_mill_depth, units), units)
                 if result.has_errors:
-                    from dxf2gcode.presentation.qt.toolpath_labels import translate_message
-                    tip += '\n' + self.tr('No toolpath: {0}').format('; '.join(translate_message(d.message) for d in result.diagnostics))
+                    from dxf2gcode.presentation.qt.toolpath_labels import translate_diagnostic
+                    tip += '\n' + self.tr('No toolpath: {0}').format('; '.join(translate_diagnostic(d) for d in result.diagnostics))
                 self.records.append(OperationPreview(entry.id, entry.geometry_id, title,
                     entry.enabled, plan, segments, start, end, self.path_pen('cut', entry.enabled).color(), tip))
         self.update_visibility()

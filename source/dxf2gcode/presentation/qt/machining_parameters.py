@@ -6,6 +6,8 @@ from math import isfinite
 
 import dxf2gcode.bootstrap.runtime_state as g
 from dxf2gcode.domain.project.machining_project import MachiningOperation
+from dxf2gcode.domain.toolpath.leadmove import mode_needs_radius, resolve_mode, resolve_radius, SPACE_TOOL_CENTER
+from dxf2gcode.presentation.qt.toolpath_labels import translate_message
 from dxf2gcode.presentation.qt.qt_compat import QtCore
 from dxf2gcode.presentation.qt.qt_compat.QtGui import QIcon, QPainter, QPainterPath, QPen, QPixmap, QPalette
 from dxf2gcode.presentation.qt.qt_compat.QtWidgets import (
@@ -325,6 +327,12 @@ class MachiningParameters:
             layout.setSpacing(2)
             for keys in rows:
                 row(keys, group, layout)
+                if 'lead_radius' in keys:
+                    self.lead_radius_hint = QLabel(group)
+                    self.lead_radius_hint.setWordWrap(True)
+                    self.lead_radius_hint.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+                    self.lead_radius_hint.hide()
+                    layout.addWidget(self.lead_radius_hint)
             self.groups[key] = group
             ui.gridLayout.addWidget(group, index, 0)
         ui.gridLayout.setVerticalSpacing(6)
@@ -506,9 +514,15 @@ class MachiningParameters:
         unit = '[' + units + ']'
         self.apply_machine_visibility()
         self.update_labels(units)
+        self.lead_radius_hint.clear()
+        self.lead_radius_hint.hide()
+        self.fields['lead_radius'].setAccessibleDescription('')
+        self.fields['lead_radius'].setToolTip(self.field_help('lead_radius'))
         targets = self.selection_targets()
         if len(targets) > 1 or self.ambiguous_geometry_selection(targets):
             self.render_selection(targets, units)
+            if self.fields['lead_radius'].isEnabled():
+                self.show_lead_radius_hint(panel.binding.project, targets)
             return
         for field in self.fields.values():
             if isinstance(field, QLineEdit):
@@ -621,12 +635,37 @@ class MachiningParameters:
         self.fields['start_radius'].setVisible(visible)
         self.origin_boxes['start_radius'].setVisible(visible)
         self.apply_machine_visibility()
+        self.show_lead_radius_hint(project, ((step, operation),))
         for coordinate, name in enumerate(('startAtXLineEdit', 'startAtYLineEdit')):
             field = getattr(ui, name)
             field.setEnabled(entry is not None)
             set_number(field, entry.start[coordinate] if entry else None, units)
             field.setToolTip(panel.tr('Local X, Y') + ' ' + unit)
             field.setModified(False)
+
+    def show_lead_radius_hint(self, project, targets):
+        if project.configuration['General']['machine_type'] != 'milling':
+            return
+        modes = project.configuration['Lead_In_Out']
+        for step, entry in targets:
+            if step.kind not in ('contour', 'pocket'):
+                continue
+            values, _, tool = project.resolve(step, entry)
+            if not any(mode_needs_radius(resolve_mode(values.get(key), modes[key]))
+                       for key in ('lead_in_mode', 'lead_out_mode')):
+                continue
+            radius = values.get('lead_radius')
+            if radius is None:
+                continue
+            _, _, message = resolve_radius(radius, tool.tool_diameter / 2, SPACE_TOOL_CENTER)
+            if message:
+                message = translate_message(message)
+                self.lead_radius_hint.setText(message)
+                self.lead_radius_hint.show()
+                field = self.fields['lead_radius']
+                field.setToolTip(field.toolTip() + '\n' + message)
+                field.setAccessibleDescription(message)
+                break
 
     def apply_machine_visibility(self):
         project = self.panel.binding.project if self.panel.binding else None

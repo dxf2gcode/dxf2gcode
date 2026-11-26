@@ -518,6 +518,31 @@ def exercise_panel(window, app, folder):
     import re
     assert re.search(r'G1 Z\s+-1\.000', output.read_text())
     exercise_tab_modifiers(window, app, folder)
+    exercise_lead_radius_hint(window)
+
+
+def exercise_lead_radius_hint(window):
+    window.filename = str(ROOT / 'dxf/Frontplatte_Netzgeraet.DXF')
+    assert window.load()
+    panel = window.machining_panel
+    project = panel.binding.project
+    entry = next(entry for step in project.steps for entry in step.entries
+                 if panel.binding.sources[entry.geometry_id].nr == 55)
+    panel.tree.setCurrentItem(panel.entry_items[entry.id])
+    editor = panel.parameter_editor
+    step, selected = editor.target()
+    assert selected.id == entry.id
+    tool_radius = project.tools[step.tool_id].tool_diameter / 2
+    editor.commit('lead_in_mode', 'radius')
+    field = editor.fields['lead_radius']
+    field.setText(str(tool_radius))
+    field.setModified(True)
+    editor.commit_number('lead_radius')
+    assert not editor.lead_radius_hint.isHidden()
+    assert 'lead-in/out radius' in field.toolTip()
+    editor.commit('lead_radius', tool_radius + 1)
+    assert editor.lead_radius_hint.isHidden()
+    assert field.toolTip() == editor.field_help('lead_radius')
 
 
 def exercise_ignored_steps(window, app):

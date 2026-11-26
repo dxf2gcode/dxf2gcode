@@ -330,7 +330,7 @@ class TestToolTableValidation(LeadMoveTestBase):
         g.config.vars.Lead_In_Out['lead_out_mode'] = LEAD_OFF
         ok, message = self.table.validateValue()
         self.assertFalse(ok)
-        self.assertIn("radius of the tool", message)
+        self.assertIn("lead-in/out radius", message)
         # The tool with the invalid radius is named in the message.
         self.assertIn("2", message)
 

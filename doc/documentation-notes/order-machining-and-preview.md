@@ -38,6 +38,11 @@ und zwei Widget-Aufnahmen: [Herkunft und Werte](../../docs/assets/examples/machi
 
 ## WP5: maßgebliche Verträge
 
+- Für bogenförmige An- oder Abfahrt muss der An-/Abfahrtradius am Werkstück
+  größer als der Fräserradius sein. Bei einem 6-mm-Fräser führen 3 mm zu
+  einem Mittelpunktbahnradius von null. 4 mm ergeben 1 mm Bahnradius.
+  Den verfügbaren Platz in der Vorschau prüfen. Die Bearbeitungsmaske
+  zeigt den Hinweis direkt am Radiusfeld.
 - [Lead-Geometrie](../../source/dxf2gcode/domain/toolpath/leadmove.py),
   [Vorbereitung](../../source/dxf2gcode/domain/toolpath/stmove.py),
   [Planer](../../source/dxf2gcode/domain/toolpath/planner.py) und

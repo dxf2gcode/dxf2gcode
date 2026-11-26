@@ -13,6 +13,15 @@ def translate_message(message):
     return text % args if args else text
 
 
+def translate_diagnostic(diagnostic):
+    if not diagnostic.source_message:
+        return translate_message(diagnostic.message)
+    source = QtCore.QCoreApplication.translate('Shape', diagnostic.source_message)
+    args = tuple(translate_message(arg) if hasattr(arg, 'context') else arg
+                 for arg in diagnostic.message_args)
+    return source % args if args else source
+
+
 def lead_mode_labels():
     return {leadmove.LEAD_OFF: QtCore.QCoreApplication.translate("LeadMove", "None"),
             leadmove.LEAD_STRAIGHT: QtCore.QCoreApplication.translate("LeadMove", "Straight"),

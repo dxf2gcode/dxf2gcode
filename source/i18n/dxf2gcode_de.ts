@@ -825,6 +825,10 @@ Nicht genügend Zeichen (erwartet {0}, gefunden {1}) für das Feld &quot;{2}&quo
 <context>
     <name>LeadMove</name>
     <message>
+        <source>The lead-in/out radius (%.3f) must be greater than the tool radius (%.3f) to create a circular move.</source>
+        <translation>Für eine bogenförmige An- oder Abfahrt muss der An-/Abfahrtradius (%.3f) größer als der Fräserradius (%.3f) sein.</translation>
+    </message>
+    <message>
         <location filename="../dxf2gcode/domain/toolpath/leadmove.py" line="451"/>
         <source>The tool radius is negative - the lead in / lead out can not be calculated.</source>
         <translation>Der Werkzeugradius ist negativ - die Ein-/Ausfahrt kann nicht berechnet werden.</translation>

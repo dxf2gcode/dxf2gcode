@@ -803,6 +803,10 @@ Pas assez de caractère(exception de {0},trouve {1} pour le Champ &quot;{2}&quot
 <context>
     <name>LeadMove</name>
     <message>
+        <source>The lead-in/out radius (%.3f) must be greater than the tool radius (%.3f) to create a circular move.</source>
+        <translation>Pour une entrée ou une sortie en arc, le rayon d’approche ou de dégagement (%.3f) doit être supérieur au rayon de l’outil (%.3f).</translation>
+    </message>
+    <message>
         <location filename="../dxf2gcode/domain/toolpath/leadmove.py" line="451"/>
         <source>The tool radius is negative - the lead in / lead out can not be calculated.</source>
         <translation>Le rayon de l'outil est négatif - l'entrée / la sortie ne peut pas être calculée.</translation>

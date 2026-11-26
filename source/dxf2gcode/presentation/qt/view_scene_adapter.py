@@ -6,7 +6,7 @@ from dxf2gcode.application.toolpath.projections import plan_preview_segments
 from dxf2gcode.adapters.toolpath.preview import preview_result
 from dxf2gcode.adapters.toolpath.preparation import prepare_shape
 from dxf2gcode.domain.project.machining_project import MachiningOperation
-from dxf2gcode.presentation.qt.toolpath_labels import translate_message
+from dxf2gcode.presentation.qt.toolpath_labels import translate_diagnostic
 
 
 def build_view_scene(panel, layers):
@@ -41,7 +41,7 @@ def build_view_scene(panel, layers):
             source = binding.sources[entry.geometry_id]
             tool = binding.project.tools[step.tool_id]
             title = '%s · %s · T%d' % (step.name, panel.tr('Contour {0}').format(source.nr), tool.tool_nr)
-            diagnostic = '; '.join(translate_message(d.message) for d in result.diagnostics)
+            diagnostic = '; '.join(translate_diagnostic(d) for d in result.diagnostics)
             if not segments:
                 p = source.get_start_end_points(True)
                 anchor = (p.x, p.y, source.axis3_start_mill_depth)

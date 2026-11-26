@@ -678,14 +678,8 @@ class MachiningPanel(QWidget):
                     active = getattr(shape, '_machining_view', None)
                     item = self.entry_items.get(getattr(active, 'operation_id', None))
                     if item is not None:
-                        from dxf2gcode.presentation.qt.toolpath_labels import translate_message
-                        messages = []
-                        for diagnostic in getattr(shape, 'toolpath_diagnostics', ()):
-                            message = QtCore.QCoreApplication.translate('Shape', diagnostic.source_message) if diagnostic.source_message else diagnostic.message
-                            if diagnostic.message_args:
-                                message %= tuple(translate_message(arg) if hasattr(arg, 'context') else arg
-                                                 for arg in diagnostic.message_args)
-                            messages.append(message)
+                        from dxf2gcode.presentation.qt.toolpath_labels import translate_diagnostic
+                        messages = [translate_diagnostic(d) for d in getattr(shape, 'toolpath_diagnostics', ())]
                         text = item.data(0, SOURCE_ROLE) + (' · ' + '; '.join(messages) if messages else '')
                         item.setToolTip(0, text)
                         item.setIcon(0, self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning) if messages else QIcon())

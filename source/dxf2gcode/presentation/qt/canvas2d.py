@@ -483,7 +483,8 @@ class MyGraphicsScene(QGraphicsScene):
 
         # The error message (if any) is collected and shown once after the
         # whole batch of repaints (see queue_error_message).
-        self.queue_error_message(shape.stmove_item._warning())
+        self.queue_error_message(shape.stmove_item._warning(
+            omit_lead_radius=hasattr(shape.model, 'machining_binding')))
 
     def queue_error_message(self, message):
         """
@@ -1092,7 +1093,7 @@ class StMoveGUI(QGraphicsItem):
             g.window, g.window.tr("Ungültige Werkzeugweg-Einstellungen"),
             message)
 
-    def _warning(self):
+    def _warning(self, *, omit_lead_radius=False):
         """
         The error message of the start move (the lead in) or of the exit
         geometry (the lead out / the overcut): the geometry of this shape can
@@ -1100,8 +1101,12 @@ class StMoveGUI(QGraphicsItem):
         @return: the message or an empty string
         """
         messages = []
+        from dxf2gcode.domain.toolpath.leadmove import LEAD_RADIUS_TOO_SMALL
         for message in (getattr(self, "start_move_error", ""),
                         getattr(self, "exit_error", "")):
+            if omit_lead_radius and getattr(message, 'source', None) == LEAD_RADIUS_TOO_SMALL:
+                # The machining editor already identifies the affected field.
+                continue
             if message and message not in messages:
                 from dxf2gcode.presentation.qt.toolpath_labels import translate_message
                 messages.append(translate_message(message))

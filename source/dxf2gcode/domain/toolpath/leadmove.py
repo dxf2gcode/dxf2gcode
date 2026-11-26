@@ -372,8 +372,6 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
         # Without a valid tool radius nothing else can be checked.
         return (False, errors, warnings)
 
-    tool_radius = 0.0 if knife_tip_path else tool_diameter / 2.0
-
     modes = [lead_in_mode, lead_out_mode]
 
     if any(mode_needs_radius(mode) for mode in modes):
@@ -381,26 +379,12 @@ def validate_lead_move(tool_diameter, lead_radius, lead_length,
             lead_radius = float(lead_radius)
         except (TypeError, ValueError):
             lead_radius = 0.0
-        if lead_radius <= 0:
-            errors.append(('lead_radius', QT_TRANSLATE_NOOP(
-                "LeadMove", "The radius of the lead in / lead out must be "
-                            "greater than zero.")))
-        elif lead_radius < tool_radius - eps:
-            errors.append(('lead_radius', QT_TRANSLATE_NOOP(
-                "LeadMove", "The radius at the workpiece (%.3f mm) is "
-                            "smaller than the radius of the tool (%.3f mm) "
-                            "- it can not be milled.")
-                % (lead_radius, tool_radius)))
-        elif abs(lead_radius - tool_radius) <= eps:
-            # The limit case: it is geometrically possible, but the tool
-            # center does not move while the arc is milled.
-            warnings.append(('lead_radius', QT_TRANSLATE_NOOP(
-                "LeadMove", "The radius at the workpiece (%.3f mm) equals "
-                            "the radius of the tool: the tool center does "
-                            "not move while the arc is milled. This limit "
-                            "case is geometrically possible, but it is "
-                            "difficult to machine.")
-                % lead_radius))
+        tool_radius = 0.0 if knife_tip_path else tool_diameter / 2.0
+        _, status, message = resolve_radius(lead_radius, tool_radius, SPACE_NOMINAL)
+        if status == ERROR:
+            errors.append(('lead_radius', message))
+        elif status == WARNING:
+            warnings.append(('lead_radius', message))
 
     if (lead_in_needs_length(lead_in_mode, lead_in_compensated) or
             mode_needs_length(lead_out_mode)):
@@ -442,10 +426,7 @@ def resolve_radius(workpiece_radius, tool_radius, space):
 
     tool_center_radius = workpiece_radius - tool_radius
     if tool_center_radius < -eps:
-        return 0.0, ERROR, QT_TRANSLATE_NOOP(
-            "LeadMove", "The radius at the workpiece (%.3f mm) is smaller "
-                        "than the tool radius (%.3f mm) - it can not be "
-                        "milled.") % (workpiece_radius, tool_radius)
+        return 0.0, ERROR, _lead_radius_message(workpiece_radius, tool_radius)
 
     if abs(tool_center_radius) <= eps:
         # The limit case: the tool center does not move while the arc is
@@ -454,19 +435,8 @@ def resolve_radius(workpiece_radius, tool_radius, space):
         # the tool collapses to a point and the internal compensation can not
         # build the (degenerate) arc at all.
         if space == SPACE_TOOL_CENTER:
-            return 0.0, ERROR, QT_TRANSLATE_NOOP(
-                "LeadMove", "The radius at the workpiece equals the tool "
-                            "radius (%.3f mm): the tool center does not move "
-                            "while the arc is milled, so the arc can not be "
-                            "built with the internal cutter compensation."
-                            % workpiece_radius)
-        return workpiece_radius, WARNING, QT_TRANSLATE_NOOP(
-            "LeadMove", "The radius at the workpiece equals the tool radius "
-                        "(%.3f mm): the tool center does not move while the "
-                        "arc is milled. This limit case is geometrically "
-                        "possible, but the machine compensation of an arc "
-                        "with the radius of the tool collapses to a point."
-                        % workpiece_radius)
+            return 0.0, ERROR, _lead_radius_message(workpiece_radius, tool_radius)
+        return workpiece_radius, WARNING, _lead_radius_message(workpiece_radius, tool_radius)
 
     if space == SPACE_NOMINAL:
         return workpiece_radius, OK, ""
@@ -490,22 +460,13 @@ def _direction(angle, side):
     return Point(x=cos(angle), y=sin(angle))
 
 
-def _nominal_collapse_message(workpiece_radius, tool_radius):
-    """
-    The error message of the limit case R_w == r_tool in the nominal plane:
-    the machine compensation of a nominal arc with the radius of the tool
-    collapses to a point, so the arc can not be milled.
+LEAD_RADIUS_TOO_SMALL = QT_TRANSLATE_NOOP(
+    "LeadMove", "The lead-in/out radius (%.3f) must be greater than the "
+                "tool radius (%.3f) to create a circular move.")
 
-    @param workpiece_radius: the radius which shall be milled (R_w)
-    @param tool_radius: the radius of the tool
-    @return: the translated message
-    """
-    return QT_TRANSLATE_NOOP(
-        "LeadMove", "The radius at the workpiece (%.3f mm) is not greater "
-                    "than the radius of the tool (%.3f mm): the machine "
-                    "compensation of the nominal arc collapses to a point, "
-                    "so the arc can not be milled.") % (workpiece_radius,
-                                                         tool_radius)
+
+def _lead_radius_message(workpiece_radius, tool_radius):
+    return LEAD_RADIUS_TOO_SMALL % (workpiece_radius, tool_radius)
 
 
 def build_start_move(end_point, angle, side, workpiece_radius, tool_radius,
@@ -547,8 +508,7 @@ def build_start_move(end_point, angle, side, workpiece_radius, tool_radius,
     if space == SPACE_NOMINAL and radius - tool_radius <= eps:
         # The machine compensates the nominal arc: the tool center path radius
         # would be zero and the arc would collapse to a point.
-        return [], ERROR, _nominal_collapse_message(workpiece_radius,
-                                                     tool_radius)
+        return [], ERROR, _lead_radius_message(workpiece_radius, tool_radius)
     tangent = _direction(angle, side)
     normal = _normal(angle, side)
     # Center of the starting radius
